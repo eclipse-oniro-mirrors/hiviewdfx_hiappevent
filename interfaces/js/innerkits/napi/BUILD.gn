@@ -39,8 +39,8 @@ ohos_shared_library("hiappevent") {
     "appexecfwk_standard:appexecfwk_base",
     "appexecfwk_standard:appexecfwk_core",
     "appexecfwk_standard:libeventhandler",
-    "ipc:ipc_core",
     "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
   ]
 
   relative_install_dir = "module"
