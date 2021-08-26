@@ -61,6 +61,17 @@ LogAssistant& LogAssistant::Instance()
     return assistant;
 }
 
+LogAssistant::LogAssistant()
+    : logPersistDir(""),
+    realTimeLogUpdateListener(nullptr),
+    historyLogPulledListener(nullptr)
+{}
+
+LogAssistant::~LogAssistant()
+{
+    this->RemoveAllListeners();
+}
+
 // A util method to find the matched result by the input
 // pattern
 string LogAssistant::FindMatchedRegex(const string& origin, const regex& regex)
@@ -199,7 +210,7 @@ void LogAssistant::AllMatchedLogFiles(vector<string>& logFiles, TimeStampVarType
         // Sort all the matched log files in descending order
         sort(logFiles.begin(),
             logFiles.end(),
-            [](string file1, string file2) -> bool {
+            [](string file1, string file2)->bool {
                 return file1 > file2;
             });
     }
@@ -240,7 +251,7 @@ void LogAssistant::PullEventHistoryLog(TimeStampVarType beginTimeStamp,
     // Sort all the matched logs in ascending order
     sort(historyLogs.begin(),
         historyLogs.end(),
-        [](string log1, string log2) -> bool {
+        [](string log1, string log2)->bool {
             return log1 < log2;
         });
     if (historyLogPulledListener != nullptr) {
@@ -252,7 +263,6 @@ void LogAssistant::RegRealTimeAppLogListener(RealTimeEventLogListener listener)
 {
     realTimeLogUpdateListener = listener;
 }
-
 
 void LogAssistant::RegHistoryAppLogListener(HistoryEventLogListener listener)
 {

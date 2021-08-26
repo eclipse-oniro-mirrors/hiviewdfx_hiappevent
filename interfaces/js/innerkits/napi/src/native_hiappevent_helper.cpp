@@ -52,7 +52,7 @@ void AddBoolParam2EventPack(napi_env env, const std::string &key, const napi_val
 void AddNumberParam2EventPack(napi_env env, const std::string &key, const napi_value param,
     std::shared_ptr<AppEventPack>& appEventPack)
 {
-    double value;
+    double value = 0;
     napi_status status = napi_get_value_double(env, param, &value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "AddNumberParam2EventPack：napi_get_value_double failed.");
@@ -153,7 +153,7 @@ int AddNumberArrayParam2EventPack(napi_env env, const std::string &key, const na
             return ERROR_INVALID_LIST_PARAM_TYPE;
         }
 
-        double value;
+        double value = 0;
         status = napi_get_value_double(env, element, &value);
         if (status != napi_ok) {
             HiLog::Error(LABEL, "AddNumberArrayParam2EventPack：napi_get_value_double failed.");

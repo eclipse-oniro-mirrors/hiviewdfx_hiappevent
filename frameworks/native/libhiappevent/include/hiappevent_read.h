@@ -91,11 +91,12 @@ public:
     void UpdateHiAppEventLogDir(const std::string&);
     void PullEventHistoryLog(TimeStampVarType, TimeStampVarType, int);
 private:
-    LogAssistant() = default;
+    LogAssistant();
     LogAssistant(const LogAssistant&) = delete;
     LogAssistant(const LogAssistant&&) = delete;
     LogAssistant& operator=(const LogAssistant&) = delete;
     LogAssistant& operator=(const LogAssistant&&) = delete;
+    ~LogAssistant();
 private:
     std::string FindMatchedRegex(const std::string&, const std::regex&);
     std::string ParseLogLineTime(const std::string&);
