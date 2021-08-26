@@ -55,7 +55,6 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
     const std::vector<const char*>& cps);
 void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key,
     const std::vector<const std::string>& strs);
-void WriteAppEvent(std::shared_ptr<AppEventPack> appEventPack);
 } // HiviewDFX
 } // OHOS
 #endif // HI_APP_EVENT_PACK_H

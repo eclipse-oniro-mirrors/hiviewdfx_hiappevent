@@ -84,10 +84,10 @@ The minimum version requirements are Clang 8.0.0 and C++11.
 
     ```
     // Callback mode
-    hiappevent.write("testEvent", hiappevent.EventType.FAULT, "intData", 100, "strData", "strValue", (err, value) => {
+    hiappevent.write("test_event", hiappevent.EventType.FAULT, "int_data", 100, "str_data", "strValue", (err, value) => {
         if (err) {
             // Event writing failed: The event contains invalid parameters or the event parameter verification fails.
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
             return;
         }
     
@@ -96,20 +96,20 @@ The minimum version requirements are Clang 8.0.0 and C++11.
     });
     
     // Promise mode
-    hiappevent.write("testEvent", hiappevent.EventType.FAULT, "intData", 100, "strData", "strValue")
+    hiappevent.write("test_event", hiappevent.EventType.FAULT, "int_data", 100, "str_data", "strValue")
         .then((value) => {
             // Event writing succeeded.
             console.log(`success to write event: ${value}`);
         }).catch((err) => {
             // Event writing failed: The event contains invalid parameters or the event parameter verification fails.
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
         });
     
     // Callback mode
-    hiappevent.writeJson("testEvent", hiappevent.EventType.FAULT, {"intData":100, "strData":"strValue"}, (err, value) => {
+    hiappevent.writeJson("test_event", hiappevent.EventType.FAULT, {"int_data":100, "str_data":"strValue"}, (err, value) => {
         if (err) {
             // Event writing failed: The event contains invalid parameters or the event parameter verification fails.
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
             return;
         }
     
@@ -118,13 +118,13 @@ The minimum version requirements are Clang 8.0.0 and C++11.
     });
     
     // Promise mode
-    hiappevent.writeJson("testEvent", hiappevent.EventType.FAULT, {"intData":100, "strData":"strValue"})
+    hiappevent.writeJson("test_event", hiappevent.EventType.FAULT, {"int_data":100, "str_data":"strValue"})
         .then((value) => {
             // Event writing succeeded.
             console.log(`success to write event: ${value}`);
         }).catch((err) => {
             // Event writing failed: The event contains invalid parameters or the event parameter verification fails.
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
         });
     ```
 

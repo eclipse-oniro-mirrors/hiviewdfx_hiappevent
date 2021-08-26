@@ -18,7 +18,6 @@
 #include <memory>
 #include <vector>
 
-#include "app_event_dispatcher.h"
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
 
@@ -198,15 +197,6 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
         return;
     }
     appEventPack->AddParam(key, strs);
-}
-
-void WriteAppEvent(std::shared_ptr<AppEventPack> appEventPack)
-{
-    if (appEventPack == nullptr) {
-        return;
-    }
-
-    AppEventDispatcher::GetInstance().AddEvent(appEventPack);
 }
 } // HiviewDFX
 } // OHOS

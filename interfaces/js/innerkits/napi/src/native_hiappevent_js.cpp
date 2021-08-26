@@ -28,15 +28,7 @@ using namespace OHOS::HiviewDFX::ErrorCode;
 
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI" };
-constexpr static int EVENT_NAME_INDEX = 0;
-constexpr static int EVENT_TYPE_INDEX = 1;
-constexpr static int JSON_OBJECT_INDEX = 2;
-
-constexpr static int WRITE_FUNC_MIN_PARAM_NUM = 2;
-constexpr static int WRITE_FUNC_MAX_PARAM_NUM = 100;
-constexpr static int WRITE_JSON_FUNC_MIN_PARAM_NUM = 2;
-constexpr static int WRITE_JSON_FUNC_MAX_PARAM_NUM = 4;
-constexpr static int SUCCESS_FLAG = 0;
+constexpr int CONFIGURE_PARAM_NUM = 2;
 
 const static int FAULT_EVENT_TYPE = 1;
 const static int STATISTIC_EVENT_TYPE = 2;
@@ -46,8 +38,6 @@ const static int BEHAVIOR_EVENT_TYPE = 4;
 
 static napi_value Write(napi_env env, napi_callback_info info)
 {
-    HiLog::Debug(LABEL, "Write start to write app event.");
-
     size_t paramNum = WRITE_FUNC_MAX_PARAM_NUM;
     napi_value params[WRITE_FUNC_MAX_PARAM_NUM] = {0};
     napi_value thisArg = nullptr;
@@ -60,61 +50,53 @@ static napi_value Write(napi_env env, napi_callback_info info)
         .deferred = nullptr,
     };
 
-    int32_t result = SUCCESS_FLAG;
-    napi_value promise = nullptr;
-    napi_get_undefined(env, &promise);
+    // set event file dirtory
+    SetStorageDir(env, info);
 
-    if (paramNum >= WRITE_FUNC_MIN_PARAM_NUM && paramNum <= WRITE_FUNC_MAX_PARAM_NUM) {
-        if (!CheckWriteParamsType(env, params, sizeof(params) / sizeof(params[0]))) {
-            HiLog::Error(LABEL, "event name or event type is invalid parameter type.");
-            result = ERROR_INVALID_PARAM_TYPE_JS;
-        }
+    // check the number and type of parameters
+    int32_t result = CheckWriteParamsType(env, params, (int)paramNum);
 
-        int paramEndIndex = paramNum;
+    // set callback function
+    int paramEndIndex = paramNum;
+    if (paramNum > MIN_PARAM_NUM) {
         napi_valuetype lastParamType;
-        napi_typeof(env, params[paramNum - 1], &lastParamType);
+        napi_typeof(env, params[paramNum - MIN_PARAM_NUM], &lastParamType);
         if (lastParamType == napi_valuetype::napi_function) {
-            napi_create_reference(env, params[paramNum - 1], 1, &asyncContext->callback);
-            paramEndIndex -= 1;
+            napi_create_reference(env, params[paramNum - MIN_PARAM_NUM], 1, &asyncContext->callback);
+            paramEndIndex -= MIN_PARAM_NUM;
         }
-
-        if (asyncContext->callback == nullptr) {
-            napi_create_promise(env, &asyncContext->deferred, &promise);
-        }
-
-        if (result == SUCCESS_FLAG) {
-            std::shared_ptr<AppEventPack> appEventPack = CreateEventPackFromNapiValue(env, params[EVENT_NAME_INDEX],
-                params[EVENT_TYPE_INDEX]);
-            if (paramEndIndex > WRITE_FUNC_MIN_PARAM_NUM) {
-                int buildRes = BuildAppEventPack(env, params, paramEndIndex, appEventPack);
-                if (buildRes != SUCCESS_FLAG) {
-                    HiLog::Error(LABEL, "event build AppEventPack failed.");
-                    result = buildRes;
-                }
-            }
-            asyncContext->appEventPack = appEventPack;
-
-            int verifyResult = VerifyAppEvent(appEventPack);
-            if (verifyResult != SUCCESS_FLAG) {
-                HiLog::Error(LABEL, "event verify failed.");
-                result = verifyResult;
-            }
-        }
-
-        asyncContext->result = result;
-        AsyncWriteEvent(env, asyncContext);
-    } else {
-        HiLog::Error(LABEL, "write event failed, invalid number of params.");
     }
 
-    HiLog::Debug(LABEL, "write event end.");
+    // set promise object
+    napi_value promise = nullptr;
+    napi_get_undefined(env, &promise);
+    if (asyncContext->callback == nullptr) {
+        napi_create_promise(env, &asyncContext->deferred, &promise);
+    }
+
+    if (result == SUCCESS_FLAG) {
+        std::shared_ptr<AppEventPack> appEventPack = CreateEventPackFromNapiValue(env, params[EVENT_NAME_INDEX],
+            params[EVENT_TYPE_INDEX]);
+        if (paramEndIndex > WRITE_FUNC_MIN_PARAM_NUM) {
+            int buildRes = BuildAppEventPack(env, params, paramEndIndex, appEventPack);
+            result = buildRes == SUCCESS_FLAG ? result : buildRes;
+        }
+        asyncContext->appEventPack = appEventPack;
+
+        int verifyResult = VerifyAppEvent(appEventPack);
+        if (verifyResult != SUCCESS_FLAG) {
+            HiLog::Warn(LABEL, "event verify failed.");
+            result = verifyResult;
+        }
+    }
+
+    asyncContext->result = result;
+    AsyncWriteEvent(env, asyncContext);
     return promise;
 }
 
 static napi_value WriteJson(napi_env env, napi_callback_info info)
 {
-    HiLog::Debug(LABEL, "writeJson start to write app event.");
-
     size_t paramNum = WRITE_JSON_FUNC_MAX_PARAM_NUM;
     napi_value params[WRITE_JSON_FUNC_MAX_PARAM_NUM] = {0};
     napi_value thisArg = nullptr;
@@ -127,51 +109,64 @@ static napi_value WriteJson(napi_env env, napi_callback_info info)
         .deferred = nullptr,
     };
 
-    int32_t result = SUCCESS_FLAG;
-    napi_value promise = nullptr;
-    napi_get_undefined(env, &promise);
+    // set event file dirtory
+    SetStorageDir(env, info);
 
-    if (paramNum >= WRITE_JSON_FUNC_MIN_PARAM_NUM && paramNum <= WRITE_JSON_FUNC_MAX_PARAM_NUM) {
-        if (!CheckWriteJsonParamsType(env, params, sizeof(params) / sizeof(params[0]))) {
-            HiLog::Error(LABEL, "event name or event type is invalid parameter type.");
-            result = ERROR_INVALID_PARAM_TYPE_JS;
-        }
+    // check the number and type of parameters
+    int32_t result = CheckWriteJsonParamsType(env, params, (int)paramNum);
 
+    // set callback function
+    if (paramNum > MIN_PARAM_NUM) {
         napi_valuetype lastParamType;
-        napi_typeof(env, params[paramNum - 1], &lastParamType);
+        napi_typeof(env, params[paramNum - MIN_PARAM_NUM], &lastParamType);
         if (lastParamType == napi_valuetype::napi_function) {
-            napi_create_reference(env, params[paramNum - 1], 1, &asyncContext->callback);
+            napi_create_reference(env, params[paramNum - MIN_PARAM_NUM], 1, &asyncContext->callback);
         }
-
-        if (asyncContext->callback == nullptr) {
-            napi_create_promise(env, &asyncContext->deferred, &promise);
-        }
-
-        if (result == SUCCESS_FLAG) {
-            std::shared_ptr<AppEventPack> appEventPack = CreateEventPackFromNapiValue(env, params[EVENT_NAME_INDEX],
-                params[EVENT_TYPE_INDEX]);
-            int buildRes = BuildAppEventPackFromObject(env, params[JSON_OBJECT_INDEX], appEventPack);
-            if (buildRes != SUCCESS_FLAG) {
-                HiLog::Error(LABEL, "event build AppEventPack failed.");
-                result = buildRes;
-            }
-            asyncContext->appEventPack = appEventPack;
-
-            int verifyResult = VerifyAppEvent(appEventPack);
-            if (verifyResult != SUCCESS_FLAG) {
-                HiLog::Error(LABEL, "event verify failed.");
-                result = verifyResult;
-            }
-        }
-
-        asyncContext->result = result;
-        AsyncWriteEvent(env, asyncContext);
-    } else {
-        HiLog::Error(LABEL, "write event failed, invalid number of params.");
     }
 
-    HiLog::Debug(LABEL, "write event end.");
+    // set promise object
+    napi_value promise = nullptr;
+    napi_get_undefined(env, &promise);
+    if (asyncContext->callback == nullptr) {
+        napi_create_promise(env, &asyncContext->deferred, &promise);
+    }
+
+    if (result == SUCCESS_FLAG) {
+        std::shared_ptr<AppEventPack> appEventPack = CreateEventPackFromNapiValue(env, params[EVENT_NAME_INDEX],
+            params[EVENT_TYPE_INDEX]);
+        int buildRes = BuildAppEventPackFromObject(env, params[JSON_OBJECT_INDEX], appEventPack);
+        result = buildRes == SUCCESS_FLAG ? result : buildRes;
+        asyncContext->appEventPack = appEventPack;
+
+        int verifyResult = VerifyAppEvent(appEventPack);
+        if (verifyResult != SUCCESS_FLAG) {
+            HiLog::Warn(LABEL, "event verify failed.");
+            result = verifyResult;
+        }
+    }
+
+    asyncContext->result = result;
+    AsyncWriteEvent(env, asyncContext);
     return promise;
+}
+
+static napi_value Configure(napi_env env, napi_callback_info info)
+{
+    size_t paramNum = CONFIGURE_PARAM_NUM;
+    napi_value params[CONFIGURE_PARAM_NUM] = {0};
+    napi_value thisArg = nullptr;
+    void *data = nullptr;
+    NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisArg, &data));
+
+    napi_value result = nullptr;
+    napi_get_boolean(env, false, &result);
+    if (paramNum != CONFIGURE_PARAM_NUM) {
+        HiLog::Error(LABEL, "failed to configure event manager, invalid number of params.");
+        return result;
+    }
+
+    napi_get_boolean(env, ConfigureFromNapiValue(env, params[0], params[1]), &result);
+    return result;
 }
 
 static napi_value EventTypeClassConstructor(napi_env env, napi_callback_info info)
@@ -217,9 +212,17 @@ static void EventTypeClassInit(napi_env env, napi_value exports)
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
+    napi_value disable = nullptr;
+    napi_create_string_utf8(env, "disable", NAPI_AUTO_LENGTH, &disable);
+    napi_value maxStorage = nullptr;
+    napi_create_string_utf8(env, "max_storage", NAPI_AUTO_LENGTH, &maxStorage);
+
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("write", Write),
-        DECLARE_NAPI_FUNCTION("writeJson", WriteJson)
+        DECLARE_NAPI_FUNCTION("writeJson", WriteJson),
+        DECLARE_NAPI_FUNCTION("configure", Configure),
+        DECLARE_NAPI_STATIC_PROPERTY("DISABLE", disable),
+        DECLARE_NAPI_STATIC_PROPERTY("MAX_STORAGE", maxStorage)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
     EventTypeClassInit(env, exports);
@@ -231,7 +234,7 @@ EXTERN_C_END
 static napi_module _module = {
     .nm_version = 1,
     .nm_flags = 0,
-    .nm_filename = NULL,
+    .nm_filename = nullptr,
     .nm_register_func = Init,
     .nm_modname = "hiappevent",
     .nm_priv = ((void *)0),

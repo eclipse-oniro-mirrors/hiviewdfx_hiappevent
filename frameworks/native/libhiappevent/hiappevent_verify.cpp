@@ -19,6 +19,7 @@
 #include <regex>
 
 #include "hiappevent_base.h"
+#include "hiappevent_config.h"
 #include "hilog/log.h"
 
 using namespace OHOS::HiviewDFX::ErrorCode;
@@ -26,27 +27,25 @@ using namespace OHOS::HiviewDFX::ErrorCode;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-static constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_HDL" };
+static constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_verify" };
 
-static constexpr int MAX_LENGTH_OF_EVENT_NAME = 32;
+static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
 static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
 static constexpr int MAX_NUM_OF_PARAMS = 32;
-static constexpr int MAX_LENGTH_OF_STR_PARAM = 256;
+static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 
 static constexpr int HITRACE_PARAMS_NUM = 4;
 static const std::string HITRACE_PARAMS[HITRACE_PARAMS_NUM] = {"traceid_", "spanid_", "pspanid_", "trace_flag_"};
 
-
 bool CheckEventName(const std::string& eventName)
 {
     if (eventName.empty() || eventName.length() > MAX_LENGTH_OF_EVENT_NAME) {
-        HiLog::Error(LABEL, "eventName cannot be empty or exceed 32.");
         return false;
     }
 
-    if (!std::regex_match(eventName, std::regex("^[a-zA-Z]\\w*$"))) {
-        HiLog::Error(LABEL, "event name must start with a letter, consist of letters, digits and underscores.");
+    /* custom and preset events */
+    if (!std::regex_match(eventName, std::regex("^[a-z][a-z0-9_]*$|^hiappevent\\.[a-z][a-z0-9_]*$"))) {
         return false;
     }
 
@@ -56,7 +55,6 @@ bool CheckEventName(const std::string& eventName)
 bool CheckParamName(const std::string& paramName)
 {
     if (paramName.empty() || paramName.length() > MAX_LENGTH_OF_PARAM_NAME) {
-        HiLog::Error(LABEL, "paramName=%{public}s length cannot be empty or exceed 16.", paramName.c_str());
         return false;
     }
 
@@ -66,71 +64,97 @@ bool CheckParamName(const std::string& paramName)
         }
     }
 
-    if (!std::regex_match(paramName, std::regex("^[a-zA-Z]\\w*[a-zA-Z0-9]$"))) {
-        HiLog::Error(LABEL, "param name must start with a letter and cannot end with an underscore.");
+    if (!std::regex_match(paramName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
         return false;
     }
 
     return true;
 }
 
-bool CheckStrParamLength(const std::string& strParamValue)
+void EscapeStringValue(std::string &value)
+{
+    std::string escapeValue;
+    for (auto it = value.begin(); it != value.end(); it++) {
+        switch (*it) {
+            case '\\':
+                escapeValue.append("\\\\");
+                break;
+            case '\"':
+                escapeValue.append("\\\"");
+                break;
+            case '\b':
+                escapeValue.append("\\b");
+                break;
+            case '\f':
+                escapeValue.append("\\f");
+                break;
+            case '\n':
+                escapeValue.append("\\n");
+                break;
+            case '\r':
+                escapeValue.append("\\r");
+                break;
+            case '\t':
+                escapeValue.append("\\t");
+                break;
+            default:
+                escapeValue.push_back(*it);
+                break;
+        }
+    }
+    value = escapeValue;
+}
+
+bool CheckStrParamLength(std::string& strParamValue)
 {
     if (strParamValue.empty()) {
-        HiLog::Info(LABEL, "str param value is empty.");
+        HiLog::Warn(LABEL, "str param value is empty.");
         return true;
     }
 
     if (strParamValue.length() > MAX_LENGTH_OF_STR_PARAM) {
-        HiLog::Error(LABEL, "str param value cannot exceed 256 characters.");
         return false;
     }
 
+    EscapeStringValue(strParamValue);
     return true;
 }
 
-bool CheckListValueSize(const AppEventParam& param)
+bool CheckListValueSize(AppEventParamType type, AppEventParamValue::ValueUnion& vu)
 {
-    if (param.type <= AppEventParamType::STRING) {
+    if (type == AppEventParamType::BVECTOR && vu.bs_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.bs_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::CVECTOR && vu.cs_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.cs_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::SHVECTOR && vu.shs_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.shs_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::IVECTOR && vu.is_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.is_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::LVECTOR && vu.ls_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.ls_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::LLVECTOR && vu.lls_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.lls_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::FVECTOR && vu.fs_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.fs_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::DVECTOR && vu.ds_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.ds_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else if (type == AppEventParamType::STRVECTOR && vu.strs_.size() > MAX_SIZE_OF_LIST_PARAM) {
+        vu.strs_.resize(MAX_SIZE_OF_LIST_PARAM);
+    } else {
         return true;
     }
 
-    size_t size = 0;
-    if (param.type == AppEventParamType::BVECTOR) {
-        size = param.value.valueUnion.bs_.size();
-    } else if (param.type == AppEventParamType::CVECTOR) {
-        size = param.value.valueUnion.cs_.size();
-    } else if (param.type == AppEventParamType::SHVECTOR) {
-        size = param.value.valueUnion.shs_.size();
-    } else if (param.type == AppEventParamType::IVECTOR) {
-        size = param.value.valueUnion.is_.size();
-    } else if (param.type == AppEventParamType::LVECTOR) {
-        size = param.value.valueUnion.ls_.size();
-    } else if (param.type == AppEventParamType::LLVECTOR) {
-        size = param.value.valueUnion.lls_.size();
-    } else if (param.type == AppEventParamType::FVECTOR) {
-        size = param.value.valueUnion.fs_.size();
-    } else if (param.type == AppEventParamType::DVECTOR) {
-        size = param.value.valueUnion.ds_.size();
-    } else if (param.type == AppEventParamType::STRVECTOR) {
-        size = param.value.valueUnion.strs_.size();
-    } else {
-        HiLog::Error(LABEL, "key=%{public}s unknown event param type.", param.name.c_str());
-        return false;
-    }
-
-    return (size > MAX_SIZE_OF_LIST_PARAM) ? false : true;
+    return false;
 }
 
-bool CheckStringLengthOfList(const std::vector<std::string>& strs)
+bool CheckStringLengthOfList(std::vector<std::string>& strs)
 {
     if (strs.empty()) {
         return true;
     }
 
-    for (auto str : strs) {
-        if (!CheckStrParamLength(str)) {
-            HiLog::Error(LABEL, "the string length of the list cannot exceed 256.");
+    for (auto it = strs.begin(); it != strs.end(); it++) {
+        if (!CheckStrParamLength(*it)) {
             return false;
         }
     }
@@ -163,7 +187,10 @@ bool CheckParamsNum(std::list<AppEventParam>& baseParams)
 
 int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
 {
-    HiLog::Debug(LABEL, "start to verify app event.");
+    if (HiAppEventConfig::GetInstance().GetDisable()) {
+        HiLog::Error(LABEL, "the HiAppEvent function is disabled.");
+        return ERROR_HIAPPEVENT_DISABLE;
+    }
 
     if (!CheckEventName(appEventPack->GetEventName())) {
         HiLog::Error(LABEL, "eventName=%{public}s is invalid.", appEventPack->GetEventName().c_str());
@@ -173,34 +200,36 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
     int verifyRes = HIAPPEVENT_VERIFY_SUCCESSFUL;
     std::list<AppEventParam>& baseParams = appEventPack->baseParams_;
     if (!CheckParamsNum(baseParams)) {
-        HiLog::Error(LABEL, "the number of params cannot exceed 32.");
+        HiLog::Warn(LABEL, "params that exceed 32 are discarded because the number of params cannot exceed 32.");
         verifyRes = ERROR_INVALID_PARAM_NUM;
     }
 
     for (auto it = baseParams.begin(); it != baseParams.end();) {
         if (!CheckParamName(it->name)) {
-            HiLog::Error(LABEL, "paramName=%{public}s is invalid.", it->name.c_str());
+            HiLog::Warn(LABEL, "param=%{public}s is discarded because the paramName is invalid.", it->name.c_str());
             verifyRes = ERROR_INVALID_PARAM_NAME;
             baseParams.erase(it++);
             continue;
         }
 
         if (it->type == AppEventParamType::STRING && !CheckStrParamLength(it->value.valueUnion.str_)) {
-            HiLog::Error(LABEL, "key=%{public}s string value length cannot exceed 256.", it->name.c_str());
+            HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds 8192.",
+                it->name.c_str());
             verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
             baseParams.erase(it++);
             continue;
         }
 
-        if (!CheckListValueSize(*it)) {
-            HiLog::Error(LABEL, "key=%{public}s list size cannot exceed 100.", it->name.c_str());
+        if (it->type > AppEventParamType::STRING && !CheckListValueSize(it->type, it->value.valueUnion)) {
+            HiLog::Warn(LABEL, "list param=%{public}s is truncated because the list size exceeds 100.",
+                it->name.c_str());
             verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
-            baseParams.erase(it++);
             continue;
         }
 
         if (it->type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(it->value.valueUnion.strs_)) {
-            HiLog::Error(LABEL, "key=%{public}s list string length cannot exceed 256.", it->name.c_str());
+            HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length of list exceeds 8192.",
+                it->name.c_str());
             verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
             baseParams.erase(it++);
             continue;
@@ -208,7 +237,6 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
         it++;
     }
 
-    HiLog::Debug(LABEL, "end the verification of app event.");
     return verifyRes;
 }
 } // HiviewDFX
