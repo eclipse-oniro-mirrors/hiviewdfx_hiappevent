@@ -29,10 +29,19 @@ ohos_shared_library("hiappevent") {
 
   deps = [
     "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base",
+    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
     "//foundation/ace/napi:ace_napi",
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [
+    "aafwk_standard:ability_manager",
+    "aafwk_standard:want",
+    "appexecfwk_standard:appexecfwk_base",
+    "appexecfwk_standard:appexecfwk_core",
+    "appexecfwk_standard:libeventhandler",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+  ]
 
   relative_install_dir = "module"
 

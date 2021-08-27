@@ -22,11 +22,10 @@ ohos_shared_library("libhiappevent_base") {
   configs = [ ":libhiappevent_source_config" ]
 
   sources = [
-    "app_event_dispatcher.cpp",
-    "app_event_handler.cpp",
     "hiappevent_base.cpp",
-    "hiappevent_mgr.cpp",
+    "hiappevent_config.cpp",
     "hiappevent_pack.cpp",
+    "hiappevent_read.cpp",
     "hiappevent_verify.cpp",
     "hiappevent_write.cpp",
   ]

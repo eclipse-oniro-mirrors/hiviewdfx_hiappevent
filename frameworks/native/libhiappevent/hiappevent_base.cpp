@@ -15,7 +15,9 @@
 
 #include "hiappevent_base.h"
 
+#include <cmath>
 #include <ctime>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <sys/time.h>
@@ -27,8 +29,10 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-static constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_HDL" };
-static constexpr int SEC_TO_MILLISEC = 1000;
+const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_base" };
+constexpr int SEC_TO_MILLISEC = 1000;
+constexpr int SECS_IN_MINUTE = 60;
+constexpr int MIN_TWO_DIGIT = 10;
 
 std::string TrimRightZero(const std::string& str)
 {
@@ -311,15 +315,33 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<const std:
     baseParams_.push_back(appEventParam);
 }
 
+void AppEventPack::AddTimeInfoToJsonString(std::stringstream& jsonStr) const
+{
+    struct timeval tv;
+    struct timezone tz;
+    if (gettimeofday(&tv, &tz) != 0) {
+        HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
+        return;
+    }
+
+    long long timeMillSec = tv.tv_sec * SEC_TO_MILLISEC + tv.tv_usec / SEC_TO_MILLISEC;
+    jsonStr << "\"" << "time_" << "\":" << std::to_string(timeMillSec) << ",";
+
+    std::string tzSymbol = (tz.tz_minuteswest <= 0) ? "+" : "-";
+    int tzMinutes = std::abs(tz.tz_minuteswest);
+    int tzHour = tzMinutes / SECS_IN_MINUTE;
+    std::string tzHourStr = (tzHour < MIN_TWO_DIGIT) ? ("0" + std::to_string(tzHour)) : std::to_string(tzHour);
+    int tzMin = tzMinutes % SECS_IN_MINUTE;
+    std::string tzMinStr = (tzMin < MIN_TWO_DIGIT) ? ("0" + std::to_string(tzMin)) : std::to_string(tzMin);
+    jsonStr << "\"" << "tz_" << "\":\"" << tzSymbol << tzHourStr << tzMinStr << "\",";
+}
+
 void AppEventPack::AddBaseInfoToJsonString(std::stringstream& jsonStr) const
 {
-    jsonStr << "\"" << "event_name_" << "\":" << "\"" << eventName_ << "\",";
-    jsonStr << "\"" << "event_type_" << "\":" <<  type_ << ",";
+    jsonStr << "\"" << "name_" << "\":" << "\"" << eventName_ << "\",";
+    jsonStr << "\"" << "type_" << "\":" <<  type_ << ",";
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long timeMillSec = tv.tv_sec * SEC_TO_MILLISEC + tv.tv_usec / SEC_TO_MILLISEC;
-    jsonStr << "\"" << "time_" << "\":" << timeMillSec << ",";
+    AddTimeInfoToJsonString(jsonStr);
 
     jsonStr << "\"" << "pid_" << "\":" << getpid() << ",";
     jsonStr << "\"" << "tid_" << "\":" << gettid() << ",";
@@ -516,7 +538,7 @@ std::string AppEventPack::GetJsonString() const
         if (it->type == AppEventParamType::BOOL) {
             jsonStr << ((it->value.valueUnion.b_ == true) ? "true" : "false") << ",";
         } else if (it->type == AppEventParamType::CHAR) {
-            jsonStr << "'" << it->value.valueUnion.c_ << "'" << ",";
+            jsonStr << "\"" << it->value.valueUnion.c_ << "\"" << ",";
         } else if (it->type == AppEventParamType::SHORT) {
             jsonStr << it->value.valueUnion.sh_ << ",";
         } else if (it->type == AppEventParamType::INTEGER) {
@@ -537,7 +559,7 @@ std::string AppEventPack::GetJsonString() const
     }
 
     jsonStr.seekp(-1, std::ios_base::end);
-    jsonStr << "}" << '\0';
+    jsonStr << "}" << std::endl;
     return jsonStr.str();
 }
 } // HiviewDFX

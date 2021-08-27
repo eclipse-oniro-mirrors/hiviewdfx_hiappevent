@@ -84,10 +84,10 @@ Js接口实例
 
     ```
     // callback方式
-    hiappevent.write("testEvent", hiappevent.EventType.FAULT, "intData", 100, "strData", "strValue", (err, value) => {
+    hiappevent.write("test_event", hiappevent.EventType.FAULT, "int_data", 100, "str_data", "strValue", (err, value) => {
         if (err) {
             // 事件写入异常：事件存在异常参数或者事件校验失败不执行写入
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
             return;
         }
     
@@ -96,20 +96,20 @@ Js接口实例
     });
     
     // Promise方式
-    hiappevent.write("testEvent", hiappevent.EventType.FAULT, "intData", 100, "strData", "strValue")
+    hiappevent.write("test_event", hiappevent.EventType.FAULT, "int_data", 100, "str_data", "strValue")
         .then((value) => {
             // 事件写入正常
             console.log(`success to write event: ${value}`);
         }).catch((err) => {
             // 事件写入异常：事件存在异常参数或者事件校验失败不执行写入
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
         });
     
     // callback方式
-    hiappevent.writeJson("testEvent", hiappevent.EventType.FAULT, {"intData":100, "strData":"strValue"}, (err, value) => {
+    hiappevent.writeJson("test_event", hiappevent.EventType.FAULT, {"int_data":100, "str_data":"strValue"}, (err, value) => {
         if (err) {
             // 事件写入异常：事件存在异常参数或者事件校验失败不执行写入
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
             return;
         }
     
@@ -118,13 +118,13 @@ Js接口实例
     });
     
     // Promise方式
-    hiappevent.writeJson("testEvent", hiappevent.EventType.FAULT, {"intData":100, "strData":"strValue"})
+    hiappevent.writeJson("test_event", hiappevent.EventType.FAULT, {"int_data":100, "str_data":"strValue"})
         .then((value) => {
             // 事件写入正常
             console.log(`success to write event: ${value}`);
         }).catch((err) => {
             // 事件写入异常：事件存在异常参数或者事件校验失败不执行写入
-            console.error(`failed to write event because ${err}`);
+            console.error(`failed to write event because ${err.code}`);
         });
     ```
 

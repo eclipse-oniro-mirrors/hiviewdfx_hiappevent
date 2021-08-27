@@ -31,13 +31,15 @@ namespace ErrorCode {
 const int HIAPPEVENT_VERIFY_SUCCESSFUL = 0;
 const int ERROR_INVALID_EVENT_NAME = -1;
 const int ERROR_INVALID_PARAM_TYPE_JS = -2;
+const int ERROR_INVALID_PARAM_NUM_JS = -3;
 const int ERROR_INVALID_PARAM_NAME = 1;
 const int ERROR_INVALID_PARAM_KEY_TYPE = 2;
 const int ERROR_INVALID_PARAM_VALUE_TYPE = 3;
 const int ERROR_INVALID_PARAM_VALUE_LENGTH = 4;
 const int ERROR_INVALID_PARAM_NUM = 5;
 const int ERROR_INVALID_LIST_PARAM_SIZE = 6;
-const int ERROR_INVALID_PARAM_VALUE_LIST_TYPE = 7;
+const int ERROR_INVALID_LIST_PARAM_TYPE = 7;
+const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
 }
 
@@ -183,6 +185,7 @@ public:
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 
 private:
+    void AddTimeInfoToJsonString(std::stringstream& jsonStr) const;
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<bool>& bs) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<char>& cs) const;
