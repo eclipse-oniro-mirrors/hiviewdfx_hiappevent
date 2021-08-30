@@ -24,6 +24,7 @@ ohos_shared_library("hiappevent") {
 
   sources = [
     "./src/native_hiappevent_helper.cpp",
+    "./src/native_hiappevent_init.cpp",
     "./src/native_hiappevent_js.cpp",
   ]
 

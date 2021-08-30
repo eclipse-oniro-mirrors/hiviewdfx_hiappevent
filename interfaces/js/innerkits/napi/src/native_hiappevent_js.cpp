@@ -22,6 +22,7 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "native_hiappevent_helper.h"
+#include "native_hiappevent_init.h"
 
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::ErrorCode;
@@ -29,11 +30,6 @@ using namespace OHOS::HiviewDFX::ErrorCode;
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI" };
 constexpr int CONFIGURE_PARAM_NUM = 2;
-
-const static int FAULT_EVENT_TYPE = 1;
-const static int STATISTIC_EVENT_TYPE = 2;
-const static int SECURITY_EVENT_TYPE = 3;
-const static int BEHAVIOR_EVENT_TYPE = 4;
 }
 
 static napi_value Write(napi_env env, napi_callback_info info)
@@ -169,46 +165,6 @@ static napi_value Configure(napi_env env, napi_callback_info info)
     return result;
 }
 
-static napi_value EventTypeClassConstructor(napi_env env, napi_callback_info info)
-{
-    size_t argc = 0;
-    napi_value argv = nullptr;
-    napi_value thisArg = nullptr;
-    void* data = nullptr;
-
-    napi_get_cb_info(env, info, &argc, &argv, &thisArg, &data);
-
-    napi_value global = 0;
-    napi_get_global(env, &global);
-
-    return thisArg;
-}
-
-static void EventTypeClassInit(napi_env env, napi_value exports)
-{
-    napi_value faultEvent = nullptr;
-    napi_create_int32(env, FAULT_EVENT_TYPE, &faultEvent);
-    napi_value statisticEvent = nullptr;
-    napi_create_int32(env, STATISTIC_EVENT_TYPE, &statisticEvent);
-    napi_value securityEvent = nullptr;
-    napi_create_int32(env, SECURITY_EVENT_TYPE, &securityEvent);
-    napi_value behaviorEvent = nullptr;
-    napi_create_int32(env, BEHAVIOR_EVENT_TYPE, &behaviorEvent);
-
-    napi_property_descriptor descriptors[] = {
-        DECLARE_NAPI_STATIC_PROPERTY("FAULT", faultEvent),
-        DECLARE_NAPI_STATIC_PROPERTY("STATISTIC", statisticEvent),
-        DECLARE_NAPI_STATIC_PROPERTY("SECURITY", securityEvent),
-        DECLARE_NAPI_STATIC_PROPERTY("BEHAVIOR", behaviorEvent)
-    };
-
-    napi_value result = nullptr;
-    napi_define_class(env, "EventType", NAPI_AUTO_LENGTH, EventTypeClassConstructor, nullptr,
-        sizeof(descriptors) / sizeof(*descriptors), descriptors, &result);
-
-    napi_set_named_property(env, exports, "EventType", result);
-}
-
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
@@ -225,7 +181,9 @@ static napi_value Init(napi_env env, napi_value exports)
         DECLARE_NAPI_STATIC_PROPERTY("MAX_STORAGE", maxStorage)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
-    EventTypeClassInit(env, exports);
+
+    // init EventType class, Event class and Param class
+    InitNapiClass(env, exports);
 
     return exports;
 }
