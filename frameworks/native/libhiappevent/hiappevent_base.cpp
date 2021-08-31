@@ -58,9 +58,9 @@ std::string GetTimeInfo()
 
     // Get system time zone
     time_t sysSec = tv.tv_sec;
-    struct tm* tm_local = localtime(&sysSec);
-    struct tm* tm_utc = gmtime(&sysSec);
-    time_t diffSec = mktime(tm_local) - mktime(tm_utc);
+    struct tm* tmLocal = localtime(&sysSec);
+    struct tm* tmUtc = gmtime(&sysSec);
+    time_t diffSec = mktime(tmLocal) - mktime(tmUtc);
     ss << "\"tz_\":\"" << ((diffSec < 0) ? "-" : "+");
 
     int tzHour = std::abs(diffSec) / SEC_TO_HOUR;
