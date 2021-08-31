@@ -43,7 +43,7 @@ napi_value ClassConstructor(napi_env env, napi_callback_info info)
     return thisArg;
 }
 
-void InitEventTypeMap(napi_env env, std::map<std::string, napi_value>& eventTypeMap)
+void InitEventTypeMap(napi_env env, std::map<const char*, napi_value>& eventTypeMap)
 {
     napi_value faultEvent = nullptr;
     napi_create_int32(env, FAULT_EVENT_TYPE, &faultEvent);
@@ -60,7 +60,7 @@ void InitEventTypeMap(napi_env env, std::map<std::string, napi_value>& eventType
     eventTypeMap["BEHAVIOR"] = behaviorEvent;
 }
 
-void InitEventMap(napi_env env, std::map<std::string, napi_value>& eventMap)
+void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
 {
     napi_value userLoginEvent = nullptr;
     napi_create_string_utf8(env, "hiappevent.user_login", NAPI_AUTO_LENGTH, &userLoginEvent);
@@ -74,7 +74,7 @@ void InitEventMap(napi_env env, std::map<std::string, napi_value>& eventMap)
     eventMap["DISTRIBUTED_SERVICE_START"] = dsStartEvent;
 }
 
-void InitParamMap(napi_env env, std::map<std::string, napi_value>& paramMap)
+void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
 {
     napi_value userIdParam = nullptr;
     napi_create_string_utf8(env, "user_id", NAPI_AUTO_LENGTH, &userIdParam);
@@ -90,7 +90,7 @@ void InitParamMap(napi_env env, std::map<std::string, napi_value>& paramMap)
 
 void InitConstClassByName(napi_env env, napi_value exports, std::string name)
 {
-    std::map<std::string, napi_value> propertyMap;
+    std::map<const char*, napi_value> propertyMap;
     if (name == EVENT_CLASS_NAME) {
         InitEventMap(env, propertyMap);
     } else if (name == PARAM_CLASS_NAME) {
@@ -104,7 +104,7 @@ void InitConstClassByName(napi_env env, napi_value exports, std::string name)
     int i = 0;
     napi_property_descriptor descriptors[propertyMap.size()];
     for (auto it : propertyMap) {
-        descriptors[i++] = DECLARE_NAPI_STATIC_PROPERTY(it.first.c_str(), it.second);
+        descriptors[i++] = DECLARE_NAPI_STATIC_PROPERTY(it.first, it.second);
     }
 
     napi_value result = nullptr;
