@@ -17,6 +17,7 @@
 
 #include <cmath>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -30,9 +31,8 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_base" };
-constexpr int SEC_TO_MILLISEC = 1000;
-constexpr int SECS_IN_MINUTE = 60;
-constexpr int MIN_TWO_DIGIT = 10;
+constexpr int SEC_TO_HOUR = 3600;
+constexpr int SEC_TO_MIN = 60;
 
 std::string TrimRightZero(const std::string& str)
 {
@@ -42,6 +42,37 @@ std::string TrimRightZero(const std::string& str)
     }
 
     return (str[endIndex] == '.') ? str.substr(0, endIndex) : str.substr(0, endIndex + 1);
+}
+
+std::string GetTimeInfo()
+{
+    // get system timestamp
+    struct timeval tv;
+    if (gettimeofday(&tv, NULL) != 0) {
+        HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
+        return "";
+    }
+    long long timeMillSec = tv.tv_sec * 1000 + tv.tv_usec / 1000; // one second equals 1000 milliseconds
+    std::stringstream ss;
+    ss << "\"" << "time_" << "\":" << std::to_string(timeMillSec) << ",";
+
+    // Get system time zone
+    time_t sysSec = tv.tv_sec;
+    struct tm* tmLocal = localtime(&sysSec);
+    struct tm* tmUtc = gmtime(&sysSec);
+    time_t diffSec = mktime(tmLocal) - mktime(tmUtc);
+    ss << "\"tz_\":\"" << ((diffSec < 0) ? "-" : "+");
+
+    int tzHour = std::abs(diffSec) / SEC_TO_HOUR;
+    if (tzHour > 12) { // max time zone is 12
+        HiLog::Error(LABEL, "failed to get hours for time zone, set to 0.");
+        tzHour = 0;
+    }
+    int tzMin = (std::abs(diffSec) % SEC_TO_HOUR) / SEC_TO_MIN;
+    ss << std::setw(2) << std::setfill('0') << tzHour; // the number of digits in the hour is 2
+    ss << std::setw(2) << std::setfill('0') << tzMin << "\","; // the number of digits in the min is 2
+
+    return ss.str();
 }
 }
 
@@ -315,34 +346,11 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<const std:
     baseParams_.push_back(appEventParam);
 }
 
-void AppEventPack::AddTimeInfoToJsonString(std::stringstream& jsonStr) const
-{
-    struct timeval tv;
-    struct timezone tz;
-    if (gettimeofday(&tv, &tz) != 0) {
-        HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
-        return;
-    }
-
-    long long timeMillSec = tv.tv_sec * SEC_TO_MILLISEC + tv.tv_usec / SEC_TO_MILLISEC;
-    jsonStr << "\"" << "time_" << "\":" << std::to_string(timeMillSec) << ",";
-
-    std::string tzSymbol = (tz.tz_minuteswest <= 0) ? "+" : "-";
-    int tzMinutes = std::abs(tz.tz_minuteswest);
-    int tzHour = tzMinutes / SECS_IN_MINUTE;
-    std::string tzHourStr = (tzHour < MIN_TWO_DIGIT) ? ("0" + std::to_string(tzHour)) : std::to_string(tzHour);
-    int tzMin = tzMinutes % SECS_IN_MINUTE;
-    std::string tzMinStr = (tzMin < MIN_TWO_DIGIT) ? ("0" + std::to_string(tzMin)) : std::to_string(tzMin);
-    jsonStr << "\"" << "tz_" << "\":\"" << tzSymbol << tzHourStr << tzMinStr << "\",";
-}
-
 void AppEventPack::AddBaseInfoToJsonString(std::stringstream& jsonStr) const
 {
     jsonStr << "\"" << "name_" << "\":" << "\"" << eventName_ << "\",";
     jsonStr << "\"" << "type_" << "\":" <<  type_ << ",";
-
-    AddTimeInfoToJsonString(jsonStr);
-
+    jsonStr << GetTimeInfo();
     jsonStr << "\"" << "pid_" << "\":" << getpid() << ",";
     jsonStr << "\"" << "tid_" << "\":" << gettid() << ",";
 }

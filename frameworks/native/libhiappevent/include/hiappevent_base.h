@@ -185,7 +185,6 @@ public:
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 
 private:
-    void AddTimeInfoToJsonString(std::stringstream& jsonStr) const;
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<bool>& bs) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<char>& cs) const;

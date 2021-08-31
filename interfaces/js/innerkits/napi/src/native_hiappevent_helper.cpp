@@ -32,8 +32,8 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI" };
-constexpr static int CALLBACK_FUNC_PARAM_NUM = 2;
-constexpr static int NAPI_VALUE_STRING_LEN = 10240;
+constexpr int CALLBACK_FUNC_PARAM_NUM = 2;
+constexpr int NAPI_VALUE_STRING_LEN = 10240;
 bool g_isSetDirFlag = false;
 
 void AddBoolParam2EventPack(napi_env env, const std::string &key, const napi_value param,
