@@ -30,7 +30,6 @@ constexpr int NAPI_VALUE_STRING_LEN = 10240;
 constexpr int EVENT_NAME_INDEX = 0;
 constexpr int EVENT_TYPE_INDEX = 1;
 constexpr int JSON_OBJECT_INDEX = 2;
-constexpr int WRITE_FUNC_PARAM_MIN_NUM = 3;
 constexpr int SUCCESS_FLAG = 0;
 const std::string INVALID_KEY_TYPE_ARR[] = {
     "[object Object]",
@@ -41,7 +40,7 @@ const std::string INVALID_KEY_TYPE_ARR[] = {
 
 int CheckWriteParamsType(const napi_env env, const napi_value params[], int paramNum)
 {
-    if (paramNum < WRITE_FUNC_PARAM_MIN_NUM) {
+    if (paramNum < 3) { // the min number of params for the write function is 3
         HiLog::Error(LABEL, "invalid number=%{public}d of params.", paramNum);
         return ERROR_INVALID_PARAM_NUM_JS;
     }
@@ -392,7 +391,6 @@ std::shared_ptr<AppEventPack> BuildAppEventPackFromNapi(const napi_env env, cons
 
     // check the number and type of parameters
     result = CheckWriteParamsType(env, params, paramNum);
-
     // if the check is successful, start building the object
     if (result == SUCCESS_FLAG) {
         appEventPack = CreateEventPackFromNapi(env, params[EVENT_NAME_INDEX], params[EVENT_TYPE_INDEX]);
