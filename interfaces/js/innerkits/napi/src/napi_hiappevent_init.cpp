@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "native_hiappevent_init.h"
+#include "napi_hiappevent_init.h"
 
 #include <map>
 #include <string>

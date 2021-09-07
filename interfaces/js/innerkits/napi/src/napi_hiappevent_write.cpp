@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "native_hiappevent_write.h"
+#include "napi_hiappevent_write.h"
 
 #include "hiappevent_write.h"
 
