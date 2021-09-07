@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <mutex>
 #include <regex>
+#include <sstream>
 #include <string>
 
 #include "hiappevent_base.h"
@@ -38,6 +39,29 @@ constexpr int SHORT_STORAGE_UNIT_LEN = 1;
 constexpr int LONG_STORAGE_UNIT_LEN = 2;
 
 std::mutex g_mutex;
+
+std::string TransUpperToUnderscoreAndLower(const std::string& str)
+{
+    if (str.empty()) {
+        return "";
+    }
+
+    std::stringstream ss;
+    for (size_t i = 0; i < str.size(); i++) {
+        char tmp = str[i];
+        if (tmp < 'A' || tmp > 'Z') {
+            ss << tmp;
+            continue;
+        }
+        if (i != 0) { // prevent string from starting with an underscore
+            ss << "_";
+        }
+        tmp += 32; // 32 means upper case to lower case
+        ss << tmp;
+    }
+
+    return ss.str();
+}
 }
 
 HiAppEventConfig& HiAppEventConfig::GetInstance()
@@ -48,7 +72,10 @@ HiAppEventConfig& HiAppEventConfig::GetInstance()
 
 bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
 {
+    // trans uppercase to underscore and lowercase
+    name = TransUpperToUnderscoreAndLower(name);
     HiLog::Debug(LABEL, "start to configure, name=%{public}s, value=%{public}s.", name.c_str(), value.c_str());
+
     if (name == "") {
         HiLog::Error(LABEL, "item name can not be empty.");
         return false;

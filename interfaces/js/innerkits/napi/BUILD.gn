@@ -23,9 +23,11 @@ ohos_shared_library("hiappevent") {
   configs = [ "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_source_config" ]
 
   sources = [
-    "./src/native_hiappevent_helper.cpp",
+    "./src/native_hiappevent_build.cpp",
+    "./src/native_hiappevent_config.cpp",
     "./src/native_hiappevent_init.cpp",
     "./src/native_hiappevent_js.cpp",
+    "./src/native_hiappevent_write.cpp",
   ]
 
   deps = [
