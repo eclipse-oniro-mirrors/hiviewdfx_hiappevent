@@ -26,7 +26,6 @@ namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI_Config" };
 constexpr int NAPI_VALUE_STRING_LEN = 100;
-bool g_isSetDirFlag = false;
 
 std::string GetStringFromNapiValue(const napi_env env, const napi_value value)
 {
@@ -122,26 +121,24 @@ bool ConfigureFromNapi(const napi_env env, const napi_value configObj)
 
 void SetStorageDirFromNapi(const napi_env env, const napi_callback_info info)
 {
-    if (g_isSetDirFlag) {
+    static bool isSetDir = false;
+    if (isSetDir) {
         return;
     }
     HiLog::Debug(LABEL, "start to init storage path.");
-
     napi_value global = nullptr;
     napi_get_global(env, &global);
     napi_value abilityObj = nullptr;
     napi_get_named_property(env, global, "ability", &abilityObj);
     AppExecFwk::Ability* ability = nullptr;
     napi_get_value_external(env, abilityObj, (void**)&ability);
-
     if (ability == nullptr) {
         HiLog::Error(LABEL, "ability is null, stop setting the storage dir.");
         return;
     }
-
     std::string dir = ability->GetFilesDir();
     HiAppEventConfig::GetInstance().SetStorageDir(dir);
-    g_isSetDirFlag = true;
+    isSetDir = true;
 }
 }
 }
