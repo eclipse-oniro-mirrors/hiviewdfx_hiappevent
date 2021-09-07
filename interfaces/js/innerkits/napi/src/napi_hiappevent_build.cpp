@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "native_hiappevent_build.h"
+#include "napi_hiappevent_build.h"
 
 #include "hiappevent_base.h"
 #include "hiappevent_pack.h"

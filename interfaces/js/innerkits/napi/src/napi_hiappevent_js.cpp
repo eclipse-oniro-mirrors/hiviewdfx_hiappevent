@@ -16,10 +16,10 @@
 #include "hilog/log.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
-#include "native_hiappevent_build.h"
-#include "native_hiappevent_config.h"
-#include "native_hiappevent_init.h"
-#include "native_hiappevent_write.h"
+#include "napi_hiappevent_build.h"
+#include "napi_hiappevent_config.h"
+#include "napi_hiappevent_init.h"
+#include "napi_hiappevent_write.h"
 
 using namespace OHOS::HiviewDFX;
 
