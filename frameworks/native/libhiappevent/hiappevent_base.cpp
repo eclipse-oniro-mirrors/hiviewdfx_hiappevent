@@ -85,6 +85,10 @@ std::string GetTimeInfo()
 
 void InitValueByBaseType(AppEventParamValue* value, const AppEventParamValue& other)
 {
+    if (value == nullptr) {
+        return;
+    }
+
     switch (other.type) {
         case AppEventParamType::BOOL:
             value->valueUnion.b_ = other.valueUnion.b_;
@@ -117,6 +121,10 @@ void InitValueByBaseType(AppEventParamValue* value, const AppEventParamValue& ot
 
 void InitValueByReferType(AppEventParamValue* value, const AppEventParamValue& other)
 {
+    if (value == nullptr) {
+        return;
+    }
+
     switch (other.type) {
         case AppEventParamType::STRING:
             new (&value->valueUnion.str_) auto(other.valueUnion.str_);
