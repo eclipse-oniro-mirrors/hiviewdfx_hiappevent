@@ -159,7 +159,7 @@ string LogAssistant::TranslateLongToFormattedTimeStamp(TimeStampVarType timeStam
         return string();
     }
     char formatTz[FORMAT_TZ_SIZE] = {0};
-    strftime(formatTz, sizeof(formatTz), DATE_FORMAT, localtime(&ftt));
+    strftime(formatTz, sizeof(formatTz), DATE_FORMAT, ptm);
     return string(formatTz);
 }
 

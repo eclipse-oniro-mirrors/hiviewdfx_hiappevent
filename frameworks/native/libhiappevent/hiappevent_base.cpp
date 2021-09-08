@@ -59,7 +59,15 @@ std::string GetTimeInfo()
     // Get system time zone
     time_t sysSec = tv.tv_sec;
     struct tm* tmLocal = localtime(&sysSec);
+    if (tmLocal == nullptr) {
+        HiLog::Error(LABEL, "failed to get local time.");
+        return ss.str();
+    }
     struct tm* tmUtc = gmtime(&sysSec);
+    if (tmUtc == nullptr) {
+        HiLog::Error(LABEL, "failed to get GMT time.");
+        return ss.str();
+    }
     time_t diffSec = mktime(tmLocal) - mktime(tmUtc);
     ss << "\"tz_\":\"" << ((diffSec < 0) ? "-" : "+");
 
@@ -382,9 +390,9 @@ void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::
     }
 
     for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << "'" << cs[i] << "'"  << ",";
+        jsonStr << "\"" << cs[i] << "\""  << ",";
     }
-    jsonStr << "'" << cs[len - 1] << "'" << "],";
+    jsonStr << "\"" << cs[len - 1] << "\"" << "],";
 }
 
 void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<short>& shs) const
