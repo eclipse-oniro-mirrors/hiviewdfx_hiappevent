@@ -52,12 +52,15 @@ static napi_value Write(napi_env env, napi_callback_info info)
     asyncContext->result = result;
 
     // set callback function if it exists
-    if (paramNum >= WRITE_FUNC_MAX_PARAM_NUM) {
+    if (paramNum == WRITE_FUNC_MAX_PARAM_NUM) {
         napi_valuetype lastParamType;
         napi_typeof(env, params[paramNum - 1], &lastParamType);
         if (lastParamType == napi_valuetype::napi_function) {
             napi_create_reference(env, params[paramNum - 1], 1, &asyncContext->callback);
         }
+    } else if (paramNum > WRITE_FUNC_MAX_PARAM_NUM) {
+        HiLog::Error(LABEL, "invalid number=%{public}d of params.", paramNum);
+        asyncContext->result = ErrorCode::ERROR_INVALID_PARAM_NUM_JS;
     }
 
     // set promise object if callback function is null
