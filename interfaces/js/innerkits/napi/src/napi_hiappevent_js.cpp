@@ -59,7 +59,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
             napi_create_reference(env, params[paramNum - 1], 1, &asyncContext->callback);
         }
     } else if (paramNum > WRITE_FUNC_MAX_PARAM_NUM) {
-        HiLog::Error(LABEL, "invalid number=%{public}d of params.", paramNum);
+        HiLog::Error(LABEL, "invalid number=%{public}d of params.", (int)paramNum);
         asyncContext->result = ErrorCode::ERROR_INVALID_PARAM_NUM_JS;
     }
 
