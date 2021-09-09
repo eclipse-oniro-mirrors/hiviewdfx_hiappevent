@@ -59,7 +59,15 @@ std::string GetTimeInfo()
     // Get system time zone
     time_t sysSec = tv.tv_sec;
     struct tm* tmLocal = localtime(&sysSec);
+    if (tmLocal == nullptr) {
+        HiLog::Error(LABEL, "failed to get local time.");
+        return ss.str();
+    }
     struct tm* tmUtc = gmtime(&sysSec);
+    if (tmUtc == nullptr) {
+        HiLog::Error(LABEL, "failed to get GMT time.");
+        return ss.str();
+    }
     time_t diffSec = mktime(tmLocal) - mktime(tmUtc);
     ss << "\"tz_\":\"" << ((diffSec < 0) ? "-" : "+");
 
@@ -74,6 +82,84 @@ std::string GetTimeInfo()
 
     return ss.str();
 }
+
+void InitValueByBaseType(AppEventParamValue* value, const AppEventParamValue& other)
+{
+    if (value == nullptr) {
+        return;
+    }
+
+    switch (other.type) {
+        case AppEventParamType::BOOL:
+            value->valueUnion.b_ = other.valueUnion.b_;
+            break;
+        case AppEventParamType::CHAR:
+            value->valueUnion.c_ = other.valueUnion.c_;
+            break;
+        case AppEventParamType::SHORT:
+            value->valueUnion.sh_ = other.valueUnion.sh_;
+            break;
+        case AppEventParamType::INTEGER:
+            value->valueUnion.i_ = other.valueUnion.i_;
+            break;
+        case AppEventParamType::LONG:
+            value->valueUnion.l_ = other.valueUnion.l_;
+            break;
+        case AppEventParamType::LONGLONG:
+            value->valueUnion.ll_ = other.valueUnion.ll_;
+            break;
+        case AppEventParamType::FLOAT:
+            value->valueUnion.f_ = other.valueUnion.f_;
+            break;
+        case AppEventParamType::DOUBLE:
+            value->valueUnion.d_ = other.valueUnion.d_;
+            break;
+        default:
+            break;
+    }
+}
+
+void InitValueByReferType(AppEventParamValue* value, const AppEventParamValue& other)
+{
+    if (value == nullptr) {
+        return;
+    }
+
+    switch (other.type) {
+        case AppEventParamType::STRING:
+            new (&value->valueUnion.str_) auto(other.valueUnion.str_);
+            break;
+        case AppEventParamType::BVECTOR:
+            new (&value->valueUnion.bs_) auto(other.valueUnion.bs_);
+            break;
+        case AppEventParamType::CVECTOR:
+            new (&value->valueUnion.cs_) auto(other.valueUnion.cs_);
+            break;
+        case AppEventParamType::SHVECTOR:
+            new (&value->valueUnion.shs_) auto(other.valueUnion.shs_);
+            break;
+        case AppEventParamType::IVECTOR:
+            new (&value->valueUnion.is_) auto(other.valueUnion.is_);
+            break;
+        case AppEventParamType::LVECTOR:
+            new (&value->valueUnion.ls_) auto(other.valueUnion.ls_);
+            break;
+        case AppEventParamType::LLVECTOR:
+            new (&value->valueUnion.lls_) auto(other.valueUnion.lls_);
+            break;
+        case AppEventParamType::FVECTOR:
+            new (&value->valueUnion.fs_) auto(other.valueUnion.fs_);
+            break;
+        case AppEventParamType::DVECTOR:
+            new (&value->valueUnion.ds_) auto(other.valueUnion.ds_);
+            break;
+        case AppEventParamType::STRVECTOR:
+            new (&value->valueUnion.strs_) auto(other.valueUnion.strs_);
+            break;
+        default:
+            break;
+    }
+}
 }
 
 AppEventParamValue::AppEventParamValue(AppEventParamType t) : type(t), valueUnion(t)
@@ -81,63 +167,10 @@ AppEventParamValue::AppEventParamValue(AppEventParamType t) : type(t), valueUnio
 
 AppEventParamValue::AppEventParamValue(const AppEventParamValue& other) : type(other.type)
 {
-    switch (other.type) {
-        case AppEventParamType::BOOL:
-            valueUnion.b_ = other.valueUnion.b_;
-            break;
-        case AppEventParamType::CHAR:
-            valueUnion.c_ = other.valueUnion.c_;
-            break;
-        case AppEventParamType::SHORT:
-            valueUnion.sh_ = other.valueUnion.sh_;
-            break;
-        case AppEventParamType::INTEGER:
-            valueUnion.i_ = other.valueUnion.i_;
-            break;
-        case AppEventParamType::LONG:
-            valueUnion.l_ = other.valueUnion.l_;
-            break;
-        case AppEventParamType::LONGLONG:
-            valueUnion.ll_ = other.valueUnion.ll_;
-            break;
-        case AppEventParamType::FLOAT:
-            valueUnion.f_ = other.valueUnion.f_;
-            break;
-        case AppEventParamType::DOUBLE:
-            valueUnion.d_ = other.valueUnion.d_;
-            break;
-        case AppEventParamType::STRING:
-            new (&valueUnion.str_) auto(other.valueUnion.str_);
-            break;
-        case AppEventParamType::BVECTOR:
-            new (&valueUnion.bs_) auto(other.valueUnion.bs_);
-            break;
-        case AppEventParamType::CVECTOR:
-            new (&valueUnion.cs_) auto(other.valueUnion.cs_);
-            break;
-        case AppEventParamType::SHVECTOR:
-            new (&valueUnion.shs_) auto(other.valueUnion.shs_);
-            break;
-        case AppEventParamType::IVECTOR:
-            new (&valueUnion.is_) auto(other.valueUnion.is_);
-            break;
-        case AppEventParamType::LVECTOR:
-            new (&valueUnion.ls_) auto(other.valueUnion.ls_);
-            break;
-        case AppEventParamType::LLVECTOR:
-            new (&valueUnion.lls_) auto(other.valueUnion.lls_);
-            break;
-        case AppEventParamType::FVECTOR:
-            new (&valueUnion.fs_) auto(other.valueUnion.fs_);
-            break;
-        case AppEventParamType::DVECTOR:
-            new (&valueUnion.ds_) auto(other.valueUnion.ds_);
-            break;
-        case AppEventParamType::STRVECTOR:
-            new (&valueUnion.strs_) auto(other.valueUnion.strs_);
-            break;
-        default:
-            break;
+    if (other.type < AppEventParamType::STRING) {
+        InitValueByBaseType(this, other);
+    } else {
+        InitValueByReferType(this, other);
     }
 }
 
@@ -382,9 +415,9 @@ void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::
     }
 
     for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << "'" << cs[i] << "'"  << ",";
+        jsonStr << "\"" << cs[i] << "\""  << ",";
     }
-    jsonStr << "'" << cs[len - 1] << "'" << "],";
+    jsonStr << "\"" << cs[len - 1] << "\"" << "],";
 }
 
 void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<short>& shs) const
