@@ -13,7 +13,8 @@
 
 import("//build/test.gni")
 
-native_hiappevent_path = "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent"
+native_hiappevent_path =
+    "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent"
 native_module_output_path = "hiappevent/native"
 
 config("hiappevent_config_test") {
@@ -30,9 +31,7 @@ ohos_unittest("HiAppEventNativeTest") {
 
   configs = [ ":hiappevent_config_test" ]
 
-  sources = [
-    "unittest/common/native/hiappevent_native_test.cpp",
-  ]
+  sources = [ "unittest/common/native/hiappevent_native_test.cpp" ]
 
   deps = [
     "$native_hiappevent_path:libhiappevent_base",
@@ -41,6 +40,6 @@ ohos_unittest("HiAppEventNativeTest") {
 }
 
 group("unittest") {
-    testonly = true
-    deps = [ ":HiAppEventNativeTest" ]
+  testonly = true
+  deps = [ ":HiAppEventNativeTest" ]
 }
