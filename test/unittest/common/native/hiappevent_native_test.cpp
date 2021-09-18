@@ -30,7 +30,7 @@ using namespace OHOS::HiviewDFX;
 namespace {
     const std::string TEST_EVENT_NAME = "test_event";
     const std::string TEST_KEY_NAME = "test_key";
-    constexpr int TEST_EVENT_TYPE = 1;
+    constexpr int TEST_EVENT_TYPE = 2;
 }
 
 /**
