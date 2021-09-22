@@ -26,6 +26,7 @@ HiAppEvent为OpenHarmony应用提供事件打点接口，用于帮助应用记�
 │   └── js                   # js接口
 │       └── innerkits        # js接口内部实现代码
 │           └── napi         # 基于napi实现的js接口代码
+├── test                     # 测试用例代码
 ```
 
 ## 编译构建<a name="section137768191623"></a>
@@ -36,7 +37,7 @@ HiAppEvent为OpenHarmony应用提供事件打点接口，用于帮助应用记�
 
 ### 接口说明<a name="section1551164914237"></a>
 
-**表 1**  Js打点接口介绍
+**表 1**  JS 打点接口介绍
 
 <a name="table107919166559"></a>
 <table><thead align="left"><tr id="row1880201655520"><th class="cellrowborder" valign="top" width="15.981598159815983%" id="mcps1.2.4.1.1"><p id="p5801164558"><a name="p5801164558"></a><a name="p5801164558"></a>模块</p>
@@ -66,10 +67,56 @@ HiAppEvent为OpenHarmony应用提供事件打点接口，用于帮助应用记�
 </tr>
 </tbody>
 </table>
+**表 2**  JS 事件类型枚举——EventType
+
+| 类型      | 描述           |
+| --------- | -------------- |
+| FAULT     | 故障类型事件。 |
+| STATISTIC | 统计类型事件。 |
+| SECURITY  | 安全类型事件。 |
+| BEHAVIOR  | 行为类型事件。 |
+
+**表 3**  JS 打点配置接口介绍
+
+<table>
+    <tr>
+        <td>模块</td>
+        <td>方法</td>
+        <td>描述</td>
+    </tr>
+    <tr>
+        <td>hiAppEvent</td>
+        <td>configure(config: ConfigOption): boolean</td>
+         <td>接口功能：应用事件打点配置方法，可以对打点功能进行自定义配置。<br/>输入参数：<ul><li>config：应用事件打点配置项对象。</li></ul>返回值：boolean，true表示配置成功，false表示配置失败。</td>
+    </tr>
+</table>
+
+**表 4**  JS 应用打点配置选项——ConfigOption
+
+| 参数名     | 类型    | 必填 | 说明                                                         |
+| ---------- | ------- | ---- | ------------------------------------------------------------ |
+| disable    | boolean | 否   | 应用打点功能开关。配置值为true表示关闭打点功能，false表示不关闭打点功能。 |
+| maxStorage | string  | 否   | 打点数据本地存储文件所在目录的配额大小，默认限额为“10M”。所在目录大小超出限额后会对目录进行清理操作，会按从旧到新的顺序逐个删除打点数据文件，直到目录大小不超出限额时停止。 |
+
+**表 5** JS 预定义事件名称常量接口——Event
+
+| 常量名                    | 类型   | 描述                 |
+| ------------------------- | ------ | -------------------- |
+| USER_LOGIN                | string | 用户登录事件。       |
+| USER_LOGOUT               | string | 用户登出事件。       |
+| DISTRIBUTED_SERVICE_START | string | 分布式服务启动事件。 |
+
+**表 6**  JS 预定义参数名称常量接口——Param
+
+| 常量名                          | 类型   | 描述               |
+| ------------------------------- | ------ | ------------------ |
+| USER_ID                         | string | 用户自定义ID。     |
+| DISTRIBUTED_SERVICE_NAME        | string | 分布式服务名称。   |
+| DISTRIBUTED_SERVICE_INSTANCE_ID | string | 分布式服务实例ID。 |
 
 ### 使用说明<a name="section129654513264"></a>
 
-Js接口实例
+JS接口实例
 
 1.  源代码开发
 
@@ -105,6 +152,19 @@ Js接口实例
         });
     ```
 
+3. 应用对打点功能进行自定义配置
+
+    ```
+    // 配置应用事件打点功能开关
+    hiAppEvent.configure({
+        disable: true
+    })
+
+    // 配置事件文件目录存储限额大小
+    hiAppEvent.configure({
+        maxStorage: '100M'
+    })
+    ```
 
 ## 相关仓<a name="section1371113476307"></a>
 
