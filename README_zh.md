@@ -67,6 +67,7 @@ HiAppEvent为OpenHarmony应用提供事件打点接口，用于帮助应用记�
 </tr>
 </tbody>
 </table>
+
 **表 2**  JS 事件类型枚举——EventType
 
 | 类型      | 描述           |
