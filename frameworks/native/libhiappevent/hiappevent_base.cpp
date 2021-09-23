@@ -390,9 +390,9 @@ void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::
     }
 
     for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << "'" << cs[i] << "'"  << ",";
+        jsonStr << "\"" << cs[i] << "\""  << ",";
     }
-    jsonStr << "'" << cs[len - 1] << "'" << "],";
+    jsonStr << "\"" << cs[len - 1] << "\"" << "],";
 }
 
 void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<short>& shs) const
