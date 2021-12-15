@@ -67,6 +67,53 @@ The minimum version requirements are Clang 8.0.0 and C++11.
 </tbody>
 </table>
 
+**Table 2**  JS event types (EventType)
+
+| Type| Description|
+| --------- | -------------- |
+| FAULT     | Fault event|
+| STATISTIC | Statistical event|
+| SECURITY  | Security event|
+| BEHAVIOR  | Behavior event|
+
+**Table 3**  JS logging configuration API
+
+<table>
+    <tr>
+        <td><strong>Module</strong></td>
+        <td><strong>Method</strong></td>
+        <td><strong>Description</strong></td>
+    </tr>
+    <tr>
+        <td>hiAppEvent</td>
+        <td>configure(config: ConfigOption): boolean</td>
+         <td>Sets the configuration options for application event logging. <br/>Input parameters:<ul><li><b>config</b>: configuration options for application event dotting. </li></ul>Return values: The value <b>true</b> indicates the operation is successful and value <b>false</b> indicates the opposite.</td>
+    </tr>
+</table>
+
+**Table 4** JS logging configuration options (ConfigOption)
+
+| Name| Type| Mandatory| Description|
+| ---------- | ------- | ---- | ------------------------------------------------------------ |
+| disable    | boolean | No| Application event logging switch. The value <b>true</b> means to disable the application event logging function, and the value <b>false</b> means the opposite.|
+| maxStorage | string  | No| Maximum size of the event file storage directory. The default value is <b>10M</b>. If the specified size is exceeded, the oldest event logging files in the storage directory will be deleted to free up space.|
+
+**Table 5** JS predefined event name constants (Event)
+
+| Constant| Type| Description|
+| ------------------------- | ------ | -------------------- |
+| USER_LOGIN                | string | User login event.|
+| USER_LOGOUT               | string | User logout event.|
+| DISTRIBUTED_SERVICE_START | string | Distributed service startup event.|
+
+**Table 6** JS predefined parameter name constants (Param)
+
+| Constant| Type| Description|
+| ------------------------------- | ------ | ------------------ |
+| USER_ID                         | string | Custom user ID.|
+| DISTRIBUTED_SERVICE_NAME        | string | Distributed service name.|
+| DISTRIBUTED_SERVICE_INSTANCE_ID | string | Distributed service instance ID.|
+
 ### Usage<a name="section129654513264"></a>
 
 **JS**
@@ -79,7 +126,7 @@ The minimum version requirements are Clang 8.0.0 and C++11.
     import hiAppEvent from '@ohos.hiAppEvent'
     ```
 
-2.  Enable event logging for the application.
+2.  Enable the application event logging function.
 
     ```
     // Callback mode
@@ -105,6 +152,19 @@ The minimum version requirements are Clang 8.0.0 and C++11.
         });
     ```
 
+3. Customize the application event logging function.
+
+    ```
+    // Set the application event logging switch.
+    hiAppEvent.configure({
+        disable: true
+    })
+
+    // Set the maximum size of the directory that stores the event logging files. 
+    hiAppEvent.configure({
+        maxStorage: '100M'
+    })
+    ```
 
 ## Repositories Involved<a name="section1371113476307"></a>
 
@@ -125,4 +185,3 @@ The minimum version requirements are Clang 8.0.0 and C++11.
 [hiviewdfx\_hievent\_lite](https://gitee.com/openharmony/hiviewdfx_hievent_lite/blob/master/README.md)
 
 [hiviewdfx\_hiview\_lite](https://gitee.com/openharmony/hiviewdfx_hiview_lite/blob/master/README.md)
-
