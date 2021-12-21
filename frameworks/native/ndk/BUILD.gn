@@ -18,7 +18,7 @@ hiappevent_native_path = "//base/hiviewdfx/hiappevent/frameworks/native"
 ohos_shared_library("hiappevent_ndk") {
   include_dirs = [
     "$hiappevent_native_path/libhiappevent/include",
-    "//base/hiviewdfx/hiappevent/interfaces/native/kits/include"
+    "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
   ]
 
   sources = [ "hiappevent_ndk.c" ]
