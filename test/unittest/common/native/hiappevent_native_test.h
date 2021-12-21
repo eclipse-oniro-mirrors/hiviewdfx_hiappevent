@@ -19,6 +19,8 @@
 
 class HiAppEventNativeTest : public testing::Test {
 public:
+    static void SetUpTestCase();
+    static void TearDownTestCase() {};
     void SetUp() {};
     void TearDown() {};
 };

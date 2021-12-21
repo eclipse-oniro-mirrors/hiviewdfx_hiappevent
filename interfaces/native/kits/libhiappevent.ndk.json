@@ -1,0 +1,62 @@
+[
+    {
+        "name": "HiAppEventWrite"
+    },
+    {
+        "name": "HiAppEventConfigure"
+    },
+    {
+        "name": "AddBoolParam"
+    },
+    {
+        "name": "AddBoolArrayParam"
+    },
+    {
+        "name": "AddInt8Param"
+    },
+    {
+        "name": "AddInt8ArrayParam"
+    },
+    {
+        "name": "AddInt16Param"
+    },
+    {
+        "name": "AddInt16ArrayParam"
+    },
+    {
+        "name": "AddInt32Param"
+    },
+    {
+        "name": "AddInt32ArrayParam"
+    },
+    {
+        "name": "AddInt64Param"
+    },
+    {
+        "name": "AddInt64ArrayParam"
+    },
+    {
+        "name": "AddFloatParam"
+    },
+    {
+        "name": "AddFloatArrayParam"
+    },
+    {
+        "name": "AddDoubleParam"
+    },
+    {
+        "name": "AddDoubleArrayParam"
+    },
+    {
+        "name": "AddStringParam"
+    },
+    {
+        "name": "AddStringArrayParam"
+    },
+    {
+        "name": "CreateParamList"
+    },
+    {
+        "name": "DestroyParamList"
+    }
+]

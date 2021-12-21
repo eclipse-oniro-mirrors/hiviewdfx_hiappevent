@@ -160,6 +160,7 @@ public:
 public:
     void AddParam(const std::string& key);
     void AddParam(const std::string& key, bool b);
+    void AddParam(const std::string& key, int8_t num);
     void AddParam(const std::string& key, char c);
     void AddParam(const std::string& key, short s);
     void AddParam(const std::string& key, int i);
@@ -170,6 +171,7 @@ public:
     void AddParam(const std::string& key, const char *s);
     void AddParam(const std::string& key, const std::string& s);
     void AddParam(const std::string& key, const std::vector<bool>& bs);
+    void AddParam(const std::string& key, const std::vector<int8_t>& bs);
     void AddParam(const std::string& key, const std::vector<char>& cs);
     void AddParam(const std::string& key, const std::vector<short>& shs);
     void AddParam(const std::string& key, const std::vector<int>& is);
