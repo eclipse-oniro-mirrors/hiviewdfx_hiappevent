@@ -13,8 +13,7 @@
 
 import("//build/test.gni")
 
-native_hiappevent_path =
-    "//base/hiviewdfx/hiappevent/frameworks/native"
+native_hiappevent_path = "//base/hiviewdfx/hiappevent/frameworks/native"
 native_module_output_path = "hiappevent/native"
 
 config("hiappevent_config_test") {
