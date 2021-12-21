@@ -13,28 +13,17 @@
 
 import("//build/ohos.gni")
 
-config("libhiappevent_source_config") {
-  visibility = [ "*:*" ]
+hiappevent_native_path = "//base/hiviewdfx/hiappevent/frameworks/native"
+
+ohos_shared_library("hiappevent_ndk") {
   include_dirs = [
-    "include",
-    "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
-  ]
-}
-
-ohos_shared_library("libhiappevent_base") {
-  configs = [ ":libhiappevent_source_config" ]
-
-  sources = [
-    "hiappevent_base.cpp",
-    "hiappevent_c.cpp",
-    "hiappevent_config.cpp",
-    "hiappevent_pack.cpp",
-    "hiappevent_read.cpp",
-    "hiappevent_verify.cpp",
-    "hiappevent_write.cpp",
+    "$hiappevent_native_path/libhiappevent/include",
+    "//base/hiviewdfx/hiappevent/interfaces/native/kits/include"
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  sources = [ "hiappevent_ndk.c" ]
+
+  deps = [ "$hiappevent_native_path/libhiappevent:libhiappevent_base" ]
 
   part_name = "hiappevent_native"
   subsystem_name = "hiviewdfx"

@@ -2,13 +2,16 @@
   "subsystem": "hiviewdfx",
   "parts": {
     "hiappevent_js": {
-      "variants": [
-        "phone",
-        "wearable"
-      ],
+      "version" : "1.0.0",
       "module_list": [
-        "//base/hiviewdfx/hiappevent:hiappevent_js_target",
-        "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base"
+        "//base/hiviewdfx/hiappevent:hiappevent_js_target"
+      ]
+    },
+    "hiappevent_native": {
+      "version" : "1.0.0",
+      "module_list": [
+        "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base",
+        "//base/hiviewdfx/hiappevent/frameworks/native/ndk:hiappevent_ndk"
       ],
       "test_list": [
         "//base/hiviewdfx/hiappevent/test:unittest"

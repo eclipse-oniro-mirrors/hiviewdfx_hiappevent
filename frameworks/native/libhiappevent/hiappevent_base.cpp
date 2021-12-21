@@ -52,7 +52,7 @@ std::string GetTimeInfo()
         HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
         return "";
     }
-    long long timeMillSec = tv.tv_sec * 1000 + tv.tv_usec / 1000; // one second equals 1000 milliseconds
+    long long timeMillSec = static_cast<long long>(tv.tv_sec) * 1000 + tv.tv_usec / 1000; // 1000 means milliseconds
     std::stringstream ss;
     ss << "\"" << "time_" << "\":" << std::to_string(timeMillSec) << ",";
 
@@ -247,6 +247,13 @@ void AppEventPack::AddParam(const std::string& key, char c)
     baseParams_.emplace_back(appEventParam);
 }
 
+void AppEventPack::AddParam(const std::string& key, int8_t num)
+{
+    AppEventParam appEventParam(key, AppEventParamType::SHORT);
+    appEventParam.value.valueUnion.sh_ = static_cast<int16_t>(num);
+    baseParams_.emplace_back(appEventParam);
+}
+
 void AppEventPack::AddParam(const std::string& key, short s)
 {
     AppEventParam appEventParam(key, AppEventParamType::SHORT);
@@ -317,6 +324,13 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<char>& cs)
     baseParams_.push_back(appEventParam);
 }
 
+void AppEventPack::AddParam(const std::string& key, const std::vector<int8_t>& shs)
+{
+    AppEventParam appEventParam(key, AppEventParamType::SHVECTOR);
+    appEventParam.value.valueUnion.shs_.assign(shs.begin(), shs.end());
+    baseParams_.push_back(appEventParam);
+}
+
 void AppEventPack::AddParam(const std::string& key, const std::vector<short>& shs)
 {
     AppEventParam appEventParam(key, AppEventParamType::SHVECTOR);
@@ -365,7 +379,9 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<const char
     std::vector<std::string> strs;
     if (cps.size() != 0) {
         for (auto cp : cps) {
-            strs.push_back(cp);
+            if (cp != nullptr) {
+                strs.push_back(cp);
+            }
         }
     }
     appEventParam.value.valueUnion.strs_.assign(strs.begin(), strs.end());
