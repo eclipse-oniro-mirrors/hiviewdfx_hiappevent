@@ -17,6 +17,20 @@
 #define HIVIEWDFX_HIAPPEVENT_CONFIG_H
 
 /**
+ * @addtogroup HiAppEvent
+ * @{
+ *
+ * @brief Provides application event logging functions.
+ *
+ * Provides the event logging function for applications to log the fault, statistical, security, and user behavior
+ * events reported during running. Based on event information, you will be able to analyze the running status of
+ * applications.
+ *
+ * @since 8
+ * @version 1.0
+ */
+
+/**
  * @file hiappevent_cfg.h
  *
  * @brief Defines the names of all the configuration items of the event logging configuration function.
@@ -55,4 +69,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+/** @} */
 #endif // HIVIEWDFX_HIAPPEVENT_CONFIG_H
