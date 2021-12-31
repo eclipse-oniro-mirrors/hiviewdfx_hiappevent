@@ -19,7 +19,7 @@ ohos_ndk_library("libhiappevent_ndk") {
   min_compact_version = "1"
 }
 
-ohos_ndk_headers("hiappevent_header") {
+ohos_ndk_headers("libhiappevent_header") {
   dest_dir = "$ndk_headers_out_dir/hiappevent"
   sources = [ "./include/hiappevent" ]
 }
