@@ -18,6 +18,7 @@ config("libhiappevent_source_config") {
   include_dirs = [
     "include",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
+    "//foundation/appexecfwk/standard/kits/appkit/native/ability_runtime/context",
   ]
 }
 
@@ -34,7 +35,12 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_write.cpp",
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  deps = [ "//foundation/appexecfwk/standard/kits:app_context" ]
+
+  external_deps = [
+    "appexecfwk_standard:appexecfwk_base",
+    "hiviewdfx_hilog_native:libhilog",
+  ]
 
   part_name = "hiappevent_native"
   subsystem_name = "hiviewdfx"
