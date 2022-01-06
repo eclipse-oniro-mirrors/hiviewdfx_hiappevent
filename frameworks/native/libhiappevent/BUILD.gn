@@ -35,9 +35,7 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_write.cpp",
   ]
 
-  deps = [
-    "//foundation/appexecfwk/standard/kits:app_context"
-  ]
+  deps = [ "//foundation/appexecfwk/standard/kits:app_context" ]
 
   external_deps = [
     "appexecfwk_standard:appexecfwk_base",
