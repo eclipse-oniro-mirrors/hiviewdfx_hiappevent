@@ -43,9 +43,6 @@ static napi_value Write(napi_env env, napi_callback_info info)
         .deferred = nullptr,
     };
 
-    // set event file dirtory
-    SetStorageDirFromNapi(env, info);
-
     // build AppEventPack object and check event
     int32_t result = 0;
     asyncContext->appEventPack = BuildAppEventPackFromNapi(env, params, paramNum, result);

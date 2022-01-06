@@ -16,7 +16,6 @@
 
 #include <string>
 
-#include "ability.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
 #include "hilog/log.h"
@@ -117,28 +116,6 @@ bool ConfigureFromNapi(const napi_env env, const napi_value configObj)
         return false;
     }
     return ConfigureFromNapiInner(env, configObj);
-}
-
-void SetStorageDirFromNapi(const napi_env env, const napi_callback_info info)
-{
-    static bool isSetDir = false;
-    if (isSetDir) {
-        return;
-    }
-    HiLog::Debug(LABEL, "start to init storage path.");
-    napi_value global = nullptr;
-    napi_get_global(env, &global);
-    napi_value abilityObj = nullptr;
-    napi_get_named_property(env, global, "ability", &abilityObj);
-    AppExecFwk::Ability* ability = nullptr;
-    napi_get_value_external(env, abilityObj, (void**)&ability);
-    if (ability == nullptr) {
-        HiLog::Error(LABEL, "ability is null, stop setting the storage dir.");
-        return;
-    }
-    std::string dir = ability->GetFilesDir();
-    HiAppEventConfig::GetInstance().SetStorageDir(dir);
-    isSetDir = true;
 }
 }
 }

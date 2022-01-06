@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 
+#include "context.h"
 #include "hiappevent_base.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
@@ -30,6 +31,9 @@ namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_config" };
 const std::string DISABLE = "disable";
 const std::string MAX_STORAGE = "max_storage";
+const std::string DEFAULT_STORAGE_DIR = "";
+const std::string FILES_DIR = "/files";
+const std::string APP_EVENT_DIR = "/hiappevent/";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
@@ -191,6 +195,21 @@ uint64_t HiAppEventConfig::GetMaxStorageSize()
 
 std::string HiAppEventConfig::GetStorageDir()
 {
+    if (!this->storageDir.empty()) {
+        return this->storageDir;
+    }
+    std::shared_ptr<OHOS::AbilityRuntime::Context> context = OHOS::AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr) {
+        HiLog::Error(LABEL, "Context is null.");
+        return DEFAULT_STORAGE_DIR;
+    }
+    std::shared_ptr<OHOS::AppExecFwk::ApplicationInfo> appInfo = context->GetApplicationInfo();
+    if (appInfo == nullptr || appInfo->dataDir.empty()) {
+        HiLog::Error(LABEL, "ApplicationInfo is null.");
+        return DEFAULT_STORAGE_DIR;
+    }
+    std::string dir = appInfo->dataDir + FILES_DIR + APP_EVENT_DIR;
+    SetStorageDir(dir);
     return this->storageDir;
 }
 }

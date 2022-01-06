@@ -37,7 +37,6 @@ namespace {
 using namespace std;
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_write" };
 const int DATE_SIZE = 9;
-const string APP_EVENT_DIR = "/hiappevent/";
 mutex g_mutex;
 
 bool IsFileExists(const string& fileName)
@@ -74,8 +73,7 @@ bool ForceCreateDirectory(const string& path)
 
 string GetStorageDirPath()
 {
-    string filesDir = HiAppEventConfig::GetInstance().GetStorageDir();
-    return (filesDir == "") ? "" : (filesDir + APP_EVENT_DIR);
+    return HiAppEventConfig::GetInstance().GetStorageDir();
 }
 
 uint64_t GetMaxStorageSize()
@@ -90,11 +88,11 @@ string GetStorageFilePath()
     struct tm *ptm = localtime(&nowTime);
     if (ptm == nullptr) {
         HiLog::Error(LABEL, "failed to get localtime.");
-        return GetStorageDirPath() + "app_event_20210101.log";
+        return "app_event_20210101.log";
     }
     strftime(dateChs, sizeof(dateChs), "%Y%m%d", localtime(&nowTime));
     string dateStr = dateChs;
-    return GetStorageDirPath() + "app_event_" + dateStr + ".log";
+    return "app_event_" + dateStr + ".log";
 }
 
 void GetStorageDirFiles(const string& dirPath, vector<string>& files)
@@ -229,7 +227,7 @@ void WriterEvent(shared_ptr<AppEventPack> appEventPack)
             CleanDirSpace(dirPath);
         }
 
-        string filePath = GetStorageFilePath();
+        string filePath = dirPath + GetStorageFilePath();
         if (!WriteEventToFile(filePath, appEventPack->GetJsonString())) {
             HiLog::Error(LABEL, "failed to write event to log file.");
         }
