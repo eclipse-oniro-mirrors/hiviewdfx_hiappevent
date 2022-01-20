@@ -1,6 +1,6 @@
 {
-    "name": "@ohos/hiappevent",
-    "description": "Application event logging",
+    "name": "@ohos/hiappevent_native",
+    "description": "Event logging provided for native application",
     "version": "3.1",
     "license": "Apache License 2.0",
     "publishAs": "code-segment",
