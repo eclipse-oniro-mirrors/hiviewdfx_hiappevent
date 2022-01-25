@@ -38,7 +38,7 @@ ohos_shared_library("libhiappevent_base") {
   deps = [ "//foundation/aafwk/standard/frameworks/kits/appkit:app_context" ]
 
   external_deps = [
-    "appexecfwk_standard:appexecfwk_base",
+    "bundle_framework:appexecfwk_base",
     "hiviewdfx_hilog_native:libhilog",
   ]
 
