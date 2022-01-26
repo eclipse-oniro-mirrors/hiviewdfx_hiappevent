@@ -42,5 +42,8 @@ ohos_unittest("HiAppEventNativeTest") {
 
 group("unittest") {
   testonly = true
-  deps = [ ":HiAppEventNativeTest" ]
+  deps = [
+    ":HiAppEventNativeTest",
+    "unittest/common/napi:unittest",
+  ]
 }
