@@ -30,6 +30,7 @@
 #include "hiappevent_config.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
+#include "hitrace/trace.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -195,6 +196,18 @@ bool WriteEventToFile(const string& filePath, const string& event, bool truncate
 }
 }
 
+static void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
+{
+    HiTraceId hitraceId = HiTrace::GetId();
+    if (!hitraceId.IsValid()) {
+        return;
+    }
+    appEventPack->AddParam("traceid_", hitraceId.GetChainId());
+    appEventPack->AddParam("spanid_", hitraceId.GetSpanId());
+    appEventPack->AddParam("pspanid_", hitraceId.GetParentSpanId());
+    appEventPack->AddParam("trace_flag_", hitraceId.GetFlags());
+}
+
 void WriterEvent(shared_ptr<AppEventPack> appEventPack)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
@@ -206,6 +219,7 @@ void WriterEvent(shared_ptr<AppEventPack> appEventPack)
         HiLog::Error(LABEL, "appEventPack is null.");
         return;
     }
+    TraceAppEventPack(appEventPack);
     HiLog::Debug(LABEL, "WriteEvent eventInfo=%{public}s.", appEventPack->GetJsonString().c_str());
 
     string dirPath = GetStorageDirPath();
