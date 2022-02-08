@@ -35,9 +35,6 @@ static constexpr int MAX_NUM_OF_PARAMS = 32;
 static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 
-static constexpr int HITRACE_PARAMS_NUM = 4;
-static const std::string HITRACE_PARAMS[HITRACE_PARAMS_NUM] = {"traceid_", "spanid_", "pspanid_", "trace_flag_"};
-
 bool CheckEventName(const std::string& eventName)
 {
     if (eventName.empty() || eventName.length() > MAX_LENGTH_OF_EVENT_NAME) {
@@ -56,12 +53,6 @@ bool CheckParamName(const std::string& paramName)
 {
     if (paramName.empty() || paramName.length() > MAX_LENGTH_OF_PARAM_NAME) {
         return false;
-    }
-
-    for (int i = 0; i < HITRACE_PARAMS_NUM; i++) {
-        if (paramName == HITRACE_PARAMS[i]) {
-            return true;
-        }
     }
 
     if (!std::regex_match(paramName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
@@ -169,9 +160,6 @@ bool CheckParamsNum(std::list<AppEventParam>& baseParams)
     }
 
     int maxParamsNum = MAX_NUM_OF_PARAMS;
-    if (baseParams.begin()->name == HITRACE_PARAMS[0]) {
-        maxParamsNum += HITRACE_PARAMS_NUM;
-    }
 
     int listSize = baseParams.size();
     if (listSize > maxParamsNum) {

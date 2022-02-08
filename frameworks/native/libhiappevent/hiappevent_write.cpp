@@ -194,18 +194,18 @@ bool WriteEventToFile(const string& filePath, const string& event, bool truncate
     LogAssistant::Instance().RealTimeAppLogUpdate(event);
     return true;
 }
-}
 
-static void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
+void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
 {
     HiTraceId hitraceId = HiTrace::GetId();
     if (!hitraceId.IsValid()) {
         return;
     }
-    appEventPack->AddParam("traceid_", hitraceId.GetChainId());
-    appEventPack->AddParam("spanid_", hitraceId.GetSpanId());
-    appEventPack->AddParam("pspanid_", hitraceId.GetParentSpanId());
+    appEventPack->AddParam("traceid_", (long long)hitraceId.GetChainId());
+    appEventPack->AddParam("spanid_", (long long)hitraceId.GetSpanId());
+    appEventPack->AddParam("pspanid_", (long long)hitraceId.GetParentSpanId());
     appEventPack->AddParam("trace_flag_", hitraceId.GetFlags());
+}
 }
 
 void WriterEvent(shared_ptr<AppEventPack> appEventPack)
