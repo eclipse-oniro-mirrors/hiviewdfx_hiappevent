@@ -201,9 +201,9 @@ void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
     if (!hitraceId.IsValid()) {
         return;
     }
-    appEventPack->AddParam("traceid_", (long long)hitraceId.GetChainId());
-    appEventPack->AddParam("spanid_", (long long)hitraceId.GetSpanId());
-    appEventPack->AddParam("pspanid_", (long long)hitraceId.GetParentSpanId());
+    appEventPack->AddParam("traceid_", static_cast<long long>(hitraceId.GetChainId()));
+    appEventPack->AddParam("spanid_", static_cast<long long>(hitraceId.GetSpanId()));
+    appEventPack->AddParam("pspanid_", static_cast<long long>(hitraceId.GetParentSpanId()));
     appEventPack->AddParam("trace_flag_", hitraceId.GetFlags());
 }
 }
