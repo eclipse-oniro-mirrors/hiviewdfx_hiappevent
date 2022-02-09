@@ -39,6 +39,7 @@ ohos_shared_library("libhiappevent_base") {
 
   external_deps = [
     "bundle_framework:appexecfwk_base",
+    "hitrace_native:libhitrace",
     "hiviewdfx_hilog_native:libhilog",
   ]
 
