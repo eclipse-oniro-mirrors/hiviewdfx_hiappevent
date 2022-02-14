@@ -90,12 +90,12 @@ string GetStorageFilePath()
         return DEFAULT_FILE_NAME;
     }
     char dateChs[DATE_SIZE] = {0};
-    struct tm stm;
-    if (localtime_r(&nowTime, &stm) == nullptr) {
+    struct tm localTm;
+    if (localtime_r(&nowTime, &localTm) == nullptr) {
         HiLog::Error(LABEL, "failed to get localtime.");
         return DEFAULT_FILE_NAME;
     }
-    if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &stm) == 0) {
+    if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &localTm) == 0) {
         HiLog::Error(LABEL, "failed to strftime.");
         return DEFAULT_FILE_NAME;
     }
