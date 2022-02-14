@@ -61,7 +61,7 @@ void RegHistoryAppLogListener(HistoryEventLogListener listener);
  * A interaface method for libjvmtiagent to call to remove all listeners
  * WARNING: Any modification on the name of this method ISN'T permitted
  */
-void RemoveAllListeners();
+void RemoveAllListeners(void);
 
 // This method would always be called when a new real time hiappevent
 // log record is persisted(hiappevent_write.cpp)
@@ -86,7 +86,7 @@ public:
 public:
     void RegRealTimeAppLogListener(RealTimeEventLogListener);
     void RegHistoryAppLogListener(HistoryEventLogListener);
-    void RemoveAllListeners();
+    void RemoveAllListeners(void);
     void RealTimeAppLogUpdate(const std::string&);
     void UpdateHiAppEventLogDir(const std::string&);
     void PullEventHistoryLog(TimeStampVarType, TimeStampVarType, int);

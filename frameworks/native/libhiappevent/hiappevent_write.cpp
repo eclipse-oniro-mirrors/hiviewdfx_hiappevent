@@ -38,6 +38,7 @@ namespace {
 using namespace std;
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_write" };
 const int DATE_SIZE = 9;
+const string DEFAULT_FILE_NAME = "app_event_20210101.log";
 mutex g_mutex;
 
 bool IsFileExists(const string& fileName)
@@ -85,13 +86,20 @@ uint64_t GetMaxStorageSize()
 string GetStorageFilePath()
 {
     time_t nowTime = time(nullptr);
-    char dateChs[DATE_SIZE] = {0};
-    struct tm *ptm = localtime(&nowTime);
-    if (ptm == nullptr) {
-        HiLog::Error(LABEL, "failed to get localtime.");
-        return "app_event_20210101.log";
+    if (nowTime == -1) {
+        HiLog::Error(LABEL, "failed to get time.");
+        return DEFAULT_FILE_NAME;
     }
-    strftime(dateChs, sizeof(dateChs), "%Y%m%d", localtime(&nowTime));
+    char dateChs[DATE_SIZE] = {0};
+    struct tm localTm;
+    if (localtime_r(&nowTime, &localTm) == nullptr) {
+        HiLog::Error(LABEL, "failed to get localtime.");
+        return DEFAULT_FILE_NAME;
+    }
+    if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &localTm) == 0) {
+        HiLog::Error(LABEL, "failed to strftime.");
+        return DEFAULT_FILE_NAME;
+    }
     string dateStr = dateChs;
     return "app_event_" + dateStr + ".log";
 }
