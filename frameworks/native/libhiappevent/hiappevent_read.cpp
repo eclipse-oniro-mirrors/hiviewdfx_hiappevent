@@ -30,7 +30,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
     constexpr HiLogLabel LABEL = {LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_read"};
-    constexpr int COUNT_NOT_SET = -1;
     constexpr int FORMAT_TZ_SIZE = 9;
     constexpr int MAX_LOG_COUNT = 1000;
     constexpr int MILLI_TO_MICRO = 1000;
@@ -154,12 +153,13 @@ string LogAssistant::ParseLogFileTimeStamp(const string& fileName)
 string LogAssistant::TranslateLongToFormattedTimeStamp(TimeStampVarType timeStamp)
 {
     time_t ftt = (time_t)(timeStamp / MILLI_TO_MICRO);
-    struct tm* ptm = localtime(&ftt);
-    if (ptm == nullptr) {
+    struct tm tmLocal;
+    if (localtime_r(&ftt, &tmLocal) == nullptr) {
+        HiLog::Error(LABEL, "failed to get local time.");
         return string();
     }
     char formatTz[FORMAT_TZ_SIZE] = {0};
-    if (strftime(formatTz, sizeof(formatTz), DATE_FORMAT, ptm) == 0) {
+    if (strftime(formatTz, sizeof(formatTz), DATE_FORMAT, &tmLocal) == 0) {
         return string();
     }
     return string(formatTz);
@@ -242,14 +242,13 @@ void LogAssistant::UpdateHiAppEventLogDir(const std::string& dir)
 void LogAssistant::PullEventHistoryLog(TimeStampVarType beginTimeStamp,
     TimeStampVarType endTimeStamp, int count)
 {
-    if (count == COUNT_NOT_SET) {
+    if (count < 0) {
         count = MAX_LOG_COUNT;
     }
     vector<string> historyLogs;
-    historyLogs.reserve(count);
+    historyLogs.reserve(static_cast<unsigned int>(count));
     HiLog::Debug(LABEL, "log capacity set to %{public}d", count);
-    ReadHistoryLogFromPersistFile(historyLogs, beginTimeStamp, endTimeStamp,
-        count);
+    ReadHistoryLogFromPersistFile(historyLogs, beginTimeStamp, endTimeStamp, count);
     // Sort all the matched logs in ascending order
     sort(historyLogs.begin(),
         historyLogs.end(),

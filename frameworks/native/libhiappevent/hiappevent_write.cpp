@@ -20,7 +20,9 @@
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
+#include <limits.h>
 #include <mutex>
+#include <stdlib.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -131,7 +133,7 @@ uint64_t GetStorageDirSize(const string& dirPath)
     struct stat statbuf {};
     for (auto& file : files) {
         if (stat(file.c_str(), &statbuf) == 0) {
-            totalSize += statbuf.st_size;
+            totalSize += static_cast<uint64_t>(statbuf.st_size);
         }
     }
 
@@ -167,7 +169,7 @@ void CleanDirSpace(const string& dirPath)
         string delFile = files[0];
         if (access(delFile.c_str(), F_OK) == 0 && stat(delFile.c_str(), &statbuf) == 0
             && remove(delFile.c_str()) == 0) {
-            currSize -= statbuf.st_size;
+            currSize -= static_cast<uint64_t>(statbuf.st_size);
         } else {
             HiLog::Error(LABEL, "failed to access or remove log file.");
         }
@@ -182,11 +184,16 @@ bool WriteEventToFile(const string& filePath, const string& event, bool truncate
         return true;
     }
 
+    char path[PATH_MAX + 1] = { 0x00 };
+    if (filePath.length() > PATH_MAX || realpath(filePath.c_str(), path) == nullptr) {
+        HiLog::Error(LABEL, "the file path is illegal.");
+        return false;
+    }
     ofstream file;
     if (truncated) {
-        file.open(filePath.c_str(), ios::out | ios::trunc);
+        file.open(path, ios::out | ios::trunc);
     } else {
-        file.open(filePath.c_str(), ios::out | ios::app);
+        file.open(path, ios::out | ios::app);
     }
 
     if (!file.is_open()) {
@@ -197,8 +204,10 @@ bool WriteEventToFile(const string& filePath, const string& event, bool truncate
     file.write(event.c_str(), event.length());
     if (file.fail()) {
         HiLog::Error(LABEL, "failed to write the event to the log file.");
+        file.close();
         return false;
     }
+    file.close();
     LogAssistant::Instance().RealTimeAppLogUpdate(event);
     return true;
 }
