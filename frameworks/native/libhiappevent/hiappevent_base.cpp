@@ -64,7 +64,7 @@ std::string GetTimeInfo()
         return ss.str();
     }
     struct tm tmUtc;
-    if(gmtime_r(&sysSec, &tmUtc) == nullptr) {
+    if (gmtime_r(&sysSec, &tmUtc) == nullptr) {
         HiLog::Error(LABEL, "failed to get GMT time.");
         return ss.str();
     }

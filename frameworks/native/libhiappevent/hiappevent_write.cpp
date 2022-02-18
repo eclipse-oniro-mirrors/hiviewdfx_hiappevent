@@ -16,13 +16,13 @@
 #include "hiappevent_write.h"
 
 #include <algorithm>
+#include <climits>
+#include <cstdlib>
 #include <ctime>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
-#include <limits.h>
 #include <mutex>
-#include <stdlib.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
