@@ -36,8 +36,8 @@ constexpr int SEC_TO_MIN = 60;
 
 std::string TrimRightZero(const std::string& str)
 {
-    int endIndex = str.find_last_not_of("0");
-    if (endIndex == -1) {
+    auto endIndex = str.find_last_not_of("0");
+    if (endIndex == std::string::npos) {
         return str;
     }
 
@@ -58,17 +58,17 @@ std::string GetTimeInfo()
 
     // Get system time zone
     time_t sysSec = tv.tv_sec;
-    struct tm* tmLocal = localtime(&sysSec);
-    if (tmLocal == nullptr) {
+    struct tm tmLocal;
+    if (localtime_r(&sysSec, &tmLocal) == nullptr) {
         HiLog::Error(LABEL, "failed to get local time.");
         return ss.str();
     }
-    struct tm* tmUtc = gmtime(&sysSec);
-    if (tmUtc == nullptr) {
+    struct tm tmUtc;
+    if (gmtime_r(&sysSec, &tmUtc) == nullptr) {
         HiLog::Error(LABEL, "failed to get GMT time.");
         return ss.str();
     }
-    time_t diffSec = mktime(tmLocal) - mktime(tmUtc);
+    time_t diffSec = mktime(&tmLocal) - mktime(&tmUtc);
     ss << "\"tz_\":\"" << ((diffSec < 0) ? "-" : "+");
 
     int tzHour = std::abs(diffSec) / SEC_TO_HOUR;

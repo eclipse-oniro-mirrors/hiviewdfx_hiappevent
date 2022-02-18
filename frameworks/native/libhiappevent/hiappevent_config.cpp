@@ -122,15 +122,15 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
         return false;
     }
 
-    int len = value.length();
+    auto len = value.length();
     std::string::size_type numEndIndex = 0;
     uint64_t numValue = std::stoull(value, &numEndIndex, DECIMAL_UNIT);
-    if ((int)numEndIndex == len) {
+    if (numEndIndex == len) {
         SetMaxStorageSize(numValue);
         return true;
     }
 
-    int unitLen = ((int)numEndIndex == len - 1) ? SHORT_STORAGE_UNIT_LEN : LONG_STORAGE_UNIT_LEN;
+    int unitLen = (numEndIndex == (len - 1)) ? SHORT_STORAGE_UNIT_LEN : LONG_STORAGE_UNIT_LEN;
     char unitChr = value[len - unitLen];
     uint64_t maxStoSize = 0;
     switch (unitChr) {

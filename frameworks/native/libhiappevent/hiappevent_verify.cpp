@@ -31,7 +31,7 @@ static constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_v
 
 static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
 static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
-static constexpr int MAX_NUM_OF_PARAMS = 32;
+static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 
@@ -159,12 +159,10 @@ bool CheckParamsNum(std::list<AppEventParam>& baseParams)
         return true;
     }
 
-    int maxParamsNum = MAX_NUM_OF_PARAMS;
-
-    int listSize = baseParams.size();
-    if (listSize > maxParamsNum) {
+    auto listSize = baseParams.size();
+    if (listSize > MAX_NUM_OF_PARAMS) {
         auto delStartPtr = baseParams.begin();
-        std::advance(delStartPtr, maxParamsNum);
+        std::advance(delStartPtr, MAX_NUM_OF_PARAMS);
         baseParams.erase(delStartPtr, baseParams.end());
         return false;
     }
