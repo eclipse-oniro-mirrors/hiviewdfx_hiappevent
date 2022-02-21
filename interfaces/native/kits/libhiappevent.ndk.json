@@ -1,62 +1,62 @@
 [
     {
-        "name": "HiAppEventWrite"
+        "name": "OH_HiAppEvent_Write"
     },
     {
-        "name": "HiAppEventConfigure"
+        "name": "OH_HiAppEvent_Configure"
     },
     {
-        "name": "AddBoolParam"
+        "name": "OH_HiAppEvent_AddBoolParam"
     },
     {
-        "name": "AddBoolArrayParam"
+        "name": "OH_HiAppEvent_AddBoolArrayParam"
     },
     {
-        "name": "AddInt8Param"
+        "name": "OH_HiAppEvent_AddInt8Param"
     },
     {
-        "name": "AddInt8ArrayParam"
+        "name": "OH_HiAppEvent_AddInt8ArrayParam"
     },
     {
-        "name": "AddInt16Param"
+        "name": "OH_HiAppEvent_AddInt16Param"
     },
     {
-        "name": "AddInt16ArrayParam"
+        "name": "OH_HiAppEvent_AddInt16ArrayParam"
     },
     {
-        "name": "AddInt32Param"
+        "name": "OH_HiAppEvent_AddInt32Param"
     },
     {
-        "name": "AddInt32ArrayParam"
+        "name": "OH_HiAppEvent_AddInt32ArrayParam"
     },
     {
-        "name": "AddInt64Param"
+        "name": "OH_HiAppEvent_AddInt64Param"
     },
     {
-        "name": "AddInt64ArrayParam"
+        "name": "OH_HiAppEvent_AddInt64ArrayParam"
     },
     {
-        "name": "AddFloatParam"
+        "name": "OH_HiAppEvent_AddFloatParam"
     },
     {
-        "name": "AddFloatArrayParam"
+        "name": "OH_HiAppEvent_AddFloatArrayParam"
     },
     {
-        "name": "AddDoubleParam"
+        "name": "OH_HiAppEvent_AddDoubleParam"
     },
     {
-        "name": "AddDoubleArrayParam"
+        "name": "OH_HiAppEvent_AddDoubleArrayParam"
     },
     {
-        "name": "AddStringParam"
+        "name": "OH_HiAppEvent_AddStringParam"
     },
     {
-        "name": "AddStringArrayParam"
+        "name": "OH_HiAppEvent_AddStringArrayParam"
     },
     {
-        "name": "CreateParamList"
+        "name": "OH_HiAppEvent_CreateParamList"
     },
     {
-        "name": "DestroyParamList"
+        "name": "OH_HiAppEvent_DestroyParamList"
     }
 ]

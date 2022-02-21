@@ -52,22 +52,22 @@
  * </pre>
  * 01 create a ParamList pointer.
  * <pre>
- *     ParamList list = CreateParamList();
+ *     ParamList list = OH_HiAppEvent_CreateParamList();
  * </pre>
  * 02 add params to the ParamList.
  * <pre>
  *     bool boolean = true;
- *     AddBoolParam(list, "bool_key", boolean);
+ *     OH_HiAppEvent_AddBoolParam(list, "bool_key", boolean);
  *     int32_t nums[] = {1, 2, 3};
- *     AddInt32ArrayParam(list, "int32_arr_key", nums, sizeof(nums) / sizeof(nums[0]));
+ *     OH_HiAppEvent_AddInt32ArrayParam(list, "int32_arr_key", nums, sizeof(nums) / sizeof(nums[0]));
  * </pre>
  * 03 performing event logging.
  * <pre>
- *     int res = HiAppEventWrite("test_domain", "test_event", BEHAVIOR, list);
+ *     int res = OH_HiAppEvent_Write("test_domain", "test_event", BEHAVIOR, list);
  * </pre>
  * 04 destroy the ParamList pointer.
  * <pre>
- *     DestroyParamList(list);
+ *     OH_HiAppEvent_DestroyParamList(list);
  * </pre>
  *
  * @since 8
@@ -122,7 +122,7 @@ typedef struct ParamListNode* ParamList;
  * @since 8
  * @version 1.0
  */
-ParamList CreateParamList(void);
+ParamList OH_HiAppEvent_CreateParamList(void);
 
 /**
  * @brief Destroy a pointer to the ParamList.
@@ -131,7 +131,7 @@ ParamList CreateParamList(void);
  * @since 8
  * @version 1.0
  */
-void DestroyParamList(ParamList list);
+void OH_HiAppEvent_DestroyParamList(ParamList list);
 
 /**
  * @brief Add bool param to the ParamList.
@@ -143,7 +143,7 @@ void DestroyParamList(ParamList list);
  * @since 8
  * @version 1.0
  */
-ParamList AddBoolParam(ParamList list, const char* name, bool boolean);
+ParamList OH_HiAppEvent_AddBoolParam(ParamList list, const char* name, bool boolean);
 
 /**
  * @brief Add bool array param to the ParamList.
@@ -156,7 +156,7 @@ ParamList AddBoolParam(ParamList list, const char* name, bool boolean);
  * @since 8
  * @version 1.0
  */
-ParamList AddBoolArrayParam(ParamList list, const char* name, const bool* booleans, int arrSize);
+ParamList OH_HiAppEvent_AddBoolArrayParam(ParamList list, const char* name, const bool* booleans, int arrSize);
 
 /**
  * @brief Add int8_t param to the ParamList.
@@ -168,7 +168,7 @@ ParamList AddBoolArrayParam(ParamList list, const char* name, const bool* boolea
  * @since 8
  * @version 1.0
  */
-ParamList AddInt8Param(ParamList list, const char* name, int8_t num);
+ParamList OH_HiAppEvent_AddInt8Param(ParamList list, const char* name, int8_t num);
 
 /**
  * @brief Add int8_t array param to the ParamList.
@@ -181,7 +181,7 @@ ParamList AddInt8Param(ParamList list, const char* name, int8_t num);
  * @since 8
  * @version 1.0
  */
-ParamList AddInt8ArrayParam(ParamList list, const char* name, const int8_t* nums, int arrSize);
+ParamList OH_HiAppEvent_AddInt8ArrayParam(ParamList list, const char* name, const int8_t* nums, int arrSize);
 
 /**
  * @brief Add int16_t param to the ParamList.
@@ -193,7 +193,7 @@ ParamList AddInt8ArrayParam(ParamList list, const char* name, const int8_t* nums
  * @since 8
  * @version 1.0
  */
-ParamList AddInt16Param(ParamList list, const char* name, int16_t num);
+ParamList OH_HiAppEvent_AddInt16Param(ParamList list, const char* name, int16_t num);
 
 /**
  * @brief Add int16_t array param to the ParamList.
@@ -206,7 +206,7 @@ ParamList AddInt16Param(ParamList list, const char* name, int16_t num);
  * @since 8
  * @version 1.0
  */
-ParamList AddInt16ArrayParam(ParamList list, const char* name, const int16_t* nums, int arrSize);
+ParamList OH_HiAppEvent_AddInt16ArrayParam(ParamList list, const char* name, const int16_t* nums, int arrSize);
 
 /**
  * @brief Add int32_t param to the ParamList.
@@ -218,7 +218,7 @@ ParamList AddInt16ArrayParam(ParamList list, const char* name, const int16_t* nu
  * @since 8
  * @version 1.0
  */
-ParamList AddInt32Param(ParamList list, const char* name, int32_t num);
+ParamList OH_HiAppEvent_AddInt32Param(ParamList list, const char* name, int32_t num);
 
 /**
  * @brief Add int32_t array param to the ParamList.
@@ -231,7 +231,7 @@ ParamList AddInt32Param(ParamList list, const char* name, int32_t num);
  * @since 8
  * @version 1.0
  */
-ParamList AddInt32ArrayParam(ParamList list, const char* name, const int32_t* nums, int arrSize);
+ParamList OH_HiAppEvent_AddInt32ArrayParam(ParamList list, const char* name, const int32_t* nums, int arrSize);
 
 /**
  * @brief Add int64_t param to the ParamList.
@@ -243,7 +243,7 @@ ParamList AddInt32ArrayParam(ParamList list, const char* name, const int32_t* nu
  * @since 8
  * @version 1.0
  */
-ParamList AddInt64Param(ParamList list, const char* name, int64_t num);
+ParamList OH_HiAppEvent_AddInt64Param(ParamList list, const char* name, int64_t num);
 
 /**
  * @brief Add int64_t array param to the ParamList.
@@ -256,7 +256,7 @@ ParamList AddInt64Param(ParamList list, const char* name, int64_t num);
  * @since 8
  * @version 1.0
  */
-ParamList AddInt64ArrayParam(ParamList list, const char* name, const int64_t* nums, int arrSize);
+ParamList OH_HiAppEvent_AddInt64ArrayParam(ParamList list, const char* name, const int64_t* nums, int arrSize);
 
 /**
  * @brief Add float param to the ParamList.
@@ -268,7 +268,7 @@ ParamList AddInt64ArrayParam(ParamList list, const char* name, const int64_t* nu
  * @since 8
  * @version 1.0
  */
-ParamList AddFloatParam(ParamList list, const char* name, float num);
+ParamList OH_HiAppEvent_AddFloatParam(ParamList list, const char* name, float num);
 
 /**
  * @brief Add float array param to the ParamList.
@@ -281,7 +281,7 @@ ParamList AddFloatParam(ParamList list, const char* name, float num);
  * @since 8
  * @version 1.0
  */
-ParamList AddFloatArrayParam(ParamList list, const char* name, const float* nums, int arrSize);
+ParamList OH_HiAppEvent_AddFloatArrayParam(ParamList list, const char* name, const float* nums, int arrSize);
 
 /**
  * @brief Add double param to the ParamList.
@@ -293,7 +293,7 @@ ParamList AddFloatArrayParam(ParamList list, const char* name, const float* nums
  * @since 8
  * @version 1.0
  */
-ParamList AddDoubleParam(ParamList list, const char* name, double num);
+ParamList OH_HiAppEvent_AddDoubleParam(ParamList list, const char* name, double num);
 
 /**
  * @brief Add double array param to the ParamList.
@@ -306,7 +306,7 @@ ParamList AddDoubleParam(ParamList list, const char* name, double num);
  * @since 8
  * @version 1.0
  */
-ParamList AddDoubleArrayParam(ParamList list, const char* name, const double* nums, int arrSize);
+ParamList OH_HiAppEvent_AddDoubleArrayParam(ParamList list, const char* name, const double* nums, int arrSize);
 
 /**
  * @brief Add string param to the ParamList.
@@ -318,7 +318,7 @@ ParamList AddDoubleArrayParam(ParamList list, const char* name, const double* nu
  * @since 8
  * @version 1.0
  */
-ParamList AddStringParam(ParamList list, const char* name, const char* str);
+ParamList OH_HiAppEvent_AddStringParam(ParamList list, const char* name, const char* str);
 
 /**
  * @brief Add string array param to the ParamList.
@@ -331,7 +331,7 @@ ParamList AddStringParam(ParamList list, const char* name, const char* str);
  * @since 8
  * @version 1.0
  */
-ParamList AddStringArrayParam(ParamList list, const char* name, const char * const *strs, int arrSize);
+ParamList OH_HiAppEvent_AddStringArrayParam(ParamList list, const char* name, const char * const *strs, int arrSize);
 
 /**
  * @brief Implements logging of application events whose parameters are of the list type.
@@ -351,7 +351,7 @@ ParamList AddStringArrayParam(ParamList list, const char* name, const char * con
  * @since 8
  * @version 1.0
  */
-int HiAppEventWrite(const char* domain, const char* name, enum EventType type, const ParamList list);
+int OH_HiAppEvent_Write(const char* domain, const char* name, enum EventType type, const ParamList list);
 
 /**
  * @brief Implements the configuration function of application events logging.
@@ -365,7 +365,7 @@ int HiAppEventWrite(const char* domain, const char* name, enum EventType type, c
  * @since 8
  * @version 1.0
  */
-bool HiAppEventConfigure(const char* name, const char* value);
+bool OH_HiAppEvent_Configure(const char* name, const char* value);
 
 #ifdef __cplusplus
 }
