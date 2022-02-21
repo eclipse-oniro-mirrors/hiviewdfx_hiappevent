@@ -41,10 +41,10 @@
  *
  * Sample code:
  * <pre>
- *     ParamList list = CreateParamList();
- *     AddInt32Param(list, PARAM_USER_ID, 123);
- *     int res = HiAppEventWrite("user_domain", EVENT_USER_LOGIN, BEHAVIOR, list);
- *     DestroyParamList(list);
+ *     ParamList list = OH_HiAppEvent_CreateParamList();
+ *     OH_HiAppEvent_AddInt32Param(list, PARAM_USER_ID, 123);
+ *     int res = OH_HiAppEvent_Write("user_domain", EVENT_USER_LOGIN, BEHAVIOR, list);
+ *     OH_HiAppEvent_DestroyParamList(list);
  * </pre>
  *
  * @since 8

@@ -41,7 +41,7 @@
  *
  * Sample code:
  * <pre>
- *     bool res = HiAppEventConfigure(MAX_STORAGE, "100M");
+ *     bool res = OH_HiAppEvent_Configure(MAX_STORAGE, "100M");
  * </pre>
  *
  * @since 8
