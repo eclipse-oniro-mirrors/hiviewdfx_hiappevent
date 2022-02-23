@@ -37,6 +37,8 @@ HiAppEvent为OpenHarmony应用提供事件打点接口，用于帮助应用记�
 
 ### 接口说明<a name="section1551164914237"></a>
 
+#### JS接口说明
+
 **表 1**  JS 打点接口介绍
 
 <a name="table107919166559"></a>
@@ -115,21 +117,111 @@ HiAppEvent为OpenHarmony应用提供事件打点接口，用于帮助应用记�
 | DISTRIBUTED_SERVICE_NAME        | string | 分布式服务名称。   |
 | DISTRIBUTED_SERVICE_INSTANCE_ID | string | 分布式服务实例ID。 |
 
+#### Native接口说明
+
+**表 1**  打点接口介绍
+
+<table>
+    <tr>
+        <td>方法</td>
+        <td>返回值</td>
+        <td>描述</td>
+    </tr>
+    <tr>
+        <td>OH_HiAppEvent_Write(const char* domain, const char* name, enum EventType type, const ParamList list)</td>
+        <td>int</td>
+         <td>接口功能：应用事件打点方法。<br/>输入参数：
+             <ul>
+                <li>domain：事件领域。</li>
+                <li>name：事件名称。</li>
+                <li>type：事件类型。</li>
+                <li>list：事件参数列表，实质上是一个指向链表头节点的指针——ParamListNode*，列表的每个参数节点由参数名和参数值组成。</li>
+             </ul>返回值：int，错误码。
+        </td>
+    </tr>
+</table>
+
+**表 2**  事件参数列表构造接口介绍
+
+| 方法                                                         | 返回值    | 描述                                                         |
+| ------------------------------------------------------------ | --------- | ------------------------------------------------------------ |
+| OH_HiAppEvent_CreateParamList()                              | ParamList | 创建一个ParamList节点。返回指向创建节点的指针。              |
+| OH_HiAppEvent_DestroyParamList(ParamList list)               | void      | 从头节点开始逐个删除参数列表的各个节点，并释放内存。         |
+| OH_HiAppEvent_AddBoolParam(ParamList list, const char* name, bool boolean) | ParamList | 创建一个bool类型的参数节点，并将该节点添加到ParamList。      |
+| OH_HiAppEvent_AddBoolArrayParam(ParamList list, const char* name, const bool* booleans, int arrSize) | ParamList | 创建一个bool数组类型的参数节点，并将该节点添加到ParamList。  |
+| OH_HiAppEvent_AddInt8Param(ParamList list, const char* name, int8_t num) | ParamList | 创建一个int8_t类型的参数节点，并将该节点添加到ParamList。    |
+| OH_HiAppEvent_AddInt8ArrayParam(ParamList list, const char* name, const int8_t* nums, int arrSize) | ParamList | 创建一个int8_t数组类型的参数节点，并将该节点添加到ParamList。 |
+| OH_HiAppEvent_AddInt16Param(ParamList list, const char* name, int16_t num) | ParamList | 创建一个int16_t类型的参数节点，并将该节点添加到ParamList。   |
+| OH_HiAppEvent_AddInt16ArrayParam(ParamList list, const char* name, const int16_t* nums, int arrSize) | ParamList | 创建一个int16_t数组类型的参数节点，并将该节点添加到ParamList。 |
+| OH_HiAppEvent_AddInt32Param(ParamList list, const char* name, int32_t num) | ParamList | 创建一个int32_t类型的参数节点，并将该节点添加到ParamList。   |
+| OH_HiAppEvent_AddInt32ArrayParam(ParamList list, const char* name, const int32_t* nums, int arrSize) | ParamList | 创建一个int32_t数组类型的参数节点，并将该节点添加到ParamList。 |
+| OH_HiAppEvent_AddInt64Param(ParamList list, const char* name, int64_t num) | ParamList | 创建一个int64_t类型的参数节点，并将该节点添加到ParamList。   |
+| OH_HiAppEvent_AddInt64ArrayParam(ParamList list, const char* name, const int64_t* nums, int arrSize) | ParamList | 创建一个int64_t数组类型的参数节点，并将该节点添加到ParamList。 |
+| OH_HiAppEvent_AddFloatParam(ParamList list, const char* name, float num) | ParamList | 创建一个float类型的参数节点，并将该节点添加到ParamList。     |
+| OH_HiAppEvent_AddFloatArrayParam(ParamList list, const char* name, const float* nums, int arrSize) | ParamList | 创建一个float数组类型的参数节点，并将该节点添加到ParamList。 |
+| OH_HiAppEvent_AddDoubleParam(ParamList list, const char* name, double num) | ParamList | 创建一个double类型的参数节点，并将该节点添加到ParamList。    |
+| OH_HiAppEvent_AddDoubleArrayParam(ParamList list, const char* name, const double* nums, int arrSize) | ParamList | 创建一个double数组类型的参数节点，并将该节点添加到ParamList。 |
+| OH_HiAppEvent_AddStringParam(ParamList list, const char* name, const char* str) | ParamList | 创建一个char*类型的参数节点，并将该节点添加到ParamList。     |
+| OH_HiAppEvent_AddStringArrayParam(ParamList list, const char* name, const char * const *strs, int arrSize) | ParamList | 创建一个char*数组类型的参数节点，并将该节点添加到ParamList。 |
+
+**表 3**  打点配置接口介绍
+
+<table>
+    <tr>
+        <td>方法</td>
+        <td>返回值</td>
+        <td>描述</td>
+    </tr>
+    <tr>
+        <td>OH_HiAppEvent_Configure(const char* name, const char* value)</td>
+        <td>bool</td>
+         <td>接口功能：应用事件打点配置方法，可以对打点功能进行自定义配置。<br/>输入参数：
+             <ul>
+                <li>name：配置项名称，可直接传入预定义好的配置项常量。</li>
+                <li>value：配置项值。</li>
+             </ul>返回值：bool，返回true表示配置成功，返回false表示配置失败。
+        </td>
+    </tr>
+</table>
+
+**表 4**  配置项常量介绍
+
+| 常量名      | 类型         | 描述                                                         |
+| ----------- | ------------ | ------------------------------------------------------------ |
+| DISABLE     | const char[] | 打点功能开关的配置项名称，对应的默认配置值为“false”表示不关闭打点功能。 |
+| MAX_STORAGE | const char[] | 打点落盘文件存放目录配额大小的配置项名称，对应的默认配置值为“10M”。 |
+
+**表 5**  预定义事件名称常量介绍
+
+| 常量名                          | 类型         | 描述                     |
+| ------------------------------- | ------------ | ------------------------ |
+| EVENT_USER_LOGIN                | const char[] | 用户登录事件名称。       |
+| EVENT_USER_LOGOUT               | const char[] | 用户登出事件名称。       |
+| EVENT_DISTRIBUTED_SERVICE_START | const char[] | 分布式服务启动事件名称。 |
+
+**表 6**  预定义参数名称常量介绍
+
+| 类型                                  | 描述         |                    |
+| ------------------------------------- | ------------ | ------------------ |
+| PARAM_USER_ID                         | const char[] | 用户自定义ID。     |
+| PARAM_DISTRIBUTED_SERVICE_NAME        | const char[] | 分布式服务名称。   |
+| PARAM_DISTRIBUTED_SERVICE_INSTANCE_ID | const char[] | 分布式服务实例ID。 |
+
 ### 使用说明<a name="section129654513264"></a>
 
-JS接口实例
+#### JS接口开发实例
 
 1.  源代码开发
 
     引入模块：
 
-    ```
+    ```js
     import hiAppEvent from '@ohos.hiAppEvent'
     ```
 
 2.  应用执行事件打点
 
-    ```
+    ```js
     // callback方式
     hiAppEvent.write("test_event", hiAppEvent.EventType.FAULT, {"int_data":100, "str_data":"strValue"}, (err, value) => {
         if (err) {
@@ -155,7 +247,7 @@ JS接口实例
 
 3. 应用对打点功能进行自定义配置
 
-    ```
+    ```js
     // 配置应用事件打点功能开关
     hiAppEvent.configure({
         disable: true
@@ -166,6 +258,53 @@ JS接口实例
         maxStorage: '100M'
     })
     ```
+
+#### Native接口开发实例
+
+1. 源代码开发
+
+   引入模块：
+
+   ```c++
+   #include "hiappevent/hiappevent.h"
+   ```
+
+2. 应用执行事件打点
+
+   ```c++
+   // 1. 创建空参数list
+   ParamList list = OH_HiAppEvent_CreateParamList();
+
+   // 2. 向list添加要传入的键值对参数
+   // 2.1 传入int32_t参数值
+   int32_t num = 1;
+   OH_HiAppEvent_AddInt32Param(list, "int32_key", num);
+   // 2.2 传入int32_t数组参数值
+   int32_t nums3[] = {1, INT32_MAX, INT32_MIN};
+   OH_HiAppEvent_AddInt32ArrayParam(list, "int32_arr_key", nums3, sizeof(nums3) / sizeof(nums3[0]));
+   // 2.3 传入字符串数组参数值
+   char str1[] = "hello";
+   char str2[] = "world";
+   char* strs[] = {str1, str2};
+   OH_HiAppEvent_AddStringArrayParam(list, "string_arr_key", strs, sizeof(strs) / sizeof(strs[0]));
+
+   // 3. 执行打点操作
+   int result = OH_HiAppEvent_Write("domain", "name", BEHAVIOR, list);
+   printf("HiAppEvent logging test, res=%d\n", result);
+
+   // 4. 销毁ParamLIst对象，释放内存
+   OH_HiAppEvent_DestroyParamList(list);
+   ```
+
+3. 应用对打点功能进行自定义配置
+
+   ```c++
+   // 关闭应用打点功能
+   OH_HiAppEvent_Configure(DISABLE, "true");
+
+   // 配置打点数据文件目录存储限额为100M
+   OH_HiAppEvent_Configure(MAX_STORAGE, "100M");
+   ```
 
 ## 相关仓<a name="section1371113476307"></a>
 
