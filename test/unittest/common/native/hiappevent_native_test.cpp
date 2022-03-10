@@ -15,7 +15,9 @@
 
 #include "hiappevent_native_test.h"
 
+#include <ctime>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include "hiappevent/hiappevent.h"
@@ -26,9 +28,29 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
 namespace {
-    const std::string TEST_STORAGE_PATH = "/data/test/hiappevent/";
-    const char* TEST_DOMAIN_NAME = "test_domain";
-    const char* TEST_EVENT_NAME = "test_event";
+const std::string TEST_STORAGE_PATH = "/data/test/hiappevent/";
+const std::string DEFAULT_FILE_NAME = "app_event_20210101.log";
+const char* TEST_DOMAIN_NAME = "test_domain";
+const char* TEST_EVENT_NAME = "test_event";
+constexpr int DATE_SIZE = 9;
+
+std::string GetStorageFilePath()
+{
+    time_t nowTime = time(nullptr);
+    if (nowTime == -1) {
+        return DEFAULT_FILE_NAME;
+    }
+    char dateChs[DATE_SIZE] = {0};
+    struct tm localTm;
+    if (localtime_r(&nowTime, &localTm) == nullptr) {
+        return DEFAULT_FILE_NAME;
+    }
+    if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &localTm) == 0) {
+        return DEFAULT_FILE_NAME;
+    }
+    std::string dateStr = dateChs;
+    return "app_event_" + dateStr + ".log";
+}
 }
 
 void HiAppEventNativeTest::SetUpTestCase()
@@ -446,4 +468,29 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest012, TestSize.Level0)
     res = OH_HiAppEvent_Write(TEST_DOMAIN_NAME, EVENT_DISTRIBUTED_SERVICE_START, SECURITY, list);
     OH_HiAppEvent_DestroyParamList(list);
     ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest013
+ * @tc.desc: check the local file.
+ * @tc.type: FUNC
+ * @tc.require: AR000GIKMA
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest013, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. create a ParamList pointer.
+     * @tc.steps: step2. add params to the ParamList.
+     * @tc.steps: step3. write event to the file.
+     * @tc.steps: step4. check the result of logging.
+     * @tc.steps: step5. check the file.
+     */
+    ParamList list = OH_HiAppEvent_CreateParamList();
+    OH_HiAppEvent_AddInt32Param(list, "int_key", 123);
+    int res = OH_HiAppEvent_Write(TEST_DOMAIN_NAME, TEST_EVENT_NAME, BEHAVIOR, list);
+    OH_HiAppEvent_DestroyParamList(list);
+    ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    std::string filePath = TEST_STORAGE_PATH + GetStorageFilePath();
+    ASSERT_EQ(access(filePath.c_str(), F_OK), 0);
 }
