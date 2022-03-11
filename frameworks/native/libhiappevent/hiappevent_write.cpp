@@ -184,16 +184,11 @@ bool WriteEventToFile(const string& filePath, const string& event, bool truncate
         return true;
     }
 
-    char path[PATH_MAX + 1] = { 0x00 };
-    if (filePath.length() > PATH_MAX || realpath(filePath.c_str(), path) == nullptr) {
-        HiLog::Error(LABEL, "the file path is illegal.");
-        return false;
-    }
     ofstream file;
     if (truncated) {
-        file.open(path, ios::out | ios::trunc);
+        file.open(filePath.c_str(), ios::out | ios::trunc);
     } else {
-        file.open(path, ios::out | ios::app);
+        file.open(filePath.c_str(), ios::out | ios::app);
     }
 
     if (!file.is_open()) {
