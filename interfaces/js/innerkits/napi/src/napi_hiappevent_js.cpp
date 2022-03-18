@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,11 +37,17 @@ static napi_value Write(napi_env env, napi_callback_info info)
     void *data = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisArg, &data));
 
-    HiAppEventAsyncContext* asyncContext = new HiAppEventAsyncContext {
+    HiAppEventAsyncContext* asyncContext = new(std::nothrow) HiAppEventAsyncContext {
         .env = env,
         .asyncWork = nullptr,
         .deferred = nullptr,
     };
+    if (asyncContext == nullptr) {
+        HiLog::Error(LABEL, "failed to new asyncContext.");
+        napi_value errRet = nullptr;
+        napi_get_undefined(env, &errRet);
+        return errRet;
+    }
 
     // build AppEventPack object and check event
     int32_t result = 0;
