@@ -14,7 +14,7 @@
 HiAppEvent is an OpenHarmony module that provides the event logging function for applications to log the fault, statistical, security, and user behavior events reported during running. Based on event information, you will be able to analyze the running status of applications.
 
 <strong>Figure 1</strong> HiAppEvent architecture<a name="fig32154874419"></a>
-![](figures/hiappevent-architecture.png "hiappevent-architecture")
+![](figures/HiAppEvent-architecture.png "HiAppEvent-architecture")
 
 ## Directory Structure<a name="section161941989596"></a>
 
