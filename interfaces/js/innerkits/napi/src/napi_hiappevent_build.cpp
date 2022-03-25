@@ -67,7 +67,7 @@ int CheckWriteParamsType(const napi_env env, const napi_value params[], int para
     return SUCCESS_FLAG;
 }
 
-bool CheckKeyTypeString(const std::string str)
+bool CheckKeyTypeString(const std::string& str)
 {
     bool result = true;
     for (auto invalidType : INVALID_KEY_TYPE_ARR) {

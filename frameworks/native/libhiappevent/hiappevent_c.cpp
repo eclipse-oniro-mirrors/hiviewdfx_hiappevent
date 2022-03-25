@@ -29,90 +29,90 @@ namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_c" };
 
 template<typename T>
-void AddArrayParam(std::shared_ptr<AppEventPack> appEventPack, const char* name, const T* arr, int len)
+void AddArrayParam(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const T* arr, int len)
 {
     std::vector<T> params(arr, arr + len);
     appEventPack->AddParam(name, params);
 }
 
-using ParamAdder = void (*)(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value);
+using ParamAdder = void (*)(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value);
 
-void AddBoolParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddBoolParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.bool_v);
 }
 
-void AddBoolArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddBoolArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.bool_arr_v, value->arrSize);
 }
 
-void AddInt8ParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt8ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.int8_v);
 }
 
-void AddInt8ArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt8ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.int8_arr_v, value->arrSize);
 }
 
-void AddInt16ParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt16ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.int16_v);
 }
 
-void AddInt16ArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt16ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.int16_arr_v, value->arrSize);
 }
 
-void AddInt32ParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt32ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.int32_v);
 }
 
-void AddInt32ArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt32ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.int32_arr_v, value->arrSize);
 }
 
-void AddInt64ParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt64ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.int64_v);
 }
 
-void AddInt64ArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddInt64ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.int64_arr_v, value->arrSize);
 }
 
-void AddFloatParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddFloatParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.float_v);
 }
 
-void AddFloatArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddFloatArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.float_arr_v, value->arrSize);
 }
 
-void AddDoubleParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddDoubleParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.double_v);
 }
 
-void AddDoubleArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddDoubleArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.double_arr_v, value->arrSize);
 }
 
-void AddStringParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddStringParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     appEventPack->AddParam(name, value->value.str_v);
 }
 
-void AddStringArrayParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddStringArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     AddArrayParam(appEventPack, name, value->value.str_arr_v, value->arrSize);
 }
@@ -136,7 +136,7 @@ const ParamAdder adders[] = {
     &AddStringArrayParamValue
 };
 
-void AddParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name, const ParamValue* value)
+void AddParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
 {
     if (name == nullptr || value == nullptr) {
         HiLog::Error(LABEL, "Failed to add the param because the name or value is null.");
@@ -150,7 +150,7 @@ void AddParamValue(std::shared_ptr<AppEventPack> appEventPack, const char* name,
     }
 }
 
-void AddParamEntry(std::shared_ptr<AppEventPack> appEventPack, const ParamEntry* entry)
+void AddParamEntry(std::shared_ptr<AppEventPack>& appEventPack, const ParamEntry* entry)
 {
     if (entry == nullptr) {
         HiLog::Error(LABEL, "Failed to add the param because the entry is null.");
@@ -159,7 +159,7 @@ void AddParamEntry(std::shared_ptr<AppEventPack> appEventPack, const ParamEntry*
     AddParamValue(appEventPack, entry->name, entry->value);
 }
 
-void AddParamList(std::shared_ptr<AppEventPack> appEventPack, const ParamList list)
+void AddParamList(std::shared_ptr<AppEventPack>& appEventPack, const ParamList list)
 {
     ParamList curNode = list;
     while (curNode != nullptr) {
