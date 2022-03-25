@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -121,8 +121,6 @@ bool CheckListValueSize(AppEventParamType type, AppEventParamValue::ValueUnion& 
         vu.shs_.resize(MAX_SIZE_OF_LIST_PARAM);
     } else if (type == AppEventParamType::IVECTOR && vu.is_.size() > MAX_SIZE_OF_LIST_PARAM) {
         vu.is_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::LVECTOR && vu.ls_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.ls_.resize(MAX_SIZE_OF_LIST_PARAM);
     } else if (type == AppEventParamType::LLVECTOR && vu.lls_.size() > MAX_SIZE_OF_LIST_PARAM) {
         vu.lls_.resize(MAX_SIZE_OF_LIST_PARAM);
     } else if (type == AppEventParamType::FVECTOR && vu.fs_.size() > MAX_SIZE_OF_LIST_PARAM) {
@@ -225,5 +223,5 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
 
     return verifyRes;
 }
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS

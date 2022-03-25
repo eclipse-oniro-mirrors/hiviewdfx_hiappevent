@@ -212,5 +212,5 @@ std::string HiAppEventConfig::GetStorageDir()
     SetStorageDir(dir);
     return this->storageDir;
 }
-}
-}
+} // namespace HiviewDFX
+} // namespace OHOS

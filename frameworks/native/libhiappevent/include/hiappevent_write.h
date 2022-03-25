@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,6 @@ namespace HiviewDFX {
 class AppEventPack;
 
 void WriterEvent(std::shared_ptr<AppEventPack> appEventPack);
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS
 #endif // HI_APP_EVENT_WRITE_H

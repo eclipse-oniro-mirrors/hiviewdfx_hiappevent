@@ -213,9 +213,9 @@ void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
     if (!hitraceId.IsValid()) {
         return;
     }
-    appEventPack->AddParam("traceid_", static_cast<long long>(hitraceId.GetChainId()));
-    appEventPack->AddParam("spanid_", static_cast<long long>(hitraceId.GetSpanId()));
-    appEventPack->AddParam("pspanid_", static_cast<long long>(hitraceId.GetParentSpanId()));
+    appEventPack->AddParam("traceid_", static_cast<int64_t>(hitraceId.GetChainId()));
+    appEventPack->AddParam("spanid_", static_cast<int64_t>(hitraceId.GetSpanId()));
+    appEventPack->AddParam("pspanid_", static_cast<int64_t>(hitraceId.GetParentSpanId()));
     appEventPack->AddParam("trace_flag_", hitraceId.GetFlags());
 }
 }
@@ -259,5 +259,5 @@ void WriterEvent(shared_ptr<AppEventPack> appEventPack)
         }
     }
 }
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS
