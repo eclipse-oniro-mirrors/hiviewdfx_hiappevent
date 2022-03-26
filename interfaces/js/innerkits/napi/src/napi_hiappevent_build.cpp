@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -67,7 +67,7 @@ int CheckWriteParamsType(const napi_env env, const napi_value params[], int para
     return SUCCESS_FLAG;
 }
 
-bool CheckKeyTypeString(const std::string str)
+bool CheckKeyTypeString(const std::string& str)
 {
     bool result = true;
     for (auto invalidType : INVALID_KEY_TYPE_ARR) {
@@ -407,5 +407,5 @@ std::shared_ptr<AppEventPack> BuildAppEventPackFromNapi(const napi_env env, cons
 
     return appEventPack;
 }
-}
-}
+} // namespace HiviewDFX
+} // namespace OHOS

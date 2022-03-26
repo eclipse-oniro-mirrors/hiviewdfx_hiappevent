@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,7 +41,7 @@ const int ERROR_INVALID_LIST_PARAM_SIZE = 6;
 const int ERROR_INVALID_LIST_PARAM_TYPE = 7;
 const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
-}
+} // namespace ErrorCode
 
 /**
  * HiLog hiappevent domain code
@@ -54,20 +54,18 @@ enum AppEventParamType {
     CHAR = 2,
     SHORT = 3,
     INTEGER = 4,
-    LONG = 5,
-    LONGLONG = 6,
-    FLOAT = 7,
-    DOUBLE = 8,
-    STRING = 9,
-    BVECTOR = 10,
-    CVECTOR = 11,
-    SHVECTOR = 12,
-    IVECTOR = 13,
-    LVECTOR = 14,
-    LLVECTOR = 15,
-    FVECTOR = 16,
-    DVECTOR = 17,
-    STRVECTOR = 18
+    LONGLONG = 5,
+    FLOAT = 6,
+    DOUBLE = 7,
+    STRING = 8,
+    BVECTOR = 9,
+    CVECTOR = 10,
+    SHVECTOR = 11,
+    IVECTOR = 12,
+    LLVECTOR = 13,
+    FVECTOR = 14,
+    DVECTOR = 15,
+    STRVECTOR = 16
 };
 
 struct AppEventParamValue {
@@ -75,19 +73,17 @@ struct AppEventParamValue {
     union ValueUnion {
         bool b_;
         char c_;
-        short sh_;
+        int16_t sh_;
         int i_;
-        long l_;
-        long long ll_;
+        int64_t ll_;
         float f_;
         double d_;
         std::string str_;
         std::vector<bool> bs_;
         std::vector<char> cs_;
-        std::vector<short> shs_;
+        std::vector<int16_t> shs_;
         std::vector<int> is_;
-        std::vector<long> ls_;
-        std::vector<long long> lls_;
+        std::vector<int64_t> lls_;
         std::vector<float> fs_;
         std::vector<double> ds_;
         std::vector<std::string> strs_;
@@ -107,16 +103,13 @@ struct AppEventParamValue {
                     new (&cs_) std::vector<char>;
                     break;
                 case AppEventParamType::SHVECTOR:
-                    new (&shs_) std::vector<short>;
+                    new (&shs_) std::vector<int16_t>;
                     break;
                 case AppEventParamType::IVECTOR:
                     new (&is_) std::vector<int>;
                     break;
-                case AppEventParamType::LVECTOR:
-                    new (&ls_) std::vector<long>;
-                    break;
                 case AppEventParamType::LLVECTOR:
-                    new (&lls_) std::vector<long long>;
+                    new (&lls_) std::vector<int64_t>;
                     break;
                 case AppEventParamType::FVECTOR:
                     new (&fs_) std::vector<float>;
@@ -135,7 +128,7 @@ struct AppEventParamValue {
         ~ValueUnion() {}
     } valueUnion;
 
-    AppEventParamValue(AppEventParamType t);
+    explicit AppEventParamValue(AppEventParamType t);
     AppEventParamValue(const AppEventParamValue& value);
     ~AppEventParamValue();
 };
@@ -162,10 +155,9 @@ public:
     void AddParam(const std::string& key, bool b);
     void AddParam(const std::string& key, int8_t num);
     void AddParam(const std::string& key, char c);
-    void AddParam(const std::string& key, short s);
+    void AddParam(const std::string& key, int16_t s);
     void AddParam(const std::string& key, int i);
-    void AddParam(const std::string& key, long l);
-    void AddParam(const std::string& key, long long ll);
+    void AddParam(const std::string& key, int64_t ll);
     void AddParam(const std::string& key, float f);
     void AddParam(const std::string& key, double d);
     void AddParam(const std::string& key, const char *s);
@@ -173,10 +165,9 @@ public:
     void AddParam(const std::string& key, const std::vector<bool>& bs);
     void AddParam(const std::string& key, const std::vector<int8_t>& bs);
     void AddParam(const std::string& key, const std::vector<char>& cs);
-    void AddParam(const std::string& key, const std::vector<short>& shs);
+    void AddParam(const std::string& key, const std::vector<int16_t>& shs);
     void AddParam(const std::string& key, const std::vector<int>& is);
-    void AddParam(const std::string& key, const std::vector<long>& ls);
-    void AddParam(const std::string& key, const std::vector<long long>& lls);
+    void AddParam(const std::string& key, const std::vector<int64_t>& lls);
     void AddParam(const std::string& key, const std::vector<float>& fs);
     void AddParam(const std::string& key, const std::vector<double>& ds);
     void AddParam(const std::string& key, const std::vector<const char*>& cps);
@@ -190,10 +181,9 @@ private:
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<bool>& bs) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<char>& cs) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<short>& shs) const;
+    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int16_t>& shs) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int>& is) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<long>& ls) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<long long>& lls) const;
+    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int64_t>& lls) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<float>& fs) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<double>& ds) const;
     void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<std::string>& strs) const;
@@ -204,6 +194,6 @@ private:
     int type_;
     std::list<AppEventParam> baseParams_;
 };
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS
 #endif // HI_APP_EVENT_BASE_H

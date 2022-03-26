@@ -117,5 +117,5 @@ bool ConfigureFromNapi(const napi_env env, const napi_value configObj)
     }
     return ConfigureFromNapiInner(env, configObj);
 }
-}
-}
+} // namespace HiviewDFX
+} // namespace OHOS

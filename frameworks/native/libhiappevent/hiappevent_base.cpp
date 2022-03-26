@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,7 +52,7 @@ std::string GetTimeInfo()
         HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
         return "";
     }
-    long long timeMillSec = static_cast<long long>(tv.tv_sec) * 1000 + tv.tv_usec / 1000; // 1000 means milliseconds
+    int64_t timeMillSec = static_cast<int64_t>(tv.tv_sec) * 1000 + tv.tv_usec / 1000; // 1000 means milliseconds
     std::stringstream ss;
     ss << "\"" << "time_" << "\":" << std::to_string(timeMillSec) << ",";
 
@@ -102,9 +102,6 @@ void InitValueByBaseType(AppEventParamValue* value, const AppEventParamValue& ot
         case AppEventParamType::INTEGER:
             value->valueUnion.i_ = other.valueUnion.i_;
             break;
-        case AppEventParamType::LONG:
-            value->valueUnion.l_ = other.valueUnion.l_;
-            break;
         case AppEventParamType::LONGLONG:
             value->valueUnion.ll_ = other.valueUnion.ll_;
             break;
@@ -140,9 +137,6 @@ void InitValueByReferType(AppEventParamValue* value, const AppEventParamValue& o
             break;
         case AppEventParamType::IVECTOR:
             new (&value->valueUnion.is_) auto(other.valueUnion.is_);
-            break;
-        case AppEventParamType::LVECTOR:
-            new (&value->valueUnion.ls_) auto(other.valueUnion.ls_);
             break;
         case AppEventParamType::LLVECTOR:
             new (&value->valueUnion.lls_) auto(other.valueUnion.lls_);
@@ -191,9 +185,6 @@ AppEventParamValue::~AppEventParamValue()
             break;
         case AppEventParamType::IVECTOR:
             valueUnion.is_.~vector();
-            break;
-        case AppEventParamType::LVECTOR:
-            valueUnion.ls_.~vector();
             break;
         case AppEventParamType::LLVECTOR:
             valueUnion.lls_.~vector();
@@ -254,7 +245,7 @@ void AppEventPack::AddParam(const std::string& key, int8_t num)
     baseParams_.emplace_back(appEventParam);
 }
 
-void AppEventPack::AddParam(const std::string& key, short s)
+void AppEventPack::AddParam(const std::string& key, int16_t s)
 {
     AppEventParam appEventParam(key, AppEventParamType::SHORT);
     appEventParam.value.valueUnion.sh_ = s;
@@ -268,14 +259,7 @@ void AppEventPack::AddParam(const std::string& key, int i)
     baseParams_.emplace_back(appEventParam);
 }
 
-void AppEventPack::AddParam(const std::string& key, long l)
-{
-    AppEventParam appEventParam(key, AppEventParamType::LONG);
-    appEventParam.value.valueUnion.l_ = l;
-    baseParams_.emplace_back(appEventParam);
-}
-
-void AppEventPack::AddParam(const std::string& key, long long ll)
+void AppEventPack::AddParam(const std::string& key, int64_t ll)
 {
     AppEventParam appEventParam(key, AppEventParamType::LONGLONG);
     appEventParam.value.valueUnion.ll_ = ll;
@@ -331,7 +315,7 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<int8_t>& s
     baseParams_.push_back(appEventParam);
 }
 
-void AppEventPack::AddParam(const std::string& key, const std::vector<short>& shs)
+void AppEventPack::AddParam(const std::string& key, const std::vector<int16_t>& shs)
 {
     AppEventParam appEventParam(key, AppEventParamType::SHVECTOR);
     appEventParam.value.valueUnion.shs_.assign(shs.begin(), shs.end());
@@ -345,14 +329,7 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<int>& is)
     baseParams_.push_back(appEventParam);
 }
 
-void AppEventPack::AddParam(const std::string& key, const std::vector<long>& ls)
-{
-    AppEventParam appEventParam(key, AppEventParamType::LVECTOR);
-    appEventParam.value.valueUnion.ls_.assign(ls.begin(), ls.end());
-    baseParams_.push_back(appEventParam);
-}
-
-void AppEventPack::AddParam(const std::string& key, const std::vector<long long>& lls)
+void AppEventPack::AddParam(const std::string& key, const std::vector<int64_t>& lls)
 {
     AppEventParam appEventParam(key, AppEventParamType::LLVECTOR);
     appEventParam.value.valueUnion.lls_.assign(lls.begin(), lls.end());
@@ -415,9 +392,9 @@ void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::
     }
 
     for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << ((bs[i] == true) ? "true" : "false") << ",";
+        jsonStr << (bs[i] ? "true" : "false") << ",";
     }
-    jsonStr << ((bs[len - 1] == true) ? "true" : "false") << "],";
+    jsonStr << (bs[len - 1] ? "true" : "false") << "],";
 }
 
 void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<char>& cs) const
@@ -436,13 +413,13 @@ void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::
     jsonStr << "\"" << cs[len - 1] << "\"" << "],";
 }
 
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<short>& shs) const
+void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int16_t>& shs) const
 {
     jsonStr << "[";
     size_t len = shs.size();
     if (len == 0) {
         jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<short> value added to JsonString is empty.");
+        HiLog::Info(LABEL, "The vector<int16_t> value added to JsonString is empty.");
         return;
     }
 
@@ -468,29 +445,13 @@ void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::
     jsonStr << is[len - 1] << "],";
 }
 
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<long>& ls) const
-{
-    jsonStr << "[";
-    size_t len = ls.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<long> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << ls[i] << ",";
-    }
-    jsonStr << ls[len - 1] << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<long long>& lls) const
+void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int64_t>& lls) const
 {
     jsonStr << "[";
     size_t len = lls.size();
     if (len == 0) {
         jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<long long> value added to JsonString is empty.");
+        HiLog::Info(LABEL, "The vector<int64_t> value added to JsonString is empty.");
         return;
     }
 
@@ -558,8 +519,6 @@ void AppEventPack::AddOthersToJsonString(std::stringstream& jsonStr, const AppEv
         AddVectorToJsonString(jsonStr, param.value.valueUnion.shs_);
     } else if (param.type == AppEventParamType::IVECTOR) {
         AddVectorToJsonString(jsonStr, param.value.valueUnion.is_);
-    } else if (param.type == AppEventParamType::LVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.ls_);
     } else if (param.type == AppEventParamType::LLVECTOR) {
         AddVectorToJsonString(jsonStr, param.value.valueUnion.lls_);
     } else if (param.type == AppEventParamType::FVECTOR) {
@@ -593,15 +552,13 @@ std::string AppEventPack::GetJsonString() const
     for (auto it = baseParams_.begin(); it != baseParams_.end(); it++) {
         jsonStr << "\"" << it->name << "\":";
         if (it->type == AppEventParamType::BOOL) {
-            jsonStr << ((it->value.valueUnion.b_ == true) ? "true" : "false") << ",";
+            jsonStr << ((it->value.valueUnion.b_) ? "true" : "false") << ",";
         } else if (it->type == AppEventParamType::CHAR) {
             jsonStr << "\"" << it->value.valueUnion.c_ << "\"" << ",";
         } else if (it->type == AppEventParamType::SHORT) {
             jsonStr << it->value.valueUnion.sh_ << ",";
         } else if (it->type == AppEventParamType::INTEGER) {
             jsonStr << it->value.valueUnion.i_ << ",";
-        } else if (it->type == AppEventParamType::LONG) {
-            jsonStr << it->value.valueUnion.l_ << ",";
         } else if (it->type == AppEventParamType::LONGLONG) {
             jsonStr << it->value.valueUnion.ll_ << ",";
         } else if (it->type == AppEventParamType::FLOAT) {
@@ -619,5 +576,5 @@ std::string AppEventPack::GetJsonString() const
     jsonStr << "}" << std::endl;
     return jsonStr.str();
 }
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS

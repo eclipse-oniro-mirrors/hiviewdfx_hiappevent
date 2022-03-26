@@ -29,9 +29,9 @@ extern "C" {
 /**
  * Value type of the timestamp, timestamp is always translated
  * into milliseconds, eg. 1626266996728
- * WARNING: long long type is always 64 bits in any platform
+ * WARNING: int64_t type is always 64 bits in any platform
  */
-using TimeStampVarType = const long long;
+using TimeStampVarType = const int64_t;
 
 // Function type of the listener which observe on any update of
 // the hiappevent real time log
@@ -122,8 +122,8 @@ private:
     // history log
     HistoryEventLogListener historyLogPulledListener;
 };
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS
 
 #ifdef __cplusplus
 }

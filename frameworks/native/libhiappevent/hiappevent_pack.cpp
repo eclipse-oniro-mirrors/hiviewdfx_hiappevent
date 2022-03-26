@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,7 +52,7 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
     appEventPack->AddParam(key, c);
 }
 
-void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, short s)
+void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, int16_t s)
 {
     if (appEventPack == nullptr) {
         return;
@@ -68,15 +68,7 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
     appEventPack->AddParam(key, i);
 }
 
-void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, long l)
-{
-    if (appEventPack == nullptr) {
-        return;
-    }
-    appEventPack->AddParam(key, l);
-}
-
-void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, long long l)
+void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, int64_t l)
 {
     if (appEventPack == nullptr) {
         return;
@@ -132,7 +124,7 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
     appEventPack->AddParam(key, cs);
 }
 
-void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, const std::vector<short>& shs)
+void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, const std::vector<int16_t>& shs)
 {
     if (appEventPack == nullptr) {
         return;
@@ -148,16 +140,8 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
     appEventPack->AddParam(key, is);
 }
 
-void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key, const std::vector<long>& ls)
-{
-    if (appEventPack == nullptr) {
-        return;
-    }
-    appEventPack->AddParam(key, ls);
-}
-
 void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key,
-    const std::vector<long long>& lls)
+    const std::vector<int64_t>& lls)
 {
     if (appEventPack == nullptr) {
         return;
@@ -198,5 +182,5 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
     }
     appEventPack->AddParam(key, strs);
 }
-} // HiviewDFX
-} // OHOS
+} // namespace HiviewDFX
+} // namespace OHOS
