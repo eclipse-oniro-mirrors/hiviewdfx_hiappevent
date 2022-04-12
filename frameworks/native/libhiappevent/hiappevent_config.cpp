@@ -32,7 +32,6 @@ const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_config" };
 const std::string DISABLE = "disable";
 const std::string MAX_STORAGE = "max_storage";
 const std::string DEFAULT_STORAGE_DIR = "";
-const std::string FILES_DIR = "/files";
 const std::string APP_EVENT_DIR = "/hiappevent/";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
@@ -203,12 +202,11 @@ std::string HiAppEventConfig::GetStorageDir()
         HiLog::Error(LABEL, "Context is null.");
         return DEFAULT_STORAGE_DIR;
     }
-    std::shared_ptr<OHOS::AppExecFwk::ApplicationInfo> appInfo = context->GetApplicationInfo();
-    if (appInfo == nullptr || appInfo->dataDir.empty()) {
-        HiLog::Error(LABEL, "ApplicationInfo is null.");
+    if (context->GetFilesDir().empty()) {
+        HiLog::Error(LABEL, "The files dir obtained from context is empty.");
         return DEFAULT_STORAGE_DIR;
     }
-    std::string dir = appInfo->dataDir + FILES_DIR + APP_EVENT_DIR;
+    std::string dir = context->GetFilesDir() + APP_EVENT_DIR;
     SetStorageDir(dir);
     return this->storageDir;
 }
