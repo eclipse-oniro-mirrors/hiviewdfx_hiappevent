@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//base/hiviewdfx/hiappevent/hiappevent_aafwk.gni")
 import("//build/ohos.gni")
 
 config("libhiappevent_source_config") {
@@ -18,7 +19,7 @@ config("libhiappevent_source_config") {
   include_dirs = [
     "include",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
-    "//foundation/aafwk/standard/frameworks/kits/appkit/native/ability_runtime/context",
+    "${aafwk_kits_path}/appkit/native/ability_runtime/context",
   ]
 }
 
@@ -35,7 +36,7 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_write.cpp",
   ]
 
-  deps = [ "//foundation/aafwk/standard/frameworks/kits/appkit:app_context" ]
+  deps = [ "${aafwk_kits_path}/appkit:app_context" ]
 
   external_deps = [
     "bundle_framework:appexecfwk_base",
