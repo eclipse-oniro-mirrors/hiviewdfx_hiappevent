@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 
+#include "application_context.h"
 #include "context.h"
 #include "hiappevent_base.h"
 #include "hiappevent_read.h"
@@ -197,7 +198,8 @@ std::string HiAppEventConfig::GetStorageDir()
     if (!this->storageDir.empty()) {
         return this->storageDir;
     }
-    std::shared_ptr<OHOS::AbilityRuntime::Context> context = OHOS::AbilityRuntime::Context::GetApplicationContext();
+    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
+        OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
         HiLog::Error(LABEL, "Context is null.");
         return DEFAULT_STORAGE_DIR;

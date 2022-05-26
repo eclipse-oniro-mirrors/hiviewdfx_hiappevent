@@ -39,9 +39,13 @@ ohos_shared_library("libhiappevent_base") {
   deps = [ "${aafwk_kits_path}/appkit:app_context" ]
 
   external_deps = [
+    "ability_base:configuration",
+    "ability_base:want",
     "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "hitrace_native:libhitrace",
     "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
   ]
 
   part_name = "hiappevent_native"
