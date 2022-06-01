@@ -138,10 +138,13 @@ ParamList AddParamValue(ParamList list, const char* name, ParamValue* value)
         } else if (curNode->next == NULL) {
             // if the curNode is the last node, create a tail node
             ParamListNode* node = OH_HiAppEvent_CreateParamList();
-            ParamEntry* entry = CreateParamEntry(name, value);
-            if (node == NULL || entry == NULL) {
+            if (node == NULL) {
                 DestroyParamValue(value);
-                DestroyParamEntry(entry);
+                return list;
+            }
+            ParamEntry* entry = CreateParamEntry(name, value);
+            if (entry == NULL) {
+                DestroyParamValue(value);
                 OH_HiAppEvent_DestroyParamList(node);
                 return list;
             }
