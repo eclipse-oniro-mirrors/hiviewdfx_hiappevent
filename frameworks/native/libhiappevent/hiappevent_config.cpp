@@ -39,8 +39,6 @@ constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
 constexpr uint64_t STORAGE_UNIT_TB = STORAGE_UNIT_GB * 1024;
 constexpr int DECIMAL_UNIT = 10;
-constexpr int SHORT_STORAGE_UNIT_LEN = 1;
-constexpr int LONG_STORAGE_UNIT_LEN = 2;
 
 std::mutex g_mutex;
 
@@ -130,7 +128,7 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
         return true;
     }
 
-    int unitLen = (numEndIndex == (len - 1)) ? SHORT_STORAGE_UNIT_LEN : LONG_STORAGE_UNIT_LEN;
+    uint32_t unitLen = (numEndIndex == (len - 1)) ? 1 : 2; // 1 2, means the length of the storage unit
     char unitChr = value[len - unitLen];
     uint64_t maxStoSize = 0;
     switch (unitChr) {
