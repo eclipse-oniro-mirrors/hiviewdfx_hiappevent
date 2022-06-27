@@ -19,7 +19,7 @@ config("libhiappevent_source_config") {
   include_dirs = [
     "include",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
-    "${ability_runtime_kits_path}/appkit/native/ability_runtime/context",
+    "${ability_runtime_path}/interfaces/kits/native/appkit/ability_runtime/context",
   ]
 }
 
@@ -36,7 +36,7 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_write.cpp",
   ]
 
-  deps = [ "${ability_runtime_kits_path}/appkit:app_context" ]
+  deps = [ "${ability_runtime_path}/frameworks/native/appkit:app_context" ]
 
   external_deps = [
     "ability_base:configuration",
