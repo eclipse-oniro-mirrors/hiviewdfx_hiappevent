@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "hiappevent_base.h"
-#include "hiappevent_write.h"
 
 namespace OHOS {
 namespace HiviewDFX {

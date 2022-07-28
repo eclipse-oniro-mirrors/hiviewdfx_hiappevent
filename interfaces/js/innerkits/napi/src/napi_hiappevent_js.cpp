@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 #include "hiappevent_base.h"
+
+#include <memory>
+#include <new>
+
 #include "hilog/log.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"

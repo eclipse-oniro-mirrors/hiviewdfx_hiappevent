@@ -15,6 +15,7 @@
 
 #include "hiappevent_c.h"
 
+#include <memory>
 #include <vector>
 
 #include "hiappevent_base.h"
