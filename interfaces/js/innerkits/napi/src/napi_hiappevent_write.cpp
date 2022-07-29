@@ -14,6 +14,9 @@
  */
 #include "napi_hiappevent_write.h"
 
+#include <memory>
+#include <new>
+
 #include "hiappevent_write.h"
 
 using namespace OHOS::HiviewDFX;

@@ -15,6 +15,7 @@
 #ifndef NATIVE_HIAPPEVENT_HELPER_H
 #define NATIVE_HIAPPEVENT_HELPER_H
 
+#include <cstdint>
 #include <memory>
 
 #include "napi/native_api.h"

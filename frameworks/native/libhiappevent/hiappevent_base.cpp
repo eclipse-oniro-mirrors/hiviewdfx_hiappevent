@@ -15,10 +15,8 @@
 
 #include "hiappevent_base.h"
 
-#include <cmath>
 #include <ctime>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <sys/time.h>

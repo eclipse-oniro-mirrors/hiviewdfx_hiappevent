@@ -19,7 +19,6 @@
 #include <ctime>
 #include <dirent.h>
 #include <fstream>
-#include <iostream>
 
 #include "hiappevent_base.h"
 #include "hilog/log.h"
