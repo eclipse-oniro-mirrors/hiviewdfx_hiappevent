@@ -18,62 +18,60 @@
 #include <new>
 
 #include "hiappevent_write.h"
+#include "napi_util.h"
 
 using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace NapiHiAppEventWrite {
 namespace {
-constexpr int CALLBACK_FUNC_PARAM_NUM = 2;
-constexpr int SUCCESS_FLAG = 0;
+constexpr size_t ERR_INDEX = 0;
+constexpr size_t VALUE_INDEX = 1;
+constexpr size_t RESULT_SIZE = 2;
 }
 
-void WriteEventFromNapi(const napi_env env, HiAppEventAsyncContext* asyncContext)
+void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
 {
-    napi_value resource = nullptr;
-    napi_create_string_utf8(env, "JSHiAppEventWrite", NAPI_AUTO_LENGTH, &resource);
-
-    napi_create_async_work(
-        env, nullptr, resource,
+    napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventWriter");
+    napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
             HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
-            if (asyncContext->appEventPack != nullptr && asyncContext->result >= SUCCESS_FLAG) {
+            if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
                 WriterEvent(asyncContext->appEventPack);
             }
         },
         [](napi_env env, napi_status status, void* data) {
             HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
-            napi_value result[CALLBACK_FUNC_PARAM_NUM] = {0};
-            if (asyncContext->result == SUCCESS_FLAG) {
-                napi_get_undefined(env, &result[0]);
-                napi_create_int32(env, asyncContext->result, &result[1]);
+            napi_value results[RESULT_SIZE] = { 0 };
+            if (asyncContext->result == 0) {
+                results[ERR_INDEX] = NapiUtil::CreateUndefined(env);
+                results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
             } else {
-                napi_create_object(env, &result[0]);
-                napi_value errCode = nullptr;
-                napi_create_int32(env, asyncContext->result, &errCode);
-                napi_set_named_property(env, result[0], "code", errCode);
-                napi_get_undefined(env, &result[1]);
+                results[ERR_INDEX] = NapiUtil::CreateObject(env, "code",
+                    NapiUtil::CreateInt32(env, asyncContext->result));
+                results[VALUE_INDEX] = NapiUtil::CreateUndefined(env);
             }
 
-            if (asyncContext->deferred) {
-                if (asyncContext->result == SUCCESS_FLAG) {
-                    napi_resolve_deferred(env, asyncContext->deferred, result[1]);
+            if (asyncContext->deferred != nullptr) { // promise
+                if (asyncContext->result == 0) {
+                    napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
                 } else {
-                    napi_reject_deferred(env, asyncContext->deferred, result[0]);
+                    napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
                 }
-            } else {
+            } else { // callback
                 napi_value callback = nullptr;
                 napi_get_reference_value(env, asyncContext->callback, &callback);
                 napi_value retValue = nullptr;
-                napi_call_function(env, nullptr, callback, CALLBACK_FUNC_PARAM_NUM, result, &retValue);
+                napi_call_function(env, nullptr, callback, RESULT_SIZE, results, &retValue);
                 napi_delete_reference(env, asyncContext->callback);
             }
-
             napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
         (void*)asyncContext, &asyncContext->asyncWork);
     napi_queue_async_work(env, asyncContext->asyncWork);
 }
+} // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX
 } // namespace OHOS

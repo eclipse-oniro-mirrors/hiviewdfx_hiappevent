@@ -51,7 +51,7 @@ void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string
 void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key,
     const std::vector<const char*>& cps);
 void AddEventParam(std::shared_ptr<AppEventPack> appEventPack, const std::string& key,
-    const std::vector<const std::string>& strs);
+    const std::vector<std::string>& strs);
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HI_APP_EVENT_PACK_H

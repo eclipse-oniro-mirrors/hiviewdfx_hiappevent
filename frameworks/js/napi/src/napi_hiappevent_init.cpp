@@ -17,8 +17,11 @@
 #include <map>
 #include <string>
 
+#include "napi_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
+namespace NapiHiAppEventInit {
 namespace {
 constexpr int FAULT_EVENT_TYPE = 1;
 constexpr int STATISTIC_EVENT_TYPE = 2;
@@ -45,47 +48,24 @@ napi_value ClassConstructor(napi_env env, napi_callback_info info)
 
 void InitEventTypeMap(napi_env env, std::map<const char*, napi_value>& eventTypeMap)
 {
-    napi_value faultEvent = nullptr;
-    napi_create_int32(env, FAULT_EVENT_TYPE, &faultEvent);
-    napi_value statisticEvent = nullptr;
-    napi_create_int32(env, STATISTIC_EVENT_TYPE, &statisticEvent);
-    napi_value securityEvent = nullptr;
-    napi_create_int32(env, SECURITY_EVENT_TYPE, &securityEvent);
-    napi_value behaviorEvent = nullptr;
-    napi_create_int32(env, BEHAVIOR_EVENT_TYPE, &behaviorEvent);
-
-    eventTypeMap["FAULT"] = faultEvent;
-    eventTypeMap["STATISTIC"] = statisticEvent;
-    eventTypeMap["SECURITY"] = securityEvent;
-    eventTypeMap["BEHAVIOR"] = behaviorEvent;
+    eventTypeMap["FAULT"] = NapiUtil::CreateInt32(env, FAULT_EVENT_TYPE);
+    eventTypeMap["STATISTIC"] = NapiUtil::CreateInt32(env, STATISTIC_EVENT_TYPE);
+    eventTypeMap["SECURITY"] = NapiUtil::CreateInt32(env, SECURITY_EVENT_TYPE);
+    eventTypeMap["BEHAVIOR"] = NapiUtil::CreateInt32(env, BEHAVIOR_EVENT_TYPE);
 }
 
 void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
 {
-    napi_value userLoginEvent = nullptr;
-    napi_create_string_utf8(env, "hiappevent.user_login", NAPI_AUTO_LENGTH, &userLoginEvent);
-    napi_value userLogoutEvent = nullptr;
-    napi_create_string_utf8(env, "hiappevent.user_logout", NAPI_AUTO_LENGTH, &userLogoutEvent);
-    napi_value dsStartEvent = nullptr;
-    napi_create_string_utf8(env, "hiappevent.distributed_service_start", NAPI_AUTO_LENGTH, &dsStartEvent);
-
-    eventMap["USER_LOGIN"] = userLoginEvent;
-    eventMap["USER_LOGOUT"] = userLogoutEvent;
-    eventMap["DISTRIBUTED_SERVICE_START"] = dsStartEvent;
+    eventMap["USER_LOGIN"] = NapiUtil::CreateString(env, "hiappevent.user_login");
+    eventMap["USER_LOGOUT"] = NapiUtil::CreateString(env, "hiappevent.user_logout");
+    eventMap["DISTRIBUTED_SERVICE_START"] = NapiUtil::CreateString(env, "hiappevent.distributed_service_start");
 }
 
 void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
 {
-    napi_value userIdParam = nullptr;
-    napi_create_string_utf8(env, "user_id", NAPI_AUTO_LENGTH, &userIdParam);
-    napi_value dsNameParam = nullptr;
-    napi_create_string_utf8(env, "ds_name", NAPI_AUTO_LENGTH, &dsNameParam);
-    napi_value dsInstanceIdParam = nullptr;
-    napi_create_string_utf8(env, "ds_instance_id", NAPI_AUTO_LENGTH, &dsInstanceIdParam);
-
-    paramMap["USER_ID"] = userIdParam;
-    paramMap["DISTRIBUTED_SERVICE_NAME"] = dsNameParam;
-    paramMap["DISTRIBUTED_SERVICE_INSTANCE_ID"] = dsInstanceIdParam;
+    paramMap["USER_ID"] = NapiUtil::CreateString(env, "user_id");
+    paramMap["DISTRIBUTED_SERVICE_NAME"] = NapiUtil::CreateString(env, "ds_name");
+    paramMap["DISTRIBUTED_SERVICE_INSTANCE_ID"] = NapiUtil::CreateString(env, "ds_instance_id");
 }
 
 void InitConstClassByName(napi_env env, napi_value exports, std::string name)
@@ -121,5 +101,6 @@ napi_value InitNapiClass(napi_env env, napi_value exports)
     InitConstClassByName(env, exports, EVENT_TYPE_CLASS_NAME);
     return exports;
 }
+} // namespace NapiHiAppEventInit
 } // namespace HiviewDFX
 } // namespace OHOS

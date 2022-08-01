@@ -12,25 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hiappevent_base.h"
-
 #include <memory>
 #include <new>
 
+#include "hiappevent_base.h"
+#include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
-#include "napi_hiappevent_build.h"
+#include "napi_hiappevent_builder.h"
 #include "napi_hiappevent_config.h"
 #include "napi_hiappevent_init.h"
 #include "napi_hiappevent_write.h"
+#include "napi_util.h"
 
 using namespace OHOS::HiviewDFX;
 
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI" };
-constexpr int CONFIGURE_FUNC_MAX_PARAM_NUM = 1;
-constexpr int WRITE_FUNC_MAX_PARAM_NUM = 4;
+constexpr size_t CONFIGURE_FUNC_MAX_PARAM_NUM = 1;
+constexpr size_t WRITE_FUNC_MAX_PARAM_NUM = 4;
 }
 
 static napi_value Write(napi_env env, napi_callback_info info)
@@ -41,43 +42,35 @@ static napi_value Write(napi_env env, napi_callback_info info)
     void *data = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisArg, &data));
 
-    HiAppEventAsyncContext* asyncContext = new(std::nothrow) HiAppEventAsyncContext {
+    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext {
         .env = env,
         .asyncWork = nullptr,
         .deferred = nullptr,
     };
     if (asyncContext == nullptr) {
         HiLog::Error(LABEL, "failed to new asyncContext.");
-        napi_value errRet = nullptr;
-        napi_get_undefined(env, &errRet);
-        return errRet;
+        return NapiUtil::CreateUndefined(env);
     }
 
-    // build AppEventPack object and check event
-    int32_t result = 0;
-    asyncContext->appEventPack = BuildAppEventPackFromNapi(env, params, paramNum, result);
-    asyncContext->result = result;
+    // 1. build AppEventPack object
+    NapiHiAppEventBuilder builder;
+    asyncContext->appEventPack = builder.Build(env, params, paramNum);
+    asyncContext->result = builder.GetResult();
+    asyncContext->callback = builder.GetCallback();
 
-    // set callback function if it exists
-    if (paramNum == WRITE_FUNC_MAX_PARAM_NUM) {
-        napi_valuetype lastParamType;
-        napi_typeof(env, params[paramNum - 1], &lastParamType);
-        if (lastParamType == napi_valuetype::napi_function) {
-            napi_create_reference(env, params[paramNum - 1], 1, &asyncContext->callback);
-        }
-    } else if (paramNum > WRITE_FUNC_MAX_PARAM_NUM) {
-        HiLog::Error(LABEL, "invalid number=%{public}d of params.", (int)paramNum);
-        asyncContext->result = ErrorCode::ERROR_INVALID_PARAM_NUM_JS;
+    // 2. if the build is successful, the event verification is performed
+    if (asyncContext->result == 0) {
+        asyncContext->result = VerifyAppEvent(asyncContext->appEventPack);
     }
 
-    // set promise object if callback function is null
-    napi_value promise = nullptr;
-    napi_get_undefined(env, &promise);
+    // 3. set promise object if callback is null
+    napi_value promise = NapiUtil::CreateUndefined(env);
     if (asyncContext->callback == nullptr) {
         napi_create_promise(env, &asyncContext->deferred, &promise);
     }
 
-    WriteEventFromNapi(env, asyncContext);
+    // 4. try to write the event to file
+    NapiHiAppEventWrite::Write(env, asyncContext);
     return promise;
 }
 
@@ -88,16 +81,11 @@ static napi_value Configure(napi_env env, napi_callback_info info)
     napi_value thisArg = nullptr;
     void *data = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisArg, &data));
-
-    napi_value result = nullptr;
-    napi_get_boolean(env, false, &result);
-    if (paramNum < CONFIGURE_FUNC_MAX_PARAM_NUM) {
-        HiLog::Error(LABEL, "failed to configure because the number of params must be at least 1.");
-        return result;
+    if (paramNum != CONFIGURE_FUNC_MAX_PARAM_NUM) {
+        HiLog::Error(LABEL, "failed to check the number of configure param");
+        return NapiUtil::CreateBoolean(env, false);
     }
-
-    napi_get_boolean(env, ConfigureFromNapi(env, params[0]), &result);
-    return result;
+    return NapiUtil::CreateBoolean(env, NapiHiAppEventConfig::Configure(env, params[0]));
 }
 
 EXTERN_C_START
@@ -110,7 +98,7 @@ static napi_value Init(napi_env env, napi_value exports)
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
 
     // init EventType class, Event class and Param class
-    InitNapiClass(env, exports);
+    NapiHiAppEventInit::InitNapiClass(env, exports);
 
     return exports;
 }
