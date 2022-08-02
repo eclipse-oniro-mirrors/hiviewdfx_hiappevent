@@ -53,31 +53,38 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventJsTest001', 0, async function (done) {
         console.info('HiAppEventJsTest001 start');
-        var result = 0;
-        hiAppEvent.write("base_test1", hiAppEvent.EventType.BEHAVIOR,
-            {
-                "key_int":100,
-                "key_string":"strValue",
-                "key_bool":true,
-                "key_float": 30949.374,
-                "key_int_arr": [1, 2, 3],
-                "key_string_arr": ["a", "b", "c"],
-                "key_float_arr": [1.1, 2.2, 3.0],
-                "key_bool_arr": [true, false, true]
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest1 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest1 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(0)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest001 end');
+        let name = "name_test1";
+        let type = hiAppEvent.EventType.BEHAVIOR;
+        let params = {
+            "key_int": 100,
+            "key_string": "strValue",
+            "key_bool": true,
+            "key_float": 30949.374,
+            "key_int_arr": [1, 2, 3],
+            "key_string_arr": ["a", "b", "c"],
+            "key_float_arr": [1.1, 2.2, 3.0],
+            "key_bool_arr": [true, false, true]
+        };
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(0);
+            done();
+            console.info('HiAppEventJsTest001_1 end');
+        });
+
+        let domain = "domain_test1";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(0);
+            done();
+            console.info('HiAppEventJsTest001_2 end');
+        });
     });
 
     /**
@@ -87,33 +94,41 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventJsTest002', 0, async function (done) {
         console.info('HiAppEventJsTest002 start');
-        var result = 0;
-        hiAppEvent.write("base_test2", hiAppEvent.EventType.FAULT,
-            {
-                "key_int":100,
-                "key_string":"strValue",
-                "key_bool":true,
-                "key_float": 30949.374,
-                "key_int_arr": [1, 2, 3],
-                "key_string_arr": ["a", "b", "c"],
-                "key_float_arr": [1.1, 2.2, 3.0],
-                "key_bool_arr": [true, false, true]
-            }
-        ).then(
-            (value) => {
-                console.info('HiAppEvent_Napi baseTest2 suc.code=' + value);
-                result = value;
-                done()
-            }
-        ).catch(
-            (err) => {
-                console.error('HiAppEvent_Napi baseTest2 err.code=' + err.code);
-                result = err.code;
-                done()
-            }
-        );
-        expect(result).assertEqual(0)
-        console.info('HiAppEventJsTest002 end');
+        let name = "name_test2";
+        let type = hiAppEvent.EventType.FAULT;
+        let params = {};
+        hiAppEvent.write(name, type, params).then((value) => {
+            let result = value;
+            expect(result).assertEqual(0);
+            done()
+            console.info('HiAppEventJsTest002_1 end');
+        }).catch((err) => {
+            let result = err.code;
+            expect(result).assertEqual(0);
+            done()
+            console.info('HiAppEventJsTest002_2 end');
+        });
+
+
+        let domain = "domain_test2";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo).then((value) => {
+            let result = value;
+            expect(result).assertEqual(0);
+            done()
+            console.info('HiAppEventJsTest002_3 end');
+        }).catch((err) => {
+            let result = err.code;
+            expect(result).assertEqual(0);
+            done()
+            console.info('HiAppEventJsTest002_4 end');
+        });
+        expect(result).assertEqual(0);
     });
 
     /**
@@ -123,353 +138,412 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventJsTest003', 0, async function (done) {
         console.info('HiAppEventJsTest003 start');
-        var result = 0;
-        hiAppEvent.write("base_test3", hiAppEvent.EventType.STATISTIC,
-            {
-                "**":"ha",
-                "key_int":1,
-                "HH22":"ha",
-                "key_str":"str",
-                "":"empty",
-                "aa_":"underscore"
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest3 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest3 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(1)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest003 end');
+        let name = "name_test3";
+        let type = hiAppEvent.EventType.STATISTIC;
+        let params = {
+            "**":"ha",
+            "key_int":1,
+            "HH22":"ha",
+            "key_str":"str",
+            "":"empty",
+            "aa_":"underscore"
+        };
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(1)
+            done()
+            console.info('HiAppEventJsTest003_1 end');
+        });
+
+        let domain = "domain_test3";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(1)
+            done()
+            console.info('HiAppEventJsTest003_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest004
-     * @tc.desc: Error code 2 is returned when the event has an invalid key type.
+     * @tc.desc: Error code 3 is returned when the event has an invalid value type.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest004', 0, async function (done) {
         console.info('HiAppEventJsTest004 start');
-        var result = 0;
-        hiAppEvent.write("base_test4", hiAppEvent.EventType.SECURITY,
-            {
-                [null]: 1,
-                [{}]:2,
-                [[1,2,3]]:3,
-                "key_str":"str",
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest4 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest4 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(2)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest004 end');
+        let name = "name_test4";
+        let type = hiAppEvent.EventType.SECURITY;
+        let params = {
+            key_1_invalid: {},
+            key_2_invalid: null,
+            key_str: "str"
+        };
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(3)
+            done()
+            console.info('HiAppEventJsTest004_1 end');
+        });
+
+        let domain = "domain_test4";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(3)
+            done()
+            console.info('HiAppEventJsTest004_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest005
-     * @tc.desc: Error code 3 is returned when the event has an invalid value type.
+     * @tc.desc: Error code 4 is returned when the event has an invalid string length.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest005', 0, async function (done) {
         console.info('HiAppEventJsTest005 start');
-        var result = 0;
-        hiAppEvent.write("base_test5", hiAppEvent.EventType.STATISTIC,
-            {
-                key_1_invalid:{},
-                key_2_invalid:null,
-                "key_str":"str",
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest5 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest5 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(3)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest005 end');
+        let longStr = "a".repeat(8 * 1024);
+        let invalidStr = "a".repeat(8 * 1024 + 1);
+        let name = "name_test5";
+        let type = hiAppEvent.EventType.SECURITY;
+        let params = {
+            key_long: longStr,
+            key_i_long: invalidStr,
+            key_long_arr: ["ha", longStr],
+            key_i_long_arr: ["ha", invalidStr],
+            key_str: "str"
+        };
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(4)
+            done()
+            console.info('HiAppEventJsTest005_1 end');
+        });
+
+        let domain = "domain_test5";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(4)
+            done()
+            console.info('HiAppEventJsTest005_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest006
-     * @tc.desc: Error code 4 is returned when the event has an invalid string length.
+     * @tc.desc: Error code 5 is returned when the event has too many params.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest006', 0, async function (done) {
         console.info('HiAppEventJsTest006 start');
-        var longStr = "a".repeat(8*1024)
-        var invalidStr = "a".repeat(8*1024 + 1)
-        var result = 0;
-        hiAppEvent.write("base_test6", hiAppEvent.EventType.STATISTIC,
-            {
-                key_long: longStr,
-                key_i_long: invalidStr,
-                key_long_arr: ["ha", longStr],
-                key_i_long_arr: ["ha", invalidStr],
-                "key_str": "str",
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest6 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest6 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(4)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest006 end');
+        let name = "name_test6";
+        let type = hiAppEvent.EventType.SECURITY;
+        let params = {};
+        for (var i = 1; i <= 33; i++) {
+            params["key" + i] = "value" + i;
+        }
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(5)
+            done()
+            console.info('HiAppEventJsTest006_1 end');
+        });
+
+        let domain = "domain_test6";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(5)
+            done()
+            console.info('HiAppEventJsTest006_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest007
-     * @tc.desc: Error code 5 is returned when the event has too many params.
+     * @tc.desc: Error code 6 is returned when there is an array with too many elements.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest007', 0, async function (done) {
         console.info('HiAppEventJsTest007 start');
-        var result = 0;
-        let keyValues = {}
-        for (var i = 1; i <= 33; i++) {
-            keyValues["key" + i] = "value" + i;
-        }
-        hiAppEvent.write("base_test7", hiAppEvent.EventType.STATISTIC, keyValues,
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest7 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest7 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(5)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest007 end');
+        let longArr = new Array(100).fill(1);
+        let iLongArr = new Array(101).fill("a");
+        let name = "name_test7";
+        let type = hiAppEvent.EventType.SECURITY;
+        let params = {
+            key_long_arr: longArr,
+            key_i_long_arr: iLongArr,
+            key_str: "str"
+        };
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(6)
+            done()
+            console.info('HiAppEventJsTest007_1 end');
+        });
+
+        let domain = "domain_test7";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(6)
+            done()
+            console.info('HiAppEventJsTest007_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest008
-     * @tc.desc: Error code 6 is returned when there is an array with too many elements.
+     * @tc.desc: Error code 7 is returned when there is an array with inconsistent or illegal parameter types.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest008', 0, async function (done) {
         console.info('HiAppEventJsTest008 start');
-        var result = 0;
-        let longArr = new Array(100).fill(1);
-        let iLongArr = new Array(101).fill("a");
-        hiAppEvent.write("base_test8", hiAppEvent.EventType.STATISTIC,
-            {
-                key_long_arr: longArr,
-                key_i_long_arr: iLongArr,
-                "key_str": "str",
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest8 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest8 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(6)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest008 end');
+        let name = "name_test8";
+        let type = hiAppEvent.EventType.SECURITY;
+        let params = {
+            key_arr_null: [null, null],
+            key_arr_obj: [{}],
+            key_arr_not_same1:[true, "ha"],
+            key_arr_not_same2:[123, "ha"],
+            key_str: "str"
+        };
+        hiAppEvent.write(name, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(7)
+            done()
+            console.info('HiAppEventJsTest008_1 end');
+        });
+
+        let domain = "domain_test8";
+        let eventInfo = {
+            domain: domain,
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(7)
+            done()
+            console.info('HiAppEventJsTest008_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest009
-     * @tc.desc: Error code 7 is returned when there is an array with inconsistent or illegal parameter types.
+     * @tc.desc: Error code -1 is returned when the event has invalid event name.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest009', 0, async function (done) {
         console.info('HiAppEventJsTest009 start');
-        var result = 0;
-        hiAppEvent.write("base_test9", hiAppEvent.EventType.STATISTIC,
-            {
-                key_arr_null: [null, null],
-                key_arr_obj: [{}],
-                key_arr_not_same1:[true, "ha"],
-                key_arr_not_same2:[123, "ha"],
-                "key_str": "str",
-            },
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest9 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest9 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(7)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest009 end');
+        let type = hiAppEvent.EventType.STATISTIC;
+        let params = {};
+        hiAppEvent.write("verify_test_1.**1", type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-1)
+            done()
+            console.info('HiAppEventJsTest009_1 end');
+        });
+
+        hiAppEvent.write("VVV", type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-1)
+            done()
+            console.info('HiAppEventJsTest009_2 end');
+        });
+
+        let eventInfo = {
+            domain: "domain_test9",
+            name: "",
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-1)
+            done()
+            console.info('HiAppEventJsTest009_3 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest010
-     * @tc.desc: Error code -1 is returned when the event has invalid event name.
+     * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
      */
     it('HiAppEventJsTest010', 0, async function (done) {
         console.info('HiAppEventJsTest010 start');
-        var result = 0;
-        hiAppEvent.write("verify_test_1.**1", hiAppEvent.EventType.STATISTIC, {},
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest10_1 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest10_1 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-1)
-                done()
-            }
-        );
+        let type = hiAppEvent.EventType.STATISTIC;
+        let params = {};
+        hiAppEvent.write(null, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-2)
+            done()
+            console.info('HiAppEventJsTest010_1 end');
+        });
+        hiAppEvent.write(123, type, params, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-2)
+            done()
+            console.info('HiAppEventJsTest010_2 end');
+        });
 
-        hiAppEvent.write("VVV", hiAppEvent.EventType.STATISTIC, {},
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest10_2 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest10_2 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-1)
-                done()
-            }
-        );
+        let domain = "domain_test10";
+        let name = "name_test10";
+        let eventInfo1 = {
+            domain: domain,
+            name: name,
+            eventType: "invalid type",
+            params: params
+        };
+        hiAppEvent.write(eventInfo1, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-2)
+            done()
+            console.info('HiAppEventJsTest010_3 end');
+        });
 
-        hiAppEvent.write("", hiAppEvent.EventType.STATISTIC, {},
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest10_3 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest10_3 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-1)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest010 end');
+        let eventInfo2 = {
+            domain: domain,
+            name: name,
+            eventType: null,
+            params: params
+        };
+        hiAppEvent.write(eventInfo2, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-2)
+            done()
+            console.info('HiAppEventJsTest010_4 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest011
-     * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.desc: Error code -3 is returned when the event has invalid num of args.
      * @tc.type: FUNC
      */
-    it('HiAppEventJsTest011', 0, async function (done) {
+     it('HiAppEventJsTest011', 0, async function (done) {
         console.info('HiAppEventJsTest011 start');
-        var result = 0;
-        hiAppEvent.write(null, hiAppEvent.EventType.STATISTIC, {},
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest11_1 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest11_1 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-2)
-                done()
-            }
-        );
-
-        hiAppEvent.write(123, hiAppEvent.EventType.STATISTIC, {},
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest11_2 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest11_2 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-2)
-                done()
-            }
-        );
-
-        hiAppEvent.write("base_test11", "invalid Type", {},
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest11_3 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest11_3 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-2)
-                done()
-            }
-        );
-
-        hiAppEvent.write("base_test11", hiAppEvent.EventType.STATISTIC, null,
-            (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest11_4 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest11_4 suc.code=' + value);
-                    result = value;
-                }
-                expect(result).assertEqual(-2)
-                done()
-            }
-        );
-        console.info('HiAppEventJsTest011 end');
+        hiAppEvent.write().then((value) => {
+            let result = value;
+            expect(result).assertEqual(-3);
+            done()
+            console.info('HiAppEventJsTest011_1 end');
+        }).catch((err) => {
+            let result = err.code;
+            expect(result).assertEqual(-3);
+            done()
+            console.info('HiAppEventJsTest011_2 end');
+        });
     });
 
     /**
      * @tc.name: HiAppEventJsTest012
+     * @tc.desc: Error code -4 is returned when the event has invalid event domain.
+     * @tc.type: FUNC
+     */
+     it('HiAppEventJsTest012', 0, async function (done) {
+        console.info('HiAppEventJsTest012 start');
+        let name = "domain_test12";
+        let type = hiAppEvent.EventType.STATISTIC;
+        let params = {};
+        let eventInfo1 = {
+            domain: "domain***",
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo1, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-4)
+            done()
+            console.info('HiAppEventJsTest012_1 end');
+        });
+
+        let eventInfo2 = {
+            domain: "domainTest",
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo2, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-4)
+            done()
+            console.info('HiAppEventJsTest012_2 end');
+        });
+
+        let eventInfo3 = {
+            domain: "",
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo3, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-4)
+            done()
+            console.info('HiAppEventJsTest012_3 end');
+        });
+
+        let eventInfo4 = {
+            domain: "a".repeat(17),
+            name: name,
+            eventType: type,
+            params: params
+        };
+        hiAppEvent.write(eventInfo4, (err ,value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(-4)
+            done()
+            console.info('HiAppEventJsTest012_4 end');
+        });
+    });
+
+    /**
+     * @tc.name: HiAppEventJsPresetTest001
      * @tc.desc: Test preset events and preset parameters.
      * @tc.type: FUNC
      */
-    it('HiAppEventJsTest012', 0, async function (done) {
-        console.info('HiAppEventJsTest012 start');
-        var result = 0;
+    it('HiAppEventJsPresetTest001', 0, async function (done) {
+        console.info('HiAppEventJsPresetTest001 start');
         hiAppEvent.write(hiAppEvent.Event.USER_LOGIN, hiAppEvent.EventType.FAULT,
             {
                 [hiAppEvent.Param.USER_ID]:"123456"
             },
             (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest12_1 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest12_1 suc.code=' + value);
-                    result = value;
-                }
+                let result = err ? err.code : value;
                 expect(result).assertEqual(0)
                 done()
+                console.info('HiAppEventJsPresetTest001_1 end');
             }
         );
 
@@ -478,15 +552,10 @@ describe('HiAppEventJsTest', function () {
                 [hiAppEvent.Param.USER_ID]:"123456"
             },
             (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest12_2 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest12_2 suc.code=' + value);
-                    result = value;
-                }
+                let result = err ? err.code : value;
                 expect(result).assertEqual(0)
                 done()
+                console.info('HiAppEventJsPresetTest001_2 end');
             }
         );
 
@@ -496,58 +565,48 @@ describe('HiAppEventJsTest', function () {
                 [hiAppEvent.Param.DISTRIBUTED_SERVICE_INSTANCE_ID]:"123",
             },
             (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest12_3 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest12_3 suc.code=' + value);
-                    result = value;
-                }
+                let result = err ? err.code : value;
                 expect(result).assertEqual(0)
                 done()
+                console.info('HiAppEventJsPresetTest001_3 end');
             }
         );
-        console.info('HiAppEventJsTest012 end');
+        console.info('HiAppEventJsPresetTest001 end');
     });
 
     /**
-     * @tc.name: HiAppEventJsTest013
+     * @tc.name: HiAppEventConfigureTest001
      * @tc.desc: Error code -99 is returned when the logging function is disabled.
      * @tc.type: FUNC
      */
-    it('HiAppEventJsTest013', 0, async function (done) {
-        console.info('HiAppEventJsTest013 start');
-        var result = 0;
-        hiAppEvent.configure({
+    it('HiAppEventConfigureTest001', 0, async function (done) {
+        console.info('HiAppEventConfigureTest001 start');
+        let res = hiAppEvent.configure({
             disable: true
-        })
+        });
+        expect(res).assertTrue();
+
         hiAppEvent.write("base_test13", hiAppEvent.EventType.SECURITY,
             {
                 "key_str": "str",
             },
             (err ,value) => {
-                if (err) {
-                    console.error('HiAppEvent_Napi baseTest13 err.code=' + err.code);
-                    result = err.code;
-                } else {
-                    console.info('HiAppEvent_Napi baseTest13 suc.code=' + value);
-                    result = value;
-                }
+                let result = err ? err.code : value;
                 expect(result).assertEqual(-99)
                 done()
+                console.info('HiAppEventConfigureTest001 end');
             }
         );
-        console.info('HiAppEventJsTest013 end');
     });
 
     /**
-     * @tc.name: HiAppEventJsTest014
+     * @tc.name: HiAppEventConfigureTest002
      * @tc.desc: Correctly configure the event logging function.
      * @tc.type: FUNC
      */
-    it('HiAppEventJsTest014', 0, function () {
-        console.info('HiAppEventJsTest014 start');
-        var result = false;
+    it('HiAppEventConfigureTest002', 0, function () {
+        console.info('HiAppEventConfigureTest002 start');
+        let result = false;
 
         result = hiAppEvent.configure({
             disable: true,
@@ -561,17 +620,17 @@ describe('HiAppEventJsTest', function () {
         });
         expect(result).assertTrue()
 
-        console.info('HiAppEventJsTest014 end');
+        console.info('HiAppEventConfigureTest002 end');
     });
 
     /**
-     * @tc.name: HiAppEventJsTest015
+     * @tc.name: HiAppEventConfigureTest003
      * @tc.desc: Incorrectly configure the event logging function.
      * @tc.type: FUNC
      */
-    it('HiAppEventJsTest015', 0, function () {
-        console.info('HiAppEventJsTest015 start');
-        var result = true;
+    it('HiAppEventConfigureTest003', 0, function () {
+        console.info('HiAppEventConfigureTest003 start');
+        let result = true;
 
         result = hiAppEvent.configure({
             disable: false,
@@ -588,6 +647,6 @@ describe('HiAppEventJsTest', function () {
         })
         expect(result).assertFalse()
 
-        console.info('HiAppEventJsTest015 end');
+        console.info('HiAppEventConfigureTest003 end');
     });
 });

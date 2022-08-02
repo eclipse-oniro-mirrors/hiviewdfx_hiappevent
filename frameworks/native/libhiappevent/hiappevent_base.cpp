@@ -31,6 +31,7 @@ namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_base" };
 constexpr int SEC_TO_HOUR = 3600;
 constexpr int SEC_TO_MIN = 60;
+const std::string DEFAULT_DOMAIN = "default";
 
 std::string TrimRightZero(const std::string& str)
 {
@@ -210,10 +211,11 @@ AppEventParam::AppEventParam(const AppEventParam& param) : name(param.name), typ
 AppEventParam::~AppEventParam()
 {}
 
-AppEventPack::AppEventPack(const std::string& eventName, int type): eventName_(eventName), type_(type)
+AppEventPack::AppEventPack(const std::string& name, int type) : AppEventPack(DEFAULT_DOMAIN, name, type)
 {}
 
-AppEventPack::~AppEventPack()
+AppEventPack::AppEventPack(const std::string& domain, const std::string& name, int type)
+    : domain_(domain), name_(name), type_(type)
 {}
 
 void AppEventPack::AddParam(const std::string& key)
@@ -363,7 +365,7 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<const char
     baseParams_.push_back(appEventParam);
 }
 
-void AppEventPack::AddParam(const std::string& key, const std::vector<const std::string>& strs)
+void AppEventPack::AddParam(const std::string& key, const std::vector<std::string>& strs)
 {
     AppEventParam appEventParam(key, AppEventParamType::STRVECTOR);
     appEventParam.value.valueUnion.strs_.assign(strs.begin(), strs.end());
@@ -372,7 +374,8 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<const std:
 
 void AppEventPack::AddBaseInfoToJsonString(std::stringstream& jsonStr) const
 {
-    jsonStr << "\"" << "name_" << "\":" << "\"" << eventName_ << "\",";
+    jsonStr << "\"" << "domain_" << "\":" << "\"" << domain_ << "\",";
+    jsonStr << "\"" << "name_" << "\":" << "\"" << name_ << "\",";
     jsonStr << "\"" << "type_" << "\":" <<  type_ << ",";
     jsonStr << GetTimeInfo();
     jsonStr << "\"" << "pid_" << "\":" << getpid() << ",";
@@ -532,9 +535,14 @@ void AppEventPack::AddOthersToJsonString(std::stringstream& jsonStr, const AppEv
     }
 }
 
+const std::string AppEventPack::GetEventDomain() const
+{
+    return domain_;
+}
+
 const std::string AppEventPack::GetEventName() const
 {
-    return eventName_;
+    return name_;
 }
 
 int AppEventPack::GetType() const

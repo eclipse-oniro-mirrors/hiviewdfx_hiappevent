@@ -32,7 +32,7 @@
     },
     "build": {
       "sub_component": [
-        "//base/hiviewdfx/hiappevent/interfaces/js/innerkits/napi:hiappevent"
+        "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent"
       ],
       "inner_kits": [],
       "test": []

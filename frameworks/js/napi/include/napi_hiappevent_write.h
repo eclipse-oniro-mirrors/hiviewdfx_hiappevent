@@ -12,16 +12,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef NATIVE_HIAPPEVENT_CONFIG_H
-#define NATIVE_HIAPPEVENT_CONFIG_H
+#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H
+#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H
+
+#include <memory>
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-bool ConfigureFromNapi(const napi_env env, const napi_value configObj);
-void SetStorageDirFromNapi(const napi_env env, const napi_callback_info info);
+class AppEventPack;
+namespace NapiHiAppEventWrite {
+struct HiAppEventAsyncContext {
+    napi_env env;
+    napi_async_work asyncWork;
+    napi_deferred deferred;
+    napi_ref callback;
+    std::shared_ptr<AppEventPack> appEventPack;
+    int result;
+};
+
+void Write(const napi_env env, HiAppEventAsyncContext* asyncContext);
+} // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // NATIVE_HIAPPEVENT_CONFIG_H
+#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H

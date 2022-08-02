@@ -32,6 +32,7 @@ const int HIAPPEVENT_VERIFY_SUCCESSFUL = 0;
 const int ERROR_INVALID_EVENT_NAME = -1;
 const int ERROR_INVALID_PARAM_TYPE_JS = -2;
 const int ERROR_INVALID_PARAM_NUM_JS = -3;
+const int ERROR_INVALID_EVENT_DOMAIN = -4;
 const int ERROR_INVALID_PARAM_NAME = 1;
 const int ERROR_INVALID_PARAM_KEY_TYPE = 2;
 const int ERROR_INVALID_PARAM_VALUE_TYPE = 3;
@@ -147,8 +148,9 @@ using AppEventParam = struct AppEventParam;
 
 class AppEventPack {
 public:
-    AppEventPack(const std::string &eventName, int type);
-    ~AppEventPack();
+    AppEventPack(const std::string& name, int type);
+    AppEventPack(const std::string& domain, const std::string& name, int type);
+    ~AppEventPack() {}
 
 public:
     void AddParam(const std::string& key);
@@ -171,7 +173,8 @@ public:
     void AddParam(const std::string& key, const std::vector<float>& fs);
     void AddParam(const std::string& key, const std::vector<double>& ds);
     void AddParam(const std::string& key, const std::vector<const char*>& cps);
-    void AddParam(const std::string& key, const std::vector<const std::string>& strs);
+    void AddParam(const std::string& key, const std::vector<std::string>& strs);
+    const std::string GetEventDomain() const;
     const std::string GetEventName() const;
     int GetType() const;
     std::string GetJsonString() const;
@@ -190,7 +193,8 @@ private:
     void AddOthersToJsonString(std::stringstream& jsonStr, const AppEventParam param) const;
 
 private:
-    std::string eventName_;
+    std::string domain_;
+    std::string name_;
     int type_;
     std::list<AppEventParam> baseParams_;
 };

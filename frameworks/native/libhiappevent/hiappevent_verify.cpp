@@ -29,11 +29,23 @@ namespace HiviewDFX {
 namespace {
 static constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_verify" };
 
+constexpr size_t MAX_LEN_OF_DOMAIN = 16;
 static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
 static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
 static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
+
+bool CheckEventDomain(const std::string& eventDomain)
+{
+    if (eventDomain.empty() || eventDomain.length() > MAX_LEN_OF_DOMAIN) {
+        return false;
+    }
+    if (!std::regex_match(eventDomain, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
+        return false;
+    }
+    return true;
+}
 
 bool CheckEventName(const std::string& eventName)
 {
@@ -175,7 +187,10 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
         HiLog::Error(LABEL, "the HiAppEvent function is disabled.");
         return ERROR_HIAPPEVENT_DISABLE;
     }
-
+    if (!CheckEventDomain(appEventPack->GetEventDomain())) {
+        HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", appEventPack->GetEventDomain().c_str());
+        return ERROR_INVALID_EVENT_DOMAIN;
+    }
     if (!CheckEventName(appEventPack->GetEventName())) {
         HiLog::Error(LABEL, "eventName=%{public}s is invalid.", appEventPack->GetEventName().c_str());
         return ERROR_INVALID_EVENT_NAME;

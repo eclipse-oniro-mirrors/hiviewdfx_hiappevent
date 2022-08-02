@@ -13,15 +13,17 @@
  * limitations under the License.
  */
 
-#ifndef NATIVE_HIAPPEVENT_INIT_H
-#define NATIVE_HIAPPEVENT_INIT_H
+#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_INIT_H
+#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_INIT_H
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace NapiHiAppEventInit {
 napi_value InitNapiClass(napi_env env, napi_value exports);
+} // namespace NapiHiAppEventInit
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // NATIVE_HIAPPEVENT_INIT_H
+#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_INIT_H
