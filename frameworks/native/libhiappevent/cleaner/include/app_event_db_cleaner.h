@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,15 +13,21 @@
  * limitations under the License.
  */
 
-#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H
-#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H
-#include <memory>
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CLEANER_APP_EVENT_DB_CLEANER_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CLEANER_APP_EVENT_DB_CLEANER_H
+
+#include "app_event_cleaner.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventPack;
-
-void WriterEvent(const std::shared_ptr<AppEventPack>& appEventPack);
+class AppEventDbCleaner : public AppEventCleaner {
+public:
+    AppEventDbCleaner(const std::string& path) : AppEventCleaner(path) {}
+    ~AppEventDbCleaner() {}
+    uint64_t GetFilesSize() override;
+    uint64_t ClearSpace(uint64_t curSize, uint64_t maxSize) override;
+    void ClearData() override;
+};
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CLEANER_APP_EVENT_DB_CLEANER_H

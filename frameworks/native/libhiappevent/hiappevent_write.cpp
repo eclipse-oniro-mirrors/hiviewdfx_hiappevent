@@ -15,67 +15,25 @@
 
 #include "hiappevent_write.h"
 
-#include <algorithm>
-#include <climits>
-#include <cstdlib>
-#include <ctime>
-#include <dirent.h>
-#include <fstream>
-#include <iostream>
 #include <mutex>
-#include <sys/prctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <string>
 
+#include "file_util.h"
 #include "hiappevent_base.h"
+#include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
 #include "hitrace/trace.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-using namespace std;
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_write" };
-const int DATE_SIZE = 9;
-const string DEFAULT_FILE_NAME = "app_event_20210101.log";
-mutex g_mutex;
+const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_Write" };
+std::mutex g_mutex;
 
-bool IsFileExists(const string& fileName)
-{
-    if (access(fileName.c_str(), F_OK) != 0) {
-        return false;
-    }
-
-    return true;
-}
-
-bool ForceCreateDirectory(const string& path)
-{
-    string::size_type index = 0;
-    do {
-        string subPath;
-        index = path.find('/', index + 1);
-        if (index == string::npos) {
-            subPath = path;
-        } else {
-            subPath = path.substr(0, index);
-        }
-
-        if (access(subPath.c_str(), F_OK) != 0) {
-            if (mkdir(subPath.c_str(), S_IRWXU) != 0) {
-                HiLog::Error(LABEL, "failed to create hiappevent dir, errno=%{public}d.", errno);
-                return false;
-            }
-        }
-    } while (index != string::npos);
-
-    return access(path.c_str(), F_OK) == 0;
-}
-
-string GetStorageDirPath()
+std::string GetStorageDirPath()
 {
     return HiAppEventConfig::GetInstance().GetStorageDir();
 }
@@ -85,129 +43,18 @@ uint64_t GetMaxStorageSize()
     return HiAppEventConfig::GetInstance().GetMaxStorageSize();
 }
 
-string GetStorageFilePath()
+std::string GetStorageFileName()
 {
-    time_t nowTime = time(nullptr);
-    if (nowTime == -1) {
-        HiLog::Error(LABEL, "failed to get time.");
-        return DEFAULT_FILE_NAME;
-    }
-    char dateChs[DATE_SIZE] = {0};
-    struct tm localTm;
-    if (localtime_r(&nowTime, &localTm) == nullptr) {
-        HiLog::Error(LABEL, "failed to get localtime.");
-        return DEFAULT_FILE_NAME;
-    }
-    if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &localTm) == 0) {
-        HiLog::Error(LABEL, "failed to strftime.");
-        return DEFAULT_FILE_NAME;
-    }
-    string dateStr = dateChs;
-    return "app_event_" + dateStr + ".log";
+    return "app_event_" + TimeUtil::GetDate() + ".log";
 }
 
-void GetStorageDirFiles(const string& dirPath, vector<string>& files)
+bool WriteEventToFile(const std::string& filePath, const std::string& event)
 {
-    DIR *dir = opendir(dirPath.c_str());
-    if (dir == nullptr) {
-        HiLog::Error(LABEL, "failed to opendir hiappevent dir.");
-        return;
-    }
-
-    struct dirent *ent = nullptr;
-    while ((ent = readdir(dir)) != nullptr) {
-        if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
-            continue;
-        }
-        files.push_back(dirPath + ent->d_name);
-    }
-    closedir(dir);
-}
-
-uint64_t GetStorageDirSize(const string& dirPath)
-{
-    vector<string> files;
-    GetStorageDirFiles(dirPath, files);
-
-    uint64_t totalSize = 0;
-    struct stat statbuf {};
-    for (auto& file : files) {
-        if (stat(file.c_str(), &statbuf) == 0) {
-            totalSize += static_cast<uint64_t>(statbuf.st_size);
-        }
-    }
-
-    return totalSize;
-}
-
-bool IsNeedCleanDir(const string& dirPath)
-{
-    if (!IsFileExists(dirPath)) {
-        HiLog::Info(LABEL, "the hiappevent dir does not exist and does not need to be cleaned.");
-        return false;
-    }
-
-    struct stat st {};
-    if (stat(dirPath.c_str(), &st)) {
-        HiLog::Error(LABEL, "failed to execute the stat function, hiappevent dir.");
-        return false;
-    }
-
-    return GetStorageDirSize(dirPath) > GetMaxStorageSize();
-}
-
-void CleanDirSpace(const string& dirPath)
-{
-    vector<string> files;
-    GetStorageDirFiles(dirPath, files);
-    sort(files.begin(), files.end());
-
-    uint64_t currSize = GetStorageDirSize(dirPath);
-    uint64_t maxSize = GetMaxStorageSize();
-    struct stat statbuf {};
-    while (!files.empty() && currSize > maxSize) {
-        string delFile = files[0];
-        if (access(delFile.c_str(), F_OK) == 0 && stat(delFile.c_str(), &statbuf) == 0
-            && remove(delFile.c_str()) == 0) {
-            currSize -= static_cast<uint64_t>(statbuf.st_size);
-        } else {
-            HiLog::Error(LABEL, "failed to access or remove log file.");
-        }
-
-        files.erase(files.begin());
-    }
-}
-
-bool WriteEventToFile(const string& filePath, const string& event, bool truncated = false)
-{
-    if (event.empty()) {
-        return true;
-    }
-
-    ofstream file;
-    if (truncated) {
-        file.open(filePath.c_str(), ios::out | ios::trunc);
-    } else {
-        file.open(filePath.c_str(), ios::out | ios::app);
-    }
-
-    if (!file.is_open()) {
-        HiLog::Error(LABEL, "failed to open the log file.");
-        return false;
-    }
-
-    file.write(event.c_str(), event.length());
-    if (file.fail()) {
-        HiLog::Error(LABEL, "failed to write the event to the log file.");
-        file.close();
-        return false;
-    }
-    file.close();
     LogAssistant::Instance().RealTimeAppLogUpdate(event);
-    return true;
+    return FileUtil::SaveStringToFile(filePath, event);
 }
 
-void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
+void TraceAppEventPack(const std::shared_ptr<AppEventPack>& appEventPack)
 {
     HiTraceId hitraceId = HiTrace::GetId();
     if (!hitraceId.IsValid()) {
@@ -220,42 +67,37 @@ void TraceAppEventPack(shared_ptr<AppEventPack> appEventPack)
 }
 }
 
-void WriterEvent(shared_ptr<AppEventPack> appEventPack)
+void WriterEvent(const std::shared_ptr<AppEventPack>& appEventPack)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
         HiLog::Warn(LABEL, "the HiAppEvent function is disabled.");
         return;
     }
-
     if (appEventPack == nullptr) {
         HiLog::Error(LABEL, "appEventPack is null.");
+        return;
+    }
+    std::string dirPath = GetStorageDirPath();
+    if (dirPath.empty()) {
+        HiLog::Error(LABEL, "dirPath is null, stop writing the event.");
         return;
     }
     TraceAppEventPack(appEventPack);
     HiLog::Debug(LABEL, "WriteEvent eventInfo=%{public}s.", appEventPack->GetJsonString().c_str());
 
-    string dirPath = GetStorageDirPath();
-    if (dirPath == "") {
-        HiLog::Error(LABEL, "dirPath is null, stop writing the event.");
-        return;
-    }
-
     {
-        lock_guard<mutex> lockGuard(g_mutex);
-
-        if (!IsFileExists(dirPath) && !ForceCreateDirectory(dirPath)) {
+        std::lock_guard<std::mutex> lockGuard(g_mutex);
+        if (!FileUtil::IsFileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {
             HiLog::Error(LABEL, "failed to create hiappevent dir, errno=%{public}d.", errno);
             return;
         }
-
-        if (IsNeedCleanDir(dirPath)) {
+        if (HiAppEventClean::IsStorageSpaceFull(dirPath, GetMaxStorageSize())) {
             HiLog::Info(LABEL, "the hiappevent dir space is full.");
-            CleanDirSpace(dirPath);
+            HiAppEventClean::ReleaseSomeStorageSpace(dirPath, GetMaxStorageSize());
         }
-
-        string filePath = dirPath + GetStorageFilePath();
+        std::string filePath = FileUtil::GetFilePathByDir(dirPath, GetStorageFileName());
         if (!WriteEventToFile(filePath, appEventPack->GetJsonString())) {
-            HiLog::Error(LABEL, "failed to write event to log file.");
+            HiLog::Error(LABEL, "failed to write event to log file, errno=%{public}d.", errno);
         }
     }
 }

@@ -29,6 +29,7 @@ ohos_shared_library("libhiappevent_base") {
   sources = [
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
+    "hiappevent_clean.cpp",
     "hiappevent_config.cpp",
     "hiappevent_pack.cpp",
     "hiappevent_read.cpp",
@@ -36,7 +37,11 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_write.cpp",
   ]
 
-  deps = [ "${ability_runtime_path}/frameworks/native/appkit:app_context" ]
+  deps = [
+    "${ability_runtime_path}/frameworks/native/appkit:app_context",
+    "cleaner:hiappevent_cleaner",
+    "utility:hiappevent_utility",
+  ]
 
   external_deps = [
     "ability_base:configuration",
@@ -46,6 +51,7 @@ ohos_shared_library("libhiappevent_base") {
     "hitrace_native:libhitrace",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "relational_store:native_rdb",
   ]
 
   part_name = "hiappevent_native"
