@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,20 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_WATCHER_APP_EVENT_HANDLER_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_WATCHER_APP_EVENT_HANDLER_H
 
-#ifndef HI_APP_EVENT_VERIFY_H
-#define HI_APP_EVENT_VERIFY_H
-
-#include <memory>
-#include <string>
+#include "event_handler.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventPack;
-
-bool IsValidDomain(const std::string& domain);
-bool IsValidWatcherName(const std::string& watcherName);
-int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
+namespace AppEventType {
+const uint32_t WATCHER_TIMEOUT = 0;
+}
+class AppEventHandler : public AppExecFwk::EventHandler {
+public:
+    explicit AppEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    ~AppEventHandler() override;
+    void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
+};
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HI_APP_EVENT_VERIFY_H
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_WATCHER_APP_EVENT_HANDLER_H

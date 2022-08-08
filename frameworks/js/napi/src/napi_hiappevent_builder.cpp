@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "NapiHiAppEventBuilder" };
+const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Builder" };
 const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string TYPE_PROPERTY = "eventType";

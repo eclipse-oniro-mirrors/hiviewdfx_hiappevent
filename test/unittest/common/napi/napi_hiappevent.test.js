@@ -620,6 +620,12 @@ describe('HiAppEventJsTest', function () {
         });
         expect(result).assertTrue()
 
+        result = hiAppEvent.configure({
+            disable: false,
+            maxStorage: "10M"
+        });
+        expect(result).assertTrue()
+
         console.info('HiAppEventConfigureTest002 end');
     });
 
@@ -648,5 +654,33 @@ describe('HiAppEventJsTest', function () {
         expect(result).assertFalse()
 
         console.info('HiAppEventConfigureTest003 end');
+    });
+
+    /**
+     * @tc.name: HiAppEventClearTest001
+     * @tc.desc: clear the local data.
+     * @tc.type: FUNC
+     */
+     it('HiAppEventClearTest001', 0, async function (done) {
+        console.info('HiAppEventClearTest001 start');
+
+        // 1. clear data
+        let result = hiAppEvent.clearData();
+        expect(result).assertEqual(undefined);
+
+        // 2. write event after clear data
+        let eventInfo = {
+            domain: "test_domain",
+            name: "clear_test1",
+            eventType: hiAppEvent.EventType.FAULT,
+            params: {}
+        };
+        hiAppEvent.write(eventInfo, (err ,value) => {
+            let res = err ? err.code : value;
+            expect(res).assertEqual(0);
+            done();
+        });
+
+        console.info('HiAppEventClearTest001 end');
     });
 });
