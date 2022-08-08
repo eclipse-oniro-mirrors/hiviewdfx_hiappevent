@@ -15,41 +15,25 @@
 
 #include "hiappevent_native_test.h"
 
-#include <ctime>
 #include <string>
-#include <unistd.h>
 #include <vector>
 
 #include "hiappevent/hiappevent.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
+#include "time_util.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
 namespace {
 const std::string TEST_STORAGE_PATH = "/data/test/hiappevent/";
-const std::string DEFAULT_FILE_NAME = "app_event_20210101.log";
 const char* TEST_DOMAIN_NAME = "test_domain";
 const char* TEST_EVENT_NAME = "test_event";
-constexpr int DATE_SIZE = 9;
 
 std::string GetStorageFilePath()
 {
-    time_t nowTime = time(nullptr);
-    if (nowTime == -1) {
-        return DEFAULT_FILE_NAME;
-    }
-    char dateChs[DATE_SIZE] = {0};
-    struct tm localTm;
-    if (localtime_r(&nowTime, &localTm) == nullptr) {
-        return DEFAULT_FILE_NAME;
-    }
-    if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &localTm) == 0) {
-        return DEFAULT_FILE_NAME;
-    }
-    std::string dateStr = dateChs;
-    return "app_event_" + dateStr + ".log";
+    return "app_event_" + TimeUtil::GetDate() + ".log";
 }
 }
 

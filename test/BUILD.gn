@@ -35,14 +35,34 @@ ohos_unittest("HiAppEventNativeTest") {
 
   deps = [
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
     "$native_hiappevent_path/ndk:hiappevent_ndk",
     "//third_party/googletest:gtest_main",
   ]
 }
 
+ohos_unittest("HiAppEventCacheTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_cache_test.cpp" ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
+    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
+    "$native_hiappevent_path/ndk:hiappevent_ndk",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [ "relational_store:native_rdb" ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
+    ":HiAppEventCacheTest",
     ":HiAppEventNativeTest",
     "unittest/common/napi:unittest",
   ]
