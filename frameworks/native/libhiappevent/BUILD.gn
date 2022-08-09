@@ -24,7 +24,11 @@ config("libhiappevent_source_config") {
 }
 
 ohos_shared_library("libhiappevent_base") {
-  configs = [ ":libhiappevent_source_config" ]
+  public_configs = [
+    ":libhiappevent_source_config",
+    "cache:hiappevent_cache_config",
+    "watcher:hiappevent_watcher_config",
+  ]
 
   sources = [
     "hiappevent_base.cpp",
@@ -39,8 +43,10 @@ ohos_shared_library("libhiappevent_base") {
 
   deps = [
     "${ability_runtime_path}/frameworks/native/appkit:app_context",
+    "cache:hiappevent_cache",
     "cleaner:hiappevent_cleaner",
     "utility:hiappevent_utility",
+    "watcher:hiappevent_watcher",
   ]
 
   external_deps = [

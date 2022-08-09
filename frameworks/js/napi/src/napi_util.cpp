@@ -64,6 +64,17 @@ bool IsArray(const napi_env env, const napi_value value)
     return result;
 }
 
+bool IsArrayType(const napi_env env, const napi_value value, napi_valuetype type)
+{
+    if (!IsArray(env, value)) {
+        return false;
+    }
+    if (GetArrayLength(env, value) == 0) {
+        return true;
+    }
+    return GetArrayType(env, value) == type;
+}
+
 napi_valuetype GetType(const napi_env env, const napi_value value)
 {
     napi_valuetype type;
@@ -255,6 +266,16 @@ void GetPropertyNames(const napi_env env, const napi_value object, std::vector<s
     }
 }
 
+napi_value GetReferenceValue(const napi_env env, const napi_ref funcRef)
+{
+    napi_value refValue = nullptr;
+    if (napi_get_reference_value(env, funcRef, &refValue) != napi_ok) {
+        HiLog::Error(LABEL, "failed to get reference value");
+        return nullptr;
+    }
+    return refValue;
+}
+
 napi_ref CreateReference(const napi_env env, const napi_value func)
 {
     napi_ref ref = nullptr;
@@ -264,6 +285,17 @@ napi_ref CreateReference(const napi_env env, const napi_value func)
     }
     return ref;
 }
+
+napi_value CreateNull(const napi_env env)
+{
+    napi_value nullValue = nullptr;
+    if (napi_get_null(env, &nullValue) != napi_ok) {
+        HiLog::Error(LABEL, "failed to create null");
+        return nullptr;
+    }
+    return nullValue;
+}
+
 napi_value CreateUndefined(const napi_env env)
 {
     napi_value undefinedValue = nullptr;
@@ -304,6 +336,15 @@ napi_value CreateString(const napi_env env, const std::string& str)
     return strValue;
 }
 
+napi_value CreateStrings(const napi_env env, const std::vector<std::string>& strs)
+{
+    napi_value arr = CreateArray(env);
+    for (size_t i = 0; i < strs.size(); ++i) {
+        SetElement(env, arr, i, CreateString(env, strs[i]));
+    }
+    return arr;
+}
+
 napi_value CreateObject(const napi_env env)
 {
     napi_value obj = nullptr;
@@ -326,6 +367,30 @@ napi_value CreateObject(const napi_env env, const std::string& key, const napi_v
         return nullptr;
     }
     return obj;
+}
+
+napi_value CreateArray(const napi_env env)
+{
+    napi_value arr = nullptr;
+    if (napi_create_array(env, &arr) != napi_ok) {
+        HiLog::Error(LABEL, "failed to create array");
+        return nullptr;
+    }
+    return arr;
+}
+
+void SetElement(const napi_env env, const napi_value obj, uint32_t index, const napi_value value)
+{
+    if (napi_set_element(env, obj, index, value) != napi_ok) {
+        HiLog::Error(LABEL, "failed to set element");
+    }
+}
+
+void SetNamedProperty(const napi_env env, const napi_value obj, const std::string& key, const napi_value value)
+{
+    if (napi_set_named_property(env, obj, key.c_str(), value) != napi_ok) {
+        HiLog::Error(LABEL, "failed to set property");
+    }
 }
 
 std::string ConvertToString(const napi_env env, const napi_value value)

@@ -21,6 +21,11 @@
 using namespace OHOS::HiviewDFX::AppEventCacheCommon;
 namespace OHOS {
 namespace HiviewDFX {
+bool AppEventCache::IsOpen()
+{
+    return store_ != nullptr;
+}
+
 int AppEventCache::Open(const std::string& dir)
 {
     if (dir.empty()) {

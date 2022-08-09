@@ -32,6 +32,7 @@ bool IsString(const napi_env env, const napi_value value);
 bool IsObject(const napi_env env, const napi_value value);
 bool IsFunction(const napi_env env, const napi_value value);
 bool IsArray(const napi_env env, const napi_value value);
+bool IsArrayType(const napi_env env, const napi_value value, napi_valuetype type);
 bool HasProperty(const napi_env env, const napi_value object, const std::string& name);
 
 bool GetBoolean(const napi_env env, const napi_value value);
@@ -48,15 +49,21 @@ uint32_t GetArrayLength(const napi_env env, const napi_value arr);
 napi_value GetElement(const napi_env env, const napi_value arr, uint32_t index);
 napi_value GetProperty(const napi_env env, const napi_value object, const std::string& name);
 void GetPropertyNames(const napi_env env, const napi_value object, std::vector<std::string>& names);
+napi_value GetReferenceValue(const napi_env env, const napi_ref funcRef);
 
 napi_ref CreateReference(const napi_env env, const napi_value func);
+napi_value CreateNull(const napi_env env);
 napi_value CreateUndefined(const napi_env env);
 napi_value CreateBoolean(const napi_env env, bool bValue);
 napi_value CreateInt32(const napi_env env, int32_t num);
 napi_value CreateString(const napi_env env, const std::string& str);
+napi_value CreateStrings(const napi_env env, const std::vector<std::string>& strs);
 napi_value CreateObject(const napi_env env);
 napi_value CreateObject(const napi_env env, const std::string& key, const napi_value value);
+napi_value CreateArray(const napi_env env);
 
+void SetElement(const napi_env env, const napi_value obj, uint32_t index, const napi_value value);
+void SetNamedProperty(const napi_env env, const napi_value obj, const std::string& key, const napi_value value);
 std::string ConvertToString(const napi_env env, const napi_value value);
 } // namespace NapiUtil
 } // namespace HiviewDFX

@@ -43,7 +43,9 @@ int AppEventBlock::Take(int size, std::vector<std::string>& packages)
 {
     int64_t seq = 0;
     int result = blockDao_->GetPackagesBySize(size, packages, seq);
-    if (result >= 0 && blockDao_->DeletePackageBySeq(seq) == DB_SUCC) {
+    if (result == 0) {
+        return DB_SUCC;
+    } else if (result > 0 && blockDao_->DeletePackageBySeq(seq) == DB_SUCC) {
         return result;
     }
     return DB_FAILED;

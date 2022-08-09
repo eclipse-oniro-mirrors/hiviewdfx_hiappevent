@@ -30,6 +30,7 @@ class AppEventStore;
 
 class AppEventCache : public DelayedSingleton<AppEventCache> {
 public:
+    bool IsOpen();
     int Open(const std::string& dir);
     int Close();
     int CreateBlock(const std::string& name);
