@@ -17,7 +17,7 @@ config("hiappevent_watcher_config") {
   visibility = [ "*:*" ]
   include_dirs = [
     "include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
   ]
 }
 
