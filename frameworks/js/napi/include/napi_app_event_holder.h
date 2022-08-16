@@ -25,7 +25,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct AppEventPackage {
-    AppEventPackage() : row(0), size(0), events(0) {}
+    AppEventPackage() : packageId(0), row(0), size(0), events(0) {}
     ~AppEventPackage() {}
     int packageId;
     int row;

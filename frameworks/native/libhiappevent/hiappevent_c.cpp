@@ -118,7 +118,7 @@ void AddStringArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const
     AddArrayParam(appEventPack, name, value->value.str_arr_v, value->arrSize);
 }
 
-const ParamAdder adders[] = {
+const ParamAdder PARAM_ADDERS[] = {
     &AddBoolParamValue,
     &AddBoolArrayParamValue,
     &AddInt8ParamValue,
@@ -144,8 +144,8 @@ void AddParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name
         return;
     }
     unsigned int paramType = value->type;
-    if (paramType < (sizeof(adders) / sizeof(adders[0]))) {
-        adders[paramType](appEventPack, name, value);
+    if (paramType < (sizeof(PARAM_ADDERS) / sizeof(PARAM_ADDERS[0]))) {
+        PARAM_ADDERS[paramType](appEventPack, name, value);
     } else {
         HiLog::Error(LABEL, "Failed to add the param because the param type is unknown.");
     }
