@@ -58,6 +58,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest001
      * @tc.desc: Test the write interface using callback.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest001', 0, async function (done) {
         console.info('HiAppEventJsTest001 start');
@@ -99,6 +100,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest002
      * @tc.desc: Test the write interface using promise.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest002', 0, async function (done) {
         console.info('HiAppEventJsTest002 start');
@@ -143,6 +145,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest003
      * @tc.desc: Error code 1 is returned when the event has an invalid key name.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest003', 0, async function (done) {
         console.info('HiAppEventJsTest003 start');
@@ -182,6 +185,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest004
      * @tc.desc: Error code 3 is returned when the event has an invalid value type.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest004', 0, async function (done) {
         console.info('HiAppEventJsTest004 start');
@@ -218,6 +222,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest005
      * @tc.desc: Error code 4 is returned when the event has an invalid string length.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest005', 0, async function (done) {
         console.info('HiAppEventJsTest005 start');
@@ -258,6 +263,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest006
      * @tc.desc: Error code 5 is returned when the event has too many params.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest006', 0, async function (done) {
         console.info('HiAppEventJsTest006 start');
@@ -293,6 +299,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest007
      * @tc.desc: Error code 6 is returned when there is an array with too many elements.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest007', 0, async function (done) {
         console.info('HiAppEventJsTest007 start');
@@ -331,6 +338,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest008
      * @tc.desc: Error code 7 is returned when there is an array with inconsistent or illegal parameter types.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest008', 0, async function (done) {
         console.info('HiAppEventJsTest008 start');
@@ -369,6 +377,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest009
      * @tc.desc: Error code -1 is returned when the event has invalid event name.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest009', 0, async function (done) {
         console.info('HiAppEventJsTest009 start');
@@ -406,6 +415,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest010
      * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsTest010', 0, async function (done) {
         console.info('HiAppEventJsTest010 start');
@@ -457,6 +467,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest011
      * @tc.desc: Error code -3 is returned when the event has invalid num of args.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
      it('HiAppEventJsTest011', 0, async function (done) {
         console.info('HiAppEventJsTest011 start');
@@ -477,6 +488,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsTest012
      * @tc.desc: Error code -4 is returned when the event has invalid event domain.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
      it('HiAppEventJsTest012', 0, async function (done) {
         console.info('HiAppEventJsTest012 start');
@@ -540,6 +552,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventJsPresetTest001
      * @tc.desc: Test preset events and preset parameters.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventJsPresetTest001', 0, async function (done) {
         console.info('HiAppEventJsPresetTest001 start');
@@ -586,6 +599,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventConfigureTest001
      * @tc.desc: Error code -99 is returned when the logging function is disabled.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventConfigureTest001', 0, async function (done) {
         console.info('HiAppEventConfigureTest001 start');
@@ -611,6 +625,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventConfigureTest002
      * @tc.desc: Correctly configure the event logging function.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventConfigureTest002', 0, function () {
         console.info('HiAppEventConfigureTest002 start');
@@ -641,6 +656,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventConfigureTest003
      * @tc.desc: Incorrectly configure the event logging function.
      * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
      */
     it('HiAppEventConfigureTest003', 0, function () {
         console.info('HiAppEventConfigureTest003 start');
@@ -668,6 +684,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventClearTest001
      * @tc.desc: clear the local data.
      * @tc.type: FUNC
+     * @tc.require: issueI5NTOS
      */
     it('HiAppEventClearTest001', 0, async function (done) {
         console.info('HiAppEventClearTest001 start');
@@ -696,6 +713,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest001
      * @tc.desc: invalid watcher type.
      * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest001', 0, function () {
         console.info('HiAppEventWatcherTest001 start');
@@ -713,6 +731,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest002
      * @tc.desc: invalid watcher name.
      * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest002', 0, function () {
         console.info('HiAppEventWatcherTest002 start');
@@ -752,6 +771,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest003
      * @tc.desc: invalid watcher trigger condition.
      * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest003', 0, function () {
         console.info('HiAppEventWatcherTest003 start');
@@ -818,6 +838,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest004
      * @tc.desc: invalid watcher filters.
      * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest004', 0, function () {
         console.info('HiAppEventWatcherTest004 start');
@@ -905,6 +926,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest005
      * @tc.desc: invalid watcher onTrigger.
      * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest005', 0, function () {
         console.info('HiAppEventWatcherTest005 start');
@@ -930,6 +952,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest006
      * @tc.desc: add valid watcher.
      * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest006', 0, function () {
         console.info('HiAppEventWatcherTest006 start');
@@ -1021,6 +1044,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest007
      * @tc.desc: watcher.onTrigger row test.
      * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
      */
     it('HiAppEventWatcherTest007', 0, async function (done) {
         console.info('HiAppEventWatcherTest007 start');
@@ -1070,6 +1094,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest008
      * @tc.desc: watcher.onTrigger size test.
      * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
      */
      it('HiAppEventWatcherTest008', 0, async function (done) {
         console.info('HiAppEventWatcherTest008 start');
@@ -1131,6 +1156,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest009
      * @tc.desc: watcher.onTrigger timeout test.
      * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
      */
      it('HiAppEventWatcherTest009', 0, async function (done) {
         console.info('HiAppEventWatcherTest009 start');
@@ -1180,6 +1206,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.name: HiAppEventWatcherTest010
      * @tc.desc: watcher.holder test.
      * @tc.type: FUNC
+     * @tc.require: issueI5NTOD
      */
      it('HiAppEventWatcherTest010', 0, async function (done) {
         console.info('HiAppEventWatcherTest010 start');

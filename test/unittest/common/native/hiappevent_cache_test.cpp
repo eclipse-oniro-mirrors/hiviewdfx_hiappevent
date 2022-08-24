@@ -42,7 +42,7 @@ void HiAppEventCacheTest::TearDown()
  * @tc.name: HiAppEventDBTest001
  * @tc.desc: check the successful result of DB operation.
  * @tc.type: FUNC
- * @tc.require: I5K0X6
+ * @tc.require: issueI5K0X6
  */
 HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest001, TestSize.Level0)
 {
@@ -85,7 +85,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest001, TestSize.Level0)
  * @tc.name: HiAppEventDBTest002
  * @tc.desc: check the failed result of DB operation.
  * @tc.type: FUNC
- * @tc.require: I5K0X6
+ * @tc.require: issueI5K0X6
  */
 HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest002, TestSize.Level0)
 {
@@ -120,7 +120,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest002, TestSize.Level0)
  * @tc.name: HiAppEventBlockTest001
  * @tc.desc: check the successful result of block operation.
  * @tc.type: FUNC
- * @tc.require: I5K0X6
+ * @tc.require: issueI5NTOD
  */
 HWTEST_F(HiAppEventCacheTest, HiAppEventBlockTest001, TestSize.Level0)
 {
@@ -176,7 +176,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventBlockTest001, TestSize.Level0)
  * @tc.name: HiAppEventCleanTest001
  * @tc.desc: check the cleaning function of DB.
  * @tc.type: FUNC
- * @tc.require: I5K0X6
+ * @tc.require: issueI5NTOS
  */
 HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest001, TestSize.Level1)
 {
@@ -227,7 +227,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest001, TestSize.Level1)
  * @tc.name: HiAppEventCleanTest002
  * @tc.desc: check the result of clear data.
  * @tc.type: FUNC
- * @tc.require: I5K0X6
+ * @tc.require: issueI5NTOS
  */
 HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest002, TestSize.Level1)
 {
