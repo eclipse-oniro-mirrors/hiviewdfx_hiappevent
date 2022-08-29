@@ -22,8 +22,13 @@
     "ram": "",
     "deps": {
       "components": [
-        "appexecfwk_standard",
-        "hiviewdfx_hilog_native"
+        "ability_base",
+        "bundle_framework",
+        "eventhandler",
+        "hitrace_native",
+        "hilog_native",
+        "ipc",
+        "relational_store"
       ],
       "third_party": []
     },

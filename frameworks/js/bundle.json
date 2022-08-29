@@ -22,13 +22,11 @@
     "ram": "",
     "deps": {
       "components": [
-        "hiappevent_native",
-        "hiviewdfx_hilog_native",
-        "napi"
+        "hilog_native",
+        "napi",
+        "relational_store"
       ],
-      "third_party": [
-        "node"
-      ]
+      "third_party": []
     },
     "build": {
       "sub_component": [
