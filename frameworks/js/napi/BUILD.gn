@@ -14,10 +14,7 @@
 import("//build/ohos.gni")
 
 ohos_shared_library("hiappevent") {
-  include_dirs = [
-    "include/",
-    "//third_party/node/src",
-  ]
+  include_dirs = [ "include/" ]
 
   sources = [
     "./src/napi_app_event_holder.cpp",
@@ -31,13 +28,11 @@ ohos_shared_library("hiappevent") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [
-    "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base",
-    "//foundation/arkui/napi:ace_napi",
-  ]
+  deps = [ "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog_native:libhilog",
+    "napi:ace_napi",
     "relational_store:native_rdb",
   ]
 
