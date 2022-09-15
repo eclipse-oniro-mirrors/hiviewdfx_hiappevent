@@ -50,13 +50,10 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   external_deps = [
-    "ability_base:configuration",
-    "ability_base:want",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hilog_native:libhilog",
     "hitrace_native:libhitrace",
-    "ipc:ipc_core",
     "relational_store:native_rdb",
   ]
 
