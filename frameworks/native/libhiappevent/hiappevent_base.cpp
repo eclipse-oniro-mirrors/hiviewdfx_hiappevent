@@ -47,7 +47,7 @@ std::string GetTimeInfo()
 {
     // get system timestamp
     struct timeval tv;
-    if (gettimeofday(&tv, NULL) != 0) {
+    if (gettimeofday(&tv, nullptr) != 0) {
         HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
         return "";
     }
