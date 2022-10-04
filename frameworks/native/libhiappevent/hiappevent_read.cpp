@@ -211,7 +211,7 @@ void LogAssistant::AllMatchedLogFiles(vector<string>& logFiles, TimeStampVarType
         // Sort all the matched log files in descending order
         sort(logFiles.begin(),
             logFiles.end(),
-            [](string file1, string file2)->bool {
+            [] (const string& file1, const string& file2)->bool {
                 return file1 > file2;
             });
     }
@@ -251,7 +251,7 @@ void LogAssistant::PullEventHistoryLog(TimeStampVarType beginTimeStamp,
     // Sort all the matched logs in ascending order
     sort(historyLogs.begin(),
         historyLogs.end(),
-        [](string log1, string log2)->bool {
+        [] (const string& log1, const string& log2)->bool {
             return log1 < log2;
         });
     if (historyLogPulledListener != nullptr) {

@@ -163,6 +163,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventBlockTest001, TestSize.Level0)
     ASSERT_EQ(result, DB_SUCC);
     std::pair<int, int64_t> statPair;
     result = block->GetStat(statPair);
+    ASSERT_EQ(result, DB_SUCC);
     ASSERT_EQ(statPair.first, ADD_NUM - 2);
     ASSERT_EQ(statPair.second, TEST_PACKAGE.size() * (ADD_NUM - 2));
 
