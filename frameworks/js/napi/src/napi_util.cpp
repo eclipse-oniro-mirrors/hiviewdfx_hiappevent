@@ -178,7 +178,7 @@ void GetInt32s(const napi_env env, const napi_value arr, std::vector<int32_t>& i
 
 double GetDouble(const napi_env env, const napi_value value)
 {
-    double dValue = false;
+    double dValue = 0;
     if (napi_get_value_double(env, value, &dValue) != napi_ok) {
         HiLog::Error(LABEL, "failed to get double value");
         return 0;
