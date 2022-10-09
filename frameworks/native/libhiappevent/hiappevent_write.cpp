@@ -67,7 +67,7 @@ bool WriteEventToFile(const std::string& filePath, const std::string& event)
 
 void TraceAppEventPack(const std::shared_ptr<AppEventPack>& appEventPack)
 {
-    HiTraceId hitraceId = HiTrace::GetId();
+    HiTraceId hitraceId = HiTraceChain::GetId();
     if (!hitraceId.IsValid()) {
         return;
     }
