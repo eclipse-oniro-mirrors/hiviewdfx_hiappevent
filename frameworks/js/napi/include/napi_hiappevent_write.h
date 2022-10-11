@@ -15,8 +15,6 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H
 #define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H
 
-#include <memory>
-
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
@@ -31,6 +29,19 @@ struct HiAppEventAsyncContext {
     napi_ref callback;
     std::shared_ptr<AppEventPack> appEventPack;
     int result;
+    bool isV9;
+
+    HiAppEventAsyncContext(napi_env env)
+    {
+        this->env = env;
+        this->asyncWork = nullptr;
+        this->deferred = nullptr;
+        this->callback = nullptr;
+        this->appEventPack = nullptr;
+        this->result = 0;
+        this->isV9 = false;
+    }
+    ~HiAppEventAsyncContext() {}
 };
 
 void Write(const napi_env env, HiAppEventAsyncContext* asyncContext);

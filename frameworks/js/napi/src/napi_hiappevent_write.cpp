@@ -14,10 +14,11 @@
  */
 #include "napi_hiappevent_write.h"
 
-#include <memory>
-#include <new>
+#include <map>
 
+#include "hiappevent_base.h"
 #include "hiappevent_write.h"
+#include "napi_error.h"
 #include "napi_util.h"
 
 using namespace OHOS::HiviewDFX;
@@ -29,6 +30,21 @@ namespace {
 constexpr size_t ERR_INDEX = 0;
 constexpr size_t VALUE_INDEX = 1;
 constexpr size_t RESULT_SIZE = 2;
+
+napi_value BuildErrorByResult(const napi_env env, int result)
+{
+    const std::map<int, std::pair<int, std::string>> errMap = {
+        { ErrorCode::ERROR_INVALID_EVENT_NAME, { NapiError::ERR_INVALID_NAME, "Invalid event name." } },
+        { ErrorCode::ERROR_INVALID_EVENT_DOMAIN, { NapiError::ERR_INVALID_DOMAIN, "Invalid event domain." } },
+        { ErrorCode::ERROR_HIAPPEVENT_DISABLE, { NapiError::ERR_DISABLE, "Function is disable." } },
+        { ErrorCode::ERROR_INVALID_PARAM_NAME, { NapiError::ERR_INVALID_KEY, "Invalid param name." } },
+        { ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH, { NapiError::ERR_INVALID_STR_LEN, "Invalid string length." } },
+        { ErrorCode::ERROR_INVALID_PARAM_NUM, { NapiError::ERR_INVALID_PARAM_NUM, "Invalid param num." } },
+        { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE, { NapiError::ERR_INVALID_ARR_LEN, "Invalid array length." } },
+    };
+    return errMap.find(result) == errMap.end() ? NapiUtil::CreateNull(env) :
+        NapiUtil::CreateError(env, errMap.at(result).first, errMap.at(result).second);
+}
 }
 
 void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
@@ -45,12 +61,16 @@ void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
             HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
             napi_value results[RESULT_SIZE] = { 0 };
             if (asyncContext->result == 0) {
-                results[ERR_INDEX] = NapiUtil::CreateUndefined(env);
+                results[ERR_INDEX] = NapiUtil::CreateNull(env);
                 results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
             } else {
-                results[ERR_INDEX] = NapiUtil::CreateObject(env, "code",
-                    NapiUtil::CreateInt32(env, asyncContext->result));
-                results[VALUE_INDEX] = NapiUtil::CreateUndefined(env);
+                if (asyncContext->isV9) {
+                    results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
+                } else {
+                    results[ERR_INDEX] = NapiUtil::CreateObject(env, "code",
+                        NapiUtil::CreateInt32(env, asyncContext->result));
+                }
+                results[VALUE_INDEX] = NapiUtil::CreateNull(env);
             }
 
             if (asyncContext->deferred != nullptr) { // promise

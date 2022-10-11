@@ -12,20 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <memory>
-#include <new>
-
-#include "app_event_watcher_mgr.h"
 #include "hiappevent_base.h"
-#include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
-#include "napi_app_event_holder.h"
 #include "napi_hiappevent_builder.h"
 #include "napi_hiappevent_config.h"
 #include "napi_hiappevent_init.h"
-#include "napi_hiappevent_watch.h"
 #include "napi_hiappevent_write.h"
 #include "napi_util.h"
 
@@ -42,11 +35,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
     napi_value params[PARAM_NUM] = { 0 };
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext {
-        .env = env,
-        .asyncWork = nullptr,
-        .deferred = nullptr,
-    };
+    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
     if (asyncContext == nullptr) {
         HiLog::Error(LABEL, "failed to new asyncContext.");
         return NapiUtil::CreateUndefined(env);
@@ -87,55 +76,17 @@ static napi_value Configure(napi_env env, napi_callback_info info)
     return NapiUtil::CreateBoolean(env, NapiHiAppEventConfig::Configure(env, params[0]));
 }
 
-static napi_value ClearData(napi_env env, napi_callback_info info)
-{
-    HiAppEventClean::ClearData(HiAppEventConfig::GetInstance().GetStorageDir());
-    return NapiUtil::CreateUndefined(env);
-}
-
-static napi_value AddWatcher(napi_env env, napi_callback_info info)
-{
-    constexpr size_t PARAM_NUM = 1; // param num is 1
-    size_t paramNum = PARAM_NUM;
-    napi_value params[PARAM_NUM] = { 0 };
-    NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
-    if (paramNum != PARAM_NUM) {
-        HiLog::Error(LABEL, "failed to check the number of addWatcher param");
-        return NapiUtil::CreateNull(env);
-    }
-    return NapiHiAppEventWatch::AddWatcher(env, params[0]);
-}
-
-static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
-{
-    constexpr size_t PARAM_NUM = 1; // param num is 1
-    size_t paramNum = PARAM_NUM;
-    napi_value params[PARAM_NUM] = { 0 };
-    NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
-    if (paramNum != PARAM_NUM) {
-        HiLog::Error(LABEL, "failed to check the number of removeWatcher param");
-        return NapiUtil::CreateUndefined(env);
-    }
-    return NapiHiAppEventWatch::RemoveWatcher(env, params[0]);
-}
-
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("write", Write),
-        DECLARE_NAPI_FUNCTION("configure", Configure),
-        DECLARE_NAPI_FUNCTION("clearData", ClearData),
-        DECLARE_NAPI_FUNCTION("addWatcher", AddWatcher),
-        DECLARE_NAPI_FUNCTION("removeWatcher", RemoveWatcher)
+        DECLARE_NAPI_FUNCTION("configure", Configure)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
 
     // init EventType class, Event class and Param class
     NapiHiAppEventInit::InitNapiClass(env, exports);
-
-    // init AppEventPackageHolder class
-    NapiAppEventHolder::NapiExport(env, exports);
     return exports;
 }
 EXTERN_C_END

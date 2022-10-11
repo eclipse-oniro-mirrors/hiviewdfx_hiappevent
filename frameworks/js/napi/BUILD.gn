@@ -17,12 +17,37 @@ ohos_shared_library("hiappevent") {
   include_dirs = [ "include/" ]
 
   sources = [
+    "./src/napi_hiappevent_builder.cpp",
+    "./src/napi_hiappevent_config.cpp",
+    "./src/napi_hiappevent_init.cpp",
+    "./src/napi_hiappevent_js.cpp",
+    "./src/napi_hiappevent_write.cpp",
+    "./src/napi_util.cpp",
+  ]
+
+  deps = [ "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [
+    "hilog_native:libhilog",
+    "napi:ace_napi",
+  ]
+
+  relative_install_dir = "module"
+
+  part_name = "hiappevent_js"
+  subsystem_name = "hiviewdfx"
+}
+
+ohos_shared_library("hiappevent_v9") {
+  include_dirs = [ "include/" ]
+
+  sources = [
     "./src/napi_app_event_holder.cpp",
     "./src/napi_app_event_watcher.cpp",
     "./src/napi_hiappevent_builder.cpp",
     "./src/napi_hiappevent_config.cpp",
     "./src/napi_hiappevent_init.cpp",
-    "./src/napi_hiappevent_js.cpp",
+    "./src/napi_hiappevent_js_v9.cpp",
     "./src/napi_hiappevent_watch.cpp",
     "./src/napi_hiappevent_write.cpp",
     "./src/napi_util.cpp",
@@ -36,7 +61,8 @@ ohos_shared_library("hiappevent") {
     "relational_store:native_rdb",
   ]
 
-  relative_install_dir = "module"
+  output_name = "hiappevent_napi"
+  relative_install_dir = "module/hiviewdfx"
 
   part_name = "hiappevent_js"
   subsystem_name = "hiviewdfx"

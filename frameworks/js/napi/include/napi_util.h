@@ -50,6 +50,7 @@ napi_value GetElement(const napi_env env, const napi_value arr, uint32_t index);
 napi_value GetProperty(const napi_env env, const napi_value object, const std::string& name);
 void GetPropertyNames(const napi_env env, const napi_value object, std::vector<std::string>& names);
 napi_value GetReferenceValue(const napi_env env, const napi_ref funcRef);
+size_t GetCbInfo(const napi_env env, napi_callback_info info, napi_value argv[], size_t argc = 4); // 4: default size
 
 napi_ref CreateReference(const napi_env env, const napi_value func);
 napi_value CreateNull(const napi_env env);
@@ -65,6 +66,12 @@ napi_value CreateArray(const napi_env env);
 void SetElement(const napi_env env, const napi_value obj, uint32_t index, const napi_value value);
 void SetNamedProperty(const napi_env env, const napi_value obj, const std::string& key, const napi_value value);
 std::string ConvertToString(const napi_env env, const napi_value value);
+
+void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow = true);
+napi_value CreateError(napi_env env, int code, const std::string& msg);
+std::string CreateErrMsg(const std::string name);
+std::string CreateErrMsg(const std::string name, const std::string& type);
+std::string CreateErrMsg(const std::string name, const napi_valuetype type);
 } // namespace NapiUtil
 } // namespace HiviewDFX
 } // namespace OHOS

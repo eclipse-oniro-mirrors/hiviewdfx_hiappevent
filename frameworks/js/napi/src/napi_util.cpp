@@ -156,7 +156,7 @@ void GetBooleans(const napi_env env, const napi_value arr, std::vector<bool>& bo
 
 int32_t GetInt32(const napi_env env, const napi_value value)
 {
-    int32_t iValue = false;
+    int32_t iValue = 0;
     if (napi_get_value_int32(env, value, &iValue) != napi_ok) {
         HiLog::Error(LABEL, "failed to get int32 value");
         return 0;
@@ -274,6 +274,16 @@ napi_value GetReferenceValue(const napi_env env, const napi_ref funcRef)
         return nullptr;
     }
     return refValue;
+}
+
+size_t GetCbInfo(const napi_env env, napi_callback_info info, napi_value argv[], size_t argc)
+{
+    size_t paramNum = argc;
+    if (napi_get_cb_info(env, info, &paramNum, argv, nullptr, nullptr) != napi_ok) {
+        HiLog::Error(LABEL, "failed to get callback info");
+        return 0;
+    }
+    return paramNum;
 }
 
 napi_ref CreateReference(const napi_env env, const napi_value func)
@@ -402,7 +412,7 @@ std::string ConvertToString(const napi_env env, const napi_value value)
 
     std::string result = "";
     switch (type) {
-        case napi_boolean: {}
+        case napi_boolean:
             result = GetBoolean(env, value) ? "true" : "false";
             break;
         case napi_number:
@@ -415,6 +425,59 @@ std::string ConvertToString(const napi_env env, const napi_value value)
             break;
     }
     return result;
+}
+
+void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow)
+{
+    // no error needs to be thrown before api 9
+    if (!isThrow) {
+        return;
+    }
+
+    if (napi_throw_error(env, std::to_string(code).c_str(), msg.c_str()) != napi_ok) {
+        HiLog::Error(LABEL, "failed to throw error, code=%{public}d, msg=%{public}s", code, msg.c_str());
+    }
+}
+
+napi_value CreateError(napi_env env, int code, const std::string& msg)
+{
+    napi_value err = nullptr;
+    if (napi_create_error(env, CreateString(env, std::to_string(code)), CreateString(env, msg), &err) != napi_ok) {
+        HiLog::Error(LABEL, "failed to create error");
+        return nullptr;
+    }
+    return err;
+}
+
+std::string CreateErrMsg(const std::string name)
+{
+    return "Parameter error. The " + name + " parameter is mandatory.";
+}
+
+std::string CreateErrMsg(const std::string name, const std::string& type)
+{
+    return "Parameter error. The type of " + name + " must be " + type + ".";
+}
+std::string CreateErrMsg(const std::string name, const napi_valuetype type)
+{
+    std::string typeStr = "";
+    switch (type) {
+        case napi_boolean:
+            typeStr = "boolean";
+            break;
+        case napi_number:
+            typeStr = "number";
+            break;
+        case napi_string:
+            typeStr = "string";
+            break;
+        case napi_object:
+            typeStr = "object";
+            break;
+        default:
+            break;
+    }
+    return CreateErrMsg(name, typeStr);
 }
 } // namespace NapiUtil
 } // namespace HiviewDFX

@@ -190,6 +190,11 @@ bool IsValidWatcherName(const std::string& watcherName)
     return std::regex_match(watcherName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"));
 }
 
+bool IsValidEventType(int eventType)
+{
+    return eventType >= 1 && eventType <= 4; // 1-4: value range of event type
+}
+
 int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
