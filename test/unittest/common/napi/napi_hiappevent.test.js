@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import hiAppEventV9 from "@ohos.hiviewdfx.hiAppEvent"
 import hiAppEvent from "@ohos.hiAppEvent"
 
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
@@ -46,6 +47,12 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest afterEach called')
     })
 
+    const TEST_DOMAIN = 'test_domain';
+    const TEST_NAME = 'test_name';
+    const TEST_TYPE = hiAppEvent.EventType.FAULT;
+    const TEST_TYPE_V9 = hiAppEventV9.EventType.FAULT;
+    const TEST_PARAMS = {};
+
     function simpleTrigger(curRow, curSize, holder) {
         console.info("HiAppEventJsTest onTrigger curRow=" + curRow);
         console.info("HiAppEventJsTest onTrigger curSize=" + curSize);
@@ -54,16 +61,123 @@ describe('HiAppEventJsTest', function () {
         }
     }
 
+    function simpleWriteV9Test() {
+        hiAppEventV9.write({
+            domain: "test_domain",
+            name: "test_name",
+            eventType: hiAppEventV9.EventType.FAULT,
+            params: {}
+        }, (err) => {
+            expect(err).assertNull()
+        });
+    }
+
+    function createError(code, message) {
+        return { code: code.toString(), message: message };
+    }
+
+    function createError2(name, type) {
+        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
+    }
+
+    function createError3(name) {
+        return { code: "401", message: "Parameter error. The " + name + " parameter is mandatory." };
+    }
+
+    function assertErrorEqual(actualErr, expectErr) {
+        if (expectErr) {
+            expect(actualErr.code).assertEqual(expectErr.code)
+            expect(actualErr.message).assertEqual(expectErr.message)
+        } else {
+            expect(actualErr).assertNull();
+        }
+    }
+
+    function writeTest(name, type, params, code, done) {
+        hiAppEvent.write(name, type, params, (err, value) => {
+            let result = err ? err.code : value;
+            expect(result).assertEqual(code);
+            console.info('HiAppEventJsTest writeTest end, result=' + result);
+            done();
+        });
+    }
+
+    function writeParamsTest(params, code, done) {
+        writeTest(TEST_NAME, TEST_TYPE, params, code, done);
+    }
+
+    function writeNameTest(name, code, done) {
+        writeTest(name, TEST_TYPE, TEST_PARAMS, code, done);
+    }
+
+    function writeV9Test(eventInfo, expectErr, done, hasCatch) {
+        if (hasCatch) {
+            try {
+                hiAppEventV9.write(eventInfo, (err) => {
+                    expect(err).assertNull()
+                });
+            } catch (err) {
+                assertErrorEqual(err, expectErr);
+                console.info('HiAppEventJsTest writeV9Test_catch end');
+                done();
+            }
+        } else {
+            hiAppEventV9.write(eventInfo, (err) => {
+                assertErrorEqual(err, expectErr);
+                console.info('HiAppEventJsTest writeV9Test end');
+                done();
+            });
+        }
+    }
+
+    function writeParamsV9Test(params, expectErr, done, hasCatch) {
+        let eventInfo = {
+            domain: TEST_DOMAIN,
+            name: TEST_NAME,
+            eventType: TEST_TYPE_V9,
+            params: params
+        };
+        writeV9Test(eventInfo, expectErr, done, hasCatch);
+    }
+
+    function writeDomainV9Test(domain, expectErr, done, hasCatch) {
+        let eventInfo = {
+            domain: domain,
+            name: TEST_NAME,
+            eventType: TEST_TYPE_V9,
+            params: TEST_PARAMS
+        };
+        writeV9Test(eventInfo, expectErr, done, hasCatch);
+    }
+
+    function writeNameV9Test(name, expectErr, done, hasCatch) {
+        let eventInfo = {
+            domain: TEST_DOMAIN,
+            name: name,
+            eventType: TEST_TYPE_V9,
+            params: TEST_PARAMS
+        };
+        writeV9Test(eventInfo, expectErr, done, hasCatch);
+    }
+
+    function writeTypeV9Test(type, expectErr, done, hasCatch) {
+        let eventInfo = {
+            domain: TEST_DOMAIN,
+            name: TEST_NAME,
+            eventType: type,
+            params: TEST_PARAMS
+        };
+        writeV9Test(eventInfo, expectErr, done, hasCatch);
+    }
+
     /**
-     * @tc.name: HiAppEventJsTest001
+     * @tc.name: HiAppEventJsTest001_1
      * @tc.desc: Test the write interface using callback.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest001', 0, async function (done) {
-        console.info('HiAppEventJsTest001 start');
-        let name = "name_test1";
-        let type = hiAppEvent.EventType.BEHAVIOR;
+    it('HiAppEventJsTest001_1', 0, async function (done) {
+        console.info('HiAppEventJsTest001_1 start');
         let params = {
             "key_int": 100,
             "key_string": "strValue",
@@ -74,83 +188,80 @@ describe('HiAppEventJsTest', function () {
             "key_float_arr": [1.1, 2.2, 3.0],
             "key_bool_arr": [true, false, true]
         };
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(0);
-            done();
-            console.info('HiAppEventJsTest001_1 end');
-        });
-
-        let domain = "domain_test1";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(0);
-            done();
-            console.info('HiAppEventJsTest001_2 end');
-        });
+        writeParamsTest(params, 0, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest002
+     * @tc.name: HiAppEventJsTest001_2
+     * @tc.desc: Test the write interface using callback.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest001_2', 0, async function (done) {
+        console.info('HiAppEventJsTest001_2 start');
+        let params = {
+            "key_int": 100,
+            "key_string": "strValue",
+            "key_bool": true,
+            "key_float": 30949.374,
+            "key_int_arr": [1, 2, 3],
+            "key_string_arr": ["a", "b", "c"],
+            "key_float_arr": [1.1, 2.2, 3.0],
+            "key_bool_arr": [true, false, true]
+        };
+        writeParamsV9Test(params, null, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest002_1
      * @tc.desc: Test the write interface using promise.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest002', 0, async function (done) {
-        console.info('HiAppEventJsTest002 start');
-        let name = "name_test2";
-        let type = hiAppEvent.EventType.FAULT;
-        let params = {};
-        hiAppEvent.write(name, type, params).then((value) => {
+    it('HiAppEventJsTest002_1', 0, async function (done) {
+        console.info('HiAppEventJsTest002_1 start');
+        hiAppEvent.write(TEST_NAME, TEST_TYPE_V9, TEST_PARAMS).then((value) => {
             let result = value;
             expect(result).assertEqual(0);
+            console.info('HiAppEventJsTest002_1 succ');
             done()
-            console.info('HiAppEventJsTest002_1 end');
         }).catch((err) => {
-            let result = err.code;
-            expect(result).assertEqual(0);
+            expect().assertFail();
             done()
-            console.info('HiAppEventJsTest002_2 end');
         });
-
-
-        let domain = "domain_test2";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo).then((value) => {
-            let result = value;
-            expect(result).assertEqual(0);
-            done()
-            console.info('HiAppEventJsTest002_3 end');
-        }).catch((err) => {
-            let result = err.code;
-            expect(result).assertEqual(0);
-            done()
-            console.info('HiAppEventJsTest002_4 end');
-        });
-        expect(result).assertEqual(0);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest003
+     * @tc.name: HiAppEventJsTest002_2
+     * @tc.desc: Test the write interface using promise.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest002_2', 0, async function (done) {
+        console.info('HiAppEventJsTest002_2 start');
+        let eventInfo = {
+            domain: TEST_DOMAIN,
+            name: TEST_NAME,
+            eventType: TEST_TYPE_V9,
+            params: TEST_PARAMS
+        };
+        hiAppEventV9.write(eventInfo).then(() => {
+            console.info('HiAppEventJsTest002_2 succ');
+            done();
+        }).catch((err) => {
+            expect().assertFail();
+            done();
+        });
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest003_1
      * @tc.desc: Error code 1 is returned when the event has an invalid key name.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest003', 0, async function (done) {
-        console.info('HiAppEventJsTest003 start');
-        let name = "name_test3";
-        let type = hiAppEvent.EventType.STATISTIC;
+    it('HiAppEventJsTest003_1', 0, async function (done) {
+        console.info('HiAppEventJsTest003_1 start');
         let params = {
             "**":"ha",
             "key_int":1,
@@ -159,77 +270,72 @@ describe('HiAppEventJsTest', function () {
             "":"empty",
             "aa_":"underscore"
         };
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(1)
-            done()
-            console.info('HiAppEventJsTest003_1 end');
-        });
-
-        let domain = "domain_test3";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(1)
-            done()
-            console.info('HiAppEventJsTest003_2 end');
-        });
+        writeParamsTest(params, 1, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest004
+     * @tc.name: HiAppEventJsTest003_2
+     * @tc.desc: Error code 11101005 is returned when the event has an invalid key name.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest003_2', 0, async function (done) {
+        console.info('HiAppEventJsTest003_2 start');
+        let params = {
+            "**":"ha",
+            "key_int":1,
+            "HH22":"ha",
+            "key_str":"str",
+            "":"empty",
+            "aa_":"underscore"
+        };
+        let expectErr = createError(11101005, "Invalid param name.");
+        writeParamsV9Test(params, expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest004_1
      * @tc.desc: Error code 3 is returned when the event has an invalid value type.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest004', 0, async function (done) {
-        console.info('HiAppEventJsTest004 start');
-        let name = "name_test4";
-        let type = hiAppEvent.EventType.SECURITY;
+    it('HiAppEventJsTest004_1', 0, async function (done) {
+        console.info('HiAppEventJsTest004_1 start');
         let params = {
             key_1_invalid: {},
             key_2_invalid: null,
             key_str: "str"
         };
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(3)
-            done()
-            console.info('HiAppEventJsTest004_1 end');
-        });
-
-        let domain = "domain_test4";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(3)
-            done()
-            console.info('HiAppEventJsTest004_2 end');
-        });
+        writeParamsTest(params, 3, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest005
+     * @tc.name: HiAppEventJsTest004_2
+     * @tc.desc: Error code 401 is returned when the event has an invalid value type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest004_2', 0, async function (done) {
+        console.info('HiAppEventJsTest004_2 start');
+        let params = {
+            key_1_invalid: {},
+            key_2_invalid: null,
+            key_str: "str"
+        };
+        let expectErr = createError2("param value", "boolean|number|string|array[boolean|number|string]");
+        writeParamsV9Test(params, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest005_1
      * @tc.desc: Error code 4 is returned when the event has an invalid string length.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest005', 0, async function (done) {
-        console.info('HiAppEventJsTest005 start');
+    it('HiAppEventJsTest005_1', 0, async function (done) {
+        console.info('HiAppEventJsTest005_1 start');
         let longStr = "a".repeat(8 * 1024);
         let invalidStr = "a".repeat(8 * 1024 + 1);
-        let name = "name_test5";
-        let type = hiAppEvent.EventType.SECURITY;
         let params = {
             key_long: longStr,
             key_i_long: invalidStr,
@@ -237,113 +343,106 @@ describe('HiAppEventJsTest', function () {
             key_i_long_arr: ["ha", invalidStr],
             key_str: "str"
         };
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(4)
-            done()
-            console.info('HiAppEventJsTest005_1 end');
-        });
-
-        let domain = "domain_test5";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(4)
-            done()
-            console.info('HiAppEventJsTest005_2 end');
-        });
+        writeParamsTest(params, 4, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest006
+     * @tc.name: HiAppEventJsTest005_2
+     * @tc.desc: Error code 11101004 is returned when the event has an invalid string length.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest005_2', 0, async function (done) {
+        console.info('HiAppEventJsTest005_2 start');
+        let longStr = "a".repeat(8 * 1024);
+        let invalidStr = "a".repeat(8 * 1024 + 1);
+        let params = {
+            key_long: longStr,
+            key_i_long: invalidStr,
+            key_long_arr: ["ha", longStr],
+            key_i_long_arr: ["ha", invalidStr],
+            key_str: "str"
+        };
+        let expectErr = createError(11101004, "Invalid string length.");
+        writeParamsV9Test(params, expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest006_1
      * @tc.desc: Error code 5 is returned when the event has too many params.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest006', 0, async function (done) {
-        console.info('HiAppEventJsTest006 start');
-        let name = "name_test6";
-        let type = hiAppEvent.EventType.SECURITY;
+    it('HiAppEventJsTest006_1', 0, async function (done) {
+        console.info('HiAppEventJsTest006_1 start');
         let params = {};
         for (var i = 1; i <= 33; i++) {
             params["key" + i] = "value" + i;
         }
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(5)
-            done()
-            console.info('HiAppEventJsTest006_1 end');
-        });
-
-        let domain = "domain_test6";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(5)
-            done()
-            console.info('HiAppEventJsTest006_2 end');
-        });
+        writeParamsTest(params, 5, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest007
+     * @tc.name: HiAppEventJsTest006_2
+     * @tc.desc: Error code 11101003 is returned when the event has too many params.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest006_2', 0, async function (done) {
+        console.info('HiAppEventJsTest006_2 start');
+        let params = {};
+        for (var i = 1; i <= 33; i++) {
+            params["key" + i] = "value" + i;
+        }
+        let expectErr = createError(11101003, "Invalid param num.");
+        writeParamsV9Test(params, expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest007_1
      * @tc.desc: Error code 6 is returned when there is an array with too many elements.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest007', 0, async function (done) {
-        console.info('HiAppEventJsTest007 start');
+    it('HiAppEventJsTest007_1', 0, async function (done) {
+        console.info('HiAppEventJsTest007_1 start');
         let longArr = new Array(100).fill(1);
         let iLongArr = new Array(101).fill("a");
-        let name = "name_test7";
-        let type = hiAppEvent.EventType.SECURITY;
         let params = {
             key_long_arr: longArr,
             key_i_long_arr: iLongArr,
             key_str: "str"
         };
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(6)
-            done()
-            console.info('HiAppEventJsTest007_1 end');
-        });
-
-        let domain = "domain_test7";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(6)
-            done()
-            console.info('HiAppEventJsTest007_2 end');
-        });
+        writeParamsTest(params, 6, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest008
+     * @tc.name: HiAppEventJsTest007_2
+     * @tc.desc: Error code 11101006 is returned when there is an array with too many elements.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest007_2', 0, async function (done) {
+        console.info('HiAppEventJsTest007_2 start');
+        let longArr = new Array(100).fill(1);
+        let iLongArr = new Array(101).fill("a");
+        let params = {
+            key_long_arr: longArr,
+            key_i_long_arr: iLongArr,
+            key_str: "str"
+        };
+        let expectErr = createError(11101006, "Invalid array length.");
+        writeParamsV9Test(params, expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest008_1
      * @tc.desc: Error code 7 is returned when there is an array with inconsistent or illegal parameter types.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest008', 0, async function (done) {
-        console.info('HiAppEventJsTest008 start');
-        let name = "name_test8";
-        let type = hiAppEvent.EventType.SECURITY;
+    it('HiAppEventJsTest008_1', 0, async function (done) {
+        console.info('HiAppEventJsTest008_1 start');
         let params = {
             key_arr_null: [null, null],
             key_arr_obj: [{}],
@@ -351,274 +450,426 @@ describe('HiAppEventJsTest', function () {
             key_arr_not_same2:[123, "ha"],
             key_str: "str"
         };
-        hiAppEvent.write(name, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(7)
-            done()
-            console.info('HiAppEventJsTest008_1 end');
-        });
-
-        let domain = "domain_test8";
-        let eventInfo = {
-            domain: domain,
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(7)
-            done()
-            console.info('HiAppEventJsTest008_2 end');
-        });
+        writeParamsTest(params, 7, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest009
+     * @tc.name: HiAppEventJsTest008_2
+     * @tc.desc: Error code 401 is returned when there is an array with inconsistent or illegal parameter types.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest008_2', 0, async function (done) {
+        console.info('HiAppEventJsTest008_2 start');
+        let params = {
+            key_arr_null: [null, null],
+            key_arr_obj: [{}],
+            key_arr_not_same1:[true, "ha"],
+            key_arr_not_same2:[123, "ha"],
+            key_str: "str"
+        };
+        let expectErr = createError2("param value", "boolean|number|string|array[boolean|number|string]");
+        writeParamsV9Test(params, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest009_1
      * @tc.desc: Error code -1 is returned when the event has invalid event name.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest009', 0, async function (done) {
-        console.info('HiAppEventJsTest009 start');
-        let type = hiAppEvent.EventType.STATISTIC;
-        let params = {};
-        hiAppEvent.write("verify_test_1.**1", type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-1)
-            done()
-            console.info('HiAppEventJsTest009_1 end');
-        });
-
-        hiAppEvent.write("VVV", type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-1)
-            done()
-            console.info('HiAppEventJsTest009_2 end');
-        });
-
-        let eventInfo = {
-            domain: "domain_test9",
-            name: "",
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-1)
-            done()
-            console.info('HiAppEventJsTest009_3 end');
-        });
+    it('HiAppEventJsTest009_1', 0, async function (done) {
+        console.info('HiAppEventJsTest009_1 start');
+        writeNameTest("verify_test_1.**1", -1, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest010
+     * @tc.name: HiAppEventJsTest009_2
+     * @tc.desc: Error code 11101002 is returned when the event has invalid event name.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest009_2', 0, async function (done) {
+        console.info('HiAppEventJsTest009_2 start');
+        let expectErr = createError(11101002, "Invalid event name.");
+        writeNameV9Test("", expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest009_3
+     * @tc.desc: Error code 11101002 is returned when the event has invalid event name.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest009_3', 0, async function (done) {
+        console.info('HiAppEventJsTest009_3 start');
+        let expectErr = createError(11101002, "Invalid event name.");
+        writeNameV9Test("VVtt", expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest009_4
+     * @tc.desc: Error code 11101002 is returned when the event has invalid event name.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest009_4', 0, async function (done) {
+        console.info('HiAppEventJsTest009_3 start');
+        let expectErr = createError(11101002, "Invalid event name.");
+        writeNameV9Test("a".repeat(49), expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest010_1
      * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest010', 0, async function (done) {
-        console.info('HiAppEventJsTest010 start');
-        let type = hiAppEvent.EventType.STATISTIC;
-        let params = {};
-        hiAppEvent.write(null, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-2)
-            done()
-            console.info('HiAppEventJsTest010_1 end');
-        });
-        hiAppEvent.write(123, type, params, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-2)
-            done()
-            console.info('HiAppEventJsTest010_2 end');
-        });
-
-        let domain = "domain_test10";
-        let name = "name_test10";
-        let eventInfo1 = {
-            domain: domain,
-            name: name,
-            eventType: "invalid type",
-            params: params
-        };
-        hiAppEvent.write(eventInfo1, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-2)
-            done()
-            console.info('HiAppEventJsTest010_3 end');
-        });
-
-        let eventInfo2 = {
-            domain: domain,
-            name: name,
-            eventType: null,
-            params: params
-        };
-        hiAppEvent.write(eventInfo2, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-2)
-            done()
-            console.info('HiAppEventJsTest010_4 end');
-        });
+    it('HiAppEventJsTest010_1', 0, async function (done) {
+        console.info('HiAppEventJsTest010_1 start');
+        writeTest(null, TEST_TYPE, TEST_PARAMS, -2, done);
     });
 
     /**
-     * @tc.name: HiAppEventJsTest011
+     * @tc.name: HiAppEventJsTest010_2
+     * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest010_1', 0, async function (done) {
+        console.info('HiAppEventJsTest010_1 start');
+        writeTest(TEST_NAME, "invalid", TEST_PARAMS, -2, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest010_3
+     * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest010_3', 0, async function (done) {
+        console.info('HiAppEventJsTest010_3 start');
+
+        // invalid AppEventInfo type
+        let expectErr = createError2("info", "AppEventInfo");
+        writeV9Test(null, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest010_4
+     * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest010_4', 0, async function (done) {
+        console.info('HiAppEventJsTest010_4 start');
+
+        // invalid event domain type
+        let expectErr = createError2("domain", "string");
+        writeDomainV9Test(true, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest010_5
+     * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest010_5', 0, async function (done) {
+        console.info('HiAppEventJsTest010_5 start');
+
+        // invalid event name type
+        let expectErr = createError2("name", "string");
+        writeNameV9Test(null, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest010_6
+     * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest010_6', 0, async function (done) {
+        console.info('HiAppEventJsTest010_6 start');
+
+        // invalid eventType type
+        let expectErr = createError2("eventType", "EventType");
+        writeTypeV9Test(-1, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest010_7
+     * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest010_7', 0, async function (done) {
+        console.info('HiAppEventJsTest010_7 start');
+
+        // invalid event params type
+        let expectErr = createError2("params", "object");
+        writeParamsV9Test(null, expectErr, done, true);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest011_1
      * @tc.desc: Error code -3 is returned when the event has invalid num of args.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-     it('HiAppEventJsTest011', 0, async function (done) {
-        console.info('HiAppEventJsTest011 start');
-        hiAppEvent.write().then((value) => {
-            let result = value;
-            expect(result).assertEqual(-3);
-            done()
-            console.info('HiAppEventJsTest011_1 end');
+    it('HiAppEventJsTest011_1', 0, async function (done) {
+        console.info('HiAppEventJsTest011_1 start');
+        hiAppEvent.write().then(() => {
+            expect().assertFail();
+            done();
         }).catch((err) => {
             let result = err.code;
             expect(result).assertEqual(-3);
-            done()
-            console.info('HiAppEventJsTest011_2 end');
+            done();
+            console.info('HiAppEventJsTest011_1 end');
         });
     });
 
     /**
-     * @tc.name: HiAppEventJsTest012
-     * @tc.desc: Error code -4 is returned when the event has invalid event domain.
+     * @tc.name: HiAppEventJsTest011_2
+     * @tc.desc: Error code 401 is returned when the event has invalid num of args.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-     it('HiAppEventJsTest012', 0, async function (done) {
-        console.info('HiAppEventJsTest012 start');
-        let name = "domain_test12";
-        let type = hiAppEvent.EventType.STATISTIC;
-        let params = {};
-        let eventInfo1 = {
-            domain: "domain***",
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo1, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-4)
-            done()
-            console.info('HiAppEventJsTest012_1 end');
-        });
+    it('HiAppEventJsTest011_2', 0, async function (done) {
+        console.info('HiAppEventJsTest011_2 start');
 
-        let eventInfo2 = {
-            domain: "domainTest",
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo2, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-4)
-            done()
-            console.info('HiAppEventJsTest012_2 end');
-        });
-
-        let eventInfo3 = {
-            domain: "",
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo3, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-4)
-            done()
-            console.info('HiAppEventJsTest012_3 end');
-        });
-
-        let eventInfo4 = {
-            domain: "a".repeat(17),
-            name: name,
-            eventType: type,
-            params: params
-        };
-        hiAppEvent.write(eventInfo4, (err ,value) => {
-            let result = err ? err.code : value;
-            expect(result).assertEqual(-4)
-            done()
-            console.info('HiAppEventJsTest012_4 end');
-        });
+        // AppEventInfo not passed in
+        try {
+            hiAppEventV9.write();
+        } catch (err) {
+            let expectErr = createError3("info")
+            assertErrorEqual(err, expectErr)
+            console.info('HiAppEventJsTest011_2 end');
+        }
+        done();
     });
 
     /**
-     * @tc.name: HiAppEventJsPresetTest001
+     * @tc.name: HiAppEventJsTest011_3
+     * @tc.desc: Error code 401 is returned when the event has invalid num of args.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest011_3', 0, async function (done) {
+        console.info('HiAppEventJsTest011_3 start');
+
+        // event domain not passed in
+        try {
+            hiAppEventV9.write({
+                name: TEST_NAME,
+                eventType: TEST_TYPE_V9,
+                params: TEST_PARAMS,
+            });
+        } catch (err) {
+            let expectErr = createError3("domain")
+            assertErrorEqual(err, expectErr)
+            console.info('HiAppEventJsTest011_3 end');
+        }
+        done();
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest011_4
+     * @tc.desc: Error code 401 is returned when the event has invalid num of args.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest011_4', 0, async function (done) {
+        console.info('HiAppEventJsTest011_4 start');
+
+        // event name not passed in
+        try {
+            hiAppEventV9.write({
+                domain: TEST_DOMAIN,
+                eventType: TEST_TYPE_V9,
+                params: TEST_PARAMS,
+            });
+        } catch (err) {
+            let expectErr = createError3("name")
+            assertErrorEqual(err, expectErr)
+            console.info('HiAppEventJsTest011_4 end');
+        }
+        done();
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest011_5
+     * @tc.desc: Error code 401 is returned when the event has invalid num of args.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest011_5', 0, async function (done) {
+        console.info('HiAppEventJsTest011_5 start');
+
+        // event type not passed in
+        try {
+            hiAppEventV9.write({
+                domain: TEST_DOMAIN,
+                name: TEST_NAME,
+                params: TEST_PARAMS,
+            });
+        } catch (err) {
+            let expectErr = createError3("eventType")
+            assertErrorEqual(err, expectErr)
+            console.info('HiAppEventJsTest011_5 end');
+        }
+        done();
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest011_6
+     * @tc.desc: Error code 401 is returned when the event has invalid num of args.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest011_6', 0, async function (done) {
+        console.info('HiAppEventJsTest011_6 start');
+
+        // event params not passed in
+        try {
+            hiAppEventV9.write({
+                domain: TEST_DOMAIN,
+                name: TEST_NAME,
+                eventType: TEST_TYPE_V9,
+            });
+        } catch (err) {
+            let expectErr = createError3("params")
+            assertErrorEqual(err, expectErr)
+            console.info('HiAppEventJsTest011_6 end');
+        }
+        done();
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest012_1
+     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest012_1', 0, async function (done) {
+        console.info('HiAppEventJsTest012_1 start');
+        let expectErr = createError(11101001, "Invalid event domain.");
+        writeDomainV9Test("domain***", expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest012_2
+     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest012_2', 0, async function (done) {
+        console.info('HiAppEventJsTest012_2 start');
+        let expectErr = createError(11101001, "Invalid event domain.");
+        writeDomainV9Test("domainTest", expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest012_3
+     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest012_3', 0, async function (done) {
+        console.info('HiAppEventJsTest012_3 start');
+        let expectErr = createError(11101001, "Invalid event domain.");
+        writeDomainV9Test("", expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsTest012_4
+     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest012_4', 0, async function (done) {
+        console.info('HiAppEventJsTest012_4 start');
+        let expectErr = createError(11101001, "Invalid event domain.");
+        writeDomainV9Test("a".repeat(17), expectErr, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsPresetTest001_1
      * @tc.desc: Test preset events and preset parameters.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsPresetTest001', 0, async function (done) {
-        console.info('HiAppEventJsPresetTest001 start');
-        hiAppEvent.write(hiAppEvent.Event.USER_LOGIN, hiAppEvent.EventType.FAULT,
-            {
-                [hiAppEvent.Param.USER_ID]:"123456"
-            },
-            (err ,value) => {
-                let result = err ? err.code : value;
-                expect(result).assertEqual(0)
-                done()
-                console.info('HiAppEventJsPresetTest001_1 end');
-            }
-        );
-
-        hiAppEvent.write(hiAppEvent.Event.USER_LOGOUT, hiAppEvent.EventType.STATISTIC,
-            {
-                [hiAppEvent.Param.USER_ID]:"123456"
-            },
-            (err ,value) => {
-                let result = err ? err.code : value;
-                expect(result).assertEqual(0)
-                done()
-                console.info('HiAppEventJsPresetTest001_2 end');
-            }
-        );
-
-        hiAppEvent.write(hiAppEvent.Event.DISTRIBUTED_SERVICE_START, hiAppEvent.EventType.SECURITY,
-            {
-                [hiAppEvent.Param.DISTRIBUTED_SERVICE_NAME]:"test_service",
-                [hiAppEvent.Param.DISTRIBUTED_SERVICE_INSTANCE_ID]:"123",
-            },
-            (err ,value) => {
-                let result = err ? err.code : value;
-                expect(result).assertEqual(0)
-                done()
-                console.info('HiAppEventJsPresetTest001_3 end');
-            }
-        );
-        console.info('HiAppEventJsPresetTest001 end');
+    it('HiAppEventJsPresetTest001_1', 0, async function (done) {
+        console.info('HiAppEventJsPresetTest001_1 start');
+        writeTest(hiAppEvent.Event.USER_LOGIN, hiAppEvent.EventType.FAULT, {
+            [hiAppEvent.Param.USER_ID]: "123456"
+        }, 0, done);
     });
 
     /**
-     * @tc.name: HiAppEventConfigureTest001
+     * @tc.name: HiAppEventJsPresetTest001_2
+     * @tc.desc: Test preset events and preset parameters.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+     it('HiAppEventJsPresetTest001_2', 0, async function (done) {
+        console.info('HiAppEventJsPresetTest001_2 start');
+        writeTest(hiAppEvent.Event.USER_LOGOUT, hiAppEvent.EventType.STATISTIC, {
+            [hiAppEvent.Param.USER_ID]: "123456"
+        }, 0, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventJsPresetTest001_3
+     * @tc.desc: Test preset events and preset parameters.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+     it('HiAppEventJsPresetTest001_3', 0, async function (done) {
+        console.info('HiAppEventJsPresetTest001_3 start');
+        let eventInfo = {
+            domain: TEST_DOMAIN,
+            name: hiAppEventV9.Event.DISTRIBUTED_SERVICE_START,
+            eventType: hiAppEventV9.EventType.SECURITY,
+            params: {
+                [hiAppEventV9.Param.DISTRIBUTED_SERVICE_NAME]: "test_service",
+                [hiAppEventV9.Param.DISTRIBUTED_SERVICE_INSTANCE_ID]: "123",
+            },
+        };
+        writeV9Test(eventInfo, null, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventConfigureTest001_1
      * @tc.desc: Error code -99 is returned when the logging function is disabled.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventConfigureTest001', 0, async function (done) {
-        console.info('HiAppEventConfigureTest001 start');
+    it('HiAppEventConfigureTest001_1', 0, async function (done) {
+        console.info('HiAppEventConfigureTest001_1 start');
         let res = hiAppEvent.configure({
             disable: true
         });
         expect(res).assertTrue();
 
-        hiAppEvent.write("base_test13", hiAppEvent.EventType.SECURITY,
-            {
-                "key_str": "str",
-            },
-            (err ,value) => {
-                let result = err ? err.code : value;
-                expect(result).assertEqual(-99)
-                done()
-                console.info('HiAppEventConfigureTest001 end');
-            }
-        );
+        writeNameTest("config_test", -99, done);
+    });
+
+    /**
+     * @tc.name: HiAppEventConfigureTest001_2
+     * @tc.desc: Error code 11100001 is returned when the logging function is disabled.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+     it('HiAppEventConfigureTest001_2', 0, async function (done) {
+        console.info('HiAppEventConfigureTest001_2 start');
+        hiAppEventV9.configure({
+            disable: true
+        });
+
+        let expectErr = createError(11100001, "Function is disable.");
+        writeNameV9Test("config_test", expectErr, done);
     });
 
     /**
@@ -630,24 +881,24 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventConfigureTest002', 0, function () {
         console.info('HiAppEventConfigureTest002 start');
         let result = false;
-
-        result = hiAppEvent.configure({
-            disable: true,
-            maxStorage: "100m"
-        });
-        expect(result).assertTrue()
-
         result = hiAppEvent.configure({
             disable: false,
             maxStorage: "10G"
         });
         expect(result).assertTrue()
 
-        result = hiAppEvent.configure({
-            disable: false,
-            maxStorage: "10M"
-        });
-        expect(result).assertTrue()
+        try {
+            hiAppEventV9.configure({
+                disable: true,
+                maxStorage: "100m"
+            });
+            hiAppEventV9.configure({
+                disable: false,
+                maxStorage: "10M"
+            });
+        } catch (err) {
+            expect().assertFail();
+        }
 
         console.info('HiAppEventConfigureTest002 end');
     });
@@ -677,6 +928,38 @@ describe('HiAppEventJsTest', function () {
         })
         expect(result).assertFalse()
 
+        // ConfigOption not passed in
+        try {
+            hiAppEventV9.configure();
+        } catch (err) {
+            let expectErr = createError3("config")
+            assertErrorEqual(err, expectErr)
+        }
+
+        // invalid ConfigOption type
+        function configureTest(configOption, expectErr) {
+            try {
+                hiAppEventV9.configure(configOption);
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        let expectErr = createError2("config", "ConfigOption")
+        configureTest(null, expectErr)
+        configureTest([], expectErr)
+
+        // invalid ConfigOption.disable type
+        expectErr = createError2("disable", "boolean")
+        configureTest({ disable: 123 }, expectErr)
+
+        // invalid ConfigOption.maxStorage type
+        expectErr = createError2("maxStorage", "string")
+        configureTest({ maxStorage: null }, expectErr)
+
+        // invalid ConfigOption.maxStorage value
+        expectErr = createError(11103001, "Invalid max storage quota value.")
+        configureTest({ maxStorage: "**22" }, expectErr)
+
         console.info('HiAppEventConfigureTest003 end');
     });
 
@@ -690,23 +973,11 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventClearTest001 start');
 
         // 1. clear data
-        let result = hiAppEvent.clearData();
+        let result = hiAppEventV9.clearData();
         expect(result).assertUndefined();
 
         // 2. write event after clear data
-        let eventInfo = {
-            domain: "test_domain",
-            name: "clear_test1",
-            eventType: hiAppEvent.EventType.FAULT,
-            params: {}
-        };
-        hiAppEvent.write(eventInfo, (err ,value) => {
-            let res = err ? err.code : value;
-            expect(res).assertEqual(0);
-            done();
-        });
-
-        console.info('HiAppEventClearTest001 end');
+        writeNameV9Test("clear_test", null, done);
     });
 
     /**
@@ -717,13 +988,41 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest001', 0, function () {
         console.info('HiAppEventWatcherTest001 start');
-        let result = true;
-        result = hiAppEvent.addWatcher(null)
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher({})
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher(123)
-        expect(result).assertNull()
+
+        // watcher not passed in
+        let expectErr = createError3("watcher")
+        try {
+            hiAppEventV9.addWatcher();
+        } catch (err) {
+            assertErrorEqual(err, expectErr)
+        }
+        try {
+            hiAppEventV9.removeWatcher();
+        } catch (err) {
+            assertErrorEqual(err, expectErr)
+        }
+
+        // invalid watcher type
+        expectErr = createError2("watcher", "Watcher")
+        function addWatcherTypeTest(watcher) {
+            try {
+                hiAppEventV9.addWatcher(watcher);
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        function removeWatcherTypeTest(watcher) {
+            try {
+                hiAppEventV9.removeWatcher(watcher);
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        addWatcherTypeTest(null);
+        addWatcherTypeTest(123);
+        removeWatcherTypeTest(null);
+        removeWatcherTypeTest(123);
+
         console.info('HiAppEventWatcherTest001 end');
     });
 
@@ -735,35 +1034,38 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest002', 0, function () {
         console.info('HiAppEventWatcherTest002 start');
-        let result = true;
-        result = hiAppEvent.addWatcher({
-            name: null
-        })
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher({
-            name: 123
-        })
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher({
-            name: "a".repeat(33)
-        })
-        result = hiAppEvent.addWatcher({
-            name: ""
-        })
-        expect(result).assertNull()
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher({
-            name: "domain_***"
-        })
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher({
-            name: "Domain_test"
-        })
-        expect(result).assertNull()
-        result = hiAppEvent.addWatcher({
-            name: "_domain_test"
-        })
-        expect(result).assertNull()
+
+        // watcher name not passed in
+        try {
+            hiAppEventV9.addWatcher({});
+        } catch (err) {
+            let expectErr = createError3("name")
+            assertErrorEqual(err, expectErr)
+        }
+
+        // invalid watcher name type
+        function watcherNameTest(name, expectErr) {
+            try {
+                hiAppEventV9.addWatcher({
+                    name: name
+                });
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        let expectErr = createError2("name", "string");
+        watcherNameTest(null, expectErr);
+        watcherNameTest(true, expectErr);
+        watcherNameTest(123, expectErr);
+
+        // invalid watcher name value
+        expectErr = createError(11102001, "Invalid watcher name.")
+        watcherNameTest("a".repeat(33), expectErr);
+        watcherNameTest("", expectErr);
+        watcherNameTest("domain_***", expectErr);
+        watcherNameTest("Domain_test", expectErr);
+        watcherNameTest("_domain_test", expectErr);
+
         console.info('HiAppEventWatcherTest002 end');
     });
 
@@ -775,62 +1077,61 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest003', 0, function () {
         console.info('HiAppEventWatcherTest003 start');
-        let result = true;
-        let watcher = {
-            name: "watcher1"
-        };
-        watcher.triggerCondition = null;
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
 
-        watcher.triggerCondition = 123;
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
+        // invalid triggerCondition type
+        function triggerConditionTest(condition, expectErr) {
+            try {
+                hiAppEventV9.addWatcher({
+                    name: "watcher",
+                    triggerCondition: condition
+                });
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        let expectErr = createError2("triggerCondition", "TriggerCondition")
+        triggerConditionTest(null, expectErr);
+        triggerConditionTest(123, expectErr);
 
-        watcher.triggerCondition = {
-            row: null,
-            size: 100,
-            timeOut: 1,
-        };
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
-        watcher.triggerCondition = {
-            row: "invalid",
-            size: 100,
-            timeOut: 1,
-        };
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
+        // invalid triggerCondition.row type
+        function rowTest(row, expectErr) {
+            triggerConditionTest({ row: row }, expectErr);
+        }
+        expectErr = createError2("row", "number")
+        rowTest(null, expectErr)
+        rowTest("str", expectErr)
 
-        watcher.triggerCondition = {
-            row: 10,
-            size: null,
-            timeOut: 1,
-        };
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
-        watcher.triggerCondition = {
-            row: 10,
-            size: "invalid",
-            timeOut: 1,
-        };
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
+        // invalid triggerCondition.row value
+        expectErr = createError(11102003, "Row must be a positive integer.")
+        rowTest(-1, expectErr)
+        rowTest(-100, expectErr)
 
-        watcher.triggerCondition = {
-            row: 10,
-            size: 100,
-            timeOut: null,
-        };
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
-        watcher.triggerCondition = {
-            row: 10,
-            size: 100,
-            timeOut: "invalid",
-        };
-        result = hiAppEvent.addWatcher(watcher)
-        expect(result).assertNull()
+        // invalid triggerCondition.size type
+        function sizeTest(size, expectErr) {
+            triggerConditionTest({ size: size }, expectErr);
+        }
+        expectErr = createError2("size", "number")
+        sizeTest(null, expectErr)
+        sizeTest(true, expectErr)
+
+        // invalid triggerCondition.size value
+        expectErr = createError(11102004, "Size must be a positive integer.")
+        sizeTest(-1, expectErr)
+        sizeTest(-100, expectErr)
+
+        // invalid triggerCondition.timeout type
+        function timeoutTest(timeout) {
+            triggerConditionTest({ timeout: timeout }, expectErr);
+        }
+        expectErr = createError2("timeout", "number")
+        timeoutTest(null, expectErr)
+        timeoutTest({}, expectErr)
+
+        // invalid triggerCondition.timeout value
+        expectErr = createError(11102005, "Timeout must be a positive integer.")
+        timeoutTest(-1, expectErr)
+        timeoutTest(-100, expectErr)
+
         console.info('HiAppEventWatcherTest003 end');
     });
 
@@ -842,83 +1143,60 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest004', 0, function () {
         console.info('HiAppEventWatcherTest004 start');
-        let result = true;
-        let watcher = {
-            name: "watcher1"
-        };
 
-        watcher.appEventFilters = null;
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
+        // invalid appEventFilters type
+        function appEventFiltersTest(filters, expectErr) {
+            try {
+                hiAppEventV9.addWatcher({
+                    name: "watcher",
+                    appEventFilters: filters
+                });
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        let expectErr = createError2("appEventFilters", "AppEventFilter[]")
+        appEventFiltersTest(null, expectErr)
+        appEventFiltersTest({}, expectErr)
+        appEventFiltersTest("invalid", expectErr)
+        appEventFiltersTest([1, 2], expectErr)
+        appEventFiltersTest(["str1", "str2"], expectErr)
 
-        watcher.appEventFilters = {};
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
+        // appEventFilter.domain not passed in
+        function appEventFilterTest(filter, expectErr) {
+            appEventFiltersTest([filter], expectErr)
+        }
+        expectErr = createError3("domain")
+        appEventFilterTest({}, expectErr)
 
-        watcher.appEventFilters = "invalid";
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
+        // invalid appEventFilter.domain type
+        function domainTest(domain, expectErr) {
+            appEventFilterTest({ domain: domain }, expectErr)
+        }
+        expectErr = createError2("domain", "string")
+        domainTest(null, expectErr)
+        domainTest(123, expectErr)
 
-        watcher.appEventFilters = [1, 2];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
+        // invalid appEventFilter.domain value
+        expectErr = createError(11102002, "Invalid filter domain.")
+        domainTest("**xx", expectErr)
+        domainTest("123test", expectErr)
+        domainTest("a".repeat(17), expectErr)
+        domainTest("", expectErr)
 
-        watcher.appEventFilters = [{
-            domain: null
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
+        // invalid appEventFilter.eventTypes type
+        function eventTypesTest(eventTypes, expectErr) {
+            appEventFilterTest({
+                domain: "test_domain",
+                eventTypes: eventTypes
+            }, expectErr)
+        }
+        expectErr = createError2("eventTypes", "EventType[]")
+        eventTypesTest(null, expectErr)
+        eventTypesTest("invalid", expectErr)
+        eventTypesTest(["invalid"], expectErr)
+        eventTypesTest([10, -1], expectErr)
 
-        watcher.appEventFilters = [{
-            domain: 123
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: "**xx"
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: "123test"
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: "a".repeat(17)
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: ""
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: "test_domain",
-            eventTypes: null
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: "test_domain",
-            eventTypes: "invalid"
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.appEventFilters = [{
-            domain: "test_domain",
-            eventTypes: ["invalid"]
-        }];
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
         console.info('HiAppEventWatcherTest004 end');
     });
 
@@ -930,21 +1208,21 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest005', 0, function () {
         console.info('HiAppEventWatcherTest005 start');
-        let result = true;
-        let watcher = {
-            name: "watcher1",
-            triggerCondition: {
-                row: 10
+
+        function onTriggerTest(onTrigger, expectErr) {
+            try {
+                hiAppEventV9.addWatcher({
+                    name: "watcher",
+                    onTrigger: onTrigger
+                });
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
             }
-        };
+        }
+        let expectErr = createError2("onTrigger", "function")
+        onTriggerTest(null, expectErr)
+        onTriggerTest("invalid", expectErr)
 
-        watcher.onTrigger = null;
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
-
-        watcher.onTrigger = "invalid";
-        result = hiAppEvent.addWatcher(watcher);
-        expect(result).assertNull()
         console.info('HiAppEventWatcherTest005 end');
     });
 
@@ -960,14 +1238,14 @@ describe('HiAppEventJsTest', function () {
         let watcher1 = {
             name: "watcher1",
         };
-        result = hiAppEvent.addWatcher(watcher1);
+        result = hiAppEventV9.addWatcher(watcher1);
         expect(result != null).assertTrue()
 
         let watcher2 = {
             name: "watcher2",
             triggerCondition: {}
         };
-        result = hiAppEvent.addWatcher(watcher2);
+        result = hiAppEventV9.addWatcher(watcher2);
         expect(result != null).assertTrue()
 
         let watcher3 = {
@@ -977,7 +1255,7 @@ describe('HiAppEventJsTest', function () {
             },
             onTrigger: simpleTrigger
         };
-        result = hiAppEvent.addWatcher(watcher3);
+        result = hiAppEventV9.addWatcher(watcher3);
         expect(result != null).assertTrue()
 
         let watcher4 = {
@@ -987,7 +1265,7 @@ describe('HiAppEventJsTest', function () {
             },
             onTrigger: simpleTrigger
         };
-        result = hiAppEvent.addWatcher(watcher4);
+        result = hiAppEventV9.addWatcher(watcher4);
         expect(result != null).assertTrue()
 
         let watcher5 = {
@@ -997,7 +1275,7 @@ describe('HiAppEventJsTest', function () {
             },
             onTrigger: simpleTrigger
         };
-        result = hiAppEvent.addWatcher(watcher5);
+        result = hiAppEventV9.addWatcher(watcher5);
         expect(result != null).assertTrue()
 
         let watcher6 = {
@@ -1009,34 +1287,34 @@ describe('HiAppEventJsTest', function () {
             },
             onTrigger: simpleTrigger
         };
-        result = hiAppEvent.addWatcher(watcher6);
+        result = hiAppEventV9.addWatcher(watcher6);
         expect(result != null).assertTrue()
 
         let watcher7 = {
             name: "watcher7",
             appEventFilters: []
         };
-        result = hiAppEvent.addWatcher(watcher7);
+        result = hiAppEventV9.addWatcher(watcher7);
         expect(result != null).assertTrue()
 
         let watcher8 = {
             name: "watcher8",
             appEventFilters: [
                 {domain: "domain_test", eventTypes: []},
-                {domain: "default", eventTypes: [hiAppEvent.EventType.FAULT, hiAppEvent.EventType.BEHAVIOR]},
+                {domain: "default", eventTypes: [hiAppEventV9.EventType.FAULT, hiAppEventV9.EventType.BEHAVIOR]},
             ]
         };
-        result = hiAppEvent.addWatcher(watcher8);
+        result = hiAppEventV9.addWatcher(watcher8);
         expect(result != null).assertTrue()
 
-        expect(hiAppEvent.removeWatcher(watcher1)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher2)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher3)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher4)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher5)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher6)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher7)).assertUndefined()
-        expect(hiAppEvent.removeWatcher(watcher8)).assertUndefined()
+        hiAppEventV9.removeWatcher(watcher1);
+        hiAppEventV9.removeWatcher(watcher2);
+        hiAppEventV9.removeWatcher(watcher3);
+        hiAppEventV9.removeWatcher(watcher4);
+        hiAppEventV9.removeWatcher(watcher5);
+        hiAppEventV9.removeWatcher(watcher6);
+        hiAppEventV9.removeWatcher(watcher7);
+        hiAppEventV9.removeWatcher(watcher8);
         console.info('HiAppEventWatcherTest006 end');
     });
 
@@ -1069,25 +1347,16 @@ describe('HiAppEventJsTest', function () {
                 console.info('HiAppEventWatcherTest007.onTrigger end');
             }
         };
-        let result = hiAppEvent.addWatcher(watcher);
+        let result = hiAppEventV9.addWatcher(watcher);
         expect(result != null).assertTrue()
 
-        hiAppEvent.write({
-            domain: "test_domain",
-            name: "ontrigger_test1",
-            eventType: hiAppEvent.EventType.FAULT,
-            params: {}
-        }, (err ,value) => {
-            let resCode = err ? err.code : value;
-            expect(resCode).assertEqual(0)
-        });
+        simpleWriteV9Test();
 
         setTimeout(() => {
-            hiAppEvent.removeWatcher(watcher)
-            done()
-            console.info('HiAppEventWatcherTest007 end')
-        }, 1000)
-
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest007 end');
+            done();
+        }, 1000);
     });
 
     /**
@@ -1096,7 +1365,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.type: FUNC
      * @tc.require: issueI5KYYI
      */
-     it('HiAppEventWatcherTest008', 0, async function (done) {
+    it('HiAppEventWatcherTest008', 0, async function (done) {
         console.info('HiAppEventWatcherTest008 start');
         let watcher = {
             name: "watcher",
@@ -1121,35 +1390,17 @@ describe('HiAppEventJsTest', function () {
                 console.info('HiAppEventWatcherTest008.onTrigger end');
             }
         };
-        let result = hiAppEvent.addWatcher(watcher);
+        let result = hiAppEventV9.addWatcher(watcher);
         expect(result != null).assertTrue()
 
-        hiAppEvent.write({
-            domain: "test_domain",
-            name: "ontrigger_test2",
-            eventType: hiAppEvent.EventType.FAULT,
-            params: {}
-        }, (err ,value) => {
-            let resCode = err ? err.code : value;
-            expect(resCode).assertEqual(0)
-        });
-
-        hiAppEvent.write({
-            domain: "test_domain",
-            name: "ontrigger_test2",
-            eventType: hiAppEvent.EventType.FAULT,
-            params: {}
-        }, (err ,value) => {
-            let resCode = err ? err.code : value;
-            expect(resCode).assertEqual(0)
-        });
+        simpleWriteV9Test();
+        simpleWriteV9Test();
 
         setTimeout(() => {
-            hiAppEvent.removeWatcher(watcher)
-            done()
-            console.info('HiAppEventWatcherTest008 end')
-        }, 1000)
-
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest008 end');
+            done();
+        }, 1000);
     });
 
     /**
@@ -1158,7 +1409,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.type: FUNC
      * @tc.require: issueI5KYYI
      */
-     it('HiAppEventWatcherTest009', 0, async function (done) {
+    it('HiAppEventWatcherTest009', 0, async function (done) {
         console.info('HiAppEventWatcherTest009 start');
         let watcher = {
             name: "watcher",
@@ -1181,25 +1432,16 @@ describe('HiAppEventJsTest', function () {
                 console.info('HiAppEventWatcherTest009.onTrigger end');
             }
         };
-        let result = hiAppEvent.addWatcher(watcher);
+        let result = hiAppEventV9.addWatcher(watcher);
         expect(result != null).assertTrue()
 
-        hiAppEvent.write({
-            domain: "test_domain",
-            name: "ontrigger_test3",
-            eventType: hiAppEvent.EventType.FAULT,
-            params: {}
-        }, (err ,value) => {
-            let resCode = err ? err.code : value;
-            expect(resCode).assertEqual(0)
-        });
+        simpleWriteV9Test();
 
         setTimeout(() => {
-            hiAppEvent.removeWatcher(watcher)
-            done()
-            console.info('HiAppEventWatcherTest009 end')
-        }, 3000)
-
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest009 end');
+            done();
+        }, 3000);
     });
 
     /**
@@ -1208,35 +1450,70 @@ describe('HiAppEventJsTest', function () {
      * @tc.type: FUNC
      * @tc.require: issueI5NTOD
      */
-     it('HiAppEventWatcherTest010', 0, async function (done) {
+    it('HiAppEventWatcherTest010', 0, async function (done) {
         console.info('HiAppEventWatcherTest010 start');
         let watcher = {
             name: "watcher",
         };
-        let holder = hiAppEvent.addWatcher(watcher);
+        let holder = hiAppEventV9.addWatcher(watcher);
         expect(holder != null).assertTrue()
 
-        hiAppEvent.write({
-            domain: "test_domain",
-            name: "holder_test1",
-            eventType: hiAppEvent.EventType.FAULT,
-            params: {}
-        }, (err ,value) => {
-            let resCode = err ? err.code : value;
-            expect(resCode).assertEqual(0)
-        });
+        simpleWriteV9Test();
 
         setTimeout(() => {
             let eventPkg = holder.takeNext();
-            expect(eventPkg != null).assertTrue()
-            expect(eventPkg.packageId).assertEqual(0)
-            expect(eventPkg.row).assertEqual(1)
-            expect(eventPkg.size > 0).assertTrue()
-            expect(eventPkg.data.length).assertEqual(1)
-            expect(eventPkg.data[0].length > 0).assertTrue()
-            hiAppEvent.removeWatcher(watcher)
-            done()
-            console.info('HiAppEventWatcherTest010 end')
-        }, 1000)
+            expect(eventPkg != null).assertTrue();
+            expect(eventPkg.packageId).assertEqual(0);
+            expect(eventPkg.row).assertEqual(1);
+            expect(eventPkg.size > 0).assertTrue();
+            expect(eventPkg.data.length).assertEqual(1);
+            expect(eventPkg.data[0].length > 0).assertTrue();
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest010 end');
+            done();
+        }, 1000);
+    });
+
+    /**
+     * @tc.name: HiAppEventWatcherTest011
+     * @tc.desc: invalid watcher.holder test.
+     * @tc.type: FUNC
+     * @tc.require: issueI5NTOD
+     */
+    it('HiAppEventWatcherTest011', 0, function () {
+        console.info('HiAppEventWatcherTest011 start');
+        let watcher = {
+            name: "watcher",
+        };
+        let holder = hiAppEventV9.addWatcher(watcher);
+        expect(holder != null).assertTrue()
+
+        // size not passed in
+        try {
+            holder.setSize()
+        } catch (err) {
+            let expectErr = createError3("size");
+            assertErrorEqual(err, expectErr)
+        }
+
+        // invalid size type
+        function holderSetSizeTest(holder, size, expectErr) {
+            try {
+                holder.setSize(size)
+            } catch (err) {
+                assertErrorEqual(err, expectErr)
+            }
+        }
+        let expectErr = createError2("size", "number");
+        holderSetSizeTest(holder, null, expectErr);
+        holderSetSizeTest(holder, {}, expectErr);
+
+        // invalid size value
+        expectErr = createError(11104001, "Size must be a positive integer.");
+        holderSetSizeTest(holder, -1, expectErr);
+        holderSetSizeTest(holder, -100, expectErr);
+
+        hiAppEventV9.removeWatcher(watcher)
+        console.info('HiAppEventWatcherTest011 end')
     });
 });

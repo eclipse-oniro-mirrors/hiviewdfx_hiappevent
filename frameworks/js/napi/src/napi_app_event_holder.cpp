@@ -17,6 +17,7 @@
 #include "app_event_cache.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
+#include "napi_error.h"
 #include "napi_util.h"
 
 namespace OHOS {
@@ -41,13 +42,11 @@ napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info 
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
 
-    std::string name;
-    if (paramNum == PARAM_NUM) {
-        name = NapiUtil::GetString(env, params[0]);
-    } else {
+    if (paramNum < PARAM_NUM) {
         HiLog::Error(LABEL, "hodler failed to construct: invalid param num");
+        return thisVar;
     }
-    auto holder = new(std::nothrow) NapiAppEventHolder(name);
+    auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetString(env, params[0]));
     napi_wrap(
         env, thisVar, holder,
         [](napi_env env, void* data, void* hint) {
@@ -78,12 +77,20 @@ napi_value NapiAppEventHolder::NapiSetSize(napi_env env, napi_callback_info info
     napi_value params[PARAM_NUM] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum == PARAM_NUM && NapiUtil::IsNumber(env, params[0])) {
+    if (paramNum < PARAM_NUM) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size"));
+        return nullptr;
+    }
+    if (!NapiUtil::IsNumber(env, params[0])) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size", "number"));
+        return nullptr;
+    }
+    if (int num = NapiUtil::GetInt32(env, params[0]); num >= 0) {
         NapiAppEventHolder* holder = nullptr;
         napi_unwrap(env, thisVar, (void**)&holder);
-        holder->SetSize(NapiUtil::GetInt32(env, params[0]));
+        holder->SetSize(num);
     } else {
-        HiLog::Error(LABEL, "failed to set size: invalid param");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Size must be a positive integer.");
     }
     return NapiUtil::CreateUndefined(env);
 }

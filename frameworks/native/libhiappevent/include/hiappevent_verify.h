@@ -22,9 +22,9 @@
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
-
 bool IsValidDomain(const std::string& domain);
 bool IsValidWatcherName(const std::string& watcherName);
+bool IsValidEventType(int eventType);
 int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 } // namespace HiviewDFX
 } // namespace OHOS

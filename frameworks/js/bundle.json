@@ -30,7 +30,8 @@
     },
     "build": {
       "sub_component": [
-        "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent"
+        "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent",
+        "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent_v9"
       ],
       "inner_kits": [],
       "test": []

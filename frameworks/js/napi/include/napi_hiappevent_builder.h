@@ -26,11 +26,12 @@ class AppEventPack;
 
 class NapiHiAppEventBuilder {
 public:
-    NapiHiAppEventBuilder() : result_(0), callback_(nullptr), appEventPack_(nullptr) {}
+    NapiHiAppEventBuilder() : isV9_(false), result_(0), callback_(nullptr), appEventPack_(nullptr) {}
     ~NapiHiAppEventBuilder() {}
     int GetResult() const;
     napi_ref GetCallback() const;
     std::shared_ptr<AppEventPack> Build(const napi_env env, const napi_value params[], size_t len);
+    std::shared_ptr<AppEventPack> BuildV9(const napi_env env, const napi_value params[], size_t len);
 
 private:
     bool IsValidEventDomain(const napi_env env, const napi_value domain);
@@ -48,6 +49,7 @@ private:
     void BuildCallback(const napi_env env, const napi_value callback);
 
 private:
+    bool isV9_;
     int result_;
     napi_ref callback_;
     std::shared_ptr<AppEventPack> appEventPack_;
