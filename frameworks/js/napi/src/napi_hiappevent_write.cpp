@@ -34,13 +34,20 @@ constexpr size_t RESULT_SIZE = 2;
 napi_value BuildErrorByResult(const napi_env env, int result)
 {
     const std::map<int, std::pair<int, std::string>> errMap = {
-        { ErrorCode::ERROR_INVALID_EVENT_NAME, { NapiError::ERR_INVALID_NAME, "Invalid event name." } },
-        { ErrorCode::ERROR_INVALID_EVENT_DOMAIN, { NapiError::ERR_INVALID_DOMAIN, "Invalid event domain." } },
-        { ErrorCode::ERROR_HIAPPEVENT_DISABLE, { NapiError::ERR_DISABLE, "Function is disable." } },
-        { ErrorCode::ERROR_INVALID_PARAM_NAME, { NapiError::ERR_INVALID_KEY, "Invalid param name." } },
-        { ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH, { NapiError::ERR_INVALID_STR_LEN, "Invalid string length." } },
-        { ErrorCode::ERROR_INVALID_PARAM_NUM, { NapiError::ERR_INVALID_PARAM_NUM, "Invalid param num." } },
-        { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE, { NapiError::ERR_INVALID_ARR_LEN, "Invalid array length." } },
+        { ErrorCode::ERROR_INVALID_EVENT_NAME,
+            { NapiError::ERR_INVALID_NAME, "Invalid event name." } },
+        { ErrorCode::ERROR_INVALID_EVENT_DOMAIN,
+            { NapiError::ERR_INVALID_DOMAIN, "Invalid event domain." } },
+        { ErrorCode::ERROR_HIAPPEVENT_DISABLE,
+            { NapiError::ERR_DISABLE, "Function is disabled." } },
+        { ErrorCode::ERROR_INVALID_PARAM_NAME,
+            { NapiError::ERR_INVALID_KEY, "Invalid event parameter name." } },
+        { ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH,
+            { NapiError::ERR_INVALID_STR_LEN, "Invalid string length of the event parameter." } },
+        { ErrorCode::ERROR_INVALID_PARAM_NUM,
+            { NapiError::ERR_INVALID_PARAM_NUM, "Invalid number of event parameters." } },
+        { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE,
+            { NapiError::ERR_INVALID_ARR_LEN, "Invalid array length of the event parameter." } },
     };
     return errMap.find(result) == errMap.end() ? NapiUtil::CreateNull(env) :
         NapiUtil::CreateError(env, errMap.at(result).first, errMap.at(result).second);

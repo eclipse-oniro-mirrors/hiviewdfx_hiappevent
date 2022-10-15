@@ -44,7 +44,7 @@ bool CheckEventName(const std::string& eventName)
     }
 
     /* custom and preset events */
-    if (!std::regex_match(eventName, std::regex("^[a-z][a-z0-9_]*$|^hiappevent\\.[a-z][a-z0-9_]*$"))) {
+    if (!std::regex_match(eventName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$|^hiappevent\\.[a-z][a-z0-9_]*[a-z0-9]$"))) {
         return false;
     }
 
