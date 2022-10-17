@@ -90,7 +90,7 @@ napi_value NapiAppEventHolder::NapiSetSize(napi_env env, napi_callback_info info
         napi_unwrap(env, thisVar, (void**)&holder);
         holder->SetSize(num);
     } else {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Size must be a positive integer.");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid size value.");
     }
     return NapiUtil::CreateUndefined(env);
 }

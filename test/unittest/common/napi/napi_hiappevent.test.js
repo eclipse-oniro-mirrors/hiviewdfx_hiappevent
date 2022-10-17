@@ -289,7 +289,7 @@ describe('HiAppEventJsTest', function () {
             "":"empty",
             "aa_":"underscore"
         };
-        let expectErr = createError(11101005, "Invalid param name.");
+        let expectErr = createError(11101005, "Invalid event parameter name.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -363,7 +363,7 @@ describe('HiAppEventJsTest', function () {
             key_i_long_arr: ["ha", invalidStr],
             key_str: "str"
         };
-        let expectErr = createError(11101004, "Invalid string length.");
+        let expectErr = createError(11101004, "Invalid string length of the event parameter.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -394,7 +394,7 @@ describe('HiAppEventJsTest', function () {
         for (var i = 1; i <= 33; i++) {
             params["key" + i] = "value" + i;
         }
-        let expectErr = createError(11101003, "Invalid param num.");
+        let expectErr = createError(11101003, "Invalid number of event parameters.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -431,7 +431,7 @@ describe('HiAppEventJsTest', function () {
             key_i_long_arr: iLongArr,
             key_str: "str"
         };
-        let expectErr = createError(11101006, "Invalid array length.");
+        let expectErr = createError(11101006, "Invalid array length of the event parameter.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -868,7 +868,7 @@ describe('HiAppEventJsTest', function () {
             disable: true
         });
 
-        let expectErr = createError(11100001, "Function is disable.");
+        let expectErr = createError(11100001, "Function is disabled.");
         writeNameV9Test("config_test", expectErr, done);
     });
 
@@ -1102,7 +1102,7 @@ describe('HiAppEventJsTest', function () {
         rowTest("str", expectErr)
 
         // invalid triggerCondition.row value
-        expectErr = createError(11102003, "Row must be a positive integer.")
+        expectErr = createError(11102003, "Invalid row value.")
         rowTest(-1, expectErr)
         rowTest(-100, expectErr)
 
@@ -1115,7 +1115,7 @@ describe('HiAppEventJsTest', function () {
         sizeTest(true, expectErr)
 
         // invalid triggerCondition.size value
-        expectErr = createError(11102004, "Size must be a positive integer.")
+        expectErr = createError(11102004, "Invalid size value.")
         sizeTest(-1, expectErr)
         sizeTest(-100, expectErr)
 
@@ -1128,7 +1128,7 @@ describe('HiAppEventJsTest', function () {
         timeoutTest({}, expectErr)
 
         // invalid triggerCondition.timeout value
-        expectErr = createError(11102005, "Timeout must be a positive integer.")
+        expectErr = createError(11102005, "Invalid timeout value.")
         timeoutTest(-1, expectErr)
         timeoutTest(-100, expectErr)
 
@@ -1178,7 +1178,7 @@ describe('HiAppEventJsTest', function () {
         domainTest(123, expectErr)
 
         // invalid appEventFilter.domain value
-        expectErr = createError(11102002, "Invalid filter domain.")
+        expectErr = createError(11102002, "Invalid filtering event domain.")
         domainTest("**xx", expectErr)
         domainTest("123test", expectErr)
         domainTest("a".repeat(17), expectErr)
@@ -1509,7 +1509,7 @@ describe('HiAppEventJsTest', function () {
         holderSetSizeTest(holder, {}, expectErr);
 
         // invalid size value
-        expectErr = createError(11104001, "Size must be a positive integer.");
+        expectErr = createError(11104001, "Invalid size value.");
         holderSetSizeTest(holder, -1, expectErr);
         holderSetSizeTest(holder, -100, expectErr);
 

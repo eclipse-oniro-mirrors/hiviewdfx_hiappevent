@@ -93,7 +93,7 @@ bool IsValidFilter(const napi_env env, const napi_value filter)
         return false;
     }
     if (!IsValidDomain(NapiUtil::GetString(env, domain))) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_FILTER_DOMAIN, "Invalid filter domain.");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_FILTER_DOMAIN, "Invalid filtering event domain.");
         return false;
     }
     napi_value types = NapiUtil::GetProperty(env, filter, FILTERS_TYPES_PROP);
@@ -180,21 +180,21 @@ TriggerCondition GetCondition(const napi_env env, const napi_value watcher)
     size_t index = 0;
     int row = GetConditionValue(env, cond, COND_PROPS[index++]);
     if (row < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_ROW, "Row must be a positive integer.");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_ROW, "Invalid row value.");
         return resCond;
     }
 
     resCond.row = row;
     int size = GetConditionValue(env, cond, COND_PROPS[index++]);
     if (size < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_SIZE, "Size must be a positive integer.");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_SIZE, "Invalid size value.");
         return resCond;
     }
 
     resCond.size = size;
     int timeOut = GetConditionValue(env, cond, COND_PROPS[index++]);
     if (timeOut < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_TIMEOUT, "TimeOut must be a positive integer.");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_TIMEOUT, "Invalid timeout value.");
         return resCond;
     }
     return resCond;
