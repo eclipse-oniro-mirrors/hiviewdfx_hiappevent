@@ -69,9 +69,9 @@ std::string ConvertToString(const napi_env env, const napi_value value);
 
 void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow = true);
 napi_value CreateError(napi_env env, int code, const std::string& msg);
-std::string CreateErrMsg(const std::string name);
-std::string CreateErrMsg(const std::string name, const std::string& type);
-std::string CreateErrMsg(const std::string name, const napi_valuetype type);
+std::string CreateErrMsg(const std::string& name);
+std::string CreateErrMsg(const std::string& name, const std::string& type);
+std::string CreateErrMsg(const std::string& name, const napi_valuetype type);
 } // namespace NapiUtil
 } // namespace HiviewDFX
 } // namespace OHOS
