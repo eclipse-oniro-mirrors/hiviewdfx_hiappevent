@@ -68,7 +68,7 @@ void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
     paramMap["DISTRIBUTED_SERVICE_INSTANCE_ID"] = NapiUtil::CreateString(env, "ds_instance_id");
 }
 
-void InitConstClassByName(napi_env env, napi_value exports, std::string name)
+void InitConstClassByName(napi_env env, napi_value exports, const std::string& name)
 {
     std::map<const char*, napi_value> propertyMap;
     if (name == EVENT_CLASS_NAME) {

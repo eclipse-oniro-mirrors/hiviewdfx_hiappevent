@@ -449,16 +449,16 @@ napi_value CreateError(napi_env env, int code, const std::string& msg)
     return err;
 }
 
-std::string CreateErrMsg(const std::string name)
+std::string CreateErrMsg(const std::string& name)
 {
     return "Parameter error. The " + name + " parameter is mandatory.";
 }
 
-std::string CreateErrMsg(const std::string name, const std::string& type)
+std::string CreateErrMsg(const std::string& name, const std::string& type)
 {
     return "Parameter error. The type of " + name + " must be " + type + ".";
 }
-std::string CreateErrMsg(const std::string name, const napi_valuetype type)
+std::string CreateErrMsg(const std::string& name, const napi_valuetype type)
 {
     std::string typeStr = "";
     switch (type) {
