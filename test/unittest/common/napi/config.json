@@ -16,7 +16,8 @@
       "package": "ohos.example.hiAppEventUnitTest",
       "name": ".MyApplication",
       "deviceType": [
-        "phone"
+        "default",
+        "tablet"
       ],
       "distro": {
         "deliveryWithInstall": true,
