@@ -71,7 +71,7 @@ void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder
     context_->holder = NapiUtil::CreateReference(env, holder);
 }
 
-void NapiAppEventWatcher::OnTrigger(int row, int size) const
+void NapiAppEventWatcher::OnTrigger(int row, int size)
 {
     HiLog::Debug(LABEL, "onTrigger start");
     if (context_ == nullptr) {

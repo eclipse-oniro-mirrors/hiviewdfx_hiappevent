@@ -27,7 +27,7 @@ AppEventWatcher::AppEventWatcher(const std::string& name, const std::map<std::st
     TriggerCondition cond) : name_(name), filters_(filters), cond_(cond), status_({ 0 })
 {}
 
-void AppEventWatcher::OnTrigger(int row, int size) const
+void AppEventWatcher::OnTrigger(int row, int size)
 {
     HiLog::Info(LABEL, "default OnTrigger implementation, row=%{public}d, size=%{public}d", row, size);
 }

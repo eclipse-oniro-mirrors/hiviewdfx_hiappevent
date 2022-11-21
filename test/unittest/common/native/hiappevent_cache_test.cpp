@@ -18,9 +18,9 @@
 #include "app_event_cache_common.h"
 #include "app_event_cache.h"
 #include "file_util.h"
+#include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
-#include "hiappevent_pack.h"
 #include "hiappevent_write.h"
 
 using namespace testing::ext;
@@ -208,7 +208,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest001, TestSize.Level1)
     // trigger cleanup
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
     HiAppEventConfig::GetInstance().SetConfigurationItem("max_storage", "1024b");
-    WriterEvent(CreateEventPack("name", 1));
+    WriteEvent(std::make_shared<AppEventPack>("name", 1));
 
     std::map<std::string, std::pair<int, int64_t>> blocksStat;
     result = AppEventCache::GetInstance()->GetBlocksStat(blocksStat);
@@ -239,7 +239,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest002, TestSize.Level1)
      */
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
     HiAppEventConfig::GetInstance().SetConfigurationItem("max_storage", "10M");
-    WriterEvent(CreateEventPack("name", 1));
+    WriteEvent(std::make_shared<AppEventPack>("name", 1));
 
     int result = AppEventCache::GetInstance()->Open(TEST_DIR);
     ASSERT_EQ(result, DB_SUCC);

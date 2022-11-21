@@ -23,6 +23,7 @@ config("hiappevent_config_test") {
     ".",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
     "$native_hiappevent_path/libhiappevent/include",
+    "$native_hiappevent_path/libhiappevent/watcher/include",
   ]
 }
 
@@ -59,11 +60,47 @@ ohos_unittest("HiAppEventCacheTest") {
   external_deps = [ "relational_store:native_rdb" ]
 }
 
+ohos_unittest("HiAppEventWatcherTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_watcher_test.cpp" ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
+    "$native_hiappevent_path/libhiappevent/watcher:hiappevent_watcher",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "eventhandler:libeventhandler",
+    "relational_store:native_rdb",
+  ]
+}
+
+ohos_unittest("HiAppEventReadTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_read_test.cpp" ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
     ":HiAppEventCacheTest",
     ":HiAppEventNativeTest",
+    ":HiAppEventReadTest",
+    ":HiAppEventWatcherTest",
     "unittest/common/napi:unittest",
   ]
 }
