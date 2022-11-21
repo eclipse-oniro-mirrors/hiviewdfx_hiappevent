@@ -21,7 +21,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 
-void WriterEvent(const std::shared_ptr<AppEventPack>& appEventPack);
+void WriteEvent(const std::shared_ptr<AppEventPack>& appEventPack);
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H

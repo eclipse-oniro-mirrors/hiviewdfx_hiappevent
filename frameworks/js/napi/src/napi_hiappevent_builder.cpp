@@ -15,7 +15,6 @@
 #include "napi_hiappevent_builder.h"
 
 #include "hiappevent_base.h"
-#include "hiappevent_pack.h"
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "napi_error.h"
@@ -118,23 +117,23 @@ void NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::str
         case napi_boolean: {
             std::vector<bool> bools;
             NapiUtil::GetBooleans(env, arr, bools);
-            AddEventParam(appEventPack_, key, bools);
+            appEventPack_->AddParam(key, bools);
             break;
         }
         case napi_number: {
             std::vector<double> doubles;
             NapiUtil::GetDoubles(env, arr, doubles);
-            AddEventParam(appEventPack_, key, doubles);
+            appEventPack_->AddParam(key, doubles);
             break;
         }
         case napi_string: {
             std::vector<std::string> strs;
             NapiUtil::GetStrings(env, arr, strs, MAX_STRING_LEN);
-            AddEventParam(appEventPack_, key, strs);
+            appEventPack_->AddParam(key, strs);
             break;
         }
         case napi_null: {
-            AddEventParam(appEventPack_, key);
+            appEventPack_->AddParam(key);
             break;
         }
         default: {
@@ -153,13 +152,13 @@ void NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &
     napi_valuetype type = NapiUtil::GetType(env, value);
     switch (type) {
         case napi_boolean:
-            AddEventParam(appEventPack_, key, NapiUtil::GetBoolean(env, value));
+            appEventPack_->AddParam(key, NapiUtil::GetBoolean(env, value));
             break;
         case napi_number:
-            AddEventParam(appEventPack_, key, NapiUtil::GetDouble(env, value));
+            appEventPack_->AddParam(key, NapiUtil::GetDouble(env, value));
             break;
         case napi_string:
-            AddEventParam(appEventPack_, key, NapiUtil::GetString(env, value, MAX_STRING_LEN));
+            appEventPack_->AddParam(key, NapiUtil::GetString(env, value, MAX_STRING_LEN));
             break;
         case napi_object:
             if (NapiUtil::IsArray(env, value)) {

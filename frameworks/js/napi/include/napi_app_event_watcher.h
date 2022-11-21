@@ -36,7 +36,7 @@ public:
     NapiAppEventWatcher(const std::string& name, const std::map<std::string, unsigned int>& filters,
         TriggerCondition cond);
     ~NapiAppEventWatcher();
-    void OnTrigger(int row, int size) const override;
+    void OnTrigger(int row, int size) override;
     void InitTrigger(const napi_env env, const napi_value trigger);
     void InitHolder(const napi_env env, const napi_value holder);
 

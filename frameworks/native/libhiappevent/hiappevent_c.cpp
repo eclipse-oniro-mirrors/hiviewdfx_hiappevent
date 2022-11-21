@@ -190,7 +190,7 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
     AddParamList(appEventPack, list);
     int res = VerifyAppEvent(appEventPack);
     if (res >= 0) {
-        WriterEvent(appEventPack);
+        WriteEvent(appEventPack);
     }
     return res;
 }
