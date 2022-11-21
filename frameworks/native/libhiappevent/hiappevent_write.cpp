@@ -78,7 +78,7 @@ void TraceAppEventPack(const std::shared_ptr<AppEventPack>& appEventPack)
 }
 }
 
-void WriterEvent(const std::shared_ptr<AppEventPack>& appEventPack)
+void WriteEvent(const std::shared_ptr<AppEventPack>& appEventPack)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
         HiLog::Warn(LABEL, "the HiAppEvent function is disabled.");
