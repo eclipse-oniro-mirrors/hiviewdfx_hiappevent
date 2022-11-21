@@ -61,7 +61,7 @@ void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
         [](napi_env env, void* data) {
             HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
             if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
-                WriterEvent(asyncContext->appEventPack);
+                WriteEvent(asyncContext->appEventPack);
             }
         },
         [](napi_env env, napi_status status, void* data) {

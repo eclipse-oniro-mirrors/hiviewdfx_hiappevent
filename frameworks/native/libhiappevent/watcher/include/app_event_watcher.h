@@ -32,7 +32,7 @@ public:
     AppEventWatcher(const std::string& name, const std::map<std::string, unsigned int>& filters,
         TriggerCondition cond);
     virtual ~AppEventWatcher() {}
-    virtual void OnTrigger(int row, int size) const;
+    virtual void OnTrigger(int row, int size);
     std::string GetName() const;
     TriggerCondition GetCond() const;
     void ProcessEvent(const std::string& domain, int type, const std::string& event);
