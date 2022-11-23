@@ -62,11 +62,11 @@ HWTEST_F(HiAppEventReadTest, HiAppEventReadTest001, TestSize.Level3)
      */
     std::cout << "HiAppEventReadTest001 start" << std::endl;
 
-    auto TestListener = [](const std::string& log) {
+    auto testListener = [](const std::string& log) {
         std::cout << log << std::endl;
         ASSERT_EQ(log, TEST_EVENT);
     };
-    RegRealTimeAppLogListener(TestListener);
+    RegRealTimeAppLogListener(testListener);
     RealTimeAppLogUpdate(TEST_EVENT);
     RemoveAllListeners();
 
@@ -88,13 +88,13 @@ HWTEST_F(HiAppEventReadTest, HiAppEventReadTest002, TestSize.Level3)
      */
     std::cout << "HiAppEventReadTest002 start" << std::endl;
 
-    auto TestListener = [](const std::vector<std::string>& logs) {
-        std::for_each(logs.cbegin(), logs.cend(), [](const std::string& log){
+    auto testListener = [](const std::vector<std::string>& logs) {
+        std::for_each(logs.cbegin(), logs.cend(), [](const std::string& log) {
             std::cout << log << std::endl;
         });
         ASSERT_GT(logs.size(), 0);
     };
-    RegHistoryAppLogListener(TestListener);
+    RegHistoryAppLogListener(testListener);
 
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_PATH);
     UpdateHiAppEventLogDir("/data/test");
@@ -115,6 +115,6 @@ HWTEST_F(HiAppEventReadTest, HiAppEventReadTest002, TestSize.Level3)
     PullEventHistoryLog(0, INVALID_TIME, eventCount);
 
     RemoveAllListeners();
-    // (void)FileUtil::ForceRemoveDirectory(TEST_PATH, true);
+    (void)FileUtil::ForceRemoveDirectory(TEST_PATH, true);
     std::cout << "HiAppEventReadTest002 end" << std::endl;
 }
