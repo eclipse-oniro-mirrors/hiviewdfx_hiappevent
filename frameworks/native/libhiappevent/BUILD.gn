@@ -48,6 +48,8 @@ ohos_shared_library("libhiappevent_base") {
     "watcher:hiappevent_watcher",
   ]
 
+  version_script = "libhiappevent_base.map"
+
   external_deps = [
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
