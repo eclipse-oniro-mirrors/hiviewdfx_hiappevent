@@ -16,6 +16,7 @@
         "OHOS::HiviewDFX::HiAppEventConfig::GetStorageDir()";
         "OHOS::HiviewDFX::HiAppEventConfig::SetConfigurationItem(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >)";
         "OHOS::HiviewDFX::HiAppEventConfig::SetStorageDir(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)";
+        "OHOS::HiviewDFX::HiAppEventConfig::GetDisable()";
         "OHOS::HiviewDFX::VerifyAppEvent(std::__h::shared_ptr<OHOS::HiviewDFX::AppEventPack>&)";
         "OHOS::HiviewDFX::WriteEvent(std::__h::shared_ptr<OHOS::HiviewDFX::AppEventPack> const&)";
         "OHOS::HiviewDFX::IsValidEventType(int)";
