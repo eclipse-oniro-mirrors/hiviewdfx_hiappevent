@@ -49,6 +49,36 @@
         "OHOS::HiviewDFX::HiAppEventConfig::GetInstance()::instance";
 
         vtable?for?OHOS::HiviewDFX::AppEventWatcher;
+
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const& ... )";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<double, std::__1::allocator<double> > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<bool, std::__1::allocator<bool> > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, bool)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, double)";
+        "OHOS::HiviewDFX::AppEventPack::AppEventPack(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, int)";
+        "OHOS::HiviewDFX::AppEventPack::AppEventPack(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, int)";
+        "OHOS::HiviewDFX::HiAppEventConfig::SetConfigurationItem(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >)";
+        "OHOS::HiviewDFX::VerifyAppEvent(std::__1::shared_ptr<OHOS::HiviewDFX::AppEventPack>&)";
+        "OHOS::HiviewDFX::WriteEvent(std::__1::shared_ptr<OHOS::HiviewDFX::AppEventPack> const&)";
+        "OHOS::HiviewDFX::AppEventCache::GetBlock(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::AppEventBlock::Take(int, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >&)";
+        "OHOS::HiviewDFX::AppEventWatcher::AppEventWatcher(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, unsigned int, std::__1::less<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, std::__1::allocator<std::__1::pair<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const, unsigned int> > > const&, OHOS::HiviewDFX::TriggerCondition)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<double, std::__1::allocator<double> > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > > const&)";
+        "OHOS::HiviewDFX::AppEventPack::AddParam(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<bool, std::__1::allocator<bool> > const&)";
+        "OHOS::HiviewDFX::HiAppEventClean::ClearData(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const& ... )";
+        "OHOS::HiviewDFX::HiAppEventClean::ClearData(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::IsValidDomain(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::AppEventCache::Open(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::AppEventWatcherMgr::AddWatcher(std::__1::shared_ptr<OHOS::HiviewDFX::AppEventWatcher> const&)";
+        "OHOS::HiviewDFX::AppEventWatcherMgr::RemoveWatcher(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::IsValidWatcherName(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
+        "OHOS::HiviewDFX::HiAppEventConfig::SetStorageDir(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const& ... )";
+        "OHOS::HiviewDFX::HiAppEventConfig::SetStorageDir(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
     };
   local:
     *;
