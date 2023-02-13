@@ -116,7 +116,7 @@ static napi_value Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("removeWatcher", RemoveWatcher)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
-    NapiHiAppEventInit::InitNapiClass(env, exports);
+    NapiHiAppEventInit::InitNapiClassV9(env, exports);
     NapiAppEventHolder::NapiExport(env, exports);
     return exports;
 }
