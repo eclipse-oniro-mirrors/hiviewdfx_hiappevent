@@ -29,7 +29,9 @@ constexpr int SECURITY_EVENT_TYPE = 3;
 constexpr int BEHAVIOR_EVENT_TYPE = 4;
 
 const std::string EVENT_CLASS_NAME = "Event";
+const std::string EVENT_CLASS_NAME_V9 = "event";
 const std::string PARAM_CLASS_NAME = "Param";
+const std::string PARAM_CLASS_NAME_V9 = "param";
 const std::string EVENT_TYPE_CLASS_NAME = "EventType";
 
 napi_value ClassConstructor(napi_env env, napi_callback_info info)
@@ -71,9 +73,9 @@ void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
 void InitConstClassByName(napi_env env, napi_value exports, const std::string& name)
 {
     std::map<const char*, napi_value> propertyMap;
-    if (name == EVENT_CLASS_NAME) {
+    if (name == EVENT_CLASS_NAME || name == EVENT_CLASS_NAME_V9) {
         InitEventMap(env, propertyMap);
-    } else if (name == PARAM_CLASS_NAME) {
+    } else if (name == PARAM_CLASS_NAME || name == PARAM_CLASS_NAME_V9) {
         InitParamMap(env, propertyMap);
     } else if (name == EVENT_TYPE_CLASS_NAME) {
         InitEventTypeMap(env, propertyMap);
@@ -98,6 +100,14 @@ napi_value InitNapiClass(napi_env env, napi_value exports)
 {
     InitConstClassByName(env, exports, EVENT_CLASS_NAME);
     InitConstClassByName(env, exports, PARAM_CLASS_NAME);
+    InitConstClassByName(env, exports, EVENT_TYPE_CLASS_NAME);
+    return exports;
+}
+
+napi_value InitNapiClassV9(napi_env env, napi_value exports)
+{
+    InitConstClassByName(env, exports, EVENT_CLASS_NAME_V9);
+    InitConstClassByName(env, exports, PARAM_CLASS_NAME_V9);
     InitConstClassByName(env, exports, EVENT_TYPE_CLASS_NAME);
     return exports;
 }

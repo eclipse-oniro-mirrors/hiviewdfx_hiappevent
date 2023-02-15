@@ -830,11 +830,11 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsPresetTest001_3 start');
         let eventInfo = {
             domain: TEST_DOMAIN,
-            name: hiAppEventV9.Event.DISTRIBUTED_SERVICE_START,
+            name: hiAppEventV9.event.DISTRIBUTED_SERVICE_START,
             eventType: hiAppEventV9.EventType.SECURITY,
             params: {
-                [hiAppEventV9.Param.DISTRIBUTED_SERVICE_NAME]: "test_service",
-                [hiAppEventV9.Param.DISTRIBUTED_SERVICE_INSTANCE_ID]: "123",
+                [hiAppEventV9.param.DISTRIBUTED_SERVICE_NAME]: "test_service",
+                [hiAppEventV9.param.DISTRIBUTED_SERVICE_INSTANCE_ID]: "123",
             },
         };
         writeV9Test(eventInfo, null, done);
