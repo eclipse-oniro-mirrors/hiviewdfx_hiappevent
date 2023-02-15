@@ -27,7 +27,7 @@ const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Holder"
 constexpr size_t PARAM_NUM = 1;
 const std::string HOLDER_CLASS_NAME = "AppEventPackageHolder";
 }
-napi_ref NapiAppEventHolder::constructor_ = nullptr;
+thread_local napi_ref NapiAppEventHolder::constructor_ = nullptr;
 
 NapiAppEventHolder::NapiAppEventHolder(std::string name) : name_(name)
 {
@@ -129,7 +129,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
     std::vector<std::string> events;
     int result = block->Take(takeSize_, events);
     if (result <= 0) {
-        HiLog::Info(LABEL, "hodler=%{public}s failed to take data", name_.c_str());
+        HiLog::Info(LABEL, "hodler=%{public}s end to take data", name_.c_str());
         return nullptr;
     }
     auto package = std::make_shared<AppEventPackage>();
