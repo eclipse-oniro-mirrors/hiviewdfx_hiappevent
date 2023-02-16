@@ -57,9 +57,26 @@ NapiAppEventWatcher::NapiAppEventWatcher(const std::string& name, const std::map
 
 NapiAppEventWatcher::~NapiAppEventWatcher()
 {
-    if (context_ != nullptr) {
-        delete context_;
+    HiLog::Debug(LABEL, "start to destroy NapiAppEventWatcher object");
+    if (context_ == nullptr) {
+        return;
     }
+
+    uv_loop_t* loop = nullptr;
+    napi_get_uv_event_loop(context_->env, &loop);
+    uv_work_t* work = new(std::nothrow) uv_work_t();
+    work->data = (void*)context_;
+    uv_queue_work(
+        loop,
+        work,
+        [](uv_work_t* work) {},
+        [](uv_work_t* work, int status) {
+            OnTriggerContext* context = (OnTriggerContext*)work->data;
+            HiLog::Debug(LABEL, "start to destroy OnTriggerContext object");
+            delete context;
+            SafeDeleteWork(work);
+        }
+    );
 }
 
 void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder)

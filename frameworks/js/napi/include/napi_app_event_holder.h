@@ -46,7 +46,7 @@ public:
     std::shared_ptr<AppEventPackage> TakeNext();
 
 public:
-    static napi_ref constructor_;
+    static thread_local napi_ref constructor_;
 
 private:
     std::string name_;
