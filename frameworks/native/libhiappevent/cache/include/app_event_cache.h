@@ -22,14 +22,14 @@
 #include <utility>
 
 #include "app_event_block.h"
-#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventStore;
 
-class AppEventCache : public DelayedSingleton<AppEventCache> {
+class AppEventCache {
 public:
+    static std::shared_ptr<AppEventCache> GetInstance();
     bool IsOpen();
     int Open(const std::string& dir);
     int Close();
@@ -39,7 +39,8 @@ public:
     int GetBlocksStat(std::map<std::string, std::pair<int, int64_t>>& blocksStat);
 
 private:
-    std::mutex cacheMutex_;
+    static std::mutex cacheMutex_;
+    static std::shared_ptr<AppEventCache> instance_;
     std::shared_ptr<AppEventStore> store_;
     std::map<std::string, std::shared_ptr<AppEventBlock>> blocks_;
 };
