@@ -20,14 +20,14 @@
 #include <shared_mutex>
 
 #include "app_event_watcher.h"
-#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventHandler;
 
-class AppEventWatcherMgr : public DelayedSingleton<AppEventWatcherMgr> {
+class AppEventWatcherMgr {
 public:
+    static std::shared_ptr<AppEventWatcherMgr> GetInstance();
     void AddWatcher(const std::shared_ptr<AppEventWatcher>& watcher);
     void RemoveWatcher(const std::string& name);
     void HandleEvent(const std::string& domain, int type, const std::string& event);
@@ -40,7 +40,8 @@ private:
 private:
     std::map<std::string, std::shared_ptr<AppEventWatcher>> watchers_;
     std::shared_ptr<AppEventHandler> handler_;
-    std::shared_mutex mutex_;
+    static std::shared_mutex mutex_;
+    static std::shared_ptr<AppEventWatcherMgr> instance_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
