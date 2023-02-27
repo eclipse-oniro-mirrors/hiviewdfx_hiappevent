@@ -40,12 +40,12 @@
         UpdateHiAppEventLogDir;
         PullEventHistoryLog;
 
-        "OHOS::DelayedSingleton<OHOS::HiviewDFX::AppEventCache>::GetInstance()";
-        "OHOS::DelayedSingleton<OHOS::HiviewDFX::AppEventWatcherMgr>::GetInstance()";
-        "OHOS::DelayedSingleton<OHOS::HiviewDFX::AppEventCache>::mutex_";
-        "OHOS::DelayedSingleton<OHOS::HiviewDFX::AppEventCache>::instance_";
-        "OHOS::DelayedSingleton<OHOS::HiviewDFX::AppEventWatcherMgr>::mutex_";
-        "OHOS::DelayedSingleton<OHOS::HiviewDFX::AppEventWatcherMgr>::instance_";
+        "OHOS::HiviewDFX::AppEventCache::GetInstance()";
+        "OHOS::HiviewDFX::AppEventCache::cacheMutex_";
+        "OHOS::HiviewDFX::AppEventCache::instance_";
+        "OHOS::HiviewDFX::AppEventWatcherMgr::GetInstance()";
+        "OHOS::HiviewDFX::AppEventWatcherMgr::mutex_";
+        "OHOS::HiviewDFX::AppEventWatcherMgr::instance_";
         "OHOS::HiviewDFX::HiAppEventConfig::GetInstance()::instance";
 
         vtable?for?OHOS::HiviewDFX::AppEventWatcher;
