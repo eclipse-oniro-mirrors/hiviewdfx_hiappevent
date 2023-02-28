@@ -119,6 +119,7 @@ void NapiAppEventWatcher::OnTrigger(int row, int size)
             if (callback == nullptr) {
                 HiLog::Error(LABEL, "failed to get callback from the context");
                 SafeDeleteWork(work);
+                napi_close_handle_scope(context->env, scope);
                 return;
             }
             napi_value argv[CALLBACK_PARAM_NUM] = {
