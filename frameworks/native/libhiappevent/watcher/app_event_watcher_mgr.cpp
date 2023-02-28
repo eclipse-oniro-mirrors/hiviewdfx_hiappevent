@@ -24,6 +24,20 @@ namespace {
 const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "HiAppEvent_WatcherMgr" };
 constexpr int TIMEOUT_INTERVAL = 30000; // 30s
 }
+std::shared_mutex AppEventWatcherMgr::mutex_;
+std::shared_ptr<AppEventWatcherMgr> AppEventWatcherMgr::instance_ = nullptr;
+
+std::shared_ptr<AppEventWatcherMgr> AppEventWatcherMgr::GetInstance()
+{
+    if (instance_ == nullptr) {
+        std::unique_lock<std::shared_mutex> lock(mutex_);
+        if (instance_ == nullptr) {
+            instance_ = std::make_shared<AppEventWatcherMgr>();
+        }
+    }
+    return instance_;
+}
+
 void AppEventWatcherMgr::AddWatcher(const std::shared_ptr<AppEventWatcher>& watcher)
 {
     // if already exists, need to delete the old watcher first

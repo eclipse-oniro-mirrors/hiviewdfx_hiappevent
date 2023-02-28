@@ -21,6 +21,20 @@
 using namespace OHOS::HiviewDFX::AppEventCacheCommon;
 namespace OHOS {
 namespace HiviewDFX {
+std::mutex AppEventCache::cacheMutex_;
+std::shared_ptr<AppEventCache> AppEventCache::instance_ = nullptr;
+
+std::shared_ptr<AppEventCache> AppEventCache::GetInstance()
+{
+    if (instance_ == nullptr) {
+        std::lock_guard<std::mutex> lockGuard(cacheMutex_);
+        if (instance_ == nullptr) {
+            instance_ = std::make_shared<AppEventCache>();
+        }
+    }
+    return instance_;
+}
+
 bool AppEventCache::IsOpen()
 {
     return store_ != nullptr;
