@@ -308,7 +308,7 @@ Use Clang 8.0.0 and C++11 or higher.
 
 ## Repositories Involved<a name="section1371113476307"></a>
 
-[DFX Subsystem](https://gitee.com/openharmony/docs/blob/master/en/readme/DFX%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
+[DFX Subsystem](https://gitee.com/openharmony/docs/blob/master/en/readme/dfx.md)
 
 [hiviewdfx\_hiview](https://gitee.com/openharmony/hiviewdfx_hiview/blob/master/README.md)
 
