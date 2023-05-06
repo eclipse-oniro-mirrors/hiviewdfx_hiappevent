@@ -156,6 +156,7 @@ std::shared_ptr<NativeRdb::RdbStore> AppEventStore::CreateDbStore()
 
     int ret = NativeRdb::E_OK;
     NativeRdb::RdbStoreConfig config(dirPath_ + DATABASE_NAME);
+    config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
     AppEventStoreCallback callback;
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, 1, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
