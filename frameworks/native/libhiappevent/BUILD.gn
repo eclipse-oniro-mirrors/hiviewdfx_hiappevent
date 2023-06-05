@@ -59,5 +59,6 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   part_name = "hiappevent_native"
+  innerapi_tags = [ "platformsdk" ]
   subsystem_name = "hiviewdfx"
 }
