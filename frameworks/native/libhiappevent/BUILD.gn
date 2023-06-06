@@ -58,7 +58,7 @@ ohos_shared_library("libhiappevent_base") {
     "relational_store:native_rdb",
   ]
 
-  part_name = "hiappevent_native"
+  part_name = "hiappevent"
   innerapi_tags = [ "platformsdk" ]
   subsystem_name = "hiviewdfx"
 }

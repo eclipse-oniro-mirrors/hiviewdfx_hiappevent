@@ -25,6 +25,6 @@ ohos_shared_library("hiappevent_ndk") {
 
   deps = [ "$hiappevent_native_path/libhiappevent:libhiappevent_base" ]
 
-  part_name = "hiappevent_native"
+  part_name = "hiappevent"
   subsystem_name = "hiviewdfx"
 }
