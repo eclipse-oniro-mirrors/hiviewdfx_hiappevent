@@ -34,7 +34,7 @@ ohos_shared_library("hiappevent") {
 
   relative_install_dir = "module"
 
-  part_name = "hiappevent_js"
+  part_name = "hiappevent"
   subsystem_name = "hiviewdfx"
 }
 
@@ -64,6 +64,6 @@ ohos_shared_library("hiappevent_v9") {
   output_name = "hiappevent_napi"
   relative_install_dir = "module/hiviewdfx"
 
-  part_name = "hiappevent_js"
+  part_name = "hiappevent"
   subsystem_name = "hiviewdfx"
 }
