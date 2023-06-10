@@ -34,4 +34,7 @@ ohos_source_set("hiappevent_watcher") {
     "hilog_native:libhilog",
     "relational_store:native_rdb",
   ]
+
+  part_name = "hiappevent"
+  subsystem_name = "hiviewdfx"
 }

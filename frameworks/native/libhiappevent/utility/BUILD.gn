@@ -25,4 +25,7 @@ ohos_source_set("hiappevent_utility") {
     "file_util.cpp",
     "time_util.cpp",
   ]
+
+  part_name = "hiappevent"
+  subsystem_name = "hiviewdfx"
 }

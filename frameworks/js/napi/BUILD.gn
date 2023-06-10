@@ -25,7 +25,7 @@ ohos_shared_library("hiappevent") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [ "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base" ]
+  deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "hilog_native:libhilog",
@@ -53,7 +53,7 @@ ohos_shared_library("hiappevent_v9") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [ "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base" ]
+  deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "hilog_native:libhilog",
