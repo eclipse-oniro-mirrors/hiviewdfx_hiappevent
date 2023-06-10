@@ -59,7 +59,7 @@ bool IsValidName(const napi_env env, const napi_value name)
     return true;
 }
 
-bool IsValidConditon(const napi_env env, const napi_value cond)
+bool IsValidCondition(const napi_env env, const napi_value cond)
 {
     if (cond == nullptr) {
         return true;
@@ -147,7 +147,7 @@ bool IsValidWatcher(const napi_env env, const napi_value watcher)
         return false;
     }
     return IsValidName(env, NapiUtil::GetProperty(env, watcher, NAME_PROPERTY))
-        && IsValidConditon(env, NapiUtil::GetProperty(env, watcher, COND_PROPERTY))
+        && IsValidCondition(env, NapiUtil::GetProperty(env, watcher, COND_PROPERTY))
         && IsValidFilters(env, NapiUtil::GetProperty(env, watcher, FILTERS_PROPERTY))
         && IsValidTrigger(env, NapiUtil::GetProperty(env, watcher, TRIGGER_PROPERTY));
 }
