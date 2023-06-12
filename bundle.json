@@ -22,7 +22,7 @@
     "ram": "",
     "deps": {
       "components": [
-        "ability_base",
+        "ability_runtime",
         "bundle_framework",
         "eventhandler",
         "hitrace_native",
