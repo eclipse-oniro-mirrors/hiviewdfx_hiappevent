@@ -25,8 +25,8 @@
         "ability_runtime",
         "bundle_framework",
         "eventhandler",
-        "hitrace_native",
-        "hilog_native",
+        "hitrace",
+        "hilog",
         "ipc",
         "napi",
         "relational_store"

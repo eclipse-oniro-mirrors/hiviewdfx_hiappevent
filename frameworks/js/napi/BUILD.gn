@@ -28,7 +28,7 @@ ohos_shared_library("hiappevent") {
   deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "napi:ace_napi",
   ]
 
@@ -56,7 +56,7 @@ ohos_shared_library("hiappevent_v9") {
   deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "napi:ace_napi",
     "relational_store:native_rdb",
   ]

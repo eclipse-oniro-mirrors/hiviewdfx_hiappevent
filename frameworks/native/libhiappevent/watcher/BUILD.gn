@@ -31,7 +31,7 @@ ohos_source_set("hiappevent_watcher") {
 
   external_deps = [
     "eventhandler:libeventhandler",
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "relational_store:native_rdb",
   ]
 
