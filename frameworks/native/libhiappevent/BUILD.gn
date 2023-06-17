@@ -52,8 +52,8 @@ ohos_shared_library("libhiappevent_base") {
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
-    "hilog_native:libhilog",
-    "hitrace_native:libhitracechain",
+    "hilog:libhilog",
+    "hitrace:libhitracechain",
     "relational_store:native_rdb",
   ]
 
