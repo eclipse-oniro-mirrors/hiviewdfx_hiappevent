@@ -97,7 +97,7 @@ void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
             delete asyncContext;
         },
         (void*)asyncContext, &asyncContext->asyncWork);
-    napi_queue_async_work(env, asyncContext->asyncWork);
+    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_background);
 }
 } // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX
