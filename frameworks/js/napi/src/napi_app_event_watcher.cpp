@@ -66,7 +66,7 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
     napi_get_uv_event_loop(context_->env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
     work->data = (void*)context_;
-    uv_queue_work(
+    uv_queue_work_with_qos(
         loop,
         work,
         [](uv_work_t* work) {},
@@ -75,7 +75,8 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
             HiLog::Debug(LABEL, "start to destroy OnTriggerContext object");
             delete context;
             SafeDeleteWork(work);
-        }
+        },
+        uv_qos_background
     );
 }
 
@@ -102,7 +103,7 @@ void NapiAppEventWatcher::OnTrigger(int row, int size)
     napi_get_uv_event_loop(context_->env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
     work->data = (void*)context_;
-    uv_queue_work(
+    uv_queue_work_with_qos(
         loop,
         work,
         [] (uv_work_t* work) {},
@@ -133,7 +134,8 @@ void NapiAppEventWatcher::OnTrigger(int row, int size)
             }
             napi_close_handle_scope(context->env, scope);
             SafeDeleteWork(work);
-        }
+        },
+        uv_qos_background
     );
 }
 
