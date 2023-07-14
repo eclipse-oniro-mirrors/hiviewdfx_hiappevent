@@ -76,7 +76,7 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
             delete context;
             SafeDeleteWork(work);
         },
-        uv_qos_background
+        uv_qos_default
     );
 }
 
@@ -135,7 +135,7 @@ void NapiAppEventWatcher::OnTrigger(int row, int size)
             napi_close_handle_scope(context->env, scope);
             SafeDeleteWork(work);
         },
-        uv_qos_background
+        uv_qos_default
     );
 }
 
