@@ -15,6 +15,7 @@
 #include "hiappevent_config.h"
 
 #include <algorithm>
+#include <dlfcn.h>
 #include <mutex>
 #include <regex>
 #include <sstream>
@@ -22,6 +23,7 @@
 
 #include "application_context.h"
 #include "context.h"
+#include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
@@ -64,6 +66,30 @@ std::string TransUpperToUnderscoreAndLower(const std::string& str)
 
     return ss.str();
 }
+
+void LoadAnalyticsModule(const std::string& moduleName)
+{
+    const std::string searchDirs[] = {
+        "/system/lib/", "/system/lib64/", "/system/lib/ndk/", "/system/lib64/ndk/"
+    };
+    std::string modulePath;
+    for (auto& searchDir : searchDirs) {
+        if (FileUtil::IsFileExists(searchDir + moduleName)) {
+            modulePath = searchDir + moduleName;
+            break;
+        }
+    }
+    if (modulePath.empty()) {
+        HiLog::Info(LABEL, "the module=%{public}s does not exist.", moduleName.c_str());
+        return;
+    }
+
+    if (dlopen(modulePath.c_str(), RTLD_GLOBAL) == nullptr) {
+        HiLog::Info(LABEL, "failed to load module=%{public}s, error=%{public}s.", modulePath.c_str(), dlerror());
+    } else {
+        HiLog::Info(LABEL, "success to load module=%{public}s.", modulePath.c_str());
+    }
+}
 }
 
 HiAppEventConfig& HiAppEventConfig::GetInstance()
@@ -89,6 +115,9 @@ bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
         return false;
     }
     std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+
+    // temporay loading scheme
+    LoadAnalyticsModule("libanalyticskit_native.z.so");
 
     if (name == DISABLE) {
         return SetDisableItem(value);
