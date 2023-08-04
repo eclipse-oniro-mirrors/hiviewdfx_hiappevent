@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -504,7 +504,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventJsTest009_3', 0, async function (done) {
         console.info('HiAppEventJsTest009_3 start');
         let expectErr = createError(11101002, "Invalid event name.");
-        writeNameV9Test("VVtt", expectErr, done);
+        writeNameV9Test("VVtt_", expectErr, done);
     });
 
     /**
