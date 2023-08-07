@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 
 #include "hiappevent_verify.h"
 
+#include <cctype>
 #include <iterator>
 #include <regex>
 
@@ -37,31 +38,39 @@ static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 
+bool IsValidName(const std::string& name, size_t maxSize)
+{
+    if (name.empty() || name.length() > maxSize) {
+        return false;
+    }
+    // start char is [$a-zA-Z]
+    if (!isalpha(name[0]) && name[0] != '$') {
+        return false;
+    }
+    // end char is [a-zA-Z0-9]
+    if (name.length() > 1 && (!isalnum(name.back()))) {
+        return false;
+    }
+    // middle char is [a-zA-Z0-9_]
+    for (size_t i = 1; i < name.length() - 1; ++i) {
+        if (!isalnum(name[i]) && name[i] != '_') {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool CheckEventName(const std::string& eventName)
 {
-    if (eventName.empty() || eventName.length() > MAX_LENGTH_OF_EVENT_NAME) {
-        return false;
-    }
-
-    /* custom and preset events */
-    if (!std::regex_match(eventName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$|^hiappevent\\.[a-z][a-z0-9_]*[a-z0-9]$"))) {
-        return false;
-    }
-
-    return true;
+    const std::string eventPrefix = "hiappevent.";
+    return eventName.find(eventPrefix) == 0 ?
+        IsValidName(eventName.substr(eventPrefix.length()), MAX_LENGTH_OF_EVENT_NAME - eventPrefix.length()) :
+        IsValidName(eventName, MAX_LENGTH_OF_EVENT_NAME);
 }
 
 bool CheckParamName(const std::string& paramName)
 {
-    if (paramName.empty() || paramName.length() > MAX_LENGTH_OF_PARAM_NAME) {
-        return false;
-    }
-
-    if (!std::regex_match(paramName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
-        return false;
-    }
-
-    return true;
+    return IsValidName(paramName, MAX_LENGTH_OF_PARAM_NAME);
 }
 
 void EscapeStringValue(std::string &value)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -299,7 +299,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest007, TestSize.Level0)
 
     list = OH_HiAppEvent_CreateParamList();
     OH_HiAppEvent_AddInt32Param(list, "int_key", 2);
-    res = OH_HiAppEvent_Write(TEST_DOMAIN_NAME, "verify_TEST", SECURITY, list);
+    res = OH_HiAppEvent_Write(TEST_DOMAIN_NAME, "verify_TEST_", SECURITY, list);
     OH_HiAppEvent_DestroyParamList(list);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_NAME);
 
