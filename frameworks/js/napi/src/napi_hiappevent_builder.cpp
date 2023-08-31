@@ -29,6 +29,7 @@ const std::string NAME_PROPERTY = "name";
 const std::string TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
 constexpr size_t MAX_STRING_LEN = 8 * 1024 + 2; // 2 for '\0' and extra symbol
+constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 16;
 const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
 }
 using namespace OHOS::HiviewDFX::ErrorCode;
@@ -180,6 +181,11 @@ void NapiHiAppEventBuilder::AddParams2EventPack(napi_env env, const napi_value p
     std::vector<std::string> keys;
     NapiUtil::GetPropertyNames(env, paramObj, keys);
     for (auto key : keys) {
+        if (key.length() > MAX_LENGTH_OF_PARAM_NAME) {
+            result_ = ERROR_INVALID_PARAM_NAME;
+            HiLog::Info(LABEL, "the length=%{public}zu of the param key is invalid", key.length());
+            continue;
+        }
         napi_value value = NapiUtil::GetProperty(env, paramObj, key);
         if (value == nullptr) {
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;

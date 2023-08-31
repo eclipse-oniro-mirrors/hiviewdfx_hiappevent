@@ -446,8 +446,8 @@ describe('HiAppEventJsTest', function () {
         let params = {
             key_arr_null: [null, null],
             key_arr_obj: [{}],
-            key_arr_not_same1:[true, "ha"],
-            key_arr_not_same2:[123, "ha"],
+            key_arr_test1:[true, "ha"],
+            key_arr_test2:[123, "ha"],
             key_str: "str"
         };
         writeParamsTest(params, 7, done);
@@ -464,8 +464,8 @@ describe('HiAppEventJsTest', function () {
         let params = {
             key_arr_null: [null, null],
             key_arr_obj: [{}],
-            key_arr_not_same1:[true, "ha"],
-            key_arr_not_same2:[123, "ha"],
+            key_arr_test1:[true, "ha"],
+            key_arr_test2:[123, "ha"],
             key_str: "str"
         };
         let expectErr = createError2("param value", "boolean|number|string|array[boolean|number|string]");
