@@ -210,12 +210,12 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
         HiLog::Error(LABEL, "the HiAppEvent function is disabled.");
         return ERROR_HIAPPEVENT_DISABLE;
     }
-    if (!IsValidDomain(appEventPack->GetEventDomain())) {
-        HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", appEventPack->GetEventDomain().c_str());
+    if (!IsValidDomain(appEventPack->GetDomain())) {
+        HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", appEventPack->GetDomain().c_str());
         return ERROR_INVALID_EVENT_DOMAIN;
     }
-    if (!CheckEventName(appEventPack->GetEventName())) {
-        HiLog::Error(LABEL, "eventName=%{public}s is invalid.", appEventPack->GetEventName().c_str());
+    if (!CheckEventName(appEventPack->GetName())) {
+        HiLog::Error(LABEL, "eventName=%{public}s is invalid.", appEventPack->GetName().c_str());
         return ERROR_INVALID_EVENT_NAME;
     }
 

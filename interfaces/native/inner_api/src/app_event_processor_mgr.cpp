@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,18 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_TIME_UTIL_H
-#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_TIME_UTIL_H
+#include "app_event_processor_mgr.h"
 
-#include <string>
+#include "app_event_watcher_mgr.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace TimeUtil {
-uint64_t GetMilliseconds();
-std::string GetDate();
-std::string GetTimeZone();
-} // namespace TimeUtil
+namespace HiAppEvent {
+int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventObserver> processor)
+{
+    return AppEventWatcherMgr::GetInstance()->RegisterProcessor(name, processor);
+}
+
+int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
+{
+    return AppEventWatcherMgr::GetInstance()->UnregisterProcessor(name);
+}
+} // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_TIME_UTIL_H

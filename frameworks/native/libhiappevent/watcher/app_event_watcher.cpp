@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 #include "app_event_watcher.h"
 
 #include "app_event_cache.h"
+#include "hiappevent_base.h"
 #include "hilog/log.h"
 
 namespace OHOS {
@@ -42,10 +43,10 @@ TriggerCondition AppEventWatcher::GetCond() const
     return cond_;
 }
 
-void AppEventWatcher::ProcessEvent(const std::string& domain, int type, const std::string& event)
+void AppEventWatcher::OnEvent(std::shared_ptr<AppEventPack> event)
 {
     HiLog::Debug(LABEL, "watcher=%{public}s start to process event", name_.c_str());
-    if (!IsInterestedEvent(domain, type)) {
+    if (!IsInterestedEvent(event->GetDomain(), event->GetType())) {
         return;
     }
     auto block = AppEventCache::GetInstance()->GetBlock(name_);
@@ -53,14 +54,15 @@ void AppEventWatcher::ProcessEvent(const std::string& domain, int type, const st
         HiLog::Error(LABEL, "failed to get block=%{public}s from cache", name_.c_str());
         return;
     }
-    if (block->Add(event) != 0) {
+    std::string eventStr = event->GetEventStr();
+    if (block->Add(eventStr) != 0) {
         HiLog::Error(LABEL, "failed to add event to the block=%{public}s", name_.c_str());
         return;
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
     ++status_.row;
-    status_.size += static_cast<int>(event.size());
+    status_.size += static_cast<int>(eventStr.size());
     if ((cond_.row > 0 && status_.row >= cond_.row) || (cond_.size > 0 && status_.size >= cond_.size)) {
         OnTrigger(status_.row, status_.size);
         ResetStatus();

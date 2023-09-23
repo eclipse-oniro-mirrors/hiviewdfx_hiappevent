@@ -19,6 +19,7 @@
 
 #include "app_event_cache.h"
 #include "app_event_watcher_mgr.h"
+#include "hiappevent_base.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -33,6 +34,11 @@ const std::string TEST_DOMAIN = "test_domain";
 const std::string TEST_NAME = "test_name";
 constexpr unsigned int TEST_TYPE = 1;
 const std::string TEST_EVENT = R"~({"domain_":"hiappevent", "name_":"testEvent"})~";
+
+std::shared_ptr<AppEventPack> CreateAppEventPack(const std::string domain = TEST_DOMAIN)
+{
+    return std::make_shared<AppEventPack>(domain, TEST_NAME, TEST_TYPE);
+}
 
 class HiAppEventWatcherTest : public testing::Test {
 public:
@@ -152,13 +158,13 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest001, TestSize.Level3)
     auto watcher5 = BuildWatcherWithTimeout2();
     watcherMgr->AddWatcher(watcher5);
 
-    watcherMgr->HandleEvent(TEST_DOMAIN, TEST_TYPE, TEST_EVENT);
+    watcherMgr->HandleEvent(CreateAppEventPack());
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher4->GetTriggerTimes(), 0);
 
-    watcherMgr->HandleEvent("invalid_domain", TEST_TYPE, TEST_EVENT);
+    watcherMgr->HandleEvent(CreateAppEventPack("invalid_domain"));
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
@@ -195,7 +201,7 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest002, TestSize.Level3)
     auto watcherMgr = AppEventWatcherMgr::GetInstance();
     ASSERT_NE(watcherMgr, nullptr);
     watcherMgr->AddWatcher(watcher);
-    watcherMgr->HandleEvent(TEST_DOMAIN, TEST_TYPE, TEST_EVENT);
+    watcherMgr->HandleEvent(CreateAppEventPack());
     ASSERT_EQ(watcher->GetTriggerTimes(), 0);
 
     watcherMgr->RemoveWatcher(watcher->GetName());
@@ -223,7 +229,7 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest003, TestSize.Level3)
     auto watcher2 = BuildWatcherWithRow();
     watcherMgr->AddWatcher(watcher2);
 
-    watcherMgr->HandleEvent(TEST_DOMAIN, TEST_TYPE, TEST_EVENT);
+    watcherMgr->HandleEvent(CreateAppEventPack());
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
 

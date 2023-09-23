@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -78,7 +78,7 @@ void TraceAppEventPack(const std::shared_ptr<AppEventPack>& appEventPack)
 }
 }
 
-void WriteEvent(const std::shared_ptr<AppEventPack>& appEventPack)
+void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
         HiLog::Warn(LABEL, "the HiAppEvent function is disabled.");
@@ -94,8 +94,8 @@ void WriteEvent(const std::shared_ptr<AppEventPack>& appEventPack)
         return;
     }
     TraceAppEventPack(appEventPack);
-    HiLog::Debug(LABEL, "WriteEvent eventInfo=%{public}s.", appEventPack->GetJsonString().c_str());
-
+    std::string event = appEventPack->GetEventStr();
+    HiLog::Debug(LABEL, "WriteEvent eventInfo=%{public}s.", event.c_str());
     {
         std::lock_guard<std::mutex> lockGuard(g_mutex);
         if (!FileUtil::IsFileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {
@@ -104,13 +104,12 @@ void WriteEvent(const std::shared_ptr<AppEventPack>& appEventPack)
         }
         CheckStorageSpace(dirPath);
         std::string filePath = FileUtil::GetFilePathByDir(dirPath, GetStorageFileName());
-        std::string event = appEventPack->GetJsonString();
+
         if (WriteEventToFile(filePath, event)) {
-            AppEventWatcherMgr::GetInstance()->HandleEvent(appEventPack->GetEventDomain(),
-                appEventPack->GetType(), event);
-        } else {
-            HiLog::Error(LABEL, "failed to write event to log file, errno=%{public}d.", errno);
+            AppEventWatcherMgr::GetInstance()->HandleEvent(appEventPack);
+            return;
         }
+        HiLog::Error(LABEL, "failed to write event to log file, errno=%{public}d.", errno);
     }
 }
 } // namespace HiviewDFX

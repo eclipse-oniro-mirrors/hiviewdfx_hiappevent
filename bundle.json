@@ -38,9 +38,21 @@
         "//base/hiviewdfx/hiappevent/frameworks/native/libhiappevent:libhiappevent_base",
         "//base/hiviewdfx/hiappevent/frameworks/native/ndk:hiappevent_ndk",
         "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent",
-        "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent_v9"
+        "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent_v9",
+        "//base/hiviewdfx/hiappevent/interfaces/native/inner_api:hiappevent_innerapi"
       ],
-      "inner_kits": [],
+      "inner_kits": [
+        {
+          "name": "//base/hiviewdfx/hiappevent/interfaces/native/inner_api:hiappevent_innerapi",
+          "header": {
+              "header_base": "//base/hiviewdfx/hiappevent/interfaces/native/inner_api/include",
+              "header_files": [
+                  "app_event_processor.h",
+                  "app_event_processor_mgr.h"
+              ]
+          }
+        }
+      ],
       "test": [ "//base/hiviewdfx/hiappevent/test:unittest" ]
     }
   }

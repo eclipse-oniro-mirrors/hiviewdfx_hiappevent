@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,18 +19,16 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <sys/time.h>
 #include <unistd.h>
 #include <vector>
 
 #include "hilog/log.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_base" };
-constexpr int SEC_TO_HOUR = 3600;
-constexpr int SEC_TO_MIN = 60;
 const std::string DEFAULT_DOMAIN = "default";
 
 std::string TrimRightZero(const std::string& str)
@@ -41,45 +39,6 @@ std::string TrimRightZero(const std::string& str)
     }
 
     return (str[endIndex] == '.') ? str.substr(0, endIndex) : str.substr(0, endIndex + 1);
-}
-
-std::string GetTimeInfo()
-{
-    // get system timestamp
-    struct timeval tv;
-    if (gettimeofday(&tv, nullptr) != 0) {
-        HiLog::Error(LABEL, "failed to execute the gettimeofday function.");
-        return "";
-    }
-    int64_t timeMillSec = static_cast<int64_t>(tv.tv_sec) * 1000 + tv.tv_usec / 1000; // 1000 means milliseconds
-    std::stringstream ss;
-    ss << "\"" << "time_" << "\":" << std::to_string(timeMillSec) << ",";
-
-    // Get system time zone
-    time_t sysSec = tv.tv_sec;
-    struct tm tmLocal;
-    if (localtime_r(&sysSec, &tmLocal) == nullptr) {
-        HiLog::Error(LABEL, "failed to get local time.");
-        return ss.str();
-    }
-    struct tm tmUtc;
-    if (gmtime_r(&sysSec, &tmUtc) == nullptr) {
-        HiLog::Error(LABEL, "failed to get GMT time.");
-        return ss.str();
-    }
-    time_t diffSec = mktime(&tmLocal) - mktime(&tmUtc);
-    ss << "\"tz_\":\"" << ((diffSec < 0) ? "-" : "+");
-
-    int tzHour = std::abs(diffSec) / SEC_TO_HOUR;
-    if (tzHour > 12) { // max time zone is 12
-        HiLog::Error(LABEL, "failed to get hours for time zone, set to 0.");
-        tzHour = 0;
-    }
-    int tzMin = (std::abs(diffSec) % SEC_TO_HOUR) / SEC_TO_MIN;
-    ss << std::setw(2) << std::setfill('0') << tzHour; // the number of digits in the hour is 2
-    ss << std::setw(2) << std::setfill('0') << tzMin << "\","; // the number of digits in the min is 2
-
-    return ss.str();
 }
 
 void InitValueByBaseType(AppEventParamValue* value, const AppEventParamValue& other)
@@ -153,6 +112,173 @@ void InitValueByReferType(AppEventParamValue* value, const AppEventParamValue& o
             break;
     }
 }
+
+template<typename T>
+std::string GetValueStr(const T& value)
+{
+    return std::to_string(value);
+}
+
+std::string GetValueStr(bool value)
+{
+    return value ? "true" : "false";
+}
+
+std::string GetValueStr(char value)
+{
+    return "\"" + std::to_string(value) + "\"";
+}
+
+std::string GetValueStr(float value)
+{
+    return TrimRightZero(std::to_string(value));
+}
+
+std::string GetValueStr(double value)
+{
+    return TrimRightZero(std::to_string(value));
+}
+
+std::string GetValueStr(const std::string& value)
+{
+    return "\"" + value + "\"";
+}
+
+template<typename T>
+std::string GetValuesStr(const std::vector<T>& values)
+{
+    std::string valuesStr;
+    valuesStr.append("[");
+    size_t valuesSize = values.size();
+    for (size_t i = 0; i < valuesSize; ++i) {
+        if constexpr (std::is_same_v<std::decay_t<T>, bool>) { // vector<bool> is stored as bit type
+            bool bValue = values[i];
+            valuesStr.append(GetValueStr(bValue));
+        } else {
+            valuesStr.append(GetValueStr(values[i]));
+        }
+        if (i != (valuesSize - 1)) { // -1 for last value
+            valuesStr.append(",");
+        }
+    }
+    valuesStr.append("]");
+    return valuesStr;
+}
+
+std::string GetEmptyParamValueStr(const AppEventParamValue& value)
+{
+    return "\"\"";
+}
+
+std::string GetBoolParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.b_);
+}
+
+std::string GetCharParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.c_);
+}
+
+std::string GetShortParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.sh_);
+}
+
+std::string GetIntParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.i_);
+}
+
+std::string GetLongParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.ll_);
+}
+
+std::string GetFloatParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.f_);
+}
+
+std::string GetDoubleParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.d_);
+}
+
+std::string GetStrParamValueStr(const AppEventParamValue& value)
+{
+    return GetValueStr(value.valueUnion.str_);
+}
+
+std::string GetBoolsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.bs_);
+}
+
+std::string GetCharsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.cs_);
+}
+
+std::string GetShortsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.shs_);
+}
+
+std::string GetIntsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.is_);
+}
+
+std::string GetLongsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.lls_);
+}
+
+std::string GetFloatsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.fs_);
+}
+
+std::string GetDoublesParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.ds_);
+}
+
+std::string GetStrsParamValueStr(const AppEventParamValue& value)
+{
+    return GetValuesStr(value.valueUnion.strs_);
+}
+
+using GetParamValueFunc = std::string (*)(const AppEventParamValue& value);
+const std::unordered_map<AppEventParamType, GetParamValueFunc> GET_PARAM_VALUE_FUNCS = {
+    {EMPTY, &GetEmptyParamValueStr},
+    {BOOL, &GetBoolParamValueStr},
+    {CHAR, &GetCharParamValueStr},
+    {SHORT, &GetShortParamValueStr},
+    {INTEGER, &GetIntParamValueStr},
+    {LONGLONG, &GetLongParamValueStr},
+    {FLOAT, &GetFloatParamValueStr},
+    {DOUBLE, &GetDoubleParamValueStr},
+    {STRING, &GetStrParamValueStr},
+    {BVECTOR, &GetBoolsParamValueStr},
+    {CVECTOR, &GetCharsParamValueStr},
+    {SHVECTOR, &GetShortsParamValueStr},
+    {IVECTOR, &GetIntsParamValueStr},
+    {LLVECTOR, &GetLongsParamValueStr},
+    {FVECTOR, &GetFloatsParamValueStr},
+    {DVECTOR, &GetDoublesParamValueStr},
+    {STRVECTOR, &GetStrsParamValueStr},
+};
+
+std::string GetParamValueStr(const AppEventParam& param)
+{
+    if (GET_PARAM_VALUE_FUNCS.find(param.value.type) == GET_PARAM_VALUE_FUNCS.end()) {
+        HiLog::Warn(LABEL, "Invalid param value, name=%{public}s", param.name.c_str());
+        return "";
+    }
+    return GET_PARAM_VALUE_FUNCS.at(param.value.type)(param.value);
+}
 }
 
 AppEventParamValue::AppEventParamValue(AppEventParamType t) : type(t), valueUnion(t)
@@ -216,7 +342,20 @@ AppEventPack::AppEventPack(const std::string& name, int type) : AppEventPack(DEF
 
 AppEventPack::AppEventPack(const std::string& domain, const std::string& name, int type)
     : domain_(domain), name_(name), type_(type)
-{}
+{
+    InitTime();
+    InitTimeZone();
+}
+
+void AppEventPack::InitTime()
+{
+    time_ = TimeUtil::GetMilliseconds();
+}
+
+void AppEventPack::InitTimeZone()
+{
+    timeZone_ = TimeUtil::GetTimeZone();
+}
 
 void AppEventPack::AddParam(const std::string& key)
 {
@@ -372,175 +511,56 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<std::strin
     baseParams_.push_back(appEventParam);
 }
 
+std::string AppEventPack::GetEventStr() const
+{
+    std::stringstream jsonStr;
+    jsonStr << "{";
+    AddBaseInfoToJsonString(jsonStr);
+    if (baseParams_.size() != 0) {
+        jsonStr << ",";
+        AddParamsToJsonString(jsonStr);
+    }
+    jsonStr << "}" << std::endl;
+    return jsonStr.str();
+}
+
+std::string AppEventPack::GetParamStr() const
+{
+    std::stringstream jsonStr;
+    jsonStr << "{";
+    AddParamsToJsonString(jsonStr);
+    jsonStr << "}" << std::endl;
+    return jsonStr.str();
+}
+
 void AppEventPack::AddBaseInfoToJsonString(std::stringstream& jsonStr) const
 {
     jsonStr << "\"" << "domain_" << "\":" << "\"" << domain_ << "\",";
     jsonStr << "\"" << "name_" << "\":" << "\"" << name_ << "\",";
     jsonStr << "\"" << "type_" << "\":" <<  type_ << ",";
-    jsonStr << GetTimeInfo();
+    jsonStr << "\"" << "time_" << "\":" << std::to_string(time_) << ",";
+    jsonStr << "\"tz_\":\"" << timeZone_ << "\",";
     jsonStr << "\"" << "pid_" << "\":" << getpid() << ",";
-    jsonStr << "\"" << "tid_" << "\":" << gettid() << ",";
+    jsonStr << "\"" << "tid_" << "\":" << gettid();
 }
 
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<bool>& bs) const
+void AppEventPack::AddParamsToJsonString(std::stringstream& jsonStr) const
 {
-    jsonStr << "[";
-    size_t len = bs.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<bool> value added to JsonString is empty.");
+    if (baseParams_.empty()) {
         return;
     }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << (bs[i] ? "true" : "false") << ",";
+    for (auto& param : baseParams_) {
+        jsonStr << "\"" << param.name << "\":" << GetParamValueStr(param) << ",";
     }
-    jsonStr << (bs[len - 1] ? "true" : "false") << "],";
+    jsonStr.seekp(-1, std::ios_base::end); // -1 for delete ','
 }
 
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<char>& cs) const
-{
-    jsonStr << "[";
-    size_t len = cs.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<char> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << "\"" << cs[i] << "\""  << ",";
-    }
-    jsonStr << "\"" << cs[len - 1] << "\"" << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int16_t>& shs) const
-{
-    jsonStr << "[";
-    size_t len = shs.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<int16_t> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << shs[i] << ",";
-    }
-    jsonStr << shs[len - 1] << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int>& is) const
-{
-    jsonStr << "[";
-    size_t len = is.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<int> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << is[i] << ",";
-    }
-    jsonStr << is[len - 1] << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int64_t>& lls) const
-{
-    jsonStr << "[";
-    size_t len = lls.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<int64_t> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << lls[i] << ",";
-    }
-    jsonStr << lls[len - 1] << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<float>& fs) const
-{
-    jsonStr << "[";
-    size_t len = fs.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<float> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << TrimRightZero(std::to_string(fs[i])) << ",";
-    }
-    jsonStr << TrimRightZero(std::to_string(fs[len - 1])) << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<double>& ds) const
-{
-    jsonStr << "[";
-    size_t len = ds.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<double> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << TrimRightZero(std::to_string(ds[i])) << ",";
-    }
-    jsonStr << TrimRightZero(std::to_string(ds[len - 1])) << "],";
-}
-
-void AppEventPack::AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<std::string>& strs) const
-{
-    jsonStr << "[";
-    size_t len = strs.size();
-    if (len == 0) {
-        jsonStr << "],";
-        HiLog::Info(LABEL, "The vector<string> value added to JsonString is empty.");
-        return;
-    }
-
-    for (size_t i = 0; i < len - 1; i++) {
-        jsonStr << "\"" << strs[i] << "\",";
-    }
-    jsonStr << "\"" << strs[len - 1] << "\"],";
-}
-
-void AppEventPack::AddOthersToJsonString(std::stringstream& jsonStr, const AppEventParam param) const
-{
-    if (param.type == AppEventParamType::BVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.bs_);
-    } else if (param.type == AppEventParamType::CVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.cs_);
-    } else if (param.type == AppEventParamType::SHVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.shs_);
-    } else if (param.type == AppEventParamType::IVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.is_);
-    } else if (param.type == AppEventParamType::LLVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.lls_);
-    } else if (param.type == AppEventParamType::FVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.fs_);
-    } else if (param.type == AppEventParamType::DVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.ds_);
-    } else if (param.type == AppEventParamType::STRVECTOR) {
-        AddVectorToJsonString(jsonStr, param.value.valueUnion.strs_);
-    } else if (param.type == AppEventParamType::EMPTY) {
-        jsonStr << "[]" << ",";
-    } else {
-        jsonStr << "\"\",";
-    }
-}
-
-const std::string AppEventPack::GetEventDomain() const
+const std::string AppEventPack::GetDomain() const
 {
     return domain_;
 }
 
-const std::string AppEventPack::GetEventName() const
+const std::string AppEventPack::GetName() const
 {
     return name_;
 }
@@ -550,37 +570,9 @@ int AppEventPack::GetType() const
     return type_;
 }
 
-std::string AppEventPack::GetJsonString() const
+uint64_t AppEventPack::GetTime() const
 {
-    std::stringstream jsonStr;
-    jsonStr << "{";
-    AddBaseInfoToJsonString(jsonStr);
-    for (auto it = baseParams_.begin(); it != baseParams_.end(); it++) {
-        jsonStr << "\"" << it->name << "\":";
-        if (it->type == AppEventParamType::BOOL) {
-            jsonStr << ((it->value.valueUnion.b_) ? "true" : "false") << ",";
-        } else if (it->type == AppEventParamType::CHAR) {
-            jsonStr << "\"" << it->value.valueUnion.c_ << "\"" << ",";
-        } else if (it->type == AppEventParamType::SHORT) {
-            jsonStr << it->value.valueUnion.sh_ << ",";
-        } else if (it->type == AppEventParamType::INTEGER) {
-            jsonStr << it->value.valueUnion.i_ << ",";
-        } else if (it->type == AppEventParamType::LONGLONG) {
-            jsonStr << it->value.valueUnion.ll_ << ",";
-        } else if (it->type == AppEventParamType::FLOAT) {
-            jsonStr << TrimRightZero(std::to_string(it->value.valueUnion.f_)) << ",";
-        } else if (it->type == AppEventParamType::DOUBLE) {
-            jsonStr << TrimRightZero(std::to_string(it->value.valueUnion.d_)) << ",";
-        } else if (it->type == AppEventParamType::STRING) {
-            jsonStr << "\"" << it->value.valueUnion.str_ << "\",";
-        } else {
-            AddOthersToJsonString(jsonStr, *it);
-        }
-    }
-
-    jsonStr.seekp(-1, std::ios_base::end);
-    jsonStr << "}" << std::endl;
-    return jsonStr.str();
+    return time_;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

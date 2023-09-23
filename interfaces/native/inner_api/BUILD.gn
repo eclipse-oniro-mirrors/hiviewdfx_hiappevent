@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,34 +10,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import("//build/ohos.gni")
 
-config("hiappevent_watcher_config") {
+config("hiappevent_innerapi_config") {
   visibility = [ "*:*" ]
-  include_dirs = [
-    "include",
-    "../include",
-  ]
+  include_dirs = [ "include" ]
 }
 
-ohos_source_set("hiappevent_watcher") {
-  public_configs = [ ":hiappevent_watcher_config" ]
+ohos_shared_library("hiappevent_innerapi") {
+  public_configs = [ ":hiappevent_innerapi_config" ]
 
   sources = [
-    "app_event_handler.cpp",
-    "app_event_watcher.cpp",
-    "app_event_watcher_mgr.cpp",
+    "src/app_event_processor.cpp",
+    "src/app_event_processor_mgr.cpp",
   ]
 
-  deps = [ "../cache:hiappevent_cache" ]
+  deps = [ "../../../frameworks/native/libhiappevent:libhiappevent_base" ]
 
-  external_deps = [
-    "eventhandler:libeventhandler",
-    "hilog:libhilog",
-    "relational_store:native_rdb",
-  ]
+  external_deps = [ "hilog:libhilog" ]
 
   part_name = "hiappevent"
+  innerapi_tags = [ "platformsdk" ]
   subsystem_name = "hiviewdfx"
 }
