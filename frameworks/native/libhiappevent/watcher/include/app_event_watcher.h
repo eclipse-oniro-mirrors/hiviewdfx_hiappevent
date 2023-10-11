@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,23 +19,27 @@
 #include <mutex>
 #include <string>
 
+#include "app_event_observer.h"
+
 namespace OHOS {
 namespace HiviewDFX {
+using HiAppEvent::AppEventObserver;
+
 struct TriggerCondition {
     int row;
     int size;
     int timeOut;
 };
 
-class AppEventWatcher {
+class AppEventWatcher : public AppEventObserver {
 public:
     AppEventWatcher(const std::string& name, const std::map<std::string, unsigned int>& filters,
         TriggerCondition cond);
     virtual ~AppEventWatcher() {}
+    virtual void OnEvent(std::shared_ptr<AppEventPack> event);
     virtual void OnTrigger(int row, int size);
     std::string GetName() const;
     TriggerCondition GetCond() const;
-    void ProcessEvent(const std::string& domain, int type, const std::string& event);
     void ProcessTimeOut();
 
 private:

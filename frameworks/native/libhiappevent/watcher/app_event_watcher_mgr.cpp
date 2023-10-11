@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,7 @@ std::shared_ptr<AppEventWatcherMgr> AppEventWatcherMgr::GetInstance()
     return instance_;
 }
 
-void AppEventWatcherMgr::AddWatcher(const std::shared_ptr<AppEventWatcher>& watcher)
+void AppEventWatcherMgr::AddWatcher(std::shared_ptr<AppEventWatcher> watcher)
 {
     // if already exists, need to delete the old watcher first
     std::string name = watcher->GetName();
@@ -58,6 +58,7 @@ void AppEventWatcherMgr::AddWatcher(const std::shared_ptr<AppEventWatcher>& watc
     if (watcher->GetCond().timeOut > 0 && handler_ == nullptr) {
         if (CreateEventHandler() == nullptr) {
             HiLog::Error(LABEL, "addWatcher: failed to create handler");
+            return;
         }
         handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
     }
@@ -86,12 +87,15 @@ void AppEventWatcherMgr::RemoveWatcher(const std::string& name)
     HiLog::Info(LABEL, "remove watcher=%{public}s successfully", name.c_str());
 }
 
-void AppEventWatcherMgr::HandleEvent(const std::string& domain, int type, const std::string& event)
+void AppEventWatcherMgr::HandleEvent(std::shared_ptr<AppEventPack> event)
 {
     HiLog::Debug(LABEL, "watcherMgr start to handle event");
     std::shared_lock<std::shared_mutex> lock(mutex_);
     for (auto it = watchers_.begin(); it != watchers_.end(); ++it) {
-        it->second->ProcessEvent(domain, type, event);
+        it->second->OnEvent(event);
+    }
+    for (auto it = processors_.begin(); it != processors_.end(); ++it) {
+        it->second->OnEvent(event);
     }
 }
 
@@ -126,6 +130,30 @@ std::shared_ptr<AppEventHandler> AppEventWatcherMgr::CreateEventHandler()
 void AppEventWatcherMgr::DestroyEventHandler()
 {
     handler_= nullptr;
+}
+
+int AppEventWatcherMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventObserver> processor)
+{
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    if (processors_.find(name) != processors_.end()) {
+        HiLog::Warn(LABEL, "failed to register processor=%{public}s, name is duplicated", name.c_str());
+        return -1;
+    }
+    processors_[name] = processor;
+    HiLog::Info(LABEL, "succ to register processor=%{public}s", name.c_str());
+    return 0;
+}
+
+int AppEventWatcherMgr::UnregisterProcessor(const std::string& name)
+{
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    if (processors_.find(name) == processors_.end()) {
+        HiLog::Warn(LABEL, "failed to register processor=%{public}s, name does not exist", name.c_str());
+        return -1;
+    }
+    processors_.erase(name);
+    HiLog::Info(LABEL, "succ to unregister processor=%{public}s", name.c_str());
+    return 0;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

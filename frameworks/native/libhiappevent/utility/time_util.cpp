@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,6 +46,25 @@ std::string GetDate()
         return DEFAULT_DATE;
     }
     return dateChs;
+}
+
+std::string GetTimeZone()
+{
+    struct timeval tv;
+    if (gettimeofday(&tv, nullptr) != 0) {
+        return "";
+    }
+    time_t sysSec = tv.tv_sec;
+    struct tm tmLocal;
+    if (localtime_r(&sysSec, &tmLocal) == nullptr) {
+        return "";
+    }
+    constexpr size_t buffSize = 6; // for '+0800\0'
+    char buff[buffSize] = {0};
+    if (strftime(buff, buffSize, "%z", &tmLocal) < 0) {
+        return "";
+    }
+    return std::string(buff);
 }
 } // namespace TimeUtil
 } // namespace HiviewDFX

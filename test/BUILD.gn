@@ -94,10 +94,23 @@ ohos_unittest("HiAppEventReadTest") {
   ]
 }
 
+ohos_unittest("HiAppEventInnerApiTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_inner_api_test.cpp" ]
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [ "hiappevent:hiappevent_innerapi" ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
     ":HiAppEventCacheTest",
+    ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
     ":HiAppEventReadTest",
     ":HiAppEventWatcherTest",

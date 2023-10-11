@@ -28,10 +28,12 @@ class AppEventHandler;
 class AppEventWatcherMgr {
 public:
     static std::shared_ptr<AppEventWatcherMgr> GetInstance();
-    void AddWatcher(const std::shared_ptr<AppEventWatcher>& watcher);
+    void AddWatcher(std::shared_ptr<AppEventWatcher> watcher);
     void RemoveWatcher(const std::string& name);
-    void HandleEvent(const std::string& domain, int type, const std::string& event);
+    void HandleEvent(std::shared_ptr<AppEventPack> event);
     void HandleTimeOut();
+    int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventObserver> processor);
+    int UnregisterProcessor(const std::string& name);
 
 private:
     std::shared_ptr<AppEventHandler> CreateEventHandler();
@@ -39,6 +41,7 @@ private:
 
 private:
     std::map<std::string, std::shared_ptr<AppEventWatcher>> watchers_;
+    std::map<std::string, std::shared_ptr<AppEventObserver>> processors_;
     std::shared_ptr<AppEventHandler> handler_;
     static std::shared_mutex mutex_;
     static std::shared_ptr<AppEventWatcherMgr> instance_;

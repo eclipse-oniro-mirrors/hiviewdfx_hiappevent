@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,18 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_TIME_UTIL_H
-#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_TIME_UTIL_H
-
-#include <string>
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_APP_EVENT_OBSERVER_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_APP_EVENT_OBSERVER_H
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace TimeUtil {
-uint64_t GetMilliseconds();
-std::string GetDate();
-std::string GetTimeZone();
-} // namespace TimeUtil
+class AppEventPack;
+
+namespace HiAppEvent {
+class AppEventObserver {
+public:
+    AppEventObserver() = default;
+    virtual ~AppEventObserver() = default;
+    virtual void OnEvent(std::shared_ptr<AppEventPack> event) = 0;
+};
+} // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_TIME_UTIL_H
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_APP_EVENT_OBSERVER_H

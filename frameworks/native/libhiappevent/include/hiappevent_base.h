@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -174,28 +174,26 @@ public:
     void AddParam(const std::string& key, const std::vector<double>& ds);
     void AddParam(const std::string& key, const std::vector<const char*>& cps);
     void AddParam(const std::string& key, const std::vector<std::string>& strs);
-    const std::string GetEventDomain() const;
-    const std::string GetEventName() const;
+    const std::string GetDomain() const;
+    const std::string GetName() const;
     int GetType() const;
-    std::string GetJsonString() const;
+    uint64_t GetTime() const;
+    std::string GetEventStr() const;
+    std::string GetParamStr() const;
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 
 private:
+    void InitTime();
+    void InitTimeZone();
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<bool>& bs) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<char>& cs) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int16_t>& shs) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int>& is) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<int64_t>& lls) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<float>& fs) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<double>& ds) const;
-    void AddVectorToJsonString(std::stringstream& jsonStr, const std::vector<std::string>& strs) const;
-    void AddOthersToJsonString(std::stringstream& jsonStr, const AppEventParam param) const;
+    void AddParamsToJsonString(std::stringstream& jsonStr) const;
 
 private:
     std::string domain_;
     std::string name_;
-    int type_;
+    int type_ = 0;
+    uint64_t time_ = 0;
+    std::string timeZone_;
     std::list<AppEventParam> baseParams_;
 };
 } // namespace HiviewDFX
