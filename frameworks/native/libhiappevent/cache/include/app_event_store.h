@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,26 +18,41 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <vector>
 
+#include "app_event_dao.h"
+#include "app_event_mapping_dao.h"
+#include "app_event_observer_dao.h"
 #include "rdb_store.h"
+#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventStore {
+class AppEventPack;
+
+class AppEventStore : public DelayedRefSingleton<AppEventStore>  {
 public:
-    AppEventStore(const std::string& dir);
-    ~AppEventStore() {}
-    std::shared_ptr<NativeRdb::RdbStore> GetDbStore();
-    int CreateBlockTable(const std::string& name);
-    int DropBlockTable(const std::string& name);
+    AppEventStore();
+    ~AppEventStore();
+    int InitDbStore();
     int DestroyDbStore();
+    int64_t InsertEvent(std::shared_ptr<AppEventPack> event);
+    int64_t InsertObserver(const std::string& observer);
+    int64_t InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
+    int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
+    int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
+    int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
+    int DeleteObserver(int64_t observerSeq);
+    int DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
-    void InitDbStoreDir(const std::string& dir);
-    std::shared_ptr<NativeRdb::RdbStore> CreateDbStore();
+    bool InitDbStoreDir();
 
 private:
     std::shared_ptr<NativeRdb::RdbStore> dbStore_;
+    std::shared_ptr<AppEventDao> appEventDao_;
+    std::shared_ptr<AppEventObserverDao> appEventObserverDao_;
+    std::shared_ptr<AppEventMappingDao> appEventMappingDao_;
     std::string dirPath_;
     std::mutex dbMutex_;
 };

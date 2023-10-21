@@ -18,14 +18,13 @@
 #include <mutex>
 #include <string>
 
-#include "app_event_watcher_mgr.h"
+#include "app_event_observer_mgr.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
-#include "hitrace/trace.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -64,18 +63,6 @@ bool WriteEventToFile(const std::string& filePath, const std::string& event)
     LogAssistant::Instance().RealTimeAppLogUpdate(event);
     return FileUtil::SaveStringToFile(filePath, event);
 }
-
-void TraceAppEventPack(const std::shared_ptr<AppEventPack>& appEventPack)
-{
-    HiTraceId hitraceId = HiTraceChain::GetId();
-    if (!hitraceId.IsValid()) {
-        return;
-    }
-    appEventPack->AddParam("traceid_", static_cast<int64_t>(hitraceId.GetChainId()));
-    appEventPack->AddParam("spanid_", static_cast<int64_t>(hitraceId.GetSpanId()));
-    appEventPack->AddParam("pspanid_", static_cast<int64_t>(hitraceId.GetParentSpanId()));
-    appEventPack->AddParam("trace_flag_", hitraceId.GetFlags());
-}
 }
 
 void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
@@ -93,7 +80,6 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
         HiLog::Error(LABEL, "dirPath is null, stop writing the event.");
         return;
     }
-    TraceAppEventPack(appEventPack);
     std::string event = appEventPack->GetEventStr();
     HiLog::Debug(LABEL, "WriteEvent eventInfo=%{public}s.", event.c_str());
     {
@@ -104,9 +90,8 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
         }
         CheckStorageSpace(dirPath);
         std::string filePath = FileUtil::GetFilePathByDir(dirPath, GetStorageFileName());
-
         if (WriteEventToFile(filePath, event)) {
-            AppEventWatcherMgr::GetInstance()->HandleEvent(appEventPack);
+            AppEventObserverMgr::GetInstance().HandleEvent(appEventPack);
             return;
         }
         HiLog::Error(LABEL, "failed to write event to log file, errno=%{public}d.", errno);

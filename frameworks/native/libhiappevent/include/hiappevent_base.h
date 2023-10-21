@@ -148,6 +148,7 @@ using AppEventParam = struct AppEventParam;
 
 class AppEventPack {
 public:
+    AppEventPack() = default;
     AppEventPack(const std::string& name, int type);
     AppEventPack(const std::string& domain, const std::string& name, int type);
     ~AppEventPack() {}
@@ -174,27 +175,62 @@ public:
     void AddParam(const std::string& key, const std::vector<double>& ds);
     void AddParam(const std::string& key, const std::vector<const char*>& cps);
     void AddParam(const std::string& key, const std::vector<std::string>& strs);
-    const std::string GetDomain() const;
-    const std::string GetName() const;
+
+    int64_t GetSeq() const;
+    std::string GetDomain() const;
+    std::string GetName() const;
     int GetType() const;
     uint64_t GetTime() const;
+    std::string GetTimeZone() const;
+    int GetPid() const;
+    int GetTid() const;
+    int64_t GetTraceId() const;
+    int64_t GetSpanId() const;
+    int64_t GetPspanId() const;
+    int GetTraceFlag() const;
     std::string GetEventStr() const;
     std::string GetParamStr() const;
+
+    void SetSeq(int64_t seq);
+    void SetDomain(const std::string& domain);
+    void SetName(const std::string& name);
+    void SetType(int type);
+    void SetTime(uint64_t time);
+    void SetTimeZone(const std::string& timeZone);
+    void SetPid(int pid);
+    void SetTid(int tid);
+    void SetTraceId(int64_t traceId);
+    void SetSpanId(int64_t spanId);
+    void SetPspanId(int64_t pspanId);
+    void SetTraceFlag(int traceFlag);
+    void SetParamStr(const std::string& paramStr);
+
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 
 private:
     void InitTime();
     void InitTimeZone();
+    void InitProcessInfo();
+    void InitTraceInfo();
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
+    void AddTraceInfoToJsonString(std::stringstream& jsonStr) const;
     void AddParamsToJsonString(std::stringstream& jsonStr) const;
 
 private:
+    int64_t seq_ = 0;
     std::string domain_;
     std::string name_;
     int type_ = 0;
     uint64_t time_ = 0;
     std::string timeZone_;
+    int pid_ = 0;
+    int tid_ = 0;
+    int64_t traceId_ = 0;
+    int64_t spanId_ = 0;
+    int64_t pspanId_ = 0;
+    int traceFlag_ = 0;
     std::list<AppEventParam> baseParams_;
+    std::string paramStr_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

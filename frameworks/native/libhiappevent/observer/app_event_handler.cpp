@@ -12,37 +12,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "app_event_db_cleaner.h"
+#include "app_event_handler.h"
 
-#include "app_event_store.h"
-#include "file_util.h"
+#include "app_event_observer_mgr.h"
 #include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "HiAppEvent_DbCleaner" };
-const std::string DATABASE_DIR = "databases/";
+const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "HiAppEvent_Handler" };
 }
-uint64_t AppEventDbCleaner::GetFilesSize()
+AppEventHandler::AppEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
+    : AppExecFwk::EventHandler(runner)
 {
-    return FileUtil::GetDirSize(path_ + DATABASE_DIR);
+    HiLog::Info(LABEL, "AppEventHandler instance created");
 }
 
-uint64_t AppEventDbCleaner::ClearSpace(uint64_t curSize, uint64_t maxSize)
+AppEventHandler::~AppEventHandler()
 {
-    HiLog::Info(LABEL, "start to clear the space occupied by database files");
-    if (curSize <= maxSize) {
-        return curSize;
+    HiLog::Info(LABEL, "AppEventHandler instance destroyed");
+}
+
+void AppEventHandler::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
+{
+    if (event->GetInnerEventId() == AppEventType::WATCHER_TIMEOUT) {
+        AppEventObserverMgr::GetInstance().HandleTimeOut();
     }
-    (void)AppEventStore::GetInstance().DestroyDbStore();
-    return 0;
-}
-
-void AppEventDbCleaner::ClearData()
-{
-    HiLog::Info(LABEL, "start to clear the db data");
-    (void)AppEventStore::GetInstance().DestroyDbStore();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

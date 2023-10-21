@@ -24,6 +24,37 @@ constexpr int DB_SUCC = 0;
 constexpr int DB_FAILED = -1;
 const unsigned int HIAPPEVENT_DOMAIN = 0xD002D07;
 
+namespace Events {
+const std::string TABLE = "events";
+const std::string FIELD_SEQ = "seq";
+const std::string FIELD_DOMAIN = "domain";
+const std::string FIELD_NAME = "name";
+const std::string FIELD_TYPE = "type";
+const std::string FIELD_TIME = "time";
+const std::string FIELD_TZ = "tz";
+const std::string FIELD_PID = "pid";
+const std::string FIELD_TID = "tid";
+const std::string FIELD_TRACE_ID = "trace_id";
+const std::string FIELD_SPAN_ID = "span_id";
+const std::string FIELD_PSPAN_ID = "pspan_id";
+const std::string FIELD_TRACE_FLAG = "trace_flag";
+const std::string FIELD_PARAMS = "params";
+const std::string FIELD_SIZE = "size";
+} // namespace Events
+
+namespace Observers {
+const std::string TABLE = "observers";
+const std::string FIELD_SEQ = "seq";
+const std::string FIELD_NAME = "name";
+} // namespace Observers
+
+namespace AppEventMapping {
+const std::string TABLE = "event_observer_mapping";
+const std::string FIELD_SEQ = "seq";
+const std::string FIELD_EVENT_SEQ = "event_seq";
+const std::string FIELD_OBSERVER_SEQ = "observer_seq";
+} // namespace AppEventMapping
+
 namespace Blocks {
 const std::string TABLE = "blocks";
 const std::string FIELD_SEQ = "seq";

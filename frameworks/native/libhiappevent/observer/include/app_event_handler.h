@@ -12,32 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "app_event_handler.h"
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_HANDLER_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_HANDLER_H
 
-#include "app_event_watcher_mgr.h"
-#include "hilog/log.h"
+#include "event_handler.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "HiAppEvent_Handler" };
+namespace AppEventType {
+const uint32_t WATCHER_TIMEOUT = 0;
 }
-AppEventHandler::AppEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
-    : AppExecFwk::EventHandler(runner)
-{
-    HiLog::Info(LABEL, "AppEventHandler instance created");
-}
-
-AppEventHandler::~AppEventHandler()
-{
-    HiLog::Info(LABEL, "AppEventHandler instance destroyed");
-}
-
-void AppEventHandler::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
-{
-    if (event->GetInnerEventId() == AppEventType::WATCHER_TIMEOUT) {
-        AppEventWatcherMgr::GetInstance()->HandleTimeOut();
-    }
-}
+class AppEventHandler : public AppExecFwk::EventHandler {
+public:
+    explicit AppEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    ~AppEventHandler() override;
+    void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
+};
 } // namespace HiviewDFX
 } // namespace OHOS
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_HANDLER_H

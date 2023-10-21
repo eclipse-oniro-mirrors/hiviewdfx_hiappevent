@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,30 +12,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_BLOCKS_DAO_H
-#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_BLOCKS_DAO_H
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_MAPPING_DAO_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_MAPPING_DAO_H
 
 #include <memory>
 #include <string>
-#include <vector>
+
+#include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventStore;
-
-class AppEventBlocksDao {
+class AppEventMappingDao {
 public:
-    AppEventBlocksDao(std::shared_ptr<AppEventStore> store);
-    ~AppEventBlocksDao() {}
-    bool IsBlockExists(const std::string& name);
-    int AddBlock(const std::string& name);
-    int RemoveBlock(const std::string& name);
-    int GetBlocks(std::vector<std::string>& names);
+    AppEventMappingDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
+    ~AppEventMappingDao() = default;
+    int64_t Insert(int64_t eventSeq, int64_t observerSeq);
+    int Delete(int64_t observerSeq);
+    int Delete(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
-    std::shared_ptr<AppEventStore> store_;
-    std::string table_;
+    int Create();
+
+private:
+    std::shared_ptr<NativeRdb::RdbStore> dbStore_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_BLOCKS_DAO_H
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_MAPPING_DAO_H

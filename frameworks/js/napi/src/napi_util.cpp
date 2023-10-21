@@ -164,6 +164,16 @@ int32_t GetInt32(const napi_env env, const napi_value value)
     return iValue;
 }
 
+int64_t GetInt64(const napi_env env, const napi_value value)
+{
+    int64_t iValue = 0;
+    if (napi_get_value_int64(env, value, &iValue) != napi_ok) {
+        HiLog::Error(LABEL, "failed to get int64 value");
+        return 0;
+    }
+    return iValue;
+}
+
 void GetInt32s(const napi_env env, const napi_value arr, std::vector<int32_t>& ints)
 {
     uint32_t len = GetArrayLength(env, arr);
@@ -331,6 +341,16 @@ napi_value CreateInt32(const napi_env env, int32_t num)
     napi_value intValue = nullptr;
     if (napi_create_int32(env, num, &intValue) != napi_ok) {
         HiLog::Error(LABEL, "failed to create int32");
+        return nullptr;
+    }
+    return intValue;
+}
+
+napi_value CreateInt64(const napi_env env, int64_t num)
+{
+    napi_value intValue = nullptr;
+    if (napi_create_int64(env, num, &intValue) != napi_ok) {
+        HiLog::Error(LABEL, "failed to create int64");
         return nullptr;
     }
     return intValue;

@@ -18,6 +18,8 @@ config("libhiappevent_source_config") {
   visibility = [ "*:*" ]
   include_dirs = [
     "include",
+    "load/include",
+    "../../../interfaces/native/inner_api/include",
     "../../../interfaces/native/kits/include",
   ]
 }
@@ -26,7 +28,7 @@ ohos_shared_library("libhiappevent_base") {
   public_configs = [
     ":libhiappevent_source_config",
     "cache:hiappevent_cache_config",
-    "watcher:hiappevent_watcher_config",
+    "observer:hiappevent_watcher_config",
   ]
 
   sources = [
@@ -37,21 +39,21 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_read.cpp",
     "hiappevent_verify.cpp",
     "hiappevent_write.cpp",
+    "load/module_loader.cpp",
   ]
 
   deps = [
     "cache:hiappevent_cache",
     "cleaner:hiappevent_cleaner",
+    "observer:hiappevent_observer",
     "utility:hiappevent_utility",
-    "watcher:hiappevent_watcher",
   ]
-
-  version_script = "libhiappevent_base.map"
 
   external_deps = [
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
     "hilog:libhilog",
     "hitrace:libhitracechain",
     "relational_store:native_rdb",
