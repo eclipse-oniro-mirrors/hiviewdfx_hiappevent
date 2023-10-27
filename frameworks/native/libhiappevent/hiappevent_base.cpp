@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "hilog/log.h"
+#include "hitrace/trace.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -345,6 +346,8 @@ AppEventPack::AppEventPack(const std::string& domain, const std::string& name, i
 {
     InitTime();
     InitTimeZone();
+    InitProcessInfo();
+    InitTraceInfo();
 }
 
 void AppEventPack::InitTime()
@@ -355,6 +358,24 @@ void AppEventPack::InitTime()
 void AppEventPack::InitTimeZone()
 {
     timeZone_ = TimeUtil::GetTimeZone();
+}
+
+void AppEventPack::InitProcessInfo()
+{
+    pid_ = getpid();
+    tid_ = gettid();
+}
+
+void AppEventPack::InitTraceInfo()
+{
+    HiTraceId hitraceId = HiTraceChain::GetId();
+    if (!hitraceId.IsValid()) {
+        return;
+    }
+    traceId_ = static_cast<int64_t>(hitraceId.GetChainId());
+    spanId_ = static_cast<int64_t>(hitraceId.GetSpanId());
+    pspanId_ = static_cast<int64_t>(hitraceId.GetParentSpanId());
+    traceFlag_ = hitraceId.GetFlags();
 }
 
 void AppEventPack::AddParam(const std::string& key)
@@ -526,6 +547,10 @@ std::string AppEventPack::GetEventStr() const
 
 std::string AppEventPack::GetParamStr() const
 {
+    if (!paramStr_.empty()) {
+        return paramStr_;
+    }
+
     std::stringstream jsonStr;
     jsonStr << "{";
     AddParamsToJsonString(jsonStr);
@@ -540,8 +565,20 @@ void AppEventPack::AddBaseInfoToJsonString(std::stringstream& jsonStr) const
     jsonStr << "\"" << "type_" << "\":" <<  type_ << ",";
     jsonStr << "\"" << "time_" << "\":" << std::to_string(time_) << ",";
     jsonStr << "\"tz_\":\"" << timeZone_ << "\",";
-    jsonStr << "\"" << "pid_" << "\":" << getpid() << ",";
-    jsonStr << "\"" << "tid_" << "\":" << gettid();
+    jsonStr << "\"" << "pid_" << "\":" << pid_ << ",";
+    jsonStr << "\"" << "tid_" << "\":" << tid_;
+    AddTraceInfoToJsonString(jsonStr);
+}
+
+void AppEventPack::AddTraceInfoToJsonString(std::stringstream& jsonStr) const
+{
+    if (traceId_ == 0) {
+        return;
+    }
+    jsonStr << "," << "\"" << "traceid_" << "\":" << traceId_;
+    jsonStr << "," << "\"" << "spanid_" << "\":" << spanId_;
+    jsonStr << "," << "\"" << "pspanid_" << "\":" << pspanId_;
+    jsonStr << "," << "\"" << "trace_flag_" << "\":" << traceFlag_;
 }
 
 void AppEventPack::AddParamsToJsonString(std::stringstream& jsonStr) const
@@ -555,12 +592,17 @@ void AppEventPack::AddParamsToJsonString(std::stringstream& jsonStr) const
     jsonStr.seekp(-1, std::ios_base::end); // -1 for delete ','
 }
 
-const std::string AppEventPack::GetDomain() const
+int64_t AppEventPack::GetSeq() const
+{
+    return seq_;
+}
+
+std::string AppEventPack::GetDomain() const
 {
     return domain_;
 }
 
-const std::string AppEventPack::GetName() const
+std::string AppEventPack::GetName() const
 {
     return name_;
 }
@@ -573,6 +615,106 @@ int AppEventPack::GetType() const
 uint64_t AppEventPack::GetTime() const
 {
     return time_;
+}
+
+std::string AppEventPack::GetTimeZone() const
+{
+    return timeZone_;
+}
+
+int AppEventPack::GetPid() const
+{
+    return pid_;
+}
+
+int AppEventPack::GetTid() const
+{
+    return tid_;
+}
+
+int64_t AppEventPack::GetTraceId() const
+{
+    return traceId_;
+}
+
+int64_t AppEventPack::GetSpanId() const
+{
+    return spanId_;
+}
+
+int64_t AppEventPack::GetPspanId() const
+{
+    return pspanId_;
+}
+
+int AppEventPack::GetTraceFlag() const
+{
+    return traceFlag_;
+}
+
+void AppEventPack::SetSeq(int64_t seq)
+{
+    seq_ = seq;
+}
+
+void AppEventPack::SetDomain(const std::string& domain)
+{
+    domain_ = domain;
+}
+
+void AppEventPack::SetName(const std::string& name)
+{
+    name_ = name;
+}
+
+void AppEventPack::SetType(int type)
+{
+    type_ = type;
+}
+
+void AppEventPack::SetTime(uint64_t time)
+{
+    time_ = time;
+}
+
+void AppEventPack::SetTimeZone(const std::string& timeZone)
+{
+    timeZone_ = timeZone;
+}
+
+void AppEventPack::SetPid(int pid)
+{
+    pid_ = pid;
+}
+
+void AppEventPack::SetTid(int tid)
+{
+    tid_ = tid;
+}
+
+void AppEventPack::SetTraceId(int64_t traceId)
+{
+    traceId_ = traceId;
+}
+
+void AppEventPack::SetSpanId(int64_t spanId)
+{
+    spanId_ = spanId;
+}
+
+void AppEventPack::SetPspanId(int64_t pspanId)
+{
+    pspanId_ = pspanId;
+}
+
+void AppEventPack::SetTraceFlag(int traceFlag)
+{
+    traceFlag_ = traceFlag;
+}
+
+void AppEventPack::SetParamStr(const std::string& paramStr)
+{
+    paramStr_ = paramStr;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

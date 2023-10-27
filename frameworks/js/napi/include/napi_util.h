@@ -38,6 +38,7 @@ bool HasProperty(const napi_env env, const napi_value object, const std::string&
 bool GetBoolean(const napi_env env, const napi_value value);
 void GetBooleans(const napi_env env, const napi_value arr, std::vector<bool>& bools);
 int32_t GetInt32(const napi_env env, const napi_value value);
+int64_t GetInt64(const napi_env env, const napi_value value);
 void GetInt32s(const napi_env env, const napi_value arr, std::vector<int32_t>& ints);
 double GetDouble(const napi_env env, const napi_value value);
 void GetDoubles(const napi_env env, const napi_value arr, std::vector<double>& doubles);
@@ -57,6 +58,7 @@ napi_value CreateNull(const napi_env env);
 napi_value CreateUndefined(const napi_env env);
 napi_value CreateBoolean(const napi_env env, bool bValue);
 napi_value CreateInt32(const napi_env env, int32_t num);
+napi_value CreateInt64(const napi_env env, int64_t num);
 napi_value CreateString(const napi_env env, const std::string& str);
 napi_value CreateStrings(const napi_env env, const std::vector<std::string>& strs);
 napi_value CreateObject(const napi_env env);

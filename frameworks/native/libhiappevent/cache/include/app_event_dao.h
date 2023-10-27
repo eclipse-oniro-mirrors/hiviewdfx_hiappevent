@@ -12,26 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "app_event_processor.h"
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_DAO_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_DAO_H
 
-#include "hiappevent_base.h"
+#include <memory>
+#include <string>
+
+#include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace HiAppEvent {
-void AppEventProcessor::OnEvent(std::shared_ptr<AppEventPack> event)
-{
-    std::vector<UserId> userIds;
-    std::vector<UserProperty> userProperties;
-    AppEventInfo appEventInfo = {
-        .domain = event->GetDomain(),
-        .name = event->GetName(),
-        .eventType = event->GetType(),
-        .timestamp = event->GetTime(),
-        .params = event->GetParamStr(),
-    };
-    OnReport(userIds, userProperties, {appEventInfo});
-}
-} // namespace HiAppEvent
+class AppEventPack;
+class AppEventStore;
+
+class AppEventDao {
+public:
+    AppEventDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
+    ~AppEventDao() = default;
+    int64_t Insert(std::shared_ptr<AppEventPack> event);
+
+private:
+    int Create();
+
+private:
+    std::shared_ptr<NativeRdb::RdbStore> dbStore_;
+};
 } // namespace HiviewDFX
 } // namespace OHOS
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_DAO_H

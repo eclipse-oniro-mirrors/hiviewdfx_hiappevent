@@ -14,19 +14,36 @@
  */
 #include "app_event_processor_mgr.h"
 
-#include "app_event_watcher_mgr.h"
+#include "app_event_store.h"
+#include "app_event_observer_mgr.h"
+#include "module_loader.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventObserver> processor)
+int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
 {
-    return AppEventWatcherMgr::GetInstance()->RegisterProcessor(name, processor);
+    return ModuleLoader::GetInstance().RegisterProcessor(name, processor);
 }
 
 int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
 {
-    return AppEventWatcherMgr::GetInstance()->UnregisterProcessor(name);
+    return ModuleLoader::GetInstance().UnregisterProcessor(name);
+}
+
+int AppEventProcessorMgr::SetProcessorConfig(int64_t processorSeq, const ReportConfig& config)
+{
+    return AppEventObserverMgr::GetInstance().SetReportConfig(processorSeq, config);
+}
+
+int AppEventProcessorMgr::GetProcessorConfig(int64_t processorSeq, ReportConfig& config)
+{
+    return AppEventObserverMgr::GetInstance().GetReportConfig(processorSeq, config);
+}
+
+int AppEventProcessorMgr::GetProcessorSeqs(const std::string& name, std::vector<int64_t>& processorSeqs)
+{
+    return AppEventStore::GetInstance().QueryObserverSeqs(name, processorSeqs);
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

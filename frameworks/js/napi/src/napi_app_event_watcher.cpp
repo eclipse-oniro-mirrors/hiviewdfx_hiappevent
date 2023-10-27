@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -51,8 +51,11 @@ OnTriggerContext::~OnTriggerContext()
     }
 }
 
-NapiAppEventWatcher::NapiAppEventWatcher(const std::string& name, const std::map<std::string, unsigned int>& filters,
-    TriggerCondition cond) : AppEventWatcher(name, filters, cond), context_(nullptr)
+NapiAppEventWatcher::NapiAppEventWatcher(
+    const std::string& name,
+    const std::vector<AppEventFilter>& filters,
+    TriggerCondition cond)
+    : AppEventWatcher(name, filters, cond), context_(nullptr)
 {}
 
 NapiAppEventWatcher::~NapiAppEventWatcher()
@@ -88,15 +91,15 @@ void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder
     context_->holder = NapiUtil::CreateReference(env, holder);
 }
 
-void NapiAppEventWatcher::OnTrigger(int row, int size)
+void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 {
     HiLog::Debug(LABEL, "onTrigger start");
     if (context_ == nullptr) {
         HiLog::Error(LABEL, "onTrigger context is null");
         return;
     }
-    context_->row = row;
-    context_->size = size;
+    context_->row = triggerCond.row;
+    context_->size = triggerCond.size;
 
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(context_->env, &loop);

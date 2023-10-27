@@ -14,20 +14,23 @@ import("//build/ohos.gni")
 
 config("hiappevent_innerapi_config") {
   visibility = [ "*:*" ]
-  include_dirs = [ "include" ]
+  include_dirs = [
+    "include",
+    "../../../frameworks/native/libhiappevent/observer/include",
+  ]
 }
 
 ohos_shared_library("hiappevent_innerapi") {
   public_configs = [ ":hiappevent_innerapi_config" ]
 
-  sources = [
-    "src/app_event_processor.cpp",
-    "src/app_event_processor_mgr.cpp",
-  ]
+  sources = [ "src/app_event_processor_mgr.cpp" ]
 
   deps = [ "../../../frameworks/native/libhiappevent:libhiappevent_base" ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
 
   part_name = "hiappevent"
   innerapi_tags = [ "platformsdk" ]

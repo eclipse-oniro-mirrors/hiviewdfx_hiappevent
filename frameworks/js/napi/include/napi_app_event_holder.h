@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,7 +35,7 @@ struct AppEventPackage {
 
 class NapiAppEventHolder {
 public:
-    NapiAppEventHolder(std::string name);
+    NapiAppEventHolder(int64_t observerSeq);
     ~NapiAppEventHolder() {}
     static napi_value NapiConstructor(napi_env env, napi_callback_info info);
     static napi_value NapiExport(napi_env env, napi_value exports);
@@ -49,9 +49,9 @@ public:
     static thread_local napi_ref constructor_;
 
 private:
-    std::string name_;
     int takeSize_;
     int packageId_;
+    int64_t observerSeq_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

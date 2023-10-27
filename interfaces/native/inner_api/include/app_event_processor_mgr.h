@@ -24,8 +24,13 @@ namespace HiviewDFX {
 namespace HiAppEvent {
 class AppEventProcessorMgr {
 public:
-    static int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventObserver> processor);
+    static int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
     static int UnregisterProcessor(const std::string& name);
+
+    static int SetProcessorConfig(int64_t processorSeq, const ReportConfig& config);
+    static int GetProcessorConfig(int64_t processorSeq, ReportConfig& config);
+
+    static int GetProcessorSeqs(const std::string& name, std::vector<int64_t>& processorSeqs);
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX

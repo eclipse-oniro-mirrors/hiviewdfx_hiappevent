@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,18 +15,18 @@
 #include "hiappevent_config.h"
 
 #include <algorithm>
-#include <dlfcn.h>
 #include <mutex>
 #include <regex>
 #include <sstream>
 #include <string>
 
+#include "app_event_observer_mgr.h"
 #include "application_context.h"
 #include "context.h"
-#include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
+#include "module_loader.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -66,30 +66,6 @@ std::string TransUpperToUnderscoreAndLower(const std::string& str)
 
     return ss.str();
 }
-
-void LoadAnalyticsModule(const std::string& moduleName)
-{
-    const std::string searchDirs[] = {
-        "/system/lib/", "/system/lib64/", "/system/lib/ndk/", "/system/lib64/ndk/"
-    };
-    std::string modulePath;
-    for (auto& searchDir : searchDirs) {
-        if (FileUtil::IsFileExists(searchDir + moduleName)) {
-            modulePath = searchDir + moduleName;
-            break;
-        }
-    }
-    if (modulePath.empty()) {
-        HiLog::Info(LABEL, "the module=%{public}s does not exist.", moduleName.c_str());
-        return;
-    }
-
-    if (dlopen(modulePath.c_str(), RTLD_GLOBAL) == nullptr) {
-        HiLog::Info(LABEL, "failed to load module=%{public}s, error=%{public}s.", modulePath.c_str(), dlerror());
-    } else {
-        HiLog::Info(LABEL, "success to load module=%{public}s.", modulePath.c_str());
-    }
-}
 }
 
 HiAppEventConfig& HiAppEventConfig::GetInstance()
@@ -117,7 +93,9 @@ bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
     std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 
     // temporay loading scheme
-    LoadAnalyticsModule("libanalyticskit_native.z.so");
+    if (HiAppEvent::ModuleLoader::GetInstance().Load("analyticskit_native") == 0) {
+        (void)AppEventObserverMgr::GetInstance().RegisterObserver("analyticskit_native");
+    }
 
     if (name == DISABLE) {
         return SetDisableItem(value);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,8 +16,7 @@
 
 #include <string>
 
-#include "app_event_cache.h"
-#include "app_event_watcher_mgr.h"
+#include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
 #include "hiappevent_verify.h"
@@ -170,7 +169,7 @@ TriggerCondition GetCondition(const napi_env env, const napi_value watcher)
     TriggerCondition resCond = {
         .row = 0,
         .size = 0,
-        .timeOut = 0
+        .timeout = 0
     };
     napi_value cond = NapiUtil::GetProperty(env, watcher, COND_PROPERTY);
     if (cond == nullptr) {
@@ -192,16 +191,17 @@ TriggerCondition GetCondition(const napi_env env, const napi_value watcher)
     }
     resCond.size = size;
 
-    int timeOut = GetConditionValue(env, cond, COND_PROPS[index++]);
-    if (timeOut < 0) {
+    int timeout = GetConditionValue(env, cond, COND_PROPS[index++]);
+    if (timeout < 0) {
         NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_TIMEOUT, "Invalid timeout value.");
         return resCond;
     }
-    resCond.timeOut = timeOut;
+    constexpr int scale = 30; // step of time is 30s
+    resCond.timeout = timeout * scale;
     return resCond;
 }
 
-void GetFilters(const napi_env env, const napi_value watcher, std::map<std::string, unsigned int>& filters)
+void GetFilters(const napi_env env, const napi_value watcher, std::vector<AppEventFilter>& filters)
 {
     napi_value filtersValue = NapiUtil::GetProperty(env, watcher, FILTERS_PROPERTY);
     if (filtersValue == nullptr) {
@@ -213,7 +213,7 @@ void GetFilters(const napi_env env, const napi_value watcher, std::map<std::stri
         std::string domain = NapiUtil::GetString(env, NapiUtil::GetProperty(env, filterValue, FILTERS_DOAMIN_PROP));
         napi_value typesValue = NapiUtil::GetProperty(env, filterValue, FILTERS_TYPES_PROP);
         if (typesValue == nullptr) {
-            filters[domain] = BIT_ALL_TYPES;
+            filters.emplace_back(AppEventFilter(domain, BIT_ALL_TYPES));
             continue;
         }
         std::vector<int> types;
@@ -227,11 +227,12 @@ void GetFilters(const napi_env env, const napi_value watcher, std::map<std::stri
             }
             filterType |= (BIT_MASK << type);
         }
-        filters[domain] = filterType > 0 ? filterType : BIT_ALL_TYPES;
+        filterType = filterType > 0 ? filterType : BIT_ALL_TYPES;
+        filters.emplace_back(AppEventFilter(domain, filterType));
     }
 }
 
-napi_value CreateHolder(const napi_env env, const napi_value watcherName)
+napi_value CreateHolder(const napi_env env, const napi_value watcherSeq)
 {
     napi_value constructor = nullptr;
     if (napi_get_reference_value(env, NapiAppEventHolder::constructor_, &constructor) != napi_ok) {
@@ -239,7 +240,7 @@ napi_value CreateHolder(const napi_env env, const napi_value watcherName)
         return NapiUtil::CreateNull(env);
     }
     napi_value holder = nullptr;
-    if (napi_new_instance(env, constructor, 1, &watcherName, &holder) != napi_ok) { // param num is 1
+    if (napi_new_instance(env, constructor, 1, &watcherSeq, &holder) != napi_ok) { // param num is 1
         HiLog::Error(LABEL, "failed to get new instance for holder");
         return NapiUtil::CreateNull(env);
     }
@@ -254,24 +255,22 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher)
         return NapiUtil::CreateNull(env);
     }
 
-    // 1. if DB is not opened, need to open DB first
-    if (!AppEventCache::GetInstance()->IsOpen()) {
-        std::string dir = HiAppEventConfig::GetInstance().GetStorageDir();
-        if (dir.empty() || AppEventCache::GetInstance()->Open(dir) != 0) {
-            HiLog::Error(LABEL, "failed to open db");
-            return NapiUtil::CreateNull(env);
-        }
-    }
-
-    // 2. build watcher object
-    std::map<std::string, unsigned int> filters;
+    // 1. build watcher object
+    std::vector<AppEventFilter> filters;
     GetFilters(env, watcher, filters);
     std::string name = GetName(env, watcher);
     TriggerCondition cond = GetCondition(env, watcher);
     auto watcherPtr = std::make_shared<NapiAppEventWatcher>(name, filters, cond);
 
+    // 2. add the watcher to Manager
+    int64_t observerSeq = AppEventObserverMgr::GetInstance().RegisterObserver(watcherPtr);
+    if (observerSeq <= 0) {
+        HiLog::Error(LABEL, "invalid observer sequence");
+        return NapiUtil::CreateNull(env);
+    }
+
     // 3. create holder and add holder to the watcher
-    napi_value holder = CreateHolder(env, NapiUtil::GetProperty(env, watcher, NAME_PROPERTY));
+    napi_value holder = CreateHolder(env, NapiUtil::CreateInt64(env, observerSeq));
     watcherPtr->InitHolder(env, holder);
 
     // 4. set trigger if any
@@ -279,9 +278,6 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher)
     if (trigger != nullptr) {
         watcherPtr->InitTrigger(env, trigger);
     }
-
-    // 5. add the watcher to watcherManager
-    AppEventWatcherMgr::GetInstance()->AddWatcher(watcherPtr);
     return holder;
 }
 
@@ -294,7 +290,7 @@ napi_value RemoveWatcher(const napi_env env, const napi_value watcher)
     if (!IsValidName(env, NapiUtil::GetProperty(env, watcher, NAME_PROPERTY))) {
         return NapiUtil::CreateUndefined(env);
     }
-    AppEventWatcherMgr::GetInstance()->RemoveWatcher(GetName(env, watcher));
+    (void)AppEventObserverMgr::GetInstance().UnregisterObserver(GetName(env, watcher));
     return NapiUtil::CreateUndefined(env);
 }
 } // namespace NapiHiAppEventConfig

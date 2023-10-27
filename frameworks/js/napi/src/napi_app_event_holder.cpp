@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,7 +14,9 @@
  */
 #include "napi_app_event_holder.h"
 
-#include "app_event_cache.h"
+#include <cinttypes>
+
+#include "app_event_store.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 #include "napi_error.h"
@@ -29,7 +31,7 @@ const std::string HOLDER_CLASS_NAME = "AppEventPackageHolder";
 }
 thread_local napi_ref NapiAppEventHolder::constructor_ = nullptr;
 
-NapiAppEventHolder::NapiAppEventHolder(std::string name) : name_(name)
+NapiAppEventHolder::NapiAppEventHolder(int64_t observerSeq) : observerSeq_(observerSeq)
 {
     takeSize_ = 512 * 1024; // 512 * 1024: 512KB
     packageId_ = 0; // id is incremented from 0
@@ -46,7 +48,7 @@ napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info 
         HiLog::Error(LABEL, "hodler failed to construct: invalid param num");
         return thisVar;
     }
-    auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetString(env, params[0]));
+    auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetInt64(env, params[0]));
     napi_wrap(
         env, thisVar, holder,
         [](napi_env env, void* data, void* hint) {
@@ -115,28 +117,50 @@ napi_value NapiAppEventHolder::NapiTakeNext(napi_env env, napi_callback_info inf
 
 void NapiAppEventHolder::SetSize(int size)
 {
-    HiLog::Info(LABEL, "hodler=%{public}s set size=%{public}d", name_.c_str(), size);
+    HiLog::Info(LABEL, "hodler seq=%{public}" PRId64 " set size=%{public}d", observerSeq_, size);
     takeSize_ = size;
 }
 
 std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
 {
-    auto block = AppEventCache::GetInstance()->GetBlock(name_);
-    if (block == nullptr) {
-        HiLog::Error(LABEL, "hodler=%{public}s failed to get block", name_.c_str());
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq_) != 0) {
+        HiLog::Warn(LABEL, "failed to query events, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
-    std::vector<std::string> events;
-    int result = block->Take(takeSize_, events);
-    if (result <= 0) {
-        HiLog::Info(LABEL, "hodler=%{public}s end to take data", name_.c_str());
+    if (events.empty()) {
+        HiLog::Info(LABEL, "end to query events, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
+
+    std::vector<int64_t> eventSeqs;
+    std::vector<std::string> eventStrs;
+    size_t totalSize = 0;
+    for (auto event : events) {
+        std::string eventStr = event->GetEventStr();
+        if (static_cast<int>(totalSize + eventStr.size()) > takeSize_) {
+            HiLog::Info(LABEL, "stop to take data, totalSize=%{public}zu, takeSize=%{public}d",
+                totalSize, takeSize_);
+            break;
+        }
+        totalSize += eventStr.size();
+        eventStrs.emplace_back(eventStr);
+        eventSeqs.emplace_back(event->GetSeq());
+    }
+    if (eventStrs.empty()) {
+        HiLog::Info(LABEL, "take data is empty, seq=%{public}" PRId64, observerSeq_);
+        return nullptr;
+    }
+    if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq_, eventSeqs) < 0) {
+        HiLog::Info(LABEL, "failed to delete mapping data, seq=%{public}" PRId64, observerSeq_);
+        return nullptr;
+    }
+
     auto package = std::make_shared<AppEventPackage>();
     package->packageId = packageId_++;
-    package->row = static_cast<int>(events.size());
-    package->size = result;
-    package->events = events;
+    package->row = static_cast<int>(eventStrs.size());
+    package->size = static_cast<int>(totalSize);
+    package->events = eventStrs;
     return package;
 }
 } // namespace HiviewDFX

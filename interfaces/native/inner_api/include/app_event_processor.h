@@ -16,42 +16,33 @@
 #define HIAPPEVENT_INTERFACES_NATIVE_INNER_API_INCLUDE_APP_EVENT_PROCESSOR_H
 
 #include <string>
-#include <vector>
 
 #include "app_event_observer.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-struct UserId {
-    std::string name;
-    std::string value;
-};
-
-struct UserProperty {
-    std::string name;
-    std::string value;
-};
-
 struct AppEventInfo {
     std::string domain;
     std::string name;
-    int eventType;
-    uint64_t timestamp;
+    int eventType = 0;
+    uint64_t timestamp = 0;
     std::string params;
 };
 
-class AppEventProcessor : public AppEventObserver {
+class AppEventProcessor {
 public:
     AppEventProcessor() = default;
     virtual ~AppEventProcessor() = default;
+
     virtual int OnReport(
+        int64_t processorSeq,
         const std::vector<UserId>& userIds,
         const std::vector<UserProperty>& userProperties,
         const std::vector<AppEventInfo>& events) = 0;
-
-private:
-    void OnEvent(std::shared_ptr<AppEventPack> event) override;
+    virtual int ValidateUserId(const UserId& userId) = 0;
+    virtual int ValidateUserProperty(const UserProperty& userProperty) = 0;
+    virtual int ValidateEvent(const AppEventInfo& event) = 0;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX
