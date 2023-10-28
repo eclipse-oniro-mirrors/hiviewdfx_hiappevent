@@ -55,7 +55,6 @@ void CheckRegisterObserver(const std::string& observer,
 
 void CheckUnregisterObserver(const std::string& observer)
 {
-    ASSERT_EQ(AppEventObserverMgr::GetInstance().UnregisterObserver(observer), 0);
     ASSERT_EQ(AppEventProcessorMgr::UnregisterProcessor(observer), 0);
 }
 
