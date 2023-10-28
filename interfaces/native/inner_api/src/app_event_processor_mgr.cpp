@@ -28,6 +28,9 @@ int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared
 
 int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
 {
+    if (int ret = AppEventObserverMgr::GetInstance().UnregisterObserver(name); ret < 0) {
+        return ret;
+    }
     return ModuleLoader::GetInstance().UnregisterProcessor(name);
 }
 
