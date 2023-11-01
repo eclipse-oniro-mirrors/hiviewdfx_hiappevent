@@ -82,6 +82,7 @@ int64_t InitObserverSeq(std::shared_ptr<AppEventObserver> observer)
     return observerSeq;
 }
 }
+std::mutex AppEventObserverMgr::instanceMutex_;
 
 AppEventObserverMgr::AppEventObserverMgr()
 {
@@ -90,6 +91,13 @@ AppEventObserverMgr::AppEventObserverMgr()
         return;
     }
     handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
+}
+
+AppEventObserverMgr& AppEventObserverMgr::GetInstance()
+{
+    std::lock_guard<std::mutex> lock(instanceMutex_);
+    static AppEventObserverMgr instance;
+    return instance;
 }
 
 bool AppEventObserverMgr::CreateEventHandler()

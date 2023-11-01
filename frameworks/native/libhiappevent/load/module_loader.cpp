@@ -44,6 +44,15 @@ std::string GetModulePath(const std::string& moduleName)
     return modulePath;
 }
 }
+std::mutex ModuleLoader::instanceMutex_;
+
+ModuleLoader& ModuleLoader::GetInstance()
+{
+    std::lock_guard<std::mutex> lock(instanceMutex_);
+    static ModuleLoader instance;
+    return instance;
+}
+
 ModuleLoader::~ModuleLoader()
 {
     processors_.clear();
