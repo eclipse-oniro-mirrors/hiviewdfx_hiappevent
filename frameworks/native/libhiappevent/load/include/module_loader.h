@@ -15,19 +15,20 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_LOAD_MODULE_LOADER_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_LOAD_MODULE_LOADER_H
 
+#include <mutex>
 #include <unordered_map>
 
 #include "app_event_observer.h"
 #include "app_event_processor.h"
-#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-class ModuleLoader : public DelayedRefSingleton<ModuleLoader> {
+class ModuleLoader {
 public:
     ModuleLoader() = default;
     ~ModuleLoader();
+    static ModuleLoader& GetInstance();
     int Load(const std::string& moduleName);
     int Unload(const std::string& moduleName);
     int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
@@ -40,6 +41,9 @@ private:
 
     /* <processor name, processor object> */
     std::unordered_map<std::string, std::shared_ptr<AppEventProcessor>> processors_;
+
+private:
+    static std::mutex instanceMutex_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX
