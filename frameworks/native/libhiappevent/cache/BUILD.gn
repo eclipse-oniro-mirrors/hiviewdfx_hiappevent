@@ -29,6 +29,8 @@ ohos_source_set("hiappevent_cache") {
     "app_event_mapping_dao.cpp",
     "app_event_observer_dao.cpp",
     "app_event_store.cpp",
+    "user_id_dao.cpp",
+    "user_property_dao.cpp",
   ]
 
   deps = [ "../utility:hiappevent_utility" ]

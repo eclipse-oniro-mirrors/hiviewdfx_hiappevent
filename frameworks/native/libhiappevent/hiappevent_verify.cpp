@@ -37,6 +37,10 @@ static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
 static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
+static constexpr int MAX_LENGTH_OF_USER_ID_NAME = 256;
+static constexpr int MAX_LENGTH_OF_USER_ID_VALUE = 256;
+static constexpr int MAX_LENGTH_OF_USER_PROPERTY_NAME = 256;
+static constexpr int MAX_LENGTH_OF_USER_PROPERTY_VALUE = 1024;
 
 bool IsValidName(const std::string& name, size_t maxSize)
 {
@@ -260,6 +264,70 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
     }
 
     return verifyRes;
+}
+
+bool IsValidUserInfoName(const std::string& name, size_t maxSize)
+{
+    if (name.empty() || name.length() > maxSize) {
+        return false;
+    }
+    // start char is [a-zA-Z]
+    if (!isalpha(name[0])) {
+        return false;
+    }
+    // other char is [a-zA-Z0-9_]
+    for (size_t i = 1; i < name.length(); ++i) {
+        if (!isalnum(name[i]) && name[i] != '_') {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool IsValidUserInfoValue(const std::string& val, size_t maxSize)
+{
+    if (val.empty() || val.length() > maxSize) {
+        return false;
+    }
+    return true;
+}
+
+int VerifyUserId(const std::string& name)
+{
+    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_ID_NAME)) {
+        return -1;
+    }
+    return 0;
+}
+
+int VerifyUserId(const std::string& name, const std::string& value)
+{
+    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_ID_NAME)) {
+        return -1;
+    }
+    if (!IsValidUserInfoValue(value, MAX_LENGTH_OF_USER_ID_VALUE)) {
+        return -1;
+    }
+    return 0;
+}
+
+int VerifyUserProperty(const std::string& name)
+{
+    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_PROPERTY_NAME)) {
+        return -1;
+    }
+    return 0;
+}
+
+int VerifyUserProperty(const std::string& name, const std::string& value)
+{
+    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_PROPERTY_NAME)) {
+        return -1;
+    }
+    if (!IsValidUserInfoValue(value, MAX_LENGTH_OF_USER_PROPERTY_VALUE)) {
+        return -1;
+    }
+    return 0;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
