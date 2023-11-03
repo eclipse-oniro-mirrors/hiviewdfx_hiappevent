@@ -231,6 +231,18 @@ void GetStrings(const napi_env env, const napi_value arr, std::vector<std::strin
     }
 }
 
+void GetStringsToSet(const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs, size_t bufsize)
+{
+    uint32_t len = GetArrayLength(env, arr);
+    for (size_t i = 0; i < len; ++i) {
+        napi_value element = GetElement(env, arr, i);
+        if (element == nullptr) {
+            continue;
+        }
+        strs.insert(GetString(env, element, bufsize));
+    }
+}
+
 bool HasProperty(const napi_env env, const napi_value object, const std::string& name)
 {
     bool result = false;

@@ -92,11 +92,6 @@ bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
     }
     std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 
-    // temporay loading scheme
-    if (HiAppEvent::ModuleLoader::GetInstance().Load("analyticskit_native") == 0) {
-        (void)AppEventObserverMgr::GetInstance().RegisterObserver("analyticskit_native");
-    }
-
     if (name == DISABLE) {
         return SetDisableItem(value);
     } else if (name == MAX_STORAGE) {

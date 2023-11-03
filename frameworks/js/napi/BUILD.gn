@@ -48,6 +48,8 @@ ohos_shared_library("hiappevent_v9") {
     "./src/napi_hiappevent_config.cpp",
     "./src/napi_hiappevent_init.cpp",
     "./src/napi_hiappevent_js_v9.cpp",
+    "./src/napi_hiappevent_processor.cpp",
+    "./src/napi_hiappevent_userinfo.cpp",
     "./src/napi_hiappevent_watch.cpp",
     "./src/napi_hiappevent_write.cpp",
     "./src/napi_util.cpp",

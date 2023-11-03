@@ -55,6 +55,20 @@ const std::string FIELD_EVENT_SEQ = "event_seq";
 const std::string FIELD_OBSERVER_SEQ = "observer_seq";
 } // namespace AppEventMapping
 
+namespace UserIds {
+const std::string TABLE = "user_ids";
+const std::string FIELD_SEQ = "seq";
+const std::string FIELD_NAME = "name";
+const std::string FIELD_VALUE = "value";
+} // namespace UserIds
+
+namespace UserProperties {
+const std::string TABLE = "user_properties";
+const std::string FIELD_SEQ = "seq";
+const std::string FIELD_NAME = "name";
+const std::string FIELD_VALUE = "value";
+} // namespace UserProperties
+
 namespace Blocks {
 const std::string TABLE = "blocks";
 const std::string FIELD_SEQ = "seq";

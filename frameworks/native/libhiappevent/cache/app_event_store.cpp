@@ -142,6 +142,8 @@ int AppEventStore::InitDbStore()
     appEventDao_ = std::make_shared<AppEventDao>(dbStore_);
     appEventObserverDao_ = std::make_shared<AppEventObserverDao>(dbStore_);
     appEventMappingDao_ = std::make_shared<AppEventMappingDao>(dbStore_);
+    userIdDao_ = std::make_shared<UserIdDao>(dbStore_);
+    userPropertyDao_ = std::make_shared<UserPropertyDao>(dbStore_);
     HiLog::Info(LABEL, "create db store successfully");
     return DB_SUCC;
 }
@@ -205,6 +207,106 @@ int64_t AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     return appEventMappingDao_->Insert(eventSeq, observerSeq);
+}
+
+int64_t AppEventStore::InsertUserId(const std::string& name, const std::string& value)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userIdDao_->Insert(name, value);
+}
+
+int64_t AppEventStore::InsertUserProperty(const std::string& name, const std::string& value)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userPropertyDao_->Insert(name, value);
+}
+
+int64_t AppEventStore::UpdateUserId(const std::string& name, const std::string& value)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userIdDao_->Update(name, value);
+}
+
+int64_t AppEventStore::UpdateUserProperty(const std::string& name, const std::string& value)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userPropertyDao_->Update(name, value);
+}
+
+int AppEventStore::DeleteUserId(const std::string& name)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userIdDao_->Delete(name);
+}
+
+int AppEventStore::DeleteUserProperty(const std::string& name)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userPropertyDao_->Delete(name);
+}
+
+int AppEventStore::QueryUserIds(std::unordered_map<std::string, std::string>& out)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userIdDao_->QueryAll(out);
+}
+
+int AppEventStore::QueryUserId(const std::string& name, std::string& out)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userIdDao_->Query(name, out);
+}
+
+int AppEventStore::QueryUserProperties(std::unordered_map<std::string, std::string>& out)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userPropertyDao_->QueryAll(out);
+}
+
+int AppEventStore::QueryUserProperty(const std::string& name, std::string& out)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return userPropertyDao_->Query(name, out);
 }
 
 int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq)

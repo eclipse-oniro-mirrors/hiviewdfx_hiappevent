@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,24 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_PROCESSOR_H
+#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_PROCESSOR_H
 
-#ifndef HI_APP_EVENT_VERIFY_H
-#define HI_APP_EVENT_VERIFY_H
-
-#include <memory>
-#include <string>
+#include "napi/native_api.h"
+#include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventPack;
-bool IsValidDomain(const std::string& domain);
-bool IsValidWatcherName(const std::string& watcherName);
-bool IsValidEventType(int eventType);
-int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
-int VerifyUserId(const std::string& name);
-int VerifyUserId(const std::string& name, const std::string& value);
-int VerifyUserProperty(const std::string& name);
-int VerifyUserProperty(const std::string& name, const std::string& value);
+namespace NapiHiAppEventProcessor {
+bool AddProcessor(const napi_env env, const napi_value config, napi_value& out);
+bool RemoveProcessor(const napi_env env, const napi_value id);
+} // namespace NapiHiAppEventProcessor
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HI_APP_EVENT_VERIFY_H
+#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_PROCESSOR_H

@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "hiappevent_base.h"
+#include "hiappevent_userinfo.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -54,18 +55,30 @@ void AppEventProcessorProxy::OnEvents(const std::vector<std::shared_ptr<AppEvent
 
 void AppEventProcessorProxy::GetValidUserIds(std::vector<UserId>& userIds)
 {
-    std::vector<UserId> allUserIds = {{"test_id", "test_value"}};
+    int64_t userIdVerForAll = HiAppEvent::UserInfo::GetInstance().GetUserIdVersion();
+    if (userIdVerForAll == userIdVersion_) {
+        userIds = userIds_;
+        return;
+    }
+    std::vector<UserId> allUserIds = HiAppEvent::UserInfo::GetInstance().GetUserIds();
     std::for_each(allUserIds.begin(), allUserIds.end(), [&userIds, this](const auto& userId) {
         if (reportConfig_.userIdNames.find(userId.name) != reportConfig_.userIdNames.end()
             && processor_->ValidateUserId(userId) == 0) {
             userIds.emplace_back(userId);
         }
     });
+    userIds_ = userIds;
+    userIdVersion_ = userIdVerForAll;
 }
 
 void AppEventProcessorProxy::GetValidUserProperties(std::vector<UserProperty>& userProperties)
 {
-    std::vector<UserProperty> allUserProperties = {{"test_property", "test_value"}};
+    int64_t userPropertyVerForAll = HiAppEvent::UserInfo::GetInstance().GetUserPropertyVersion();
+    if (userPropertyVerForAll == userPropertyVersion_) {
+        userProperties = userProperties_;
+        return;
+    }
+    std::vector<UserProperty> allUserProperties = HiAppEvent::UserInfo::GetInstance().GetUserProperties();
     std::for_each(allUserProperties.begin(), allUserProperties.end(),
         [&userProperties, this](const auto& userProperty) {
             if (reportConfig_.userPropertyNames.find(userProperty.name) != reportConfig_.userPropertyNames.end()
@@ -74,6 +87,8 @@ void AppEventProcessorProxy::GetValidUserProperties(std::vector<UserProperty>& u
             }
         }
     );
+    userProperties_ = userProperties;
+    userPropertyVersion_ = userPropertyVerForAll;
 }
 
 bool AppEventProcessorProxy::VerifyEvent(std::shared_ptr<AppEventPack> event)

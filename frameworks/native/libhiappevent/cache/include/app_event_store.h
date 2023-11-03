@@ -23,6 +23,8 @@
 #include "app_event_dao.h"
 #include "app_event_mapping_dao.h"
 #include "app_event_observer_dao.h"
+#include "user_id_dao.h"
+#include "user_property_dao.h"
 #include "rdb_store.h"
 #include "singleton.h"
 
@@ -39,11 +41,21 @@ public:
     int64_t InsertEvent(std::shared_ptr<AppEventPack> event);
     int64_t InsertObserver(const std::string& observer);
     int64_t InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
+    int64_t InsertUserId(const std::string& name, const std::string& value);
+    int64_t InsertUserProperty(const std::string& name, const std::string& value);
+    int64_t UpdateUserId(const std::string& name, const std::string& value);
+    int64_t UpdateUserProperty(const std::string& name, const std::string& value);
     int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
     int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
     int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
+    int QueryUserIds(std::unordered_map<std::string, std::string>& out);
+    int QueryUserId(const std::string& name, std::string& out);
+    int QueryUserProperties(std::unordered_map<std::string, std::string>& out);
+    int QueryUserProperty(const std::string& name, std::string& out);
     int DeleteObserver(int64_t observerSeq);
     int DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
+    int DeleteUserId(const std::string& name);
+    int DeleteUserProperty(const std::string& name);
 
 private:
     bool InitDbStoreDir();
@@ -53,6 +65,8 @@ private:
     std::shared_ptr<AppEventDao> appEventDao_;
     std::shared_ptr<AppEventObserverDao> appEventObserverDao_;
     std::shared_ptr<AppEventMappingDao> appEventMappingDao_;
+    std::shared_ptr<UserIdDao> userIdDao_;
+    std::shared_ptr<UserPropertyDao> userPropertyDao_;
     std::string dirPath_;
     std::mutex dbMutex_;
 };

@@ -26,7 +26,7 @@ namespace HiAppEvent {
 class AppEventProcessorProxy : public AppEventObserver {
 public:
     AppEventProcessorProxy(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
-        : AppEventObserver(name), processor_(processor) {}
+        : AppEventObserver(name), processor_(processor), userIdVersion_(-1), userPropertyVersion_(-1) {}
     ~AppEventProcessorProxy() = default;
 
     void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) override;
@@ -38,6 +38,10 @@ private:
 
 private:
     std::shared_ptr<AppEventProcessor> processor_;
+    int64_t userIdVersion_;
+    int64_t userPropertyVersion_;
+    std::vector<UserId> userIds_;
+    std::vector<UserProperty> userProperties_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX
