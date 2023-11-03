@@ -20,7 +20,6 @@
 #include <unordered_map>
 
 #include "app_event_observer.h"
-#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -28,10 +27,11 @@ class AppEventHandler;
 using HiAppEvent::AppEventObserver;
 using HiAppEvent::ReportConfig;
 
-class AppEventObserverMgr : public DelayedRefSingleton<AppEventObserverMgr> {
+class AppEventObserverMgr {
 public:
     AppEventObserverMgr();
     ~AppEventObserverMgr();
+    static AppEventObserverMgr& GetInstance();
 
     int64_t RegisterObserver(std::shared_ptr<AppEventObserver> observer);
     int64_t RegisterObserver(const std::string& observerName);
@@ -54,6 +54,9 @@ private:
     std::unordered_map<int64_t, ReportConfig> configs_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_mutex mutex_;
+
+private:
+    static std::mutex instanceMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
