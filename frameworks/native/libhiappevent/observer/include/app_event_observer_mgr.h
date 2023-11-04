@@ -34,12 +34,11 @@ public:
     static AppEventObserverMgr& GetInstance();
 
     int64_t RegisterObserver(std::shared_ptr<AppEventObserver> observer);
-    int64_t RegisterObserver(const std::string& observerName);
+    int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config = {});
     int UnregisterObserver(int64_t observerSeq);
     int UnregisterObserver(const std::string& observerName);
     void HandleEvent(std::shared_ptr<AppEventPack> event);
-    void HandleTimeOut();
-    void HandleStartup();
+    void HandleTimeout();
     void HandleBackground();
 
     int SetReportConfig(int64_t observerSeq, const ReportConfig& config);

@@ -14,6 +14,8 @@
  */
 #include "app_event_observer.h"
 
+#include <sstream>
+
 #include "app_event_store.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
@@ -22,11 +24,39 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_Handler" };
+const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_AppEventObserver" };
 
 bool MeetNumberCondition(int currNum, int maxNum)
 {
     return maxNum > 0 && currNum >= maxNum;
+}
+
+std::string GetStr(const std::unordered_set<std::string>& strSet)
+{
+    if (strSet.empty()) {
+        return "[]";
+    }
+    std::stringstream strStream("[");
+    for (const auto& str : strSet) {
+        strStream << str << ",";
+    }
+    strStream.seekp(-1, std::ios_base::end); // -1 for delete ','
+    strStream << "]";
+    return strStream.str();
+}
+
+std::string GetStr(const std::vector<EventConfig>& eventConfigs)
+{
+    if (eventConfigs.empty()) {
+        return "[]";
+    }
+    std::stringstream strStream("[");
+    for (const auto& eventConfig : eventConfigs) {
+        strStream << eventConfig.ToString() << ",";
+    }
+    strStream.seekp(-1, std::ios_base::end); // -1 for delete ','
+    strStream << "]";
+    return strStream.str();
 }
 }
 
@@ -68,6 +98,28 @@ bool EventConfig::IsValidEvent(std::shared_ptr<AppEventPack> event) const
 bool EventConfig::IsRealTimeEvent(std::shared_ptr<AppEventPack> event) const
 {
     return IsValidEvent(event) && isRealTime;
+}
+
+std::string EventConfig::ToString() const
+{
+    std::stringstream strStream;
+    strStream << "{" << domain << "," << name << "," << isRealTime << "}";
+    return strStream.str();
+}
+
+std::string TriggerCondition::ToString() const
+{
+    std::stringstream strStream;
+    strStream << "{" << row << "," << size << "," << timeout << "," << onStartup << "," << onBackground << "}";
+    return strStream.str();
+}
+
+std::string ReportConfig::ToString() const
+{
+    std::stringstream strStream;
+    strStream << "{" << name << "," << debugMode << "," << routeInfo << "," << triggerCond.ToString() << ","
+        << GetStr(userIdNames) << "," << GetStr(userPropertyNames) << "," << GetStr(eventConfigs) << "}";
+    return strStream.str();
 }
 
 bool AppEventObserver::VerifyEvent(std::shared_ptr<AppEventPack> event)
@@ -223,9 +275,11 @@ void AppEventObserver::SetReportConfig(const ReportConfig& reportConfig)
     }
 }
 
-bool AppEventObserver::NeedHandler()
+int64_t AppEventObserver::GenerateHashCode()
 {
-    return (reportConfig_.triggerCond.timeout > 0) || reportConfig_.triggerCond.onBackground;
+    return reportConfig_.name.empty()
+        ? static_cast<int64_t>(std::hash<std::string>{}(name_))
+        : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

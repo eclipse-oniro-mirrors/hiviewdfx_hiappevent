@@ -39,40 +39,38 @@ int64_t StoreEventMappingToDb(int64_t eventSeq, int64_t observerSeq)
     return AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
 }
 
-int64_t GetObserverExistSeq(std::shared_ptr<AppEventObserver> observer)
+int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
+    const std::string& name, int64_t hashCode)
 {
-    std::string observerName = observer->GetName();
-    std::vector<int64_t> observerSeqs;
-    if (AppEventStore::GetInstance().QueryObserverSeqs(observerName, observerSeqs) < 0) {
-        HiLog::Error(LABEL, "failed to query observer=%{public}s seqs", observerName.c_str());
+    int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name, hashCode);
+    if (observerSeq <= 0) {
+        HiLog::Info(LABEL, "the observer does not exist in database, name=%{public}s, code=%{public}" PRId64,
+            name.c_str(), hashCode);
         return -1;
     }
-    if (observerSeqs.empty()) {
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq) < 0) {
+        HiLog::Error(LABEL, "failed to take events, seq=%{public}" PRId64, observerSeq);
         return -1;
     }
-    return observerSeqs.back();
+    if (!events.empty()) {
+        TriggerCondition triggerCond;
+        for (auto event : events) {
+            triggerCond.row++;
+            triggerCond.size += static_cast<int>(event->GetEventStr().size());
+        }
+        observer->SetCurrCondition(triggerCond);
+    }
+    return observerSeq;
 }
 
-int64_t InitObserverSeq(std::shared_ptr<AppEventObserver> observer)
+int64_t InitObserver(std::shared_ptr<AppEventObserver> observer)
 {
-    int64_t observerSeq = GetObserverExistSeq(observer);
-    if (observerSeq > 0) {
-        std::vector<std::shared_ptr<AppEventPack>> events;
-        if (AppEventStore::GetInstance().QueryEvents(events, observerSeq) < 0) {
-            HiLog::Error(LABEL, "failed to take events, seq=%{public}" PRId64, observerSeq);
-            return -1;
-        }
-        if (!events.empty()) {
-            TriggerCondition triggerCond;
-            for (auto event : events) {
-                triggerCond.row++;
-                triggerCond.size += static_cast<int>(event->GetEventStr().size());
-            }
-            observer->SetCurrCondition(triggerCond);
-        }
-    } else {
-        std::string observerName = observer->GetName();
-        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName);
+    std::string observerName = observer->GetName();
+    int64_t observerHashCode = observer->GenerateHashCode();
+    int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
+    if (observerSeq <= 0) {
+        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
         if (observerSeq <= 0) {
             HiLog::Error(LABEL, "failed to insert observer=%{public}s to db", observerName.c_str());
             return -1;
@@ -123,7 +121,7 @@ void AppEventObserverMgr::DestroyEventHandler()
 
 int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> observer)
 {
-    int64_t observerSeq = InitObserverSeq(observer);
+    int64_t observerSeq = InitObserver(observer);
     if (observerSeq <= 0) {
         return observerSeq;
     }
@@ -134,7 +132,7 @@ int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> 
     return observerSeq;
 }
 
-int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName)
+int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, const ReportConfig& config)
 {
     if (observerName.empty()) {
         HiLog::Warn(LABEL, "observer name is empty");
@@ -146,7 +144,14 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName)
         HiLog::Warn(LABEL, "observer is null");
         return -1;
     }
-    return RegisterObserver(observer);
+    observer->SetReportConfig(config);
+
+    int64_t observerSeq = RegisterObserver(observer);
+    if (observerSeq <= 0) {
+        return -1;
+    }
+    observer->ProcessStartup();
+    return observerSeq;
 }
 
 int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq)
@@ -211,9 +216,8 @@ void AppEventObserverMgr::HandleEvent(std::shared_ptr<AppEventPack> event)
     }
 }
 
-void AppEventObserverMgr::HandleTimeOut()
+void AppEventObserverMgr::HandleTimeout()
 {
-    HiLog::Debug(LABEL, "start to handle timeout");
     if (handler_ == nullptr) {
         HiLog::Error(LABEL, "failed to handle timeOut: handler is null");
         return;
@@ -225,18 +229,9 @@ void AppEventObserverMgr::HandleTimeOut()
     }
 }
 
-void AppEventObserverMgr::HandleStartup()
-{
-    HiLog::Debug(LABEL, "start to handle startup");
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
-        it->second->ProcessStartup();
-    }
-}
-
 void AppEventObserverMgr::HandleBackground()
 {
-    HiLog::Debug(LABEL, "start to handle background");
+    HiLog::Info(LABEL, "start to handle background");
     std::shared_lock<std::shared_mutex> lock(mutex_);
     for (auto it = observers_.begin(); it != observers_.end(); ++it) {
         it->second->ProcessBackground();

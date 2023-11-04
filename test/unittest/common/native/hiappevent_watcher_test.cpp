@@ -175,7 +175,7 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest001, TestSize.Level3)
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher4->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().HandleTimeOut();
+    AppEventObserverMgr::GetInstance().HandleTimeout();
     ASSERT_EQ(watcher4->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher5->GetTriggerTimes(), 1);
 
