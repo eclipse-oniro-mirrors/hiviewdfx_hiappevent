@@ -39,7 +39,7 @@ public:
     int InitDbStore();
     int DestroyDbStore();
     int64_t InsertEvent(std::shared_ptr<AppEventPack> event);
-    int64_t InsertObserver(const std::string& observer);
+    int64_t InsertObserver(const std::string& observer, int64_t hashCode = 0);
     int64_t InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
     int64_t InsertUserId(const std::string& name, const std::string& value);
     int64_t InsertUserProperty(const std::string& name, const std::string& value);
@@ -47,6 +47,7 @@ public:
     int64_t UpdateUserProperty(const std::string& name, const std::string& value);
     int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
     int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
+    int64_t QueryObserverSeq(const std::string& observer, int64_t hashCode = 0);
     int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
     int QueryUserIds(std::unordered_map<std::string, std::string>& out);
     int QueryUserId(const std::string& name, std::string& out);
