@@ -34,7 +34,6 @@ AppEventObserverDao::AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> db
     }
 }
 
-
 int AppEventObserverDao::Create()
 {
     if (dbStore_ == nullptr) {
@@ -44,14 +43,15 @@ int AppEventObserverDao::Create()
     /**
      * table: observers
      *
-     * |-------|------|
-     * |  seq  | name |
-     * |-------|------|
-     * | INT64 | TEXT |
-     * |-------|------|
+     * |-------|------|------|
+     * |  seq  | name | hash |
+     * |-------|------|------|
+     * | INT64 | TEXT | INT64|
+     * |-------|------|------|
      */
     const std::vector<std::pair<std::string, std::string>> fields = {
         {Observers::FIELD_NAME, SqlUtil::SQL_TEXT_TYPE},
+        {Observers::FIELD_HASH, SqlUtil::SQL_INT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(Observers::TABLE, fields);
     if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
@@ -60,19 +60,48 @@ int AppEventObserverDao::Create()
     return DB_SUCC;
 }
 
-int64_t AppEventObserverDao::Insert(const std::string& observer)
+int64_t AppEventObserverDao::Insert(const std::string& observer, int64_t hashCode)
 {
     if (dbStore_ == nullptr) {
         return DB_FAILED;
     }
 
     NativeRdb::ValuesBucket bucket;
-    bucket.PutString(Events::FIELD_NAME, observer);
+    bucket.PutString(Observers::FIELD_NAME, observer);
+    bucket.PutLong(Observers::FIELD_HASH, hashCode);
     int64_t seq = 0;
     if (dbStore_->Insert(seq, Observers::TABLE, bucket) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
     return seq;
+}
+
+int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashCode)
+{
+    if (dbStore_ == nullptr) {
+        return DB_FAILED;
+    }
+
+    NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
+    predicates.EqualTo(Observers::FIELD_NAME, observer);
+    predicates.EqualTo(Observers::FIELD_HASH, hashCode);
+    auto resultSet = dbStore_->Query(predicates, {Observers::FIELD_SEQ});
+    if (resultSet == nullptr) {
+        HiLog::Error(LABEL, "failed to query table, observer name=%{public}s, hash code=%{public}" PRId64,
+            observer.c_str(), hashCode);
+        return DB_FAILED;
+    }
+
+    // the hash code is unique, so get only the first
+    int64_t observerSeq = 0;
+    if (resultSet->GoToNextRow() == NativeRdb::E_OK && resultSet->GetLong(0, observerSeq) == NativeRdb::E_OK) {
+        HiLog::Info(LABEL, "succ to query observer seq=%{public}" PRId64 ", name=%{public}s, hash=%{public}" PRId64,
+            observerSeq, observer.c_str(), hashCode);
+        resultSet->Close();
+        return observerSeq;
+    }
+    resultSet->Close();
+    return DB_FAILED;
 }
 
 int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)

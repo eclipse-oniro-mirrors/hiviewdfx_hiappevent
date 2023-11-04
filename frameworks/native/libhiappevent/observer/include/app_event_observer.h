@@ -50,6 +50,8 @@ struct TriggerCondition {
 
     /* Triggered by switching to the background */
     bool onBackground = false;
+
+    std::string ToString() const;
 };
 
 struct AppEventFilter {
@@ -84,6 +86,8 @@ struct EventConfig {
     bool IsValidEvent(std::shared_ptr<AppEventPack> event) const;
 
     bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event) const;
+
+    std::string ToString() const;
 };
 
 struct ReportConfig {
@@ -107,6 +111,8 @@ struct ReportConfig {
 
     /* Event configurations to report */
     std::vector<EventConfig> eventConfigs;
+
+    std::string ToString() const;
 };
 
 class AppEventObserver {
@@ -128,7 +134,8 @@ public:
     void SetCurrCondition(const TriggerCondition& triggerCond);
     void SetReportConfig(const ReportConfig& reportConfig);
 
-    bool NeedHandler();
+    // used to identify the observer with the same config
+    int64_t GenerateHashCode();
 
 protected:
     virtual void OnTrigger(const TriggerCondition& triggerCond);

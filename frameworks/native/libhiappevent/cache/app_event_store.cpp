@@ -189,14 +189,14 @@ int64_t AppEventStore::InsertEvent(std::shared_ptr<AppEventPack> event)
     return appEventDao_->Insert(event);
 }
 
-int64_t AppEventStore::InsertObserver(const std::string& observer)
+int64_t AppEventStore::InsertObserver(const std::string& observer, int64_t hashCode)
 {
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
-    return appEventObserverDao_->Insert(observer);
+    return appEventObserverDao_->Insert(observer, hashCode);
 }
 
 int64_t AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
@@ -348,6 +348,16 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
     }
     resultSet->Close();
     return DB_SUCC;
+}
+
+int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t hashCode)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return appEventObserverDao_->QuerySeq(observer, hashCode);
 }
 
 int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)

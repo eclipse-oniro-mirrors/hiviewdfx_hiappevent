@@ -53,6 +53,17 @@ void CheckRegisterObserver(const std::string& observer,
     ASSERT_GT(processorSeq, 0);
 }
 
+void CheckRegisterObserverWithConfig(
+    const std::string& observer,
+    std::shared_ptr<AppEventProcessor> processor,
+    const ReportConfig& config,
+    int64_t& processorSeq)
+{
+    ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(observer, processor), 0);
+    processorSeq = AppEventObserverMgr::GetInstance().RegisterObserver(observer, config);
+    ASSERT_GT(processorSeq, 0);
+}
+
 void CheckUnregisterObserver(const std::string& observer)
 {
     ASSERT_EQ(AppEventProcessorMgr::UnregisterProcessor(observer), 0);
@@ -149,6 +160,17 @@ void CheckSetTimeoutConfig(int64_t processorSeq)
     ReportConfig testConfig = {
         .triggerCond = {
             .timeout = 2, // 2s
+        },
+        .eventConfigs = {{TEST_EVENT_DOMAIN, TEST_EVENT_NAME}},
+    };
+    ASSERT_EQ(AppEventProcessorMgr::SetProcessorConfig(processorSeq, testConfig), 0);
+}
+
+void CheckSetOnBackgroundConfig(int64_t processorSeq)
+{
+    ReportConfig testConfig = {
+        .triggerCond = {
+            .onBackground = true,
         },
         .eventConfigs = {{TEST_EVENT_DOMAIN, TEST_EVENT_NAME}},
     };
@@ -322,7 +344,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest004, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventInnerApiTest005
- * @tc.desc: check the row callback AppEventProcessor.
+ * @tc.desc: check the size callback AppEventProcessor.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest005, TestSize.Level0)
@@ -349,7 +371,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest005, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventInnerApiTest006
- * @tc.desc: check the row callback AppEventProcessor.
+ * @tc.desc: check the timeout callback AppEventProcessor.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest006, TestSize.Level0)
@@ -369,6 +391,68 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest006, TestSize.Level0)
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);
     sleep(3); // 3s
+    ASSERT_EQ(processor->GetReportTimes(), 1);
+
+    CheckUnregisterObserver(TEST_PROCESSOR_NAME);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest007
+ * @tc.desc: check the background callback AppEventProcessor.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest007, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. Register an AppEventProcessor object.
+     * @tc.steps: step2. Set config to the AppEventProcessor object.
+     * @tc.steps: step3. Write an test event.
+     * @tc.steps: step4. Unregister the AppEventProcessor object.
+     */
+    auto processor = std::make_shared<AppEventProcessorTest>();
+    int64_t processorSeq = 0;
+    CheckRegisterObserver(TEST_PROCESSOR_NAME, processor, processorSeq);
+    CheckSetOnBackgroundConfig(processorSeq);
+
+    ASSERT_EQ(processor->GetReportTimes(), 0);
+    WriteEventOnce();
+    ASSERT_EQ(processor->GetReportTimes(), 0);
+    AppEventObserverMgr::GetInstance().HandleBackground();
+    ASSERT_EQ(processor->GetReportTimes(), 1);
+
+    CheckUnregisterObserver(TEST_PROCESSOR_NAME);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest008
+ * @tc.desc: check the startup callback AppEventProcessor.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest008, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. Register an AppEventProcessor object.
+     * @tc.steps: step2. Write an test event.
+     * @tc.steps: step3. Register an AppEventProcessor object with same configuration.
+     * @tc.steps: step4. Unregister the AppEventProcessor object.
+     */
+    auto processor = std::make_shared<AppEventProcessorTest>();
+    int64_t processorSeq1 = 0;
+    ReportConfig config = {
+        .name = TEST_PROCESSOR_NAME,
+        .triggerCond = {
+            .onStartup = true,
+        },
+        .eventConfigs = {{TEST_EVENT_DOMAIN, TEST_EVENT_NAME}},
+    };
+    CheckRegisterObserverWithConfig(TEST_PROCESSOR_NAME, processor, config, processorSeq1);
+
+    ASSERT_EQ(processor->GetReportTimes(), 0);
+    WriteEventOnce();
+    ASSERT_EQ(processor->GetReportTimes(), 0);
+
+    int64_t processorSeq2 = AppEventObserverMgr::GetInstance().RegisterObserver(TEST_PROCESSOR_NAME, config);
+    ASSERT_EQ(processorSeq1, processorSeq2);
     ASSERT_EQ(processor->GetReportTimes(), 1);
 
     CheckUnregisterObserver(TEST_PROCESSOR_NAME);

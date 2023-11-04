@@ -46,6 +46,7 @@ namespace Observers {
 const std::string TABLE = "observers";
 const std::string FIELD_SEQ = "seq";
 const std::string FIELD_NAME = "name";
+const std::string FIELD_HASH = "hash";
 } // namespace Observers
 
 namespace AppEventMapping {

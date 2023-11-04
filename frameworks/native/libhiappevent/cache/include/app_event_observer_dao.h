@@ -27,7 +27,8 @@ class AppEventObserverDao {
 public:
     AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
     ~AppEventObserverDao() = default;
-    int64_t Insert(const std::string& observer);
+    int64_t Insert(const std::string& observer, int64_t hashCode);
+    int64_t QuerySeq(const std::string& observer, int64_t hashCode);
     int QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
     int Delete(const std::string& observer);
     int Delete(int64_t observerSeq);
