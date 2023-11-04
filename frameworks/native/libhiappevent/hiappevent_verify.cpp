@@ -37,10 +37,11 @@ static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
 static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
-static constexpr int MAX_LENGTH_OF_USER_ID_NAME = 256;
+static constexpr int MAX_LENGTH_OF_USER_INFO_NAME = 256;
 static constexpr int MAX_LENGTH_OF_USER_ID_VALUE = 256;
-static constexpr int MAX_LENGTH_OF_USER_PROPERTY_NAME = 256;
 static constexpr int MAX_LENGTH_OF_USER_PROPERTY_VALUE = 1024;
+static constexpr int MAX_LENGTH_OF_PROCESSOR_NAME = 256;
+static constexpr int MAX_LEN_OF_BATCH_REPORT = 1000;
 
 bool IsValidName(const std::string& name, size_t maxSize)
 {
@@ -62,14 +63,6 @@ bool IsValidName(const std::string& name, size_t maxSize)
         }
     }
     return true;
-}
-
-bool CheckEventName(const std::string& eventName)
-{
-    const std::string eventPrefix = "hiappevent.";
-    return eventName.find(eventPrefix) == 0 ?
-        IsValidName(eventName.substr(eventPrefix.length()), MAX_LENGTH_OF_EVENT_NAME - eventPrefix.length()) :
-        IsValidName(eventName, MAX_LENGTH_OF_EVENT_NAME);
 }
 
 bool CheckParamName(const std::string& paramName)
@@ -195,6 +188,14 @@ bool IsValidDomain(const std::string& eventDomain)
     return true;
 }
 
+bool IsValidEventName(const std::string& eventName)
+{
+    const std::string eventPrefix = "hiappevent.";
+    return eventName.find(eventPrefix) == 0 ?
+        IsValidName(eventName.substr(eventPrefix.length()), MAX_LENGTH_OF_EVENT_NAME - eventPrefix.length()) :
+        IsValidName(eventName, MAX_LENGTH_OF_EVENT_NAME);
+}
+
 bool IsValidWatcherName(const std::string& watcherName)
 {
     if (watcherName.empty() || watcherName.length() > MAX_LEN_OF_WATCHER) {
@@ -218,7 +219,7 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
         HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", appEventPack->GetDomain().c_str());
         return ERROR_INVALID_EVENT_DOMAIN;
     }
-    if (!CheckEventName(appEventPack->GetName())) {
+    if (!IsValidEventName(appEventPack->GetName())) {
         HiLog::Error(LABEL, "eventName=%{public}s is invalid.", appEventPack->GetName().c_str());
         return ERROR_INVALID_EVENT_NAME;
     }
@@ -266,68 +267,67 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
     return verifyRes;
 }
 
-bool IsValidUserInfoName(const std::string& name, size_t maxSize)
+bool IsValidPropName(const std::string& name, size_t maxSize)
 {
     if (name.empty() || name.length() > maxSize) {
         return false;
     }
-    // start char is [a-zA-Z]
-    if (!isalpha(name[0])) {
+    // start char is [a-zA-Z_$]
+    if (!isalpha(name[0]) && name[0] != '_' && name[0] != '$') {
         return false;
     }
-    // other char is [a-zA-Z0-9_]
+    // other char is [a-zA-Z0-9_$]
     for (size_t i = 1; i < name.length(); ++i) {
-        if (!isalnum(name[i]) && name[i] != '_') {
+        if (!isalnum(name[i]) && name[i] != '_' && name[i] != '$') {
             return false;
         }
     }
     return true;
 }
 
-bool IsValidUserInfoValue(const std::string& val, size_t maxSize)
+bool IsValidPropValue(const std::string& val, size_t maxSize)
 {
-    if (val.empty() || val.length() > maxSize) {
-        return false;
-    }
-    return true;
+    return !val.empty() && val.length() <= maxSize;
 }
 
-int VerifyUserId(const std::string& name)
+bool IsValidProcessorName(const std::string& name)
 {
-    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_ID_NAME)) {
-        return -1;
-    }
-    return 0;
+    return IsValidPropName(name, MAX_LENGTH_OF_PROCESSOR_NAME);
 }
 
-int VerifyUserId(const std::string& name, const std::string& value)
+bool IsValidRouteInfo(const std::string& name)
 {
-    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_ID_NAME)) {
-        return -1;
-    }
-    if (!IsValidUserInfoValue(value, MAX_LENGTH_OF_USER_ID_VALUE)) {
-        return -1;
-    }
-    return 0;
+    return sizeof(name) <= MAX_LENGTH_OF_STR_PARAM;
 }
 
-int VerifyUserProperty(const std::string& name)
+bool IsValidPeriodReport(int timeout)
 {
-    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_PROPERTY_NAME)) {
-        return -1;
-    }
-    return 0;
+    return timeout >= 0;
 }
 
-int VerifyUserProperty(const std::string& name, const std::string& value)
+bool IsValidBatchReport(int count)
 {
-    if (!IsValidUserInfoName(name, MAX_LENGTH_OF_USER_PROPERTY_NAME)) {
-        return -1;
-    }
-    if (!IsValidUserInfoValue(value, MAX_LENGTH_OF_USER_PROPERTY_VALUE)) {
-        return -1;
-    }
-    return 0;
+    return count >= 0 && count <= MAX_LEN_OF_BATCH_REPORT;
+}
+
+bool IsValidUserIdName(const std::string& name)
+{
+    return IsValidPropName(name, MAX_LENGTH_OF_USER_INFO_NAME);
+}
+
+bool IsValidUserIdValue(const std::string& value)
+{
+    return IsValidPropValue(value, MAX_LENGTH_OF_USER_ID_VALUE);
+}
+
+bool IsValidUserPropName(const std::string& name)
+{
+    return IsValidPropName(name, MAX_LENGTH_OF_USER_INFO_NAME);
+}
+
+bool IsValidUserPropValue(const std::string& value)
+{
+    return IsValidPropValue(value, MAX_LENGTH_OF_USER_PROPERTY_VALUE);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

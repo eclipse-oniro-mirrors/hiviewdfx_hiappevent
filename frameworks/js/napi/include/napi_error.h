@@ -44,18 +44,6 @@ constexpr int ERR_INVALID_MAX_STORAGE = 11103001;
 // business error of AppEventPackageHolder.setSize function
 constexpr int ERR_INVALID_SIZE = 11104001;
 
-// business error of addProcessor function
-constexpr int ERR_INVALID_PROCESSOR_NAME = 11105001;
-constexpr int ERR_INVALID_PROCESSOR_DEBUG_MODE = 11105002;
-constexpr int ERR_INVALID_PROCESSOR_ROUTE_INFO = 11105003;
-constexpr int ERR_INVALID_PROCESSOR_START_REPORT = 11105004;
-constexpr int ERR_INVALID_PROCESSOR_BACKGROUND_REPORT = 11105005;
-constexpr int ERR_INVALID_PROCESSOR_PERIOD_REPORT = 11105006;
-constexpr int ERR_INVALID_PROCESSOR_BATCH_REPORT = 11105007;
-constexpr int ERR_INVALID_PROCESSOR_USER_IDS = 11105008;
-constexpr int ERR_INVALID_PROCESSOR_USER_PROPERTIES = 11105009;
-constexpr int ERR_INVALID_PROCESSOR_EVENT_CONFIGS = 111050010;
-
 } // namespace NapiError
 } // namespace HiviewDFX
 } // namespace OHOS
