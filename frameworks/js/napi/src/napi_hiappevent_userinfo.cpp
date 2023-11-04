@@ -19,6 +19,7 @@
 
 #include "hiappevent_base.h"
 #include "hiappevent_userinfo.h"
+#include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
@@ -50,6 +51,10 @@ bool SetUserId(const napi_env env, const napi_value name, const napi_value userI
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
+    if (!IsValidUserIdName(strName)) {
+        HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
+        return false;
+    }
     if (IsStringEmptyOrNull(env, userId)) {
         if (HiAppEvent::UserInfo::GetInstance().RemoveUserId(strName) != 0) {
             HiLog::Error(LABEL, "failed to remove userId");
@@ -62,6 +67,10 @@ bool SetUserId(const napi_env env, const napi_value name, const napi_value userI
         return false;
     }
     std::string strUserId = NapiUtil::GetString(env, userId);
+    if (!IsValidUserIdValue(strUserId)) {
+        HiLog::Warn(LABEL, "Parameter error. The value parameter is invalid.");
+        return false;
+    }
     if (HiAppEvent::UserInfo::GetInstance().SetUserId(strName, strUserId) != 0) {
         HiLog::Error(LABEL, "failed to set userId");
         return false;
@@ -76,6 +85,10 @@ bool GetUserId(const napi_env env, const napi_value name, napi_value& out)
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
+    if (!IsValidUserIdName(strName)) {
+        HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
+        return false;
+    }
     std::string strUserId;
     if (HiAppEvent::UserInfo::GetInstance().GetUserId(strName, strUserId) != 0) {
         HiLog::Error(LABEL, "failed to get userId");
@@ -92,6 +105,10 @@ bool SetUserProperty(const napi_env env, const napi_value name, const napi_value
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
+    if (!IsValidUserPropName(strName)) {
+        HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
+        return false;
+    }
     if (IsStringEmptyOrNull(env, userProperty)) {
         if (HiAppEvent::UserInfo::GetInstance().RemoveUserProperty(strName) != 0) {
             HiLog::Error(LABEL, "failed to remove user property");
@@ -104,6 +121,10 @@ bool SetUserProperty(const napi_env env, const napi_value name, const napi_value
         return false;
     }
     std::string strUserProperty = NapiUtil::GetString(env, userProperty);
+    if (!IsValidUserPropValue(strUserProperty)) {
+        HiLog::Warn(LABEL, "Parameter error. The value parameter is invalid.");
+        return false;
+    }
     if (HiAppEvent::UserInfo::GetInstance().SetUserProperty(strName, strUserProperty) != 0) {
         HiLog::Error(LABEL, "failed to set user property");
         return false;
@@ -118,6 +139,10 @@ bool GetUserProperty(const napi_env env, const napi_value name, napi_value& out)
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
+    if (!IsValidUserPropName(strName)) {
+        HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
+        return false;
+    }
     std::string strUserProperty;
     if (HiAppEvent::UserInfo::GetInstance().GetUserProperty(strName, strUserProperty) != 0) {
         HiLog::Error(LABEL, "failed to get user property");
@@ -126,6 +151,6 @@ bool GetUserProperty(const napi_env env, const napi_value name, napi_value& out)
     out = NapiUtil::CreateString(env, strUserProperty);
     return true;
 }
-} // namespace NapiHiAppEventConfig
+} // namespace NapiHiAppEventUserInfo
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -23,13 +23,18 @@ namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 bool IsValidDomain(const std::string& domain);
+bool IsValidEventName(const std::string& eventName);
 bool IsValidWatcherName(const std::string& watcherName);
 bool IsValidEventType(int eventType);
 int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
-int VerifyUserId(const std::string& name);
-int VerifyUserId(const std::string& name, const std::string& value);
-int VerifyUserProperty(const std::string& name);
-int VerifyUserProperty(const std::string& name, const std::string& value);
+bool IsValidProcessorName(const std::string& name);
+bool IsValidRouteInfo(const std::string& name);
+bool IsValidPeriodReport(int timeout);
+bool IsValidBatchReport(int count);
+bool IsValidUserIdName(const std::string& name);
+bool IsValidUserIdValue(const std::string& value);
+bool IsValidUserPropName(const std::string& name);
+bool IsValidUserPropValue(const std::string& value);
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HI_APP_EVENT_VERIFY_H
