@@ -28,13 +28,29 @@ namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Holder" };
 constexpr size_t PARAM_NUM = 1;
 const std::string HOLDER_CLASS_NAME = "AppEventPackageHolder";
+
+int64_t GetObserverSeqByName(const std::string& name)
+{
+    int64_t observerSeq = -1;
+    if (observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name); observerSeq <= 0) {
+        HiLog::Warn(LABEL, "failed to query seq by name=%{public}s", name.c_str());
+        return -1;
+    }
+    return observerSeq;
+}
 }
 thread_local napi_ref NapiAppEventHolder::constructor_ = nullptr;
 
-NapiAppEventHolder::NapiAppEventHolder(int64_t observerSeq) : observerSeq_(observerSeq)
+NapiAppEventHolder::NapiAppEventHolder(const std::string& name, int64_t observerSeq)
+    : name_(name), observerSeq_(observerSeq)
 {
     takeSize_ = 512 * 1024; // 512 * 1024: 512KB
     packageId_ = 0; // id is incremented from 0
+
+    // if the seq is invalid, need to get seq by the name(for js constructor)
+    if (observerSeq_ <= 0) {
+        observerSeq_ = GetObserverSeqByName(name_);
+    }
 }
 
 napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info info)
@@ -48,7 +64,7 @@ napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info 
         HiLog::Error(LABEL, "hodler failed to construct: invalid param num");
         return thisVar;
     }
-    auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetInt64(env, params[0]));
+    auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetString(env, params[0]));
     napi_wrap(
         env, thisVar, holder,
         [](napi_env env, void* data, void* hint) {

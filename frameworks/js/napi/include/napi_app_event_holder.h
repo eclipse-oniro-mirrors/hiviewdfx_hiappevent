@@ -35,7 +35,7 @@ struct AppEventPackage {
 
 class NapiAppEventHolder {
 public:
-    NapiAppEventHolder(int64_t observerSeq);
+    NapiAppEventHolder(const std::string& name, int64_t observerSeq = -1);
     ~NapiAppEventHolder() {}
     static napi_value NapiConstructor(napi_env env, napi_callback_info info);
     static napi_value NapiExport(napi_env env, napi_value exports);
@@ -49,6 +49,7 @@ public:
     static thread_local napi_ref constructor_;
 
 private:
+    std::string name_;
     int takeSize_;
     int packageId_;
     int64_t observerSeq_;

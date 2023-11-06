@@ -44,7 +44,7 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
 {
     int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name, hashCode);
     if (observerSeq <= 0) {
-        HiLog::Info(LABEL, "the observer does not exist in database, name=%{public}s, code=%{public}" PRId64,
+        HiLog::Info(LABEL, "the observer does not exist in database, name=%{public}s, hash=%{public}" PRId64,
             name.c_str(), hashCode);
         return -1;
     }

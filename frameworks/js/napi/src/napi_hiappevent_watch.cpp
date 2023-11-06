@@ -232,7 +232,7 @@ void GetFilters(const napi_env env, const napi_value watcher, std::vector<AppEve
     }
 }
 
-napi_value CreateHolder(const napi_env env, const napi_value watcherSeq)
+napi_value CreateHolder(const napi_env env, size_t argc, const napi_value argv[])
 {
     napi_value constructor = nullptr;
     if (napi_get_reference_value(env, NapiAppEventHolder::constructor_, &constructor) != napi_ok) {
@@ -240,7 +240,7 @@ napi_value CreateHolder(const napi_env env, const napi_value watcherSeq)
         return NapiUtil::CreateNull(env);
     }
     napi_value holder = nullptr;
-    if (napi_new_instance(env, constructor, 1, &watcherSeq, &holder) != napi_ok) { // param num is 1
+    if (napi_new_instance(env, constructor, argc, argv, &holder) != napi_ok) {
         HiLog::Error(LABEL, "failed to get new instance for holder");
         return NapiUtil::CreateNull(env);
     }
@@ -270,7 +270,12 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher)
     }
 
     // 3. create holder and add holder to the watcher
-    napi_value holder = CreateHolder(env, NapiUtil::CreateInt64(env, observerSeq));
+    constexpr size_t holderParamNum = 2;
+    napi_value holderParams[holderParamNum] = {
+        NapiUtil::CreateString(env, name),
+        NapiUtil::CreateInt64(env, observerSeq)
+    };
+    napi_value holder = CreateHolder(env, holderParamNum, holderParams);
     watcherPtr->InitHolder(env, holder);
 
     // 4. set trigger if any
