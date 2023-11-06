@@ -278,7 +278,7 @@ void AppEventObserver::SetReportConfig(const ReportConfig& reportConfig)
 int64_t AppEventObserver::GenerateHashCode()
 {
     return reportConfig_.name.empty()
-        ? static_cast<int64_t>(std::hash<std::string>{}(name_))
+        ? 0 // default hash code for watcher
         : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
 }
 } // namespace HiAppEvent
