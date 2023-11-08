@@ -142,7 +142,7 @@ protected:
 
 private:
     int StoreEventToDb(std::shared_ptr<AppEventPack> event);
-    int QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events);
+    void QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events);
     bool MeetProcessCondition();
     bool MeetTimeoutCondition();
     bool MeetStartupCondition();

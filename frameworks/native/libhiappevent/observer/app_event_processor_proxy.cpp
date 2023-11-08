@@ -50,7 +50,7 @@ void AppEventProcessorProxy::OnEvents(const std::vector<std::shared_ptr<AppEvent
     std::transform(events.begin(), events.end(), eventInfos.begin(), [](auto event) {
         return CreateAppEventInfo(event);
     });
-    processor_->OnReport(GetSeq(), userIds, userProperties, eventInfos);
+    (void)processor_->OnReport(GetSeq(), userIds, userProperties, eventInfos);
 }
 
 void AppEventProcessorProxy::GetValidUserIds(std::vector<UserId>& userIds)

@@ -39,10 +39,6 @@ AppEventMappingDao::AppEventMappingDao(std::shared_ptr<NativeRdb::RdbStore> dbSt
 
 int AppEventMappingDao::Create()
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     /**
      * table: event_observer_mapping
      *
@@ -77,10 +73,6 @@ int64_t AppEventMappingDao::Insert(int64_t eventSeq, int64_t observerSeq)
 
 int AppEventMappingDao::Delete(int64_t observerSeq)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     predicates.EqualTo(FIELD_OBSERVER_SEQ, observerSeq);
@@ -93,9 +85,6 @@ int AppEventMappingDao::Delete(int64_t observerSeq)
 
 int AppEventMappingDao::Delete(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
     if (eventSeqs.empty()) {
         return DB_SUCC;
     }
