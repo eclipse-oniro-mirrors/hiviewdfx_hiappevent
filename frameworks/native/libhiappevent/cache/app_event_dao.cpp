@@ -37,10 +37,6 @@ AppEventDao::AppEventDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore
 
 int AppEventDao::Create()
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     /**
      * table: events
      *

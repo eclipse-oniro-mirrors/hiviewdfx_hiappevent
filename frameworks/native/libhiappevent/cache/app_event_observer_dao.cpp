@@ -36,10 +36,6 @@ AppEventObserverDao::AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> db
 
 int AppEventObserverDao::Create()
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     /**
      * table: observers
      *
@@ -62,10 +58,6 @@ int AppEventObserverDao::Create()
 
 int64_t AppEventObserverDao::Insert(const std::string& observer, int64_t hashCode)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     NativeRdb::ValuesBucket bucket;
     bucket.PutString(Observers::FIELD_NAME, observer);
     bucket.PutLong(Observers::FIELD_HASH, hashCode);
@@ -78,10 +70,6 @@ int64_t AppEventObserverDao::Insert(const std::string& observer, int64_t hashCod
 
 int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashCode)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_NAME, observer);
     predicates.EqualTo(Observers::FIELD_HASH, hashCode);
@@ -106,10 +94,6 @@ int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashC
 
 int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_NAME, observer);
     auto resultSet = dbStore_->Query(predicates, {Observers::FIELD_SEQ});
@@ -131,10 +115,6 @@ int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int6
 
 int AppEventObserverDao::Delete(const std::string& observer)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_NAME, observer);
@@ -148,10 +128,6 @@ int AppEventObserverDao::Delete(const std::string& observer)
 
 int AppEventObserverDao::Delete(int64_t observerSeq)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_SEQ, observerSeq);

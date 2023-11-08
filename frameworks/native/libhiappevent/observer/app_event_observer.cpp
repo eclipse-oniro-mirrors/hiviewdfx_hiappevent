@@ -172,19 +172,21 @@ void AppEventObserver::ResetCurrCondition()
 void AppEventObserver::OnTrigger(const TriggerCondition& triggerCond)
 {
     std::vector<std::shared_ptr<AppEventPack>> events;
-    if (QueryEventsFromDb(events) == 0) {
+    QueryEventsFromDb(events);
+    if (!events.empty()) {
         OnEvents(events);
     }
 }
 
-int AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events)
+void AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
-    int ret = AppEventStore::GetInstance().TakeEvents(events, seq_);
-    if (ret != 0 || events.empty()) {
-        return -1;
+    if (AppEventStore::GetInstance().TakeEvents(events, seq_) != 0) {
+        HiLog::Warn(LABEL, "failed to take data from observer=%{public}s, seq=%{public}" PRId64,
+            name_.c_str(), seq_);
+        return;
     }
-    HiLog::Info(LABEL, "end to take data from observer=%{public}s, size=%{public}zu", name_.c_str(), events.size());
-    return 0;
+    HiLog::Info(LABEL, "end to take data from observer=%{public}s, seq=%{public}" PRId64 ", size=%{public}zu",
+        name_.c_str(), seq_, events.size());
 }
 
 void AppEventObserver::ProcessTimeout()
@@ -259,19 +261,18 @@ void AppEventObserver::SetReportConfig(const ReportConfig& reportConfig)
 {
     reportConfig_ = reportConfig;
 
-    std::vector<AppEventFilter> filters;
-    for (auto& eventConfig : reportConfig.eventConfigs) {
+    filters_.clear();
+    // if event configs is empty, do not report event
+    if (reportConfig.eventConfigs.empty()) {
+        filters_.emplace_back(AppEventFilter()); // invalid filter
+        return;
+    }
+
+    for (const auto& eventConfig : reportConfig.eventConfigs) {
         if (eventConfig.domain.empty() && eventConfig.name.empty()) {
             continue;
         }
         filters_.emplace_back(AppEventFilter(eventConfig.domain, {eventConfig.name}));
-    }
-
-    // if event configs is empty, do not report event
-    if (reportConfig.eventConfigs.empty()) {
-        filters_.clear();
-        filters_.emplace_back(AppEventFilter()); // invalid filter
-        return;
     }
 }
 
