@@ -29,6 +29,7 @@ bool IsValidEventType(int eventType);
 int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 bool IsValidProcessorName(const std::string& name);
 bool IsValidRouteInfo(const std::string& name);
+bool IsValidAppId(const std::string& name);
 bool IsValidPeriodReport(int timeout);
 bool IsValidBatchReport(int count);
 bool IsValidUserIdName(const std::string& name);

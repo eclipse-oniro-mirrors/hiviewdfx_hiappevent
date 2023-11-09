@@ -76,6 +76,7 @@ void CheckGetEmptyConfig(int64_t processorSeq)
     ASSERT_TRUE(config.name.empty());
     ASSERT_FALSE(config.debugMode);
     ASSERT_TRUE(config.routeInfo.empty());
+    ASSERT_TRUE(config.appId.empty());
     ASSERT_EQ(config.triggerCond.row, 0);
     ASSERT_EQ(config.triggerCond.size, 0);
     ASSERT_EQ(config.triggerCond.timeout, 0);
@@ -98,6 +99,7 @@ void CheckSameConfig(const ReportConfig& configA, const ReportConfig& configB)
     ASSERT_EQ(configA.name, configB.name);
     ASSERT_EQ(configA.debugMode, configB.debugMode);
     ASSERT_EQ(configA.routeInfo, configB.routeInfo);
+    ASSERT_EQ(configA.appId, configB.appId);
     ASSERT_EQ(configA.triggerCond.row, configB.triggerCond.row);
     ASSERT_EQ(configA.triggerCond.size, configB.triggerCond.size);
     ASSERT_EQ(configA.triggerCond.timeout, configB.triggerCond.timeout);
@@ -114,6 +116,7 @@ void CheckSetConfig(int64_t processorSeq)
         .name = "test_name",
         .debugMode = true,
         .routeInfo = "test_routeInfo",
+        .appId = "test_appid",
         .triggerCond = {1, 1, 1, true, true},
         .userIdNames = {"test_id"},
         .userPropertyNames = {"test_property"},

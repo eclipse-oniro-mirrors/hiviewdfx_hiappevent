@@ -300,6 +300,11 @@ bool IsValidRouteInfo(const std::string& name)
     return sizeof(name) <= MAX_LENGTH_OF_STR_PARAM;
 }
 
+bool IsValidAppId(const std::string& name)
+{
+    return sizeof(name) <= MAX_LENGTH_OF_STR_PARAM;
+}
+
 bool IsValidPeriodReport(int timeout)
 {
     return timeout >= 0;

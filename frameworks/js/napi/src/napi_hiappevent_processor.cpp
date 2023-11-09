@@ -41,6 +41,7 @@ constexpr int ERR_CODE_PARAM_INVALID = -2;
 const std::string PROCESSOR_NAME = "name";
 const std::string DEBUG_MODE = "debugMode";
 const std::string ROUTE_INFO = "routeInfo";
+const std::string APP_ID = "appId";
 const std::string START_REPORT = "onStartReport";
 const std::string BACKGROUND_REPORT = "onBackgroundReport";
 const std::string PERIOD_REPORT = "periodReport";
@@ -127,6 +128,16 @@ int GenConfigRouteInfoProp(const napi_env env, const napi_value config, const st
         return ERR_CODE_PARAM_INVALID;
     }
     out.routeInfo = routeInfo;
+    return ERR_CODE_SUCC;
+}
+
+int GenConfigAppIdProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
+{
+    std::string appId;
+    if (!GenConfigStrProp(env, config, key, appId) || !IsValidAppId(appId)) {
+        return ERR_CODE_PARAM_INVALID;
+    }
+    out.appId = appId;
     return ERR_CODE_SUCC;
 }
 
@@ -262,6 +273,11 @@ const ConfigProp CONFIG_PROPS[] = {
         .type = CONFIG_PROP_TYPE_STR,
         .key = ROUTE_INFO,
         .func = GenConfigRouteInfoProp
+    },
+    {
+        .type = CONFIG_PROP_TYPE_STR,
+        .key = APP_ID,
+        .func = GenConfigAppIdProp
     },
     {
         .type = CONFIG_PROP_TYPE_STR_ARRAY,
