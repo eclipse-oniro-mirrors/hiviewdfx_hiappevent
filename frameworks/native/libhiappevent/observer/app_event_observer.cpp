@@ -117,8 +117,8 @@ std::string TriggerCondition::ToString() const
 std::string ReportConfig::ToString() const
 {
     std::stringstream strStream;
-    strStream << "{" << name << "," << debugMode << "," << routeInfo << "," << triggerCond.ToString() << ","
-        << GetStr(userIdNames) << "," << GetStr(userPropertyNames) << "," << GetStr(eventConfigs) << "}";
+    strStream << "{" << name << "," << debugMode << "," << routeInfo << "," << appId << "," << triggerCond.ToString()
+        << "," << GetStr(userIdNames) << "," << GetStr(userPropertyNames) << "," << GetStr(eventConfigs) << "}";
     return strStream.str();
 }
 

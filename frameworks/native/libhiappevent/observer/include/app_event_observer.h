@@ -100,6 +100,9 @@ struct ReportConfig {
     /* The server location information */
     std::string routeInfo;
 
+    /* The application ID */
+    std::string appId;
+
     /* The condition for triggering reporting */
     TriggerCondition triggerCond;
 
