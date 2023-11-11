@@ -30,6 +30,8 @@ namespace NapiHiAppEventUserInfo {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_UserInfo" };
 
+static constexpr size_t MAX_STRING_LEN = 8 * 1024 + 2;
+
 bool IsStringEmptyOrNull(const napi_env env, const napi_value name)
 {
     napi_valuetype napiType = NapiUtil::GetType(env, name);
@@ -39,7 +41,7 @@ bool IsStringEmptyOrNull(const napi_env env, const napi_value name)
     if (napiType != napi_string) {
         return false;
     }
-    std::string strName = NapiUtil::GetString(env, name);
+    std::string strName = NapiUtil::GetString(env, name, MAX_STRING_LEN);
     return strName.empty();
 }
 }
@@ -50,7 +52,7 @@ bool SetUserId(const napi_env env, const napi_value name, const napi_value userI
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
         return false;
     }
-    std::string strName = NapiUtil::GetString(env, name);
+    std::string strName = NapiUtil::GetString(env, name, MAX_STRING_LEN);
     if (!IsValidUserIdName(strName)) {
         HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Parameter error. The name parameter is invalid.");
@@ -67,7 +69,7 @@ bool SetUserId(const napi_env env, const napi_value name, const napi_value userI
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("userId", "string"));
         return false;
     }
-    std::string strUserId = NapiUtil::GetString(env, userId);
+    std::string strUserId = NapiUtil::GetString(env, userId, MAX_STRING_LEN);
     if (!IsValidUserIdValue(strUserId)) {
         HiLog::Warn(LABEL, "Parameter error. The value parameter is invalid.");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Parameter error. The value parameter is invalid.");
@@ -86,7 +88,7 @@ bool GetUserId(const napi_env env, const napi_value name, napi_value& out)
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
         return false;
     }
-    std::string strName = NapiUtil::GetString(env, name);
+    std::string strName = NapiUtil::GetString(env, name, MAX_STRING_LEN);
     if (!IsValidUserIdName(strName)) {
         HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Parameter error. The name parameter is invalid.");
@@ -107,7 +109,7 @@ bool SetUserProperty(const napi_env env, const napi_value name, const napi_value
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
         return false;
     }
-    std::string strName = NapiUtil::GetString(env, name);
+    std::string strName = NapiUtil::GetString(env, name, MAX_STRING_LEN);
     if (!IsValidUserPropName(strName)) {
         HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Parameter error. The name parameter is invalid.");
@@ -124,7 +126,7 @@ bool SetUserProperty(const napi_env env, const napi_value name, const napi_value
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("user property", "string"));
         return false;
     }
-    std::string strUserProperty = NapiUtil::GetString(env, userProperty);
+    std::string strUserProperty = NapiUtil::GetString(env, userProperty, MAX_STRING_LEN);
     if (!IsValidUserPropValue(strUserProperty)) {
         HiLog::Warn(LABEL, "Parameter error. The value parameter is invalid.");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Parameter error. The value parameter is invalid.");
@@ -143,7 +145,7 @@ bool GetUserProperty(const napi_env env, const napi_value name, napi_value& out)
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
         return false;
     }
-    std::string strName = NapiUtil::GetString(env, name);
+    std::string strName = NapiUtil::GetString(env, name, MAX_STRING_LEN);
     if (!IsValidUserPropName(strName)) {
         HiLog::Warn(LABEL, "Parameter error. The name parameter is invalid.");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Parameter error. The name parameter is invalid.");
