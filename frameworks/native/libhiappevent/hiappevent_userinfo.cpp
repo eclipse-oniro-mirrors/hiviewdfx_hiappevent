@@ -167,7 +167,7 @@ void UserInfo::InitUserIds()
 void UserInfo::InitUserProperties()
 {
     userProperties_.clear();
-    if (AppEventStore::GetInstance().QueryUserIds(userProperties_) == DB_FAILED) {
+    if (AppEventStore::GetInstance().QueryUserProperties(userProperties_) == DB_FAILED) {
         HiLog::Warn(LABEL, "failed to get user properties.");
         return;
     }
