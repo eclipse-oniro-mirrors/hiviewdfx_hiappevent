@@ -14,9 +14,11 @@
  */
 #include "app_event_observer_mgr.h"
 
+#include "app_state_callback.h"
 #include "app_event_handler.h"
 #include "app_event_processor_proxy.h"
 #include "app_event_store.h"
+#include "application_context.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 #include "module_loader.h"
@@ -82,15 +84,6 @@ int64_t InitObserver(std::shared_ptr<AppEventObserver> observer)
 }
 std::mutex AppEventObserverMgr::instanceMutex_;
 
-AppEventObserverMgr::AppEventObserverMgr()
-{
-    if (!CreateEventHandler()) {
-        HiLog::Warn(LABEL, "failed to create handler");
-        return;
-    }
-    handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
-}
-
 AppEventObserverMgr& AppEventObserverMgr::GetInstance()
 {
     std::lock_guard<std::mutex> lock(instanceMutex_);
@@ -98,25 +91,60 @@ AppEventObserverMgr& AppEventObserverMgr::GetInstance()
     return instance;
 }
 
-bool AppEventObserverMgr::CreateEventHandler()
+AppEventObserverMgr::AppEventObserverMgr()
+{
+    CreateEventHandler();
+    RegisterAppStateCallback();
+}
+
+void AppEventObserverMgr::CreateEventHandler()
 {
     auto runner = AppExecFwk::EventRunner::Create("AppEventHandler");
     if (runner == nullptr) {
         HiLog::Error(LABEL, "failed to create event runner");
-        return false;
+        return;
     }
     handler_ = std::make_shared<AppEventHandler>(runner);
-    return true;
+    handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
+}
+
+void AppEventObserverMgr::RegisterAppStateCallback()
+{
+    auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
+    if (context == nullptr) {
+        HiLog::Warn(LABEL, "app context is null");
+        return;
+    }
+    appStateCallback_ = std::make_shared<AppStateCallback>();
+    context->RegisterAbilityLifecycleCallback(appStateCallback_);
+    HiLog::Info(LABEL, "succ to register application state callback");
 }
 
 AppEventObserverMgr::~AppEventObserverMgr()
 {
     DestroyEventHandler();
+    UnregisterAppStateCallback();
 }
 
 void AppEventObserverMgr::DestroyEventHandler()
 {
     handler_= nullptr;
+}
+
+void AppEventObserverMgr::UnregisterAppStateCallback()
+{
+    if (appStateCallback_ == nullptr) {
+        return;
+    }
+
+    auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
+    if (context == nullptr) {
+        HiLog::Warn(LABEL, "app context is null");
+        return;
+    }
+    context->UnregisterAbilityLifecycleCallback(appStateCallback_);
+    appStateCallback_ = nullptr;
+    HiLog::Info(LABEL, "succ to unregister application state callback");
 }
 
 int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> observer)

@@ -15,29 +15,19 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_HANDLER_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_HANDLER_H
 
-#include "app_state_callback.h"
 #include "event_handler.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace AppEventType {
 const uint32_t WATCHER_TIMEOUT = 0;
-const uint32_t APP_STATE_BACKGROUND = 1;
 }
-using HiAppEvent::AppStateCallback;
 
 class AppEventHandler : public AppExecFwk::EventHandler {
 public:
     explicit AppEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     ~AppEventHandler() override;
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
-
-private:
-    void RegisterAppStateCallback();
-    void UnregisterAppStateCallback();
-
-private:
-    std::shared_ptr<AppStateCallback> appStateCallback_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

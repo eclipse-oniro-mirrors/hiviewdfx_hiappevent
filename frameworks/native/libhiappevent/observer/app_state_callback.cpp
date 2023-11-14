@@ -14,14 +14,14 @@
  */
 #include "app_state_callback.h"
 
-#include "app_event_handler.h"
+#include "app_event_observer_mgr.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 void AppStateCallback::OnAbilityBackground(const std::shared_ptr<NativeReference>& ability)
 {
-    handler_->SendEvent(AppEventType::APP_STATE_BACKGROUND, 0);
+    AppEventObserverMgr::GetInstance().HandleBackground();
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

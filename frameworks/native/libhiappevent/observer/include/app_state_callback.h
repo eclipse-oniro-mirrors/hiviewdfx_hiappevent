@@ -22,14 +22,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventHandler;
 namespace HiAppEvent {
 class AppStateCallback : public OHOS::AbilityRuntime::AbilityLifecycleCallback {
 public:
-    AppStateCallback(std::shared_ptr<AppEventHandler> handler) : handler_(handler) {}
-
-    ~AppStateCallback() = default;
-
     void OnAbilityCreate(const std::shared_ptr<NativeReference>& ability) override {}
 
     void OnWindowStageCreate(const std::shared_ptr<NativeReference>& ability,
@@ -51,9 +46,6 @@ public:
     void OnAbilityBackground(const std::shared_ptr<NativeReference>& ability) override;
 
     void OnAbilityContinue(const std::shared_ptr<NativeReference>& ability) override {}
-
-private:
-    std::shared_ptr<AppEventHandler> handler_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX

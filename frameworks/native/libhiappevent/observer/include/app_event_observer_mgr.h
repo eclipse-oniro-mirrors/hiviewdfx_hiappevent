@@ -24,7 +24,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventHandler;
+namespace HiAppEvent{
+class AppStateCallback;
+}
 using HiAppEvent::AppEventObserver;
+using HiAppEvent::AppStateCallback;
 using HiAppEvent::ReportConfig;
 
 class AppEventObserverMgr {
@@ -45,13 +49,16 @@ public:
     int GetReportConfig(int64_t observerSeq, ReportConfig& config);
 
 private:
-    bool CreateEventHandler();
+    void CreateEventHandler();
     void DestroyEventHandler();
+    void RegisterAppStateCallback();
+    void UnregisterAppStateCallback();
 
 private:
     std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
     std::unordered_map<int64_t, ReportConfig> configs_;
     std::shared_ptr<AppEventHandler> handler_;
+    std::shared_ptr<AppStateCallback> appStateCallback_;
     std::shared_mutex mutex_;
 
 private:
