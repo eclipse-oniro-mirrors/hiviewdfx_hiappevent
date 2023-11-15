@@ -537,10 +537,7 @@ std::string AppEventPack::GetEventStr() const
     std::stringstream jsonStr;
     jsonStr << "{";
     AddBaseInfoToJsonString(jsonStr);
-    if (baseParams_.size() != 0) {
-        jsonStr << ",";
-        AddParamsToJsonString(jsonStr);
-    }
+    AddParamsInfoToJsonString(jsonStr);
     jsonStr << "}" << std::endl;
     return jsonStr.str();
 }
@@ -579,6 +576,23 @@ void AppEventPack::AddTraceInfoToJsonString(std::stringstream& jsonStr) const
     jsonStr << "," << "\"" << "spanid_" << "\":" << spanId_;
     jsonStr << "," << "\"" << "pspanid_" << "\":" << pspanId_;
     jsonStr << "," << "\"" << "trace_flag_" << "\":" << traceFlag_;
+}
+
+void AppEventPack::AddParamsInfoToJsonString(std::stringstream& jsonStr) const
+{
+    // for event from writing
+    if (baseParams_.size() != 0) {
+        jsonStr << ",";
+        AddParamsToJsonString(jsonStr);
+        return;
+    }
+
+    // for event from the db
+    size_t paramStrLen = paramStr_.length();
+    constexpr size_t minParamStrLen = 3; // 3: '{}\0'
+    if (paramStrLen > minParamStrLen) {
+        jsonStr << "," << paramStr_.substr(1, paramStrLen - minParamStrLen); // 1: '{' for next char
+    }
 }
 
 void AppEventPack::AddParamsToJsonString(std::stringstream& jsonStr) const

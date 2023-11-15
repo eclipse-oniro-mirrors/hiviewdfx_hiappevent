@@ -171,6 +171,7 @@ describe('HiAppEventJsTest', function () {
     }
 
     /**
+     * @tc.number HiAppEventJsTest001_1
      * @tc.name: HiAppEventJsTest001_1
      * @tc.desc: Test the write interface using callback.
      * @tc.type: FUNC
@@ -192,6 +193,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest001_2
      * @tc.name: HiAppEventJsTest001_2
      * @tc.desc: Test the write interface using callback.
      * @tc.type: FUNC
@@ -213,6 +215,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest002_1
      * @tc.name: HiAppEventJsTest002_1
      * @tc.desc: Test the write interface using promise.
      * @tc.type: FUNC
@@ -232,6 +235,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest002_2
      * @tc.name: HiAppEventJsTest002_2
      * @tc.desc: Test the write interface using promise.
      * @tc.type: FUNC
@@ -255,6 +259,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest003_1
      * @tc.name: HiAppEventJsTest003_1
      * @tc.desc: Error code 1 is returned when the event has an invalid key name.
      * @tc.type: FUNC
@@ -274,6 +279,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest003_2
      * @tc.name: HiAppEventJsTest003_2
      * @tc.desc: Error code 11101005 is returned when the event has an invalid key name.
      * @tc.type: FUNC
@@ -294,6 +300,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest004_1
      * @tc.name: HiAppEventJsTest004_1
      * @tc.desc: Error code 3 is returned when the event has an invalid value type.
      * @tc.type: FUNC
@@ -310,6 +317,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest004_2
      * @tc.name: HiAppEventJsTest004_2
      * @tc.desc: Error code 401 is returned when the event has an invalid value type.
      * @tc.type: FUNC
@@ -327,6 +335,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest005_1
      * @tc.name: HiAppEventJsTest005_1
      * @tc.desc: Error code 4 is returned when the event has an invalid string length.
      * @tc.type: FUNC
@@ -347,6 +356,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest005_2
      * @tc.name: HiAppEventJsTest005_2
      * @tc.desc: Error code 11101004 is returned when the event has an invalid string length.
      * @tc.type: FUNC
@@ -368,6 +378,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest006_1
      * @tc.name: HiAppEventJsTest006_1
      * @tc.desc: Error code 5 is returned when the event has too many params.
      * @tc.type: FUNC
@@ -383,6 +394,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest006_2
      * @tc.name: HiAppEventJsTest006_2
      * @tc.desc: Error code 11101003 is returned when the event has too many params.
      * @tc.type: FUNC
@@ -399,6 +411,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest007_1
      * @tc.name: HiAppEventJsTest007_1
      * @tc.desc: Error code 6 is returned when there is an array with too many elements.
      * @tc.type: FUNC
@@ -417,6 +430,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest007_2
      * @tc.name: HiAppEventJsTest007_2
      * @tc.desc: Error code 11101006 is returned when there is an array with too many elements.
      * @tc.type: FUNC
@@ -436,6 +450,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest008_1
      * @tc.name: HiAppEventJsTest008_1
      * @tc.desc: Error code 7 is returned when there is an array with inconsistent or illegal parameter types.
      * @tc.type: FUNC
@@ -454,6 +469,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest008_2
      * @tc.name: HiAppEventJsTest008_2
      * @tc.desc: Error code 401 is returned when there is an array with inconsistent or illegal parameter types.
      * @tc.type: FUNC
@@ -473,6 +489,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest009_1
      * @tc.name: HiAppEventJsTest009_1
      * @tc.desc: Error code -1 is returned when the event has invalid event name.
      * @tc.type: FUNC
@@ -484,6 +501,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest009_2
      * @tc.name: HiAppEventJsTest009_2
      * @tc.desc: Error code 11101002 is returned when the event has invalid event name.
      * @tc.type: FUNC
@@ -496,6 +514,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest009_3
      * @tc.name: HiAppEventJsTest009_3
      * @tc.desc: Error code 11101002 is returned when the event has invalid event name.
      * @tc.type: FUNC
@@ -508,6 +527,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest009_4
      * @tc.name: HiAppEventJsTest009_4
      * @tc.desc: Error code 11101002 is returned when the event has invalid event name.
      * @tc.type: FUNC
@@ -520,6 +540,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_1
      * @tc.name: HiAppEventJsTest010_1
      * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -531,6 +552,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_2
      * @tc.name: HiAppEventJsTest010_2
      * @tc.desc: Error code -2 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -542,6 +564,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_3
      * @tc.name: HiAppEventJsTest010_3
      * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -556,6 +579,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_4
      * @tc.name: HiAppEventJsTest010_4
      * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -570,6 +594,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_5
      * @tc.name: HiAppEventJsTest010_5
      * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -584,6 +609,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_6
      * @tc.name: HiAppEventJsTest010_6
      * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -598,6 +624,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest010_7
      * @tc.name: HiAppEventJsTest010_7
      * @tc.desc: Error code 401 is returned when the event has invalid eventName type, eventType type, keyValues type.
      * @tc.type: FUNC
@@ -612,6 +639,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest011_1
      * @tc.name: HiAppEventJsTest011_1
      * @tc.desc: Error code -3 is returned when the event has invalid num of args.
      * @tc.type: FUNC
@@ -631,6 +659,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest011_2
      * @tc.name: HiAppEventJsTest011_2
      * @tc.desc: Error code 401 is returned when the event has invalid num of args.
      * @tc.type: FUNC
@@ -651,6 +680,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest011_3
      * @tc.name: HiAppEventJsTest011_3
      * @tc.desc: Error code 401 is returned when the event has invalid num of args.
      * @tc.type: FUNC
@@ -675,6 +705,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest011_4
      * @tc.name: HiAppEventJsTest011_4
      * @tc.desc: Error code 401 is returned when the event has invalid num of args.
      * @tc.type: FUNC
@@ -699,6 +730,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest011_5
      * @tc.name: HiAppEventJsTest011_5
      * @tc.desc: Error code 401 is returned when the event has invalid num of args.
      * @tc.type: FUNC
@@ -723,6 +755,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest011_6
      * @tc.name: HiAppEventJsTest011_6
      * @tc.desc: Error code 401 is returned when the event has invalid num of args.
      * @tc.type: FUNC
@@ -747,6 +780,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest012_1
      * @tc.name: HiAppEventJsTest012_1
      * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
      * @tc.type: FUNC
@@ -759,6 +793,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest012_2
      * @tc.name: HiAppEventJsTest012_2
      * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
      * @tc.type: FUNC
@@ -771,6 +806,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest012_3
      * @tc.name: HiAppEventJsTest012_3
      * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
      * @tc.type: FUNC
@@ -783,6 +819,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest012_4
      * @tc.name: HiAppEventJsTest012_4
      * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
      * @tc.type: FUNC
@@ -795,6 +832,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsPresetTest001_1
      * @tc.name: HiAppEventJsPresetTest001_1
      * @tc.desc: Test preset events and preset parameters.
      * @tc.type: FUNC
@@ -808,6 +846,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsPresetTest001_2
      * @tc.name: HiAppEventJsPresetTest001_2
      * @tc.desc: Test preset events and preset parameters.
      * @tc.type: FUNC
@@ -821,6 +860,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsPresetTest001_3
      * @tc.name: HiAppEventJsPresetTest001_3
      * @tc.desc: Test preset events and preset parameters.
      * @tc.type: FUNC
@@ -841,6 +881,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventConfigureTest001_1
      * @tc.name: HiAppEventConfigureTest001_1
      * @tc.desc: Error code -99 is returned when the logging function is disabled.
      * @tc.type: FUNC
@@ -857,6 +898,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventConfigureTest001_2
      * @tc.name: HiAppEventConfigureTest001_2
      * @tc.desc: Error code 11100001 is returned when the logging function is disabled.
      * @tc.type: FUNC
@@ -873,6 +915,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventConfigureTest002
      * @tc.name: HiAppEventConfigureTest002
      * @tc.desc: Correctly configure the event logging function.
      * @tc.type: FUNC
@@ -904,6 +947,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventConfigureTest003
      * @tc.name: HiAppEventConfigureTest003
      * @tc.desc: Incorrectly configure the event logging function.
      * @tc.type: FUNC
@@ -964,6 +1008,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventClearTest001
      * @tc.name: HiAppEventClearTest001
      * @tc.desc: clear the local data.
      * @tc.type: FUNC
@@ -981,6 +1026,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest001
      * @tc.name: HiAppEventWatcherTest001
      * @tc.desc: invalid watcher type.
      * @tc.type: FUNC
@@ -1027,6 +1073,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest002
      * @tc.name: HiAppEventWatcherTest002
      * @tc.desc: invalid watcher name.
      * @tc.type: FUNC
@@ -1070,6 +1117,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest003
      * @tc.name: HiAppEventWatcherTest003
      * @tc.desc: invalid watcher trigger condition.
      * @tc.type: FUNC
@@ -1136,6 +1184,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest004
      * @tc.name: HiAppEventWatcherTest004
      * @tc.desc: invalid watcher filters.
      * @tc.type: FUNC
@@ -1201,6 +1250,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest005
      * @tc.name: HiAppEventWatcherTest005
      * @tc.desc: invalid watcher onTrigger.
      * @tc.type: FUNC
@@ -1227,6 +1277,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest006
      * @tc.name: HiAppEventWatcherTest006
      * @tc.desc: add valid watcher.
      * @tc.type: FUNC
@@ -1319,6 +1370,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest007
      * @tc.name: HiAppEventWatcherTest007
      * @tc.desc: watcher.onTrigger row test.
      * @tc.type: FUNC
@@ -1360,6 +1412,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest008
      * @tc.name: HiAppEventWatcherTest008
      * @tc.desc: watcher.onTrigger size test.
      * @tc.type: FUNC
@@ -1404,6 +1457,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest009
      * @tc.name: HiAppEventWatcherTest009
      * @tc.desc: watcher.onTrigger timeout test.
      * @tc.type: FUNC
@@ -1445,6 +1499,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest010
      * @tc.name: HiAppEventWatcherTest010
      * @tc.desc: watcher.holder test.
      * @tc.type: FUNC
@@ -1475,6 +1530,7 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventWatcherTest011
      * @tc.name: HiAppEventWatcherTest011
      * @tc.desc: invalid watcher.holder test.
      * @tc.type: FUNC
@@ -1515,5 +1571,49 @@ describe('HiAppEventJsTest', function () {
 
         hiAppEventV9.removeWatcher(watcher)
         console.info('HiAppEventWatcherTest011 end')
+    });
+
+    /**
+     * @tc.number HiAppEventWatcherTest012
+     * @tc.name: HiAppEventWatcherTest012
+     * @tc.desc: watcher.holder constructor test.
+     * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
+     */
+     it('HiAppEventWatcherTest012', 0, async function (done) {
+        console.info('HiAppEventWatcherTest012 start');
+        let watcher = {
+            name: "watcher",
+        };
+        hiAppEventV9.addWatcher(watcher);
+
+        let params = {
+            "key_int": 100,
+            "key_string": "strValue",
+            "key_bool": true,
+            "key_float": 30949.374,
+            "key_int_arr": [1, 2, 3],
+            "key_string_arr": ["a", "b", "c"],
+            "key_float_arr": [1.1, 2.2, 3.0],
+            "key_bool_arr": [true, false, true]
+        };
+        hiAppEventV9.write({
+            domain: "test_domain",
+            name: "test_name",
+            eventType: hiAppEventV9.EventType.FAULT,
+            params: params
+        }, (err) => {
+            expect(err).assertNull();
+
+            let holder = new hiAppEventV9.AppEventPackageHolder("watcher");
+            let eventPkg = holder.takeNext();
+            expect(eventPkg != null).assertTrue();
+            expect(eventPkg.data.length == 1).assertTrue();
+            let paramJsonStr = JSON.stringify(params);;
+            expect(eventPkg.data[0].includes(paramJsonStr.substr(1, paramJsonStr.length - 2))).assertTrue();
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest012 end');
+            done();
+        });
     });
 });
