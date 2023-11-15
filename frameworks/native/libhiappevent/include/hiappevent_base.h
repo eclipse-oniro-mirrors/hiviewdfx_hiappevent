@@ -214,6 +214,7 @@ private:
     void InitTraceInfo();
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
     void AddTraceInfoToJsonString(std::stringstream& jsonStr) const;
+    void AddParamsInfoToJsonString(std::stringstream& jsonStr) const;
     void AddParamsToJsonString(std::stringstream& jsonStr) const;
 
 private:

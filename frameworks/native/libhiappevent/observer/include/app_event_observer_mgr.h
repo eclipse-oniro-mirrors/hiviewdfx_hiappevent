@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventHandler;
-namespace HiAppEvent{
+namespace HiAppEvent {
 class AppStateCallback;
 }
 using HiAppEvent::AppEventObserver;
