@@ -16,7 +16,7 @@
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_OBSERVER_MGR_H
 
 #include <memory>
-#include <shared_mutex>
+#include <mutex>
 #include <unordered_map>
 
 #include "app_event_observer.h"
@@ -60,7 +60,7 @@ private:
     std::unordered_map<int64_t, ReportConfig> configs_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
-    std::shared_mutex mutex_;
+    std::mutex observerMutex_;
 
 private:
     static std::mutex instanceMutex_;
