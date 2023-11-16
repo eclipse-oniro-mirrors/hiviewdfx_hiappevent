@@ -206,6 +206,14 @@ int64_t UserInfo::GetUserPropertyVersion()
 {
     return userPropertyVersion_;
 }
+
+void UserInfo::ClearData()
+{
+    userIdVersion_ = 0;
+    userPropertyVersion_ = 0;
+    userIds_.clear();
+    userProperties_.clear();
+}
 } // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS

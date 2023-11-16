@@ -22,6 +22,7 @@
 #include "app_event_log_cleaner.h"
 #include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
+#include "hiappevent_userinfo.h"
 #include "hilog/log.h"
 
 namespace OHOS {
@@ -77,6 +78,9 @@ void ClearData(const std::string& dir)
 
     // reset the status of observers
     AppEventObserverMgr::GetInstance().HandleClearUp();
+
+    // clear user ids and properties
+    HiAppEvent::UserInfo::GetInstance().ClearData();
 }
 } // namespace HiAppEventClean
 } // namespace HiviewDFX

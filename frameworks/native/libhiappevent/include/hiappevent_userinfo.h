@@ -38,6 +38,7 @@ public:
     std::vector<HiAppEvent::UserProperty> GetUserProperties();
     int64_t GetUserIdVersion();
     int64_t GetUserPropertyVersion();
+    void ClearData();
 
 private:
     void InitUserIds();
