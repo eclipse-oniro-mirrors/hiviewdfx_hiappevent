@@ -154,7 +154,7 @@ int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> 
         return observerSeq;
     }
 
-    std::unique_lock<std::shared_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     observers_[observerSeq] = observer;
     HiLog::Info(LABEL, "register observer=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
@@ -184,8 +184,8 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
 
 int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq)
 {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    if (observers_.find(observerSeq) == observers_.end()) {
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    if (observers_.find(observerSeq) == observers_.cend()) {
         HiLog::Warn(LABEL, "observer seq=%{public}" PRId64 " is not exist", observerSeq);
         return 0;
     }
@@ -217,15 +217,19 @@ int AppEventObserverMgr::UnregisterObserver(const std::string& observerName)
 
 void AppEventObserverMgr::HandleEvent(std::shared_ptr<AppEventPack> event)
 {
-    HiLog::Info(LABEL, "start to handle event");
-    int64_t eventSeq = StoreEventToDb(event);
-    if (eventSeq <= 0) {
-        HiLog::Warn(LABEL, "failed to add event to db");
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    if (observers_.empty()) {
         return;
     }
 
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+    HiLog::Info(LABEL, "start to handle event");
+    int64_t eventSeq = StoreEventToDb(event);
+    if (eventSeq <= 0) {
+        HiLog::Warn(LABEL, "failed to store event to db");
+        return;
+    }
+
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         auto observer = it->second;
         if (!observer->VerifyEvent(event)) {
             continue;
@@ -251,8 +255,8 @@ void AppEventObserverMgr::HandleTimeout()
         return;
     }
     handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ProcessTimeout();
     }
 }
@@ -260,8 +264,8 @@ void AppEventObserverMgr::HandleTimeout()
 void AppEventObserverMgr::HandleBackground()
 {
     HiLog::Info(LABEL, "start to handle background");
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ProcessBackground();
     }
 }
@@ -269,16 +273,16 @@ void AppEventObserverMgr::HandleBackground()
 void AppEventObserverMgr::HandleClearUp()
 {
     HiLog::Info(LABEL, "start to handle clear up");
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ResetCurrCondition();
     }
 }
 
 int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig& config)
 {
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    if (observers_.find(observerSeq) == observers_.end()) {
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    if (observers_.find(observerSeq) == observers_.cend()) {
         HiLog::Warn(LABEL, "failed to set config, seq=%{public}" PRId64, observerSeq);
         return -1;
     }
@@ -288,8 +292,8 @@ int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig
 
 int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& config)
 {
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    if (observers_.find(observerSeq) == observers_.end()) {
+    std::lock_guard<std::mutex> lock(observerMutex_);
+    if (observers_.find(observerSeq) == observers_.cend()) {
         HiLog::Warn(LABEL, "failed to get config, seq=%{public}" PRId64, observerSeq);
         return -1;
     }
