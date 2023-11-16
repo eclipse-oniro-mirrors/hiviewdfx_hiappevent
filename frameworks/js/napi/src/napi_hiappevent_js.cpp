@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,8 +48,10 @@ static napi_value Write(napi_env env, napi_callback_info info)
     asyncContext->callback = builder.GetCallback();
 
     // 2. if the build is successful, the event verification is performed
-    if (asyncContext->result == 0) {
-        asyncContext->result = VerifyAppEvent(asyncContext->appEventPack);
+    if (asyncContext->result >= 0) {
+        if (auto ret = VerifyAppEvent(asyncContext->appEventPack); ret != 0) {
+            asyncContext->result = ret;
+        }
     }
 
     // 3. set promise object if callback is null
