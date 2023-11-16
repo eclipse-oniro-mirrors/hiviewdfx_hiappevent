@@ -137,6 +137,9 @@ public:
     // used to identify the observer with the same config
     int64_t GenerateHashCode();
 
+    // userd to reset the current status when condition is met or data is cleared.
+    void ResetCurrCondition();
+
 protected:
     virtual void OnTrigger(const TriggerCondition& triggerCond);
 
@@ -147,7 +150,6 @@ private:
     bool MeetTimeoutCondition();
     bool MeetStartupCondition();
     bool MeetBackgroundCondition();
-    void ResetCurrCondition();
 
 protected:
     std::vector<AppEventFilter> filters_;

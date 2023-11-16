@@ -266,6 +266,15 @@ void AppEventObserverMgr::HandleBackground()
     }
 }
 
+void AppEventObserverMgr::HandleClearUp()
+{
+    HiLog::Info(LABEL, "start to handle clear up");
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+        it->second->ResetCurrCondition();
+    }
+}
+
 int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig& config)
 {
     std::shared_lock<std::shared_mutex> lock(mutex_);

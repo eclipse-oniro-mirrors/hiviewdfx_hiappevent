@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 
 #include "app_event_db_cleaner.h"
 #include "app_event_log_cleaner.h"
+#include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
@@ -73,6 +74,9 @@ void ClearData(const std::string& dir)
     for (auto& cleaner : cleaners) { // clear the db data first
         cleaner->ClearData();
     }
+
+    // reset the status of observers
+    AppEventObserverMgr::GetInstance().HandleClearUp();
 }
 } // namespace HiAppEventClean
 } // namespace HiviewDFX

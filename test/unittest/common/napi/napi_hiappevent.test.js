@@ -1616,4 +1616,51 @@ describe('HiAppEventJsTest', function () {
             done();
         });
     });
+
+    /**
+     * @tc.number HiAppEventWatcherTest013
+     * @tc.name: HiAppEventWatcherTest013
+     * @tc.desc: watcher.onTrigger test after clear up.
+     * @tc.type: FUNC
+     * @tc.require: issueI8H07G
+     */
+     it('HiAppEventWatcherTest013', 0, async function (done) {
+        console.info('HiAppEventWatcherTest013 start');
+        let testRow = 5;
+        let watcher = {
+            name: "watcher",
+            triggerCondition: {
+                row: testRow
+            },
+            onTrigger: function (curRow, curSize, holder) {
+                console.info('HiAppEventWatcherTest013.onTrigger start');
+                let eventPkg = holder.takeNext();
+                expect(eventPkg.data.length).assertEqual(testRow)
+                console.info('HiAppEventWatcherTest013.onTrigger end');
+            }
+        };
+        hiAppEventV9.addWatcher(watcher);
+
+        setTimeout(() => {
+            for (var i = 1; i <= 3; i++) {
+                simpleWriteV9Test();
+            }
+        }, 1000);
+
+        setTimeout(() => {
+            hiAppEventV9.clearData();
+        }, 2000);
+
+        setTimeout(() => {
+            for (var i = 1; i <= testRow; i++) {
+                simpleWriteV9Test();
+            }
+        }, 3000);
+
+        setTimeout(() => {
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest013 end');
+            done();
+        }, 4000);
+    });
 });
