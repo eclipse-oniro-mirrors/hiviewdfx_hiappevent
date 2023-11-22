@@ -14,6 +14,8 @@
  */
 #include "napi_util.h"
 
+#include <unordered_map>
+
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
@@ -22,6 +24,11 @@ namespace HiviewDFX {
 namespace NapiUtil {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NapiUtil" };
+const std::string DOMAIN_PROPERTY = "domain";
+const std::string NAME_PROPERTY = "name";
+const std::string EVENT_TYPE_PROPERTY = "eventType";
+const std::string PARAM_PROPERTY = "params";
+const std::string EVENT_INFOS_PROPERTY = "appEventInfos";
 }
 
 bool IsNull(const napi_env env, const napi_value value)
@@ -421,6 +428,16 @@ napi_value CreateArray(const napi_env env)
     return arr;
 }
 
+napi_value CreateDouble(const napi_env env, double dValue)
+{
+    napi_value doubleValue = nullptr;
+    if (napi_create_double(env, dValue, &doubleValue) != napi_ok) {
+        HiLog::Error(LABEL, "failed to create double");
+        return nullptr;
+    }
+    return doubleValue;
+}
+
 void SetElement(const napi_env env, const napi_value obj, uint32_t index, const napi_value value)
 {
     if (napi_set_element(env, obj, index, value) != napi_ok) {
@@ -510,6 +527,91 @@ std::string CreateErrMsg(const std::string& name, const napi_valuetype type)
             break;
     }
     return CreateErrMsg(name, typeStr);
+}
+
+napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValue)
+{
+    if (jsonValue.isBool()) {
+        return CreateBoolean(env, jsonValue.asBool());
+    }
+    if (jsonValue.isInt()) {
+        return CreateInt32(env, jsonValue.asInt());
+    }
+    if (jsonValue.isInt64() && jsonValue.type() != Json::ValueType::uintValue) {
+        return CreateInt64(env, jsonValue.asInt64());
+    }
+    if (jsonValue.isDouble()) {
+        return CreateDouble(env, jsonValue.asDouble());
+    }
+    if (jsonValue.isString()) {
+        return CreateString(env, jsonValue.asString());
+    }
+    return nullptr;
+}
+
+napi_value CreateValueByJson(napi_env env, const Json::Value& jsonValue)
+{
+    if (jsonValue.isArray()) {
+        napi_value array = CreateArray(env);
+        for (size_t i = 0; i < jsonValue.size(); ++i) {
+            SetElement(env, array, i, CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
+        }
+        return array;
+    }
+    if (jsonValue.isObject()) {
+        napi_value obj = CreateObject(env);
+        auto eventNameList = jsonValue.getMemberNames();
+        for (auto it = eventNameList.cbegin(); it != eventNameList.cend(); ++it) {
+            auto propertyName = *it;
+            SetNamedProperty(env, obj, propertyName, CreateValueByJson(env, jsonValue[propertyName]));
+        }
+        return obj;
+    }
+    return CreateBaseValueByJson(env, jsonValue);
+}
+
+napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr)
+{
+    Json::Value jsonValue;
+    Json::Reader reader(Json::Features::strictMode());
+    if (!reader.parse(jsonStr, jsonValue)) {
+        HiLog::Error(LABEL, "parse event detail info failed, please check the style of json");
+        return nullptr;
+    }
+    return CreateValueByJson(env, jsonValue);
+}
+
+napi_value CreateEventInfo(napi_env env, std::shared_ptr<AppEventPack> event)
+{
+    napi_value obj = CreateObject(env);
+    SetNamedProperty(env, obj, DOMAIN_PROPERTY, CreateString(env, event->GetDomain()));
+    SetNamedProperty(env, obj, NAME_PROPERTY, CreateString(env, event->GetName()));
+    SetNamedProperty(env, obj, EVENT_TYPE_PROPERTY, CreateInt32(env, event->GetType()));
+    SetNamedProperty(env, obj, PARAM_PROPERTY, CreateValueByJsonStr(env, event->GetParamStr()));
+    return obj;
+}
+
+napi_value CreateEventGroups(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events)
+{
+    std::unordered_map<std::string, std::vector<std::shared_ptr<AppEventPack>>> eventMap;
+    for (auto event : events) {
+        eventMap[event->GetName()].emplace_back(event);
+    }
+
+    napi_value eventGroups = CreateArray(env);
+    size_t index = 0;
+    for (auto it = eventMap.begin(); it != eventMap.end(); ++it) {
+        napi_value eventInfos = CreateArray(env);
+        for (size_t i = 0; i < it->second.size(); ++i) {
+            SetElement(env, eventInfos, i, CreateEventInfo(env, it->second[i]));
+        }
+        napi_value obj = CreateObject(env);
+        SetNamedProperty(env, obj, NAME_PROPERTY, CreateString(env, it->first));
+        SetNamedProperty(env, obj, EVENT_INFOS_PROPERTY, eventInfos);
+        SetElement(env, eventGroups, index, obj);
+        ++index;
+    }
+    return eventGroups;
 }
 } // namespace NapiUtil
 } // namespace HiviewDFX

@@ -1682,4 +1682,115 @@ describe('HiAppEventJsTest', function () {
             done();
         }, 4000);
     });
+
+    function simpleReceive(domain, eventArray) {
+        console.info('HiAppEventWatcherTest.onReceive start domain=' + domain + ', event size=' +
+            eventArray.length);
+        for (var key in eventArray) {
+            console.info('HiAppEventWatcherTest event_name=' + eventArray[key]['name'] + ', size=' +
+                eventArray[key]['appEventInfos'].length);
+        }
+        console.info('HiAppEventWatcherTest.onReceive end');
+    }
+
+    /**
+     * @tc.number HiAppEventWatcherTest014
+     * @tc.name: HiAppEventWatcherTest014
+     * @tc.desc: watcher.onReceive test.
+     * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
+     */
+    it('HiAppEventWatcherTest014', 0, async function (done) {
+        console.info('HiAppEventWatcherTest014 start');
+        let watcher = {
+            name: "watcheros1",
+            appEventFilters: [
+                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+            ],
+            onReceive: simpleReceive
+        };
+        let result = hiAppEventV9.addWatcher(watcher);
+        expect(result != null).assertTrue();
+
+        setTimeout(() => {
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest014 end');
+            done();
+        }, 1000);
+    });
+
+    /**
+     * @tc.number HiAppEventWatcherTest015
+     * @tc.name: HiAppEventWatcherTest015
+     * @tc.desc: watcher.onReceive test.
+     * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
+     */
+    it('HiAppEventWatcherTest015', 0, async function (done) {
+        console.info('HiAppEventWatcherTest015 start');
+        let watcher = {
+            name: "watcher",
+            appEventFilters: [
+                {domain: "test_domain", names: ["test_name"]},
+            ],
+            onReceive: simpleReceive
+        };
+        let result = hiAppEventV9.addWatcher(watcher);
+        expect(result != null).assertTrue();
+
+        simpleWriteV9Test();
+
+        setTimeout(() => {
+            hiAppEventV9.removeWatcher(watcher);
+            console.info('HiAppEventWatcherTest015 end');
+            done();
+        }, 1000);
+    });
+
+    /**
+     * @tc.number HiAppEventWatcherTest016
+     * @tc.name: HiAppEventWatcherTest016
+     * @tc.desc: watcher.onReceive test.
+     * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
+     */
+    it('HiAppEventWatcherTest016', 0, async function (done) {
+        console.info('HiAppEventWatcherTest016 start');
+        let watcher1 = {
+            name: "watcheros1",
+            appEventFilters: [
+                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+            ],
+            onReceive: simpleReceive
+        };
+        let result = hiAppEventV9.addWatcher(watcher1);
+        expect(result != null).assertTrue();
+
+        let watcher2 = {
+            name: "watcheros2",
+            appEventFilters: [
+                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+            ],
+            onReceive: simpleReceive,
+            onTrigger: simpleTrigger
+        };
+        result = hiAppEventV9.addWatcher(watcher2);
+
+        let watcher3 = {
+            name: "watcheros3",
+            appEventFilters: [
+                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+            ],
+            onTrigger: simpleTrigger
+        };
+        result = hiAppEventV9.addWatcher(watcher3);
+
+        setTimeout(() => {
+            hiAppEventV9.removeWatcher(watcher1);
+            hiAppEventV9.removeWatcher(watcher2);
+            hiAppEventV9.removeWatcher(watcher3);
+            console.info('HiAppEventWatcherTest016 end');
+            done();
+        }, 1000);
+    });
 });

@@ -282,6 +282,19 @@ int64_t AppEventObserver::GenerateHashCode()
         ? 0 // default hash code for watcher
         : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
 }
+
+bool AppEventObserver::HasOsDomain()
+{
+    if (filters_.empty()) {
+        return false;
+    }
+    for (const auto& filter : filters_) {
+        if (filter.domain == "OS") {
+            return true;
+        }
+    }
+    return false;
+}
 } // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS

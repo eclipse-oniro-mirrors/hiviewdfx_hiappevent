@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,22 @@ struct OnTriggerContext {
     int size;
 };
 
+struct OnReceiveContext {
+    OnReceiveContext();
+    ~OnReceiveContext();
+    napi_env env;
+    napi_ref onReceive;
+    std::string domain;
+    std::vector<std::shared_ptr<AppEventPack>> events;
+};
+
+struct WatcherContext {
+    WatcherContext();
+    ~WatcherContext();
+    OnTriggerContext* triggerContext;
+    OnReceiveContext* receiveContext;
+};
+
 class NapiAppEventWatcher : public AppEventWatcher {
 public:
     NapiAppEventWatcher(
@@ -40,12 +56,15 @@ public:
     ~NapiAppEventWatcher();
     void InitTrigger(const napi_env env, const napi_value trigger);
     void InitHolder(const napi_env env, const napi_value holder);
+    void InitReceiver(const napi_env env, const napi_value receiver);
+    void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) override;
+    bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event) override;
 
 protected:
     void OnTrigger(const TriggerCondition& triggerCond) override;
 
 private:
-    OnTriggerContext* context_;
+    WatcherContext* context_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

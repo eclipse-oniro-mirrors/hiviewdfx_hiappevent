@@ -30,9 +30,10 @@
         "hilog",
         "ipc",
         "napi",
-        "relational_store"
+        "relational_store",
+        "storage_service"
       ],
-      "third_party": []
+      "third_party": ["jsoncpp"]
     },
     "build": {
       "sub_component": [

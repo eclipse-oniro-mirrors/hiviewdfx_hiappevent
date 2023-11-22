@@ -24,6 +24,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventHandler;
+class OsEventListener;
 namespace HiAppEvent {
 class AppStateCallback;
 }
@@ -41,7 +42,7 @@ public:
     int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config = {});
     int UnregisterObserver(int64_t observerSeq);
     int UnregisterObserver(const std::string& observerName);
-    void HandleEvent(std::shared_ptr<AppEventPack> event);
+    void HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
     void HandleTimeout();
     void HandleBackground();
     void HandleClearUp();
@@ -54,6 +55,9 @@ private:
     void DestroyEventHandler();
     void RegisterAppStateCallback();
     void UnregisterAppStateCallback();
+    int64_t InitObserver(std::shared_ptr<AppEventObserver> observer);
+    bool InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag);
+    void UnregisterOsEventListener();
 
 private:
     std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
@@ -61,6 +65,7 @@ private:
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
     std::mutex observerMutex_;
+    std::shared_ptr<OsEventListener> listener_;
 
 private:
     static std::mutex instanceMutex_;

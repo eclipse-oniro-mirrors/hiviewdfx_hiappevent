@@ -22,6 +22,7 @@
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 #include "module_loader.h"
+#include "os_event_listener.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -31,9 +32,16 @@ namespace {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_ObserverMgr" };
 constexpr int TIMEOUT_INTERVAL = 1000; // 1s
 
-int StoreEventToDb(std::shared_ptr<AppEventPack> event)
+void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
-    return AppEventStore::GetInstance().InsertEvent(event);
+    for (auto& event : events) {
+        int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
+        if (eventSeq <= 0) {
+            HiLog::Warn(LABEL, "failed to store event to db");
+            continue;
+        }
+        event->SetSeq(eventSeq);
+    }
 }
 
 int64_t StoreEventMappingToDb(int64_t eventSeq, int64_t observerSeq)
@@ -66,20 +74,28 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
     return observerSeq;
 }
 
-int64_t InitObserver(std::shared_ptr<AppEventObserver> observer)
+void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& events,
+    std::shared_ptr<AppEventObserver> observer)
 {
-    std::string observerName = observer->GetName();
-    int64_t observerHashCode = observer->GenerateHashCode();
-    int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
-    if (observerSeq <= 0) {
-        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
-        if (observerSeq <= 0) {
-            HiLog::Error(LABEL, "failed to insert observer=%{public}s to db", observerName.c_str());
-            return -1;
+    std::vector<std::shared_ptr<AppEventPack>> realTimeEvents;
+    for (const auto& event : events) {
+        if (!observer->VerifyEvent(event)) {
+            continue;
+        }
+        if (observer->IsRealTimeEvent(event)) {
+            realTimeEvents.emplace_back(event);
+        } else {
+            int64_t observerSeq = observer->GetSeq();
+            if (StoreEventMappingToDb(event->GetSeq(), observerSeq) < 0) {
+                HiLog::Warn(LABEL, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
+                return;
+            }
+            observer->ProcessEvent(event);
         }
     }
-    observer->SetSeq(observerSeq);
-    return observerSeq;
+    if (!realTimeEvents.empty()) {
+        observer->OnEvents(realTimeEvents);
+    }
 }
 }
 std::mutex AppEventObserverMgr::instanceMutex_;
@@ -194,6 +210,7 @@ int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq)
         return ret;
     }
     observers_.erase(observerSeq);
+    UnregisterOsEventListener();
     HiLog::Info(LABEL, "unregister observer seq=%{public}" PRId64 " successfully", observerSeq);
     return 0;
 }
@@ -215,36 +232,39 @@ int AppEventObserverMgr::UnregisterObserver(const std::string& observerName)
     return ret;
 }
 
-void AppEventObserverMgr::HandleEvent(std::shared_ptr<AppEventPack> event)
+int64_t AppEventObserverMgr::InitObserver(std::shared_ptr<AppEventObserver> observer)
+{
+    std::string observerName = observer->GetName();
+    int64_t observerHashCode = observer->GenerateHashCode();
+    int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
+    bool sendFlag = false;
+    if (observerSeq <= 0) {
+        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
+        if (observerSeq <= 0) {
+            HiLog::Error(LABEL, "failed to insert observer=%{public}s to db", observerName.c_str());
+            return -1;
+        }
+    } else {
+        sendFlag = true;
+    }
+    observer->SetSeq(observerSeq);
+
+    if (!InitObserverFromListener(observer, sendFlag)) {
+        return -1;
+    }
+    return observerSeq;
+}
+
+void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.empty()) {
         return;
     }
-
-    HiLog::Info(LABEL, "start to handle event");
-    int64_t eventSeq = StoreEventToDb(event);
-    if (eventSeq <= 0) {
-        HiLog::Warn(LABEL, "failed to store event to db");
-        return;
-    }
-
+    HiLog::Info(LABEL, "start to handle events");
+    StoreEventsToDb(events);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
-        auto observer = it->second;
-        if (!observer->VerifyEvent(event)) {
-            continue;
-        }
-
-        if (observer->IsRealTimeEvent(event)) {
-            observer->OnEvents({event});
-        } else {
-            int64_t observerSeq = observer->GetSeq();
-            if (StoreEventMappingToDb(eventSeq, observerSeq) < 0) {
-                HiLog::Warn(LABEL, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
-                return;
-            }
-            observer->ProcessEvent(event);
-        }
+        SendEventsToObserver(events, it->second);
     }
 }
 
@@ -299,6 +319,38 @@ int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& conf
     }
     config = observers_[observerSeq]->GetReportConfig();
     return 0;
+}
+
+bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag)
+{
+    if (!observer->HasOsDomain()) {
+        return true;
+    }
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    if (listener_ == nullptr) {
+        listener_ = std::make_shared<OsEventListener>();
+        if (!listener_->StartListening()) {
+            return false;
+        }
+    }
+    if (sendFlag) {
+        listener_->GetEvents(events);
+        SendEventsToObserver(events, observer);
+    }
+    return true;
+}
+
+void AppEventObserverMgr::UnregisterOsEventListener()
+{
+    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+        if (it->second->HasOsDomain()) {
+            return;
+        }
+    }
+    if (listener_ != nullptr) {
+        listener_->RemoveOsEventDir();
+        listener_ = nullptr;
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

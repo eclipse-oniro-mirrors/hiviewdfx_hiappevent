@@ -91,7 +91,9 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
         CheckStorageSpace(dirPath);
         std::string filePath = FileUtil::GetFilePathByDir(dirPath, GetStorageFileName());
         if (WriteEventToFile(filePath, event)) {
-            AppEventObserverMgr::GetInstance().HandleEvent(appEventPack);
+            std::vector<std::shared_ptr<AppEventPack>> events;
+            events.emplace_back(appEventPack);
+            AppEventObserverMgr::GetInstance().HandleEvents(events);
             return;
         }
         HiLog::Error(LABEL, "failed to write event to log file, errno=%{public}d.", errno);

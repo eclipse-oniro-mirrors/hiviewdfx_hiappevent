@@ -182,7 +182,7 @@ bool IsValidDomain(const std::string& eventDomain)
     if (eventDomain.empty() || eventDomain.length() > MAX_LEN_OF_DOMAIN) {
         return false;
     }
-    if (!std::regex_match(eventDomain, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
+    if (eventDomain != "OS" && !std::regex_match(eventDomain, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
         return false;
     }
     return true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,11 +20,13 @@
 #include <string>
 #include <unordered_set>
 
+#include "json/json.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+class AppEventPack;
 namespace NapiUtil {
 bool IsNull(const napi_env env, const napi_value value);
 bool IsBoolean(const napi_env env, const napi_value value);
@@ -44,8 +46,9 @@ void GetInt32s(const napi_env env, const napi_value arr, std::vector<int32_t>& i
 double GetDouble(const napi_env env, const napi_value value);
 void GetDoubles(const napi_env env, const napi_value arr, std::vector<double>& doubles);
 std::string GetString(const napi_env env, const napi_value value, size_t bufsize = 100); // 100 means default size
-void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs, size_t bufsize);
-void GetStringsToSet(const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs, size_t bufsize);
+void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs, size_t bufsize = 100);
+void GetStringsToSet(
+    const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs, size_t bufsize = 100);
 napi_valuetype GetType(const napi_env env, const napi_value value);
 napi_valuetype GetArrayType(const napi_env env, const napi_value value);
 uint32_t GetArrayLength(const napi_env env, const napi_value arr);
@@ -66,6 +69,7 @@ napi_value CreateStrings(const napi_env env, const std::vector<std::string>& str
 napi_value CreateObject(const napi_env env);
 napi_value CreateObject(const napi_env env, const std::string& key, const napi_value value);
 napi_value CreateArray(const napi_env env);
+napi_value CreateDouble(const napi_env env, double dValue);
 
 void SetElement(const napi_env env, const napi_value obj, uint32_t index, const napi_value value);
 void SetNamedProperty(const napi_env env, const napi_value obj, const std::string& key, const napi_value value);
@@ -76,6 +80,12 @@ napi_value CreateError(napi_env env, int code, const std::string& msg);
 std::string CreateErrMsg(const std::string& name);
 std::string CreateErrMsg(const std::string& name, const std::string& type);
 std::string CreateErrMsg(const std::string& name, const napi_valuetype type);
+
+napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValue);
+napi_value CreateValueByJson(napi_env env, const Json::Value& jsonValue);
+napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr);
+napi_value CreateEventInfo(napi_env env, std::shared_ptr<AppEventPack> event);
+napi_value CreateEventGroups(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events);
 } // namespace NapiUtil
 } // namespace HiviewDFX
 } // namespace OHOS

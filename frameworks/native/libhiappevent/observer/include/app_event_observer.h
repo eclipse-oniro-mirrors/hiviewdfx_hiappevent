@@ -124,11 +124,12 @@ public:
     virtual ~AppEventObserver() = default;
     virtual void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) = 0;
     virtual bool VerifyEvent(std::shared_ptr<AppEventPack> event);
-    bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event);
+    virtual bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event);
     void ProcessEvent(std::shared_ptr<AppEventPack> event);
     void ProcessTimeout();
     void ProcessStartup();
     void ProcessBackground();
+    bool HasOsDomain();
 
     std::string GetName();
     int64_t GetSeq();
