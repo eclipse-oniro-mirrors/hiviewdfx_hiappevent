@@ -281,7 +281,6 @@ void AppEventObserverMgr::HandleClearUp()
 
 int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig& config)
 {
-    std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.find(observerSeq) == observers_.cend()) {
         HiLog::Warn(LABEL, "failed to set config, seq=%{public}" PRId64, observerSeq);
         return -1;
@@ -292,7 +291,6 @@ int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig
 
 int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& config)
 {
-    std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.find(observerSeq) == observers_.cend()) {
         HiLog::Warn(LABEL, "failed to get config, seq=%{public}" PRId64, observerSeq);
         return -1;
