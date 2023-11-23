@@ -70,17 +70,18 @@ bool ReleaseSomeStorageSpace(const std::string& dir, uint64_t maxSize)
 
 void ClearData(const std::string& dir)
 {
-    std::vector<std::shared_ptr<AppEventCleaner>> cleaners;
-    CreateCleaners(dir, cleaners);
-    for (auto& cleaner : cleaners) { // clear the db data first
-        cleaner->ClearData();
-    }
-
     // reset the status of observers
     AppEventObserverMgr::GetInstance().HandleClearUp();
 
     // clear user ids and properties
     HiAppEvent::UserInfo::GetInstance().ClearData();
+
+    // delete data files
+    std::vector<std::shared_ptr<AppEventCleaner>> cleaners;
+    CreateCleaners(dir, cleaners);
+    for (auto& cleaner : cleaners) { // clear the db data first
+        cleaner->ClearData();
+    }
 }
 } // namespace HiAppEventClean
 } // namespace HiviewDFX
