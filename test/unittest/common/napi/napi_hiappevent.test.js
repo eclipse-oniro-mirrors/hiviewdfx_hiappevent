@@ -851,6 +851,27 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest014
+     * @tc.name: HiAppEventJsTest014
+     * @tc.desc: The number of event params exceeds 32 and invalid params exist.
+     * @tc.type: FUNC
+     * @tc.require: issueI8GWHC
+     */
+     it('HiAppEventJsTest014', 0, async function (done) {
+        console.info('HiAppEventJsTest014 start');
+        let params = {};
+        params["123xxx"] = "value_invalid"; // invalid param name
+        params["xxx_"] = "value_invalid"; // invalid param name
+        for (var i = 1; i <= 33; i++) {
+            params["key" + i] = "value" + i;
+        }
+        params['a'.repeat(17)] = 'value_invalid'; // invalid param name
+        params["key34"] = "value34";
+        let expectErr = createError(11101003, "Invalid number of event parameters.");
+        writeParamsV9Test(params, expectErr, done);
+    });
+
+    /**
      * @tc.number HiAppEventJsPresetTest001_1
      * @tc.name: HiAppEventJsPresetTest001_1
      * @tc.desc: Test preset events and preset parameters.

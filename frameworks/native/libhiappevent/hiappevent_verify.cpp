@@ -226,11 +226,6 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
 
     int verifyRes = HIAPPEVENT_VERIFY_SUCCESSFUL;
     std::list<AppEventParam>& baseParams = appEventPack->baseParams_;
-    if (!CheckParamsNum(baseParams)) {
-        HiLog::Warn(LABEL, "params that exceed 32 are discarded because the number of params cannot exceed 32.");
-        verifyRes = ERROR_INVALID_PARAM_NUM;
-    }
-
     for (auto it = baseParams.begin(); it != baseParams.end();) {
         if (!CheckParamName(it->name)) {
             HiLog::Warn(LABEL, "param=%{public}s is discarded because the paramName is invalid.", it->name.c_str());
@@ -262,6 +257,11 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
             continue;
         }
         it++;
+    }
+
+    if (!CheckParamsNum(baseParams)) {
+        HiLog::Warn(LABEL, "params that exceed 32 are discarded because the number of params cannot exceed 32.");
+        verifyRes = ERROR_INVALID_PARAM_NUM;
     }
 
     return verifyRes;

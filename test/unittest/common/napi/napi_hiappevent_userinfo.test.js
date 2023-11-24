@@ -46,16 +46,8 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest afterEach called')
     })
 
-    function createError(code, message) {
-        return { code: code.toString(), message: message };
-    }
-
     function createError2(name, type) {
         return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
-    }
-
-    function createError3(name) {
-        return { code: "401", message: "Parameter error. The " + name + " parameter is mandatory." };
     }
 
     function createError4(name) {
@@ -80,7 +72,7 @@ describe('HiAppEventJsTest', function () {
     const INVALID_USER_PROP_NAMES = [-1, '', null, undefined, '%test', `testUserPropName` + 'a'.repeat(256)];
     const INVALID_USER_PROP_VALUES = [-1, '', null, undefined, `testUserPropValue` + 'a'.repeat(1024)];
     const CLEAR_USER_INFO_VALUES = ['', null, undefined];
-    
+
     /**
      * @tc.number: HiAppEventUserIdsTest001_1
      * @tc.name: HiAppEventUserIdsTest
@@ -326,7 +318,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         for (let userPropertyVal of INVALID_USER_PROP_VALUES) {
-            let expectErr = typeof userPropertyVal == 'string' ? createError4("value") 
+            let expectErr = typeof userPropertyVal == 'string' ? createError4("value")
             : createError2("user property", "string");
             try {
                 console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${userPropertyVal}`);
@@ -412,7 +404,7 @@ describe('HiAppEventJsTest', function () {
                 hiAppEventV9.setUserProperty(USER_PROP_NAME, USER_PROP_VALUE);
                 console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${userPropertyVal}`);
                 hiAppEventV9.setUserProperty(USER_PROP_NAME, userPropertyVal);
-    
+
                 console.info(`getUserProperty name: ${USER_PROP_NAME}`);
                 let res = hiAppEventV9.getUserProperty(USER_PROP_NAME);
                 expect(res == "").assertTrue();
