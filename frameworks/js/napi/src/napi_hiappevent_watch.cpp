@@ -37,7 +37,9 @@ const std::string COND_PROPS[] = { "row", "size", "timeOut" };
 const std::string FILTERS_PROPERTY = "appEventFilters";
 const std::string FILTERS_DOAMIN_PROP = "domain";
 const std::string FILTERS_TYPES_PROP = "eventTypes";
+const std::string FILTERS_NAMES_PROP = "names";
 const std::string TRIGGER_PROPERTY = "onTrigger";
+const std::string RECEIVE_PROPERTY = "onReceive";
 constexpr int BIT_MASK = 1;
 constexpr unsigned int BIT_ALL_TYPES = 0xff;
 
@@ -96,16 +98,17 @@ bool IsValidFilter(const napi_env env, const napi_value filter)
         return false;
     }
     napi_value types = NapiUtil::GetProperty(env, filter, FILTERS_TYPES_PROP);
-    if (types == nullptr) {
-        return true;
-    }
-    if (!NapiUtil::IsArrayType(env, types, napi_number)) {
+    if (types != nullptr && !NapiUtil::IsArrayType(env, types, napi_number)) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_TYPES_PROP, "EventType[]"));
+        return false;
+    }
+    napi_value names = NapiUtil::GetProperty(env, filter, FILTERS_NAMES_PROP);
+    if (names != nullptr && !NapiUtil::IsArrayType(env, names, napi_string)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_NAMES_PROP, "string[]"));
         return false;
     }
     return true;
 }
-
 
 bool IsValidFilters(const napi_env env, const napi_value filters)
 {
@@ -139,6 +142,18 @@ bool IsValidTrigger(const napi_env env, const napi_value trigger)
     return true;
 }
 
+bool IsValidReceive(const napi_env env, const napi_value receive)
+{
+    if (receive == nullptr) {
+        return true;
+    }
+    if (!NapiUtil::IsFunction(env, receive)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(RECEIVE_PROPERTY, "function"));
+        return false;
+    }
+    return true;
+}
+
 bool IsValidWatcher(const napi_env env, const napi_value watcher)
 {
     if (!NapiUtil::IsObject(env, watcher)) {
@@ -148,7 +163,8 @@ bool IsValidWatcher(const napi_env env, const napi_value watcher)
     return IsValidName(env, NapiUtil::GetProperty(env, watcher, NAME_PROPERTY))
         && IsValidCondition(env, NapiUtil::GetProperty(env, watcher, COND_PROPERTY))
         && IsValidFilters(env, NapiUtil::GetProperty(env, watcher, FILTERS_PROPERTY))
-        && IsValidTrigger(env, NapiUtil::GetProperty(env, watcher, TRIGGER_PROPERTY));
+        && IsValidTrigger(env, NapiUtil::GetProperty(env, watcher, TRIGGER_PROPERTY))
+        && IsValidReceive(env, NapiUtil::GetProperty(env, watcher, RECEIVE_PROPERTY));
 }
 
 int GetConditionValue(const napi_env env, const napi_value cond, const std::string& name)
@@ -211,9 +227,14 @@ void GetFilters(const napi_env env, const napi_value watcher, std::vector<AppEve
     for (size_t i = 0; i < len; i++) {
         napi_value filterValue = NapiUtil::GetElement(env, filtersValue, i);
         std::string domain = NapiUtil::GetString(env, NapiUtil::GetProperty(env, filterValue, FILTERS_DOAMIN_PROP));
+        napi_value namesValue = NapiUtil::GetProperty(env, filterValue, FILTERS_NAMES_PROP);
+        std::unordered_set<std::string> names;
+        if (namesValue != nullptr) {
+            NapiUtil::GetStringsToSet(env, namesValue, names);
+        }
         napi_value typesValue = NapiUtil::GetProperty(env, filterValue, FILTERS_TYPES_PROP);
         if (typesValue == nullptr) {
-            filters.emplace_back(AppEventFilter(domain, BIT_ALL_TYPES));
+            filters.emplace_back(AppEventFilter(domain, names, BIT_ALL_TYPES));
             continue;
         }
         std::vector<int> types;
@@ -228,7 +249,7 @@ void GetFilters(const napi_env env, const napi_value watcher, std::vector<AppEve
             filterType |= (BIT_MASK << type);
         }
         filterType = filterType > 0 ? filterType : BIT_ALL_TYPES;
-        filters.emplace_back(AppEventFilter(domain, filterType));
+        filters.emplace_back(AppEventFilter(domain, names, filterType));
     }
 }
 
@@ -262,14 +283,26 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher)
     TriggerCondition cond = GetCondition(env, watcher);
     auto watcherPtr = std::make_shared<NapiAppEventWatcher>(name, filters, cond);
 
-    // 2. add the watcher to Manager
+    // 2. set trigger if any
+    napi_value trigger = NapiUtil::GetProperty(env, watcher, TRIGGER_PROPERTY);
+    if (trigger != nullptr) {
+        watcherPtr->InitTrigger(env, trigger);
+    }
+
+    // 3. set receive if any
+    napi_value receiver = NapiUtil::GetProperty(env, watcher, RECEIVE_PROPERTY);
+    if (receiver != nullptr) {
+        watcherPtr->InitReceiver(env, receiver);
+    }
+
+    // 4. add the watcher to Manager
     int64_t observerSeq = AppEventObserverMgr::GetInstance().RegisterObserver(watcherPtr);
     if (observerSeq <= 0) {
         HiLog::Error(LABEL, "invalid observer sequence");
         return NapiUtil::CreateNull(env);
     }
 
-    // 3. create holder and add holder to the watcher
+    // 5. create holder and add holder to the watcher
     constexpr size_t holderParamNum = 2;
     napi_value holderParams[holderParamNum] = {
         NapiUtil::CreateString(env, name),
@@ -277,12 +310,6 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher)
     };
     napi_value holder = CreateHolder(env, holderParamNum, holderParams);
     watcherPtr->InitHolder(env, holder);
-
-    // 4. set trigger if any
-    napi_value trigger = NapiUtil::GetProperty(env, watcher, TRIGGER_PROPERTY);
-    if (trigger != nullptr) {
-        watcherPtr->InitTrigger(env, trigger);
-    }
     return holder;
 }
 

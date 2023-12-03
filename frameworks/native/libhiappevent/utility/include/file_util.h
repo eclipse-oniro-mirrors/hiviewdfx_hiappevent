@@ -34,6 +34,7 @@ uint64_t GetDirSize(const std::string& dir);
 uint64_t GetFileSize(const std::string& file);
 bool SaveStringToFile(const std::string& file, const std::string& content, bool isTrunc = false);
 std::string GetFilePathByDir(const std::string& dir, const std::string& fileName);
+bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& lines);
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

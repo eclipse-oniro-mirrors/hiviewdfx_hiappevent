@@ -25,12 +25,5 @@ AppEventWatcher::AppEventWatcher(
     filters_ = filters;
     reportConfig_.triggerCond = cond;
 }
-
-void AppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
-{
-    for (auto event : events) {
-        ProcessEvent(event);
-    }
-}
 } // namespace HiviewDFX
 } // namespace OHOS

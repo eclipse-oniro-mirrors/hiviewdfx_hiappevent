@@ -42,7 +42,9 @@ void WriteEventOnce()
     event->AddParam("bool_key", testBool);
     const std::string testStr = "str";
     event->AddParam("str_key", testStr);
-    AppEventObserverMgr::GetInstance().HandleEvent(event);
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    events.emplace_back(event);
+    AppEventObserverMgr::GetInstance().HandleEvents(events);
 }
 
 void CheckRegisterObserver(const std::string& observer,

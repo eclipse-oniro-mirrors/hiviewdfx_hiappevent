@@ -79,6 +79,16 @@ public:
         return triggerTimes;
     }
 
+    void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) override
+    {
+        std::cout << GetName() << " OnEvents size=" << events.size() << std::endl;
+        for (const auto& event : events) {
+            std::cout << "domain=" << event->GetDomain() << ", eventName=" << event->GetName()
+                << ", eventType=" << event->GetType() << std::endl;
+            std::cout << "params=" << event->GetParamStr() << std::endl;
+        }
+    }
+
 private:
     int triggerTimes = 0;
 };
@@ -86,6 +96,11 @@ private:
 void BuildSimpleFilters(std::vector<AppEventFilter>& filters)
 {
     filters.emplace_back(AppEventFilter(TEST_DOMAIN, 0xff)); // 0xff means all types
+}
+
+void BuildSimpleOsFilters(std::vector<AppEventFilter>& filters)
+{
+    filters.emplace_back(AppEventFilter("OS", {"APP_CRASH"}));
 }
 
 TriggerCondition BuildCondition(int row, int size, int timeout)
@@ -136,6 +151,14 @@ std::shared_ptr<AppEventWatcherTest> BuildWatcherWithTimeout2()
     TriggerCondition cond = BuildCondition(0, 0, 1); // timeout is 1
     return std::make_shared<AppEventWatcherTest>("watcher_time2", filters, cond);
 }
+
+std::shared_ptr<AppEventWatcherTest> BuildSimpleOsWatcher()
+{
+    std::vector<AppEventFilter> filters;
+    BuildSimpleOsFilters(filters);
+    TriggerCondition cond = BuildCondition(0, 0, 0);
+    return std::make_shared<AppEventWatcherTest>(TEST_WATCHER, filters, cond);
+}
 }
 
 /**
@@ -163,13 +186,17 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest001, TestSize.Level3)
     auto watcher5 = BuildWatcherWithTimeout2();
     AppEventObserverMgr::GetInstance().RegisterObserver(watcher5);
 
-    AppEventObserverMgr::GetInstance().HandleEvent(CreateAppEventPack());
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    events.emplace_back(CreateAppEventPack());
+    AppEventObserverMgr::GetInstance().HandleEvents(events);
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher4->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().HandleEvent(CreateAppEventPack("invalid_domain"));
+    events.clear();
+    events.emplace_back(CreateAppEventPack("invalid_domain"));
+    AppEventObserverMgr::GetInstance().HandleEvents(events);
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
@@ -204,7 +231,9 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest002, TestSize.Level3)
 
     auto watcher = BuildSimpleWatcher();
     AppEventObserverMgr::GetInstance().RegisterObserver(watcher);
-    AppEventObserverMgr::GetInstance().HandleEvent(CreateAppEventPack());
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    events.emplace_back(CreateAppEventPack());
+    AppEventObserverMgr::GetInstance().HandleEvents(events);
     ASSERT_EQ(watcher->GetTriggerTimes(), 0);
 
     AppEventObserverMgr::GetInstance().UnregisterObserver(watcher->GetName());
@@ -230,11 +259,38 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest003, TestSize.Level3)
     auto watcher2 = BuildWatcherWithRow();
     AppEventObserverMgr::GetInstance().RegisterObserver(watcher2);
 
-    AppEventObserverMgr::GetInstance().HandleEvent(CreateAppEventPack());
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    events.emplace_back(CreateAppEventPack());
+    AppEventObserverMgr::GetInstance().HandleEvents(events);
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
 
     AppEventObserverMgr::GetInstance().UnregisterObserver(watcher1->GetName());
     AppEventObserverMgr::GetInstance().UnregisterObserver(watcher2->GetName());
     std::cout << "HiAppEventWatcherTest003 end" << std::endl;
+}
+
+/**
+ * @tc.name: HiAppEventWatcherTest004
+ * @tc.desc: Test to add watcher onReceive.
+ * @tc.type: FUNC
+ * @tc.require: issueI5LB4N
+ */
+HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest004, TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create AppEventWatcher object.
+     * @tc.steps: step2. add the watcher to AppEventObserverMgr.
+     */
+    std::cout << "HiAppEventWatcherTest004 start" << std::endl;
+
+    auto watcher = BuildSimpleOsWatcher();
+    AppEventObserverMgr::GetInstance().RegisterObserver(watcher);
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    events.emplace_back(std::make_shared<AppEventPack>("OS", "APP_CRASH", TEST_TYPE));
+    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    ASSERT_EQ(watcher->GetTriggerTimes(), 0);
+
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher->GetName());
+    std::cout << "HiAppEventWatcherTest004 end" << std::endl;
 }

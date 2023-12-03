@@ -30,7 +30,6 @@ public:
         const std::vector<AppEventFilter>& filters,
         TriggerCondition cond);
     virtual ~AppEventWatcher() {}
-    void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) override;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

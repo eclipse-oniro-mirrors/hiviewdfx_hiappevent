@@ -181,6 +181,20 @@ std::string GetFilePathByDir(const std::string& dir, const std::string& fileName
     filePath.append(fileName);
     return filePath;
 }
+
+bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& lines)
+{
+    std::ifstream file(filePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            lines.emplace_back(line);
+        }
+        file.close();
+        return true;
+    }
+    return false;
+}
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS
