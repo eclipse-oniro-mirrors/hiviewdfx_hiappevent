@@ -61,8 +61,14 @@ uint64_t AppEventLogCleaner::ClearSpace(uint64_t curSize, uint64_t maxSize)
 void AppEventLogCleaner::ClearData()
 {
     HiLog::Info(LABEL, "start to clear the log data");
-    if (FileUtil::IsFileExists(path_) && !FileUtil::ForceRemoveDirectory(path_)) {
-        HiLog::Error(LABEL, "failed to clear the log data, errno=%{public}d", errno);
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(path_, files);
+    for (const auto& file : files) {
+        if (!FileUtil::RemoveFile(file)) {
+            HiLog::Warn(LABEL, "failed to remove the log file=%{public}s", file.c_str());
+        } else {
+            HiLog::Info(LABEL, "succ to remove the log file=%{public}s", file.c_str());
+        }
     }
 }
 } // namespace HiviewDFX

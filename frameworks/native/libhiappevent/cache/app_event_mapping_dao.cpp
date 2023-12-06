@@ -71,32 +71,21 @@ int64_t AppEventMappingDao::Insert(int64_t eventSeq, int64_t observerSeq)
     return seq;
 }
 
-int AppEventMappingDao::Delete(int64_t observerSeq)
-{
-    int deleteRows = 0;
-    NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_OBSERVER_SEQ, observerSeq);
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HiLog::Info(LABEL, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
-    return deleteRows;
-}
-
 int AppEventMappingDao::Delete(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
 {
-    if (eventSeqs.empty()) {
-        return DB_SUCC;
+    NativeRdb::AbsRdbPredicates predicates(TABLE);
+    if (observerSeq > 0) {
+        predicates.EqualTo(FIELD_OBSERVER_SEQ, observerSeq);
+    }
+    if (!eventSeqs.empty()) {
+        std::vector<std::string> eventSeqStrs(eventSeqs.size());
+        std::transform(eventSeqs.begin(), eventSeqs.end(), eventSeqStrs.begin(), [](int64_t eventSeq) {
+            return std::to_string(eventSeq);
+        });
+        predicates.In(FIELD_EVENT_SEQ, eventSeqStrs);
     }
 
-    NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_OBSERVER_SEQ, observerSeq);
-    std::vector<std::string> eventSeqStrs(eventSeqs.size());
-    std::transform(eventSeqs.begin(), eventSeqs.end(), eventSeqStrs.begin(), [](int64_t eventSeq) {
-        return std::to_string(eventSeq);
-    });
     int deleteRows = 0;
-    predicates.In(FIELD_EVENT_SEQ, eventSeqStrs);
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;
     }

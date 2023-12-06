@@ -220,12 +220,17 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest005, TestSize.Level1)
      * @tc.steps: step3. clear the data.
      */
     WriteEvent(std::make_shared<AppEventPack>("name", 1));
-
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(TEST_DIR, files);
+    ASSERT_FALSE(files.empty());
     ASSERT_TRUE(FileUtil::IsFileExists(TEST_DIR));
     ASSERT_TRUE(FileUtil::IsFileExists(TEST_DB_PATH));
 
     HiAppEventClean::ClearData(TEST_DIR);
-    ASSERT_FALSE(FileUtil::IsFileExists(TEST_DB_PATH));
-    ASSERT_FALSE(FileUtil::IsFileExists(TEST_DIR));
+    ASSERT_TRUE(FileUtil::IsFileExists(TEST_DB_PATH));
+    ASSERT_TRUE(FileUtil::IsFileExists(TEST_DIR));
+    for (const auto& file : files) {
+        ASSERT_FALSE(FileUtil::IsFileExists(file));
+    }
 }
 

@@ -88,5 +88,19 @@ int64_t AppEventDao::Insert(std::shared_ptr<AppEventPack> event)
     }
     return seq;
 }
+
+int AppEventDao::Delete(int64_t eventSeq)
+{
+    NativeRdb::AbsRdbPredicates predicates(Events::TABLE);
+    if (eventSeq > 0) {
+        predicates.EqualTo(Events::FIELD_SEQ, eventSeq);
+    }
+    int deleteRows = 0;
+    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
+        return DB_FAILED;
+    }
+    HiLog::Info(LABEL, "delete %{public}d records, eventSeq=%{public}" PRId64, deleteRows, eventSeq);
+    return deleteRows;
+}
 } // namespace HiviewDFX
 } // namespace OHOS

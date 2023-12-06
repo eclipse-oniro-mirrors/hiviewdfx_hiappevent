@@ -23,6 +23,22 @@ namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "HiAppEvent_DbCleaner" };
 const std::string DATABASE_DIR = "databases/";
+
+void ClearAllData()
+{
+    if (AppEventStore::GetInstance().DeleteEvent() < 0) {
+        HiLog::Warn(LABEL, "failed to clear event table");
+    }
+    if (AppEventStore::GetInstance().DeleteEventMapping() < 0) {
+        HiLog::Warn(LABEL, "failed to clear event mapping table");
+    }
+    if (AppEventStore::GetInstance().DeleteUserId() < 0) {
+        HiLog::Warn(LABEL, "failed to clear user id table");
+    }
+    if (AppEventStore::GetInstance().DeleteUserProperty() < 0) {
+        HiLog::Warn(LABEL, "failed to clear user id table");
+    }
+}
 }
 uint64_t AppEventDbCleaner::GetFilesSize()
 {
@@ -35,14 +51,14 @@ uint64_t AppEventDbCleaner::ClearSpace(uint64_t curSize, uint64_t maxSize)
     if (curSize <= maxSize) {
         return curSize;
     }
-    (void)AppEventStore::GetInstance().DestroyDbStore();
+    ClearAllData();
     return 0;
 }
 
 void AppEventDbCleaner::ClearData()
 {
     HiLog::Info(LABEL, "start to clear the db data");
-    (void)AppEventStore::GetInstance().DestroyDbStore();
+    ClearAllData();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

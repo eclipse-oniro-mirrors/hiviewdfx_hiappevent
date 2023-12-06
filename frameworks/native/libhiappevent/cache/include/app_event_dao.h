@@ -30,6 +30,7 @@ public:
     AppEventDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
     ~AppEventDao() = default;
     int64_t Insert(std::shared_ptr<AppEventPack> event);
+    int Delete(int64_t eventSeq);
 
 private:
     int Create();
