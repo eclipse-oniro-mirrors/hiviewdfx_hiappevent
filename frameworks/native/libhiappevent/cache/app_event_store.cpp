@@ -317,7 +317,7 @@ int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events
     }
     // delete the events mapping of the observer
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
-    if (appEventMappingDao_->Delete(observerSeq) < 0) {
+    if (appEventMappingDao_->Delete(observerSeq, {}) < 0) {
         HiLog::Warn(LABEL, "failed to delete the events mapping data, observer=%{public}" PRId64, observerSeq);
         return DB_FAILED;
     }
@@ -377,7 +377,7 @@ int AppEventStore::DeleteObserver(int64_t observerSeq)
     }
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
-    if (int ret = appEventMappingDao_->Delete(observerSeq); ret < 0) {
+    if (int ret = appEventMappingDao_->Delete(observerSeq, {}); ret < 0) {
         return ret;
     }
     return appEventObserverDao_->Delete(observerSeq);
@@ -391,6 +391,16 @@ int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     return appEventMappingDao_->Delete(observerSeq, eventSeqs);
+}
+
+int AppEventStore::DeleteEvent(int64_t eventSeq)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return appEventDao_->Delete(eventSeq);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

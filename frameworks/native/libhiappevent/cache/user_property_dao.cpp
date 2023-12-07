@@ -103,7 +103,9 @@ int UserPropertyDao::Delete(const std::string& name)
 
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_NAME, name);
+    if (!name.empty()) {
+        predicates.EqualTo(FIELD_NAME, name);
+    }
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
@@ -158,7 +160,7 @@ int UserPropertyDao::QueryAll(std::unordered_map<std::string, std::string>& out)
         }
         out[name] = value;
     }
-    
+
     resultSet->Close();
     return DB_SUCC;
 }

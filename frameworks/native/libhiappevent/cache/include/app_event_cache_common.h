@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,19 +69,6 @@ const std::string FIELD_SEQ = "seq";
 const std::string FIELD_NAME = "name";
 const std::string FIELD_VALUE = "value";
 } // namespace UserProperties
-
-namespace Blocks {
-const std::string TABLE = "blocks";
-const std::string FIELD_SEQ = "seq";
-const std::string FIELD_NAME = "name";
-} // namespace Blocks
-
-namespace Block {
-const std::string TABLE_PREFIX = "block_";
-const std::string FIELD_SEQ = "seq";
-const std::string FIELD_PACKAGE = "package";
-const std::string FIELD_SIZE = "size";
-} // namespace Block
 } // namespace AppEventCacheCommon
 } // namespace HiviewDFX
 } // namespace OHOS

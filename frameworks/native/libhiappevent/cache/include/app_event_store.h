@@ -54,9 +54,10 @@ public:
     int QueryUserProperties(std::unordered_map<std::string, std::string>& out);
     int QueryUserProperty(const std::string& name, std::string& out);
     int DeleteObserver(int64_t observerSeq);
-    int DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
-    int DeleteUserId(const std::string& name);
-    int DeleteUserProperty(const std::string& name);
+    int DeleteEventMapping(int64_t observerSeq = 0, const std::vector<int64_t>& eventSeqs = {});
+    int DeleteUserId(const std::string& name = "");
+    int DeleteUserProperty(const std::string& name = "");
+    int DeleteEvent(int64_t eventSeq = 0);
 
 private:
     bool InitDbStoreDir();

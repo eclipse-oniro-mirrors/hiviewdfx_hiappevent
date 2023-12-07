@@ -27,7 +27,6 @@ public:
     AppEventMappingDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
     ~AppEventMappingDao() = default;
     int64_t Insert(int64_t eventSeq, int64_t observerSeq);
-    int Delete(int64_t observerSeq);
     int Delete(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
