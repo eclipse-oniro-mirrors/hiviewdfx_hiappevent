@@ -24,6 +24,9 @@ namespace HiviewDFX {
 namespace HiAppEvent {
 class AppEventProcessorMgr {
 public:
+    static int64_t AddProcessor(const ReportConfig& config);
+    static int RemoveProcessor(int64_t processorId);
+
     static int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
     static int UnregisterProcessor(const std::string& name);
 

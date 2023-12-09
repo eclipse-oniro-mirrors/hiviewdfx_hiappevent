@@ -20,40 +20,11 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base_type.h"
+
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventPack;
-
 namespace HiAppEvent {
-struct UserId {
-    std::string name;
-    std::string value;
-};
-
-struct UserProperty {
-    std::string name;
-    std::string value;
-};
-
-struct TriggerCondition {
-    /* Triggered by the number of events */
-    int row = 0;
-
-    /* Triggered by the size of events */
-    int size = 0;
-
-    /* Triggered periodically */
-    int timeout = 0;
-
-    /* Triggered by application startup */
-    bool onStartup = false;
-
-    /* Triggered by switching to the background */
-    bool onBackground = false;
-
-    std::string ToString() const;
-};
-
 struct AppEventFilter {
     /* Filtering events by event domain */
     std::string domain;
@@ -71,51 +42,6 @@ struct AppEventFilter {
     AppEventFilter(const std::string& domain, uint32_t types);
 
     bool IsValidEvent(std::shared_ptr<AppEventPack> event) const;
-};
-
-struct EventConfig {
-    /* Specifies the event domain that can be reported */
-    std::string domain;
-
-    /* Specifies the event name that can be reported */
-    std::string name;
-
-    /* Specifies whether the event is a real-time report event */
-    bool isRealTime = false;
-
-    bool IsValidEvent(std::shared_ptr<AppEventPack> event) const;
-
-    bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event) const;
-
-    std::string ToString() const;
-};
-
-struct ReportConfig {
-    /* The report name */
-    std::string name;
-
-    /* Enable the developer to debug */
-    bool debugMode = false;
-
-    /* The server location information */
-    std::string routeInfo;
-
-    /* The application ID */
-    std::string appId;
-
-    /* The condition for triggering reporting */
-    TriggerCondition triggerCond;
-
-    /* The user id names that can be reported */
-    std::unordered_set<std::string> userIdNames;
-
-    /* The user property names that can be reported */
-    std::unordered_set<std::string> userPropertyNames;
-
-    /* Event configurations to report */
-    std::vector<EventConfig> eventConfigs;
-
-    std::string ToString() const;
 };
 
 class AppEventObserver {

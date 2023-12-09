@@ -12,39 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIAPPEVENT_INTERFACES_NATIVE_INNER_API_INCLUDE_APP_EVENT_PROCESSOR_H
-#define HIAPPEVENT_INTERFACES_NATIVE_INNER_API_INCLUDE_APP_EVENT_PROCESSOR_H
+#ifndef HIAPPEVENT_TEST_PROCESSOR_H
+#define HIAPPEVENT_TEST_PROCESSOR_H
 
-#include <string>
-
-#include "base_type.h"
+#include "app_event_processor.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-struct AppEventInfo {
-    std::string domain;
-    std::string name;
-    int eventType = 0;
-    uint64_t timestamp = 0;
-    std::string params;
-};
-
-class AppEventProcessor {
-public:
-    AppEventProcessor() = default;
-    virtual ~AppEventProcessor() = default;
-
-    virtual int OnReport(
+class TestProcessor : public AppEventProcessor {
+    int OnReport(
         int64_t processorSeq,
         const std::vector<UserId>& userIds,
         const std::vector<UserProperty>& userProperties,
-        const std::vector<AppEventInfo>& events) = 0;
-    virtual int ValidateUserId(const UserId& userId) = 0;
-    virtual int ValidateUserProperty(const UserProperty& userProperty) = 0;
-    virtual int ValidateEvent(const AppEventInfo& event) = 0;
+        const std::vector<AppEventInfo>& events) override;
+    int ValidateUserId(const UserId& userId) override;
+    int ValidateUserProperty(const UserProperty& userProperty) override;
+    int ValidateEvent(const AppEventInfo& event) override;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_INTERFACES_NATIVE_INNER_API_INCLUDE_APP_EVENT_PROCESSOR_H
+#endif // HIAPPEVENT_TEST_PROCESSOR_H

@@ -101,7 +101,13 @@ ohos_unittest("HiAppEventInnerApiTest") {
 
   sources = [ "unittest/common/native/hiappevent_inner_api_test.cpp" ]
 
-  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "processor:test_processor",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  resource_config_file = "resource/ohos_test.xml"
 
   external_deps = [ "hiappevent:hiappevent_innerapi" ]
 }
@@ -125,9 +131,25 @@ ohos_unittest("HiAppEventUserInfoTest") {
   ]
 }
 
+ohos_unittest("HiAppEventAppEventTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_app_event_test.cpp" ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [ "hiappevent:hiappevent_innerapi" ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
+    ":HiAppEventAppEventTest",
     ":HiAppEventCacheTest",
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",

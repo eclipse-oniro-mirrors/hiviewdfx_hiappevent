@@ -18,6 +18,7 @@
 #include <cctype>
 #include <iterator>
 #include <regex>
+#include <unordered_set>
 
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
@@ -175,6 +176,42 @@ bool CheckParamsNum(std::list<AppEventParam>& baseParams)
 
     return true;
 }
+
+bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& paramNames, int& verifyRes)
+{
+    std::string name = param.name;
+    if (paramNames.find(name) != paramNames.end()) {
+        HiLog::Warn(LABEL, "param=%{public}s is discarded because param is duplicate.", name.c_str());
+        verifyRes = ERROR_DUPLICATE_PARAM;
+        return false;
+    }
+
+    if (!CheckParamName(name)) {
+        HiLog::Warn(LABEL, "param=%{public}s is discarded because the paramName is invalid.", name.c_str());
+        verifyRes = ERROR_INVALID_PARAM_NAME;
+        return false;
+    }
+
+    if (param.type == AppEventParamType::STRING && !CheckStrParamLength(param.value.valueUnion.str_)) {
+        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds 8192.", name.c_str());
+        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
+        return false;
+    }
+
+    if (param.type > AppEventParamType::STRING && !CheckListValueSize(param.type, param.value.valueUnion)) {
+        HiLog::Warn(LABEL, "list param=%{public}s is truncated because the list size exceeds 100.", name.c_str());
+        verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
+        return true;
+    }
+
+    if (param.type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(param.value.valueUnion.strs_)) {
+        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length of list exceeds 8192.",
+            name.c_str());
+        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
+        return false;
+    }
+    return true;
+}
 }
 
 bool IsValidDomain(const std::string& eventDomain)
@@ -209,53 +246,30 @@ bool IsValidEventType(int eventType)
     return eventType >= 1 && eventType <= 4; // 1-4: value range of event type
 }
 
-int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack)
+int VerifyAppEvent(std::shared_ptr<AppEventPack> event)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
         HiLog::Error(LABEL, "the HiAppEvent function is disabled.");
         return ERROR_HIAPPEVENT_DISABLE;
     }
-    if (!IsValidDomain(appEventPack->GetDomain())) {
-        HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", appEventPack->GetDomain().c_str());
+    if (!IsValidDomain(event->GetDomain())) {
+        HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", event->GetDomain().c_str());
         return ERROR_INVALID_EVENT_DOMAIN;
     }
-    if (!IsValidEventName(appEventPack->GetName())) {
-        HiLog::Error(LABEL, "eventName=%{public}s is invalid.", appEventPack->GetName().c_str());
+    if (!IsValidEventName(event->GetName())) {
+        HiLog::Error(LABEL, "eventName=%{public}s is invalid.", event->GetName().c_str());
         return ERROR_INVALID_EVENT_NAME;
     }
 
     int verifyRes = HIAPPEVENT_VERIFY_SUCCESSFUL;
-    std::list<AppEventParam>& baseParams = appEventPack->baseParams_;
+    std::list<AppEventParam>& baseParams = event->baseParams_;
+    std::unordered_set<std::string> paramNames;
     for (auto it = baseParams.begin(); it != baseParams.end();) {
-        if (!CheckParamName(it->name)) {
-            HiLog::Warn(LABEL, "param=%{public}s is discarded because the paramName is invalid.", it->name.c_str());
-            verifyRes = ERROR_INVALID_PARAM_NAME;
+        if (!VerifyAppEventParam(*it, paramNames, verifyRes)) {
             baseParams.erase(it++);
             continue;
         }
-
-        if (it->type == AppEventParamType::STRING && !CheckStrParamLength(it->value.valueUnion.str_)) {
-            HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds 8192.",
-                it->name.c_str());
-            verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
-            baseParams.erase(it++);
-            continue;
-        }
-
-        if (it->type > AppEventParamType::STRING && !CheckListValueSize(it->type, it->value.valueUnion)) {
-            HiLog::Warn(LABEL, "list param=%{public}s is truncated because the list size exceeds 100.",
-                it->name.c_str());
-            verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
-            continue;
-        }
-
-        if (it->type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(it->value.valueUnion.strs_)) {
-            HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length of list exceeds 8192.",
-                it->name.c_str());
-            verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
-            baseParams.erase(it++);
-            continue;
-        }
+        paramNames.emplace(it->name);
         it++;
     }
 

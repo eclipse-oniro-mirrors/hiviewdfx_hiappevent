@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,11 +22,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
+int VerifyAppEvent(std::shared_ptr<AppEventPack> event);
+
 bool IsValidDomain(const std::string& domain);
 bool IsValidEventName(const std::string& eventName);
 bool IsValidWatcherName(const std::string& watcherName);
 bool IsValidEventType(int eventType);
-int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
 bool IsValidProcessorName(const std::string& name);
 bool IsValidRouteInfo(const std::string& name);
 bool IsValidAppId(const std::string& name);

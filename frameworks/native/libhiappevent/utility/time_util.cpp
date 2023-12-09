@@ -61,7 +61,7 @@ std::string GetTimeZone()
     }
     constexpr size_t buffSize = 6; // for '+0800\0'
     char buff[buffSize] = {0};
-    if (strftime(buff, buffSize, "%z", &tmLocal) < 0) {
+    if (strftime(buff, buffSize, "%z", &tmLocal) == 0) {
         return "";
     }
     return std::string(buff);

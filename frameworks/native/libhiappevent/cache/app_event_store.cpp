@@ -36,7 +36,7 @@ const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_Store" };
 const char* DATABASE_NAME = "appevent.db";
 const char* DATABASE_DIR = "databases/";
 
-int GetIntFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string colName)
+int GetIntFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string& colName)
 {
     int value = 0;
     int colIndex = 0;
@@ -50,7 +50,7 @@ int GetIntFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet
     return value;
 }
 
-int64_t GetLongFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string colName)
+int64_t GetLongFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string& colName)
 {
     int64_t value = 0;
     int colIndex = 0;
@@ -64,7 +64,7 @@ int64_t GetLongFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resu
     return value;
 }
 
-std::string GetStringFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string colName)
+std::string GetStringFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string& colName)
 {
     std::string value;
     int colIndex = 0;
