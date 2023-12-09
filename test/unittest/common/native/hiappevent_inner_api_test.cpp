@@ -89,7 +89,7 @@ void CheckGetEmptyConfig(int64_t processorSeq)
     ASSERT_TRUE(config.eventConfigs.empty());
 }
 
-void CheckGetSeqs(const std::string& observer, std::vector<int64_t> expectSeqs)
+void CheckGetSeqs(const std::string& observer, const std::vector<int64_t>& expectSeqs)
 {
     std::vector<int64_t> processorSeqs;
     ASSERT_EQ(AppEventProcessorMgr::GetProcessorSeqs(observer, processorSeqs), 0);
@@ -223,7 +223,7 @@ int AppEventProcessorTest::OnReport(
     if (events.size() == 0) {
         return 0;
     }
-    for (auto& event : events) {
+    for (const auto& event : events) {
         std::cout << "AppEventInfo.domain=" << event.domain << std::endl;
         std::cout << "AppEventInfo.name=" << event.name << std::endl;
         std::cout << "AppEventInfo.eventType=" << event.eventType << std::endl;
@@ -461,4 +461,47 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest008, TestSize.Level0)
     ASSERT_EQ(processor->GetReportTimes(), 1);
 
     CheckUnregisterObserver(TEST_PROCESSOR_NAME);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest009
+ * @tc.desc: Adding a processor that does not exist.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest009, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "invalid_processor",
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_EQ(processorId, -1);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest010
+ * @tc.desc: Adding an existing processor.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest010, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .debugMode = true,
+        .routeInfo = "test_routeInfo",
+        .appId = "test_appid",
+        .triggerCond = {
+            .row = 1,
+            .timeout = 0,
+            .onStartup = false,
+            .onBackground = false,
+        },
+        .userIdNames = {"test_id"},
+        .userPropertyNames = {"test_property"},
+        .eventConfigs = {{"test_domain", "test_name", true}, {"test_domain", "test_realtime"}},
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    WriteEventOnce();
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
 }

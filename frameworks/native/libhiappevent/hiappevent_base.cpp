@@ -600,7 +600,7 @@ void AppEventPack::AddParamsToJsonString(std::stringstream& jsonStr) const
     if (baseParams_.empty()) {
         return;
     }
-    for (auto& param : baseParams_) {
+    for (const auto& param : baseParams_) {
         jsonStr << "\"" << param.name << "\":" << GetParamValueStr(param) << ",";
     }
     jsonStr.seekp(-1, std::ios_base::end); // -1 for delete ','

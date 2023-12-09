@@ -37,7 +37,7 @@ constexpr size_t MAX_PARAM_NUM = 4;
 static napi_value AddProcessor(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for configure is 1
+    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addProcessor is 1
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("addProcessor"));
         return nullptr;
     }
@@ -51,7 +51,7 @@ static napi_value AddProcessor(napi_env env, napi_callback_info info)
 static napi_value RemoveProcessor(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for configure is 1
+    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeProcessor is 1
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("removeProcessor"));
         return nullptr;
     }

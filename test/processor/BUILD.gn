@@ -12,27 +12,16 @@
 # limitations under the License.
 import("//build/ohos.gni")
 
-config("hiappevent_innerapi_config") {
-  visibility = [ "*:*" ]
-  include_dirs = [ "include" ]
-}
-
-ohos_shared_library("hiappevent_innerapi") {
-  public_configs = [ ":hiappevent_innerapi_config" ]
+ohos_shared_library("test_processor") {
+  include_dirs = [ "." ]
 
   sources = [
-    "src/app_event.cpp",
-    "src/app_event_processor_mgr.cpp",
+    "test_init.cpp",
+    "test_processor.cpp",
   ]
 
-  deps = [ "../../../frameworks/native/libhiappevent:libhiappevent_base" ]
-
-  external_deps = [
-    "hilog:libhilog",
-    "relational_store:native_rdb",
-  ]
+  deps = [ "../../interfaces/native/inner_api:hiappevent_innerapi" ]
 
   part_name = "hiappevent"
-  innerapi_tags = [ "platformsdk" ]
   subsystem_name = "hiviewdfx"
 }

@@ -40,6 +40,7 @@ const int ERROR_INVALID_PARAM_VALUE_LENGTH = 4;
 const int ERROR_INVALID_PARAM_NUM = 5;
 const int ERROR_INVALID_LIST_PARAM_SIZE = 6;
 const int ERROR_INVALID_LIST_PARAM_TYPE = 7;
+const int ERROR_DUPLICATE_PARAM = 8;
 const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
 } // namespace ErrorCode
@@ -205,7 +206,7 @@ public:
     void SetTraceFlag(int traceFlag);
     void SetParamStr(const std::string& paramStr);
 
-    friend int VerifyAppEvent(std::shared_ptr<AppEventPack>& appEventPack);
+    friend int VerifyAppEvent(std::shared_ptr<AppEventPack> appEventPack);
 
 private:
     void InitTime();

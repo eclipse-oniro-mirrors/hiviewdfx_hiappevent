@@ -21,6 +21,19 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
+int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
+{
+    if (int ret = ModuleLoader::GetInstance().Load(config.name); ret != 0) {
+        return ret;
+    }
+    return AppEventObserverMgr::GetInstance().RegisterObserver(config.name, config);
+}
+
+int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
+{
+    return AppEventObserverMgr::GetInstance().UnregisterObserver(processorId);
+}
+
 int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
 {
     return ModuleLoader::GetInstance().RegisterProcessor(name, processor);

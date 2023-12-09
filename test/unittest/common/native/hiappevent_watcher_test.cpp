@@ -38,7 +38,7 @@ const std::string TEST_NAME = "test_name";
 constexpr unsigned int TEST_TYPE = 1;
 const std::string TEST_EVENT = R"~({"domain_":"hiappevent", "name_":"testEvent"})~";
 
-std::shared_ptr<AppEventPack> CreateAppEventPack(const std::string domain = TEST_DOMAIN)
+std::shared_ptr<AppEventPack> CreateAppEventPack(const std::string& domain = TEST_DOMAIN)
 {
     return std::make_shared<AppEventPack>(domain, TEST_NAME, TEST_TYPE);
 }
