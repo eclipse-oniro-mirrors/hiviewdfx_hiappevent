@@ -36,7 +36,7 @@ constexpr size_t MAX_LEN_OF_DOMAIN = 16;
 static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
 static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
 static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
-static constexpr int MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
+static constexpr size_t MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 static constexpr int MAX_LENGTH_OF_USER_INFO_NAME = 256;
 static constexpr int MAX_LENGTH_OF_USER_ID_VALUE = 256;
@@ -212,6 +212,86 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
     }
     return true;
 }
+
+using VerifyReportConfigFunc = int (*)(ReportConfig& config);
+int VerifyNameOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidProcessorName(config.name)) {
+        HiLog::Error(LABEL, "invalid name=%{public}s", config.name.c_str());
+        return -1;
+    }
+    return 0;
+}
+
+int VerifyRouteInfoOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidRouteInfo(config.routeInfo)) {
+        HiLog::Warn(LABEL, "invalid routeInfo=%{public}s", config.routeInfo.c_str());
+        config.routeInfo = "";
+    }
+    return 0;
+}
+
+int VerifyAppIdOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidAppId(config.appId)) {
+        HiLog::Warn(LABEL, "invalid appId=%{public}s", config.appId.c_str());
+        config.appId = "";
+    }
+    return 0;
+}
+
+int VerifyTriggerCondOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidBatchReport(config.triggerCond.row)) {
+        HiLog::Warn(LABEL, "invalid triggerCond.row=%{public}d", config.triggerCond.row);
+        config.triggerCond.row = 0;
+    }
+    if (!IsValidPeriodReport(config.triggerCond.timeout)) {
+        HiLog::Warn(LABEL, "invalid triggerCond.timeout=%{public}d", config.triggerCond.row);
+        config.triggerCond.timeout = 0;
+    }
+    // processor does not support the size
+    config.triggerCond.size = 0;
+    return 0;
+}
+
+int VerifyUserIdNamesOfReportConfig(ReportConfig& config)
+{
+    for (const auto& name : config.userIdNames) {
+        if (!IsValidUserIdName(name)) {
+            HiLog::Warn(LABEL, "invalid user id name=%{public}s", name.c_str());
+            config.userIdNames.clear();
+            break;
+        }
+    }
+    return 0;
+}
+
+int VerifyUserPropertyNamesOfReportConfig(ReportConfig& config)
+{
+    for (const auto& name : config.userPropertyNames) {
+        if (!IsValidUserIdName(name)) {
+            HiLog::Warn(LABEL, "invalid user property name=%{public}s", name.c_str());
+            config.userPropertyNames.clear();
+            break;
+        }
+    }
+    return 0;
+}
+
+int VerifyEventConfigsOfReportConfig(ReportConfig& reportConfig)
+{
+    for (const auto& eventConfig : reportConfig.eventConfigs) {
+        if (!IsValidEventConfig(eventConfig)) {
+            HiLog::Warn(LABEL, "invalid event configs, domain=%{public}s, name=%{public}s",
+                eventConfig.domain.c_str(), eventConfig.name.c_str());
+            reportConfig.eventConfigs.clear();
+            break;
+        }
+    }
+    return 0;
+}
 }
 
 bool IsValidDomain(const std::string& eventDomain)
@@ -311,12 +391,12 @@ bool IsValidProcessorName(const std::string& name)
 
 bool IsValidRouteInfo(const std::string& name)
 {
-    return sizeof(name) <= MAX_LENGTH_OF_STR_PARAM;
+    return name.length() <= MAX_LENGTH_OF_STR_PARAM;
 }
 
 bool IsValidAppId(const std::string& name)
 {
-    return sizeof(name) <= MAX_LENGTH_OF_STR_PARAM;
+    return name.length() <= MAX_LENGTH_OF_STR_PARAM;
 }
 
 bool IsValidPeriodReport(int timeout)
@@ -347,6 +427,30 @@ bool IsValidUserPropName(const std::string& name)
 bool IsValidUserPropValue(const std::string& value)
 {
     return IsValidPropValue(value, MAX_LENGTH_OF_USER_PROPERTY_VALUE);
+}
+
+bool IsValidEventConfig(const EventConfig& eventCfg)
+{
+    return IsValidDomain(eventCfg.domain) && IsValidEventName(eventCfg.name);
+}
+
+int VerifyReportConfig(ReportConfig& config)
+{
+    const VerifyReportConfigFunc verifyFuncs[] = {
+        VerifyNameOfReportConfig,
+        VerifyRouteInfoOfReportConfig,
+        VerifyAppIdOfReportConfig,
+        VerifyTriggerCondOfReportConfig,
+        VerifyUserIdNamesOfReportConfig,
+        VerifyUserPropertyNamesOfReportConfig,
+        VerifyEventConfigsOfReportConfig,
+    };
+    for (const auto verifyFunc : verifyFuncs) {
+        if (verifyFunc(config) != 0) {
+            return -1;
+        }
+    }
+    return 0;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

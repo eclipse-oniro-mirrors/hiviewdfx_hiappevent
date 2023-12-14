@@ -112,6 +112,13 @@ void CheckSameConfig(const ReportConfig& configA, const ReportConfig& configB)
     ASSERT_EQ(configA.eventConfigs.size(), configB.eventConfigs.size());
 }
 
+void CheckSameConfig(int64_t processorSeq, const ReportConfig& testConfig)
+{
+    ReportConfig getConfig;
+    ASSERT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorSeq, getConfig), 0);
+    CheckSameConfig(testConfig, getConfig);
+}
+
 void CheckSetConfig(int64_t processorSeq)
 {
     ReportConfig testConfig = {
@@ -502,6 +509,262 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest010, TestSize.Level1)
     };
     int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
     ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, config);
     WriteEventOnce();
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest011
+ * @tc.desc: Adding an invalid processor with invalid name.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest011, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "",
+    };
+    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), -1);
+
+    constexpr size_t limitLen = 256;
+    config.name = std::string(limitLen, 'a');
+    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), -1);
+
+    config.name = "***dddd";
+    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), -1);
+
+    config.name = "999aaaa";
+    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), -1);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest012
+ * @tc.desc: Adding an processor with invalid routeInfo.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest012, TestSize.Level1)
+{
+    constexpr size_t limitLen = 8 * 1024;
+    ReportConfig config = {
+        .name = "test_processor",
+        .routeInfo = std::string(limitLen, 'a'),
+    };
+    int64_t processorId1 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId1, 0);
+    CheckSameConfig(processorId1, config);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId1), 0);
+
+    config.routeInfo = std::string(limitLen + 1, 'a');
+    int64_t processorId2 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId2, 0);
+
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .routeInfo = "", // default routeInfo value
+    };
+    CheckSameConfig(processorId2, expectConfig);
+
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId2), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest013
+ * @tc.desc: Adding an processor with invalid appId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest013, TestSize.Level1)
+{
+    constexpr size_t limitLen = 8 * 1024;
+    ReportConfig config = {
+        .name = "test_processor",
+        .appId = std::string(limitLen, 'a'),
+    };
+    int64_t processorId1 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId1, 0);
+    CheckSameConfig(processorId1, config);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId1), 0);
+
+    config.appId = std::string(limitLen + 1, 'a');
+    int64_t processorId2 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId2, 0);
+
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .appId = "", // default appId value
+    };
+    CheckSameConfig(processorId2, expectConfig);
+
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId2), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest014
+ * @tc.desc: Adding an processor with invalid triggerCond.row.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest014, TestSize.Level1)
+{
+    constexpr int limitRow = 1000;
+    ReportConfig config = {
+        .name = "test_processor",
+        .triggerCond = {
+            .row = limitRow,
+        },
+    };
+    int64_t processorId1 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId1, 0);
+    CheckSameConfig(processorId1, config);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId1), 0);
+
+    config.triggerCond.row = -1;
+    int64_t processorId2 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId2, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .triggerCond.row = 0, // default row value
+    };
+    CheckSameConfig(processorId2, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId2), 0);
+
+    config.triggerCond.row = limitRow + 1;
+    int64_t processorId3 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId3, 0);
+    CheckSameConfig(processorId3, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId3), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest015
+ * @tc.desc: Adding an processor with invalid triggerCond.timeout.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest015, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .triggerCond = {
+            .timeout = -1,
+        },
+    };
+    int64_t processorId1 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId1, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .triggerCond.timeout = 0, // default timeout value
+    };
+    CheckSameConfig(processorId1, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId1), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest016
+ * @tc.desc: Adding an processor with invalid userIdNames.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest016, TestSize.Level1)
+{
+    constexpr size_t limitLen = 256;
+    ReportConfig config = {
+        .name = "test_processor",
+        .userIdNames = {
+            std::string(limitLen, 'a'), "id1"
+        },
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, config);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.userIdNames = {"***xxxx", "id1"};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .userIdNames = {}, // default userIdNames value
+    };
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.userIdNames = {"", "id1"};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.userIdNames = {std::string(limitLen + 1, 'a'), "id1"};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest017
+ * @tc.desc: Adding an processor with invalid userIdNames.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest017, TestSize.Level1)
+{
+    constexpr size_t limitLen = 256;
+    ReportConfig config = {
+        .name = "test_processor",
+        .userPropertyNames = {
+            std::string(limitLen, 'a'), "id1"
+        },
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, config);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.userPropertyNames = {"***xxxx", "id1"};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .userPropertyNames = {}, // default userPropertyNames value
+    };
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.userPropertyNames = {"", "id1"};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.userPropertyNames = {std::string(limitLen + 1, 'a'), "id1"};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest018
+ * @tc.desc: Adding an processor with invalid eventConfigs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest018, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .eventConfigs = {
+            {"***domain", "name"}
+        },
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .eventConfigs = {}, // default eventConfigs value
+    };
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.eventConfigs = {{"domain", "***name"}};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
     ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
 }
