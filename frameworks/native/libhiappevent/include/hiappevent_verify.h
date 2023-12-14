@@ -19,10 +19,16 @@
 #include <memory>
 #include <string>
 
+#include "base_type.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
+using HiAppEvent::ReportConfig;
+using HiAppEvent::EventConfig;
+
 int VerifyAppEvent(std::shared_ptr<AppEventPack> event);
+int VerifyReportConfig(ReportConfig& config);
 
 bool IsValidDomain(const std::string& domain);
 bool IsValidEventName(const std::string& eventName);
@@ -37,6 +43,7 @@ bool IsValidUserIdName(const std::string& name);
 bool IsValidUserIdValue(const std::string& value);
 bool IsValidUserPropName(const std::string& name);
 bool IsValidUserPropValue(const std::string& value);
+bool IsValidEventConfig(const EventConfig& eventCfg);
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HI_APP_EVENT_VERIFY_H
