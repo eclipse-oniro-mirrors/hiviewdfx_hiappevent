@@ -124,7 +124,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest002, TestSize.Level0)
 
     int res = OH_HiAppEvent_Write(TEST_DOMAIN_NAME, TEST_EVENT_NAME, BEHAVIOR, list);
     OH_HiAppEvent_DestroyParamList(list);
-    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(res, ErrorCode::ERROR_DUPLICATE_PARAM);
 }
 
 /**
@@ -477,4 +477,34 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest013, TestSize.Level0)
 
     std::string filePath = TEST_STORAGE_PATH + GetStorageFilePath();
     ASSERT_EQ(access(filePath.c_str(), F_OK), 0);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest014
+ * @tc.desc: check the domain verification function of event logging.
+ * @tc.type: FUNC
+ * @tc.require: issueI8OY2U
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest014, TestSize.Level0)
+{
+    int res = OH_HiAppEvent_Write(nullptr, TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
+    res = OH_HiAppEvent_Write("", TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
+    constexpr size_t limitLen = 16;
+    res = OH_HiAppEvent_Write(std::string(limitLen, 'a').c_str(), TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_Write(std::string(limitLen + 1, 'a').c_str(), TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
+    res = OH_HiAppEvent_Write("AAAaaa", TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
+    res = OH_HiAppEvent_Write("abc***", TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
+    res = OH_HiAppEvent_Write("domain_", TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
 }

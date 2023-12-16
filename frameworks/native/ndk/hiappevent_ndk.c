@@ -130,13 +130,7 @@ ParamList AddParamValue(ParamList list, const char* name, ParamValue* value)
 
     ParamList curNode = list;
     while (curNode != NULL) {
-        if (curNode->entry != NULL && (strcmp(name, curNode->entry->name) == 0)) {
-            // if the names of the params are same, overwrite it
-            ParamValue* oldValue = curNode->entry->value;
-            curNode->entry->value = value;
-            DestroyParamValue(oldValue);
-            return list;
-        } else if (curNode->next == NULL) {
+        if (curNode->next == NULL) {
             // if the curNode is the last node, create a tail node
             ParamListNode* node = OH_HiAppEvent_CreateParamList();
             if (node == NULL) {
