@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -173,7 +173,7 @@ void AddParamList(std::shared_ptr<AppEventPack>& appEventPack, const ParamList l
 bool HiAppEventInnerConfigure(const char* name, const char* value)
 {
     if (name == nullptr || value == nullptr) {
-        HiLog::Error(LABEL, "Failed to configure, because the input params contains a null pointer.");
+        HiLog::Error(LABEL, "Failed to configure, because the input params contain a null pointer.");
         return false;
     }
     return HiAppEventConfig::GetInstance().SetConfigurationItem(name, value);
@@ -181,12 +181,16 @@ bool HiAppEventInnerConfigure(const char* name, const char* value)
 
 int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, const ParamList list)
 {
-    if (domain == nullptr || name == nullptr) {
-        HiLog::Error(LABEL, "Failed to write event, because the input params contains a null pointer.");
+    if (domain == nullptr) {
+        HiLog::Error(LABEL, "Failed to write event, domain is null");
+        return ErrorCode::ERROR_INVALID_EVENT_DOMAIN;
+    }
+    if (name == nullptr) {
+        HiLog::Error(LABEL, "Failed to write event, name is null");
         return ErrorCode::ERROR_INVALID_EVENT_NAME;
     }
 
-    std::shared_ptr<AppEventPack> appEventPack = std::make_shared<AppEventPack>(name, type);
+    std::shared_ptr<AppEventPack> appEventPack = std::make_shared<AppEventPack>(domain, name, type);
     AddParamList(appEventPack, list);
     int res = VerifyAppEvent(appEventPack);
     if (res >= 0) {
