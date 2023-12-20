@@ -192,7 +192,9 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
         return false;
     }
 
-    if (param.type == AppEventParamType::STRING && !CheckStrParamLength(param.value.valueUnion.str_)) {
+    const std::unordered_set<std::string> tempTrueNames = {"crash", "anr"};
+    if (param.type == AppEventParamType::STRING && tempTrueNames.find(name) == tempTrueNames.end()
+        && !CheckStrParamLength(param.value.valueUnion.str_)) {
         HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds 8192.", name.c_str());
         verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
         return false;
