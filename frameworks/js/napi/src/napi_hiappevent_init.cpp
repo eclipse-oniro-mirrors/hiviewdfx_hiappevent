@@ -33,6 +33,7 @@ const std::string EVENT_CLASS_NAME_V9 = "event";
 const std::string PARAM_CLASS_NAME = "Param";
 const std::string PARAM_CLASS_NAME_V9 = "param";
 const std::string EVENT_TYPE_CLASS_NAME = "EventType";
+const std::string DOMAIN_CLASS_NAME = "domain";
 
 napi_value ClassConstructor(napi_env env, napi_callback_info info)
 {
@@ -61,6 +62,8 @@ void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
     eventMap["USER_LOGIN"] = NapiUtil::CreateString(env, "hiappevent.user_login");
     eventMap["USER_LOGOUT"] = NapiUtil::CreateString(env, "hiappevent.user_logout");
     eventMap["DISTRIBUTED_SERVICE_START"] = NapiUtil::CreateString(env, "hiappevent.distributed_service_start");
+    eventMap["APP_CRASH"] = NapiUtil::CreateString(env, "APP_CRASH");
+    eventMap["APP_FREEZE"] = NapiUtil::CreateString(env, "APP_FREEZE");
 }
 
 void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
@@ -68,6 +71,11 @@ void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
     paramMap["USER_ID"] = NapiUtil::CreateString(env, "user_id");
     paramMap["DISTRIBUTED_SERVICE_NAME"] = NapiUtil::CreateString(env, "ds_name");
     paramMap["DISTRIBUTED_SERVICE_INSTANCE_ID"] = NapiUtil::CreateString(env, "ds_instance_id");
+}
+
+void InitDomainMap(napi_env env, std::map<const char*, napi_value>& domainMap)
+{
+    domainMap["OS"] = NapiUtil::CreateString(env, "OS");
 }
 
 void InitConstClassByName(napi_env env, napi_value exports, const std::string& name)
@@ -79,6 +87,8 @@ void InitConstClassByName(napi_env env, napi_value exports, const std::string& n
         InitParamMap(env, propertyMap);
     } else if (name == EVENT_TYPE_CLASS_NAME) {
         InitEventTypeMap(env, propertyMap);
+    } else if (name == DOMAIN_CLASS_NAME) {
+        InitDomainMap(env, propertyMap);
     } else {
         return;
     }
@@ -109,6 +119,7 @@ napi_value InitNapiClassV9(napi_env env, napi_value exports)
     InitConstClassByName(env, exports, EVENT_CLASS_NAME_V9);
     InitConstClassByName(env, exports, PARAM_CLASS_NAME_V9);
     InitConstClassByName(env, exports, EVENT_TYPE_CLASS_NAME);
+    InitConstClassByName(env, exports, DOMAIN_CLASS_NAME);
     return exports;
 }
 } // namespace NapiHiAppEventInit
