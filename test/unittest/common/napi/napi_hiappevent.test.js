@@ -1726,7 +1726,10 @@ describe('HiAppEventJsTest', function () {
         let watcher = {
             name: "watcheros1",
             appEventFilters: [
-                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+                {
+                    domain: hiAppEventV9.domain.OS,
+                    names: [hiAppEventV9.event.APP_CRASH, hiAppEventV9.event.APP_FREEZE, "APP_START"]
+                },
             ],
             onReceive: simpleReceive
         };
@@ -1777,34 +1780,46 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest016', 0, async function (done) {
         console.info('HiAppEventWatcherTest016 start');
+        let result = true;
         let watcher1 = {
             name: "watcheros1",
             appEventFilters: [
-                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+                {
+                    domain: hiAppEventV9.domain.OS,
+                    names: [hiAppEventV9.event.APP_CRASH, hiAppEventV9.event.APP_FREEZE, "APP_START"]
+                },
             ],
             onReceive: simpleReceive
         };
-        let result = hiAppEventV9.addWatcher(watcher1);
+        result = hiAppEventV9.addWatcher(watcher1);
         expect(result != null).assertTrue();
 
         let watcher2 = {
             name: "watcheros2",
             appEventFilters: [
-                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+                {
+                    domain: hiAppEventV9.domain.OS,
+                    names: [hiAppEventV9.event.APP_CRASH, hiAppEventV9.event.APP_FREEZE, "APP_START"]
+                },
             ],
             onReceive: simpleReceive,
             onTrigger: simpleTrigger
         };
         result = hiAppEventV9.addWatcher(watcher2);
+        expect(result != null).assertTrue();
 
         let watcher3 = {
             name: "watcheros3",
             appEventFilters: [
-                {domain: "OS", names: ["APP_CRASH", "APP_FREEZE", "PROCESS_START", "START_ABILITY", "APP_BACKGROUND"]},
+                {
+                    domain: hiAppEventV9.domain.OS,
+                    names: [hiAppEventV9.event.APP_CRASH, hiAppEventV9.event.APP_FREEZE, "APP_START"]
+                },
             ],
             onTrigger: simpleTrigger
         };
         result = hiAppEventV9.addWatcher(watcher3);
+        expect(result != null).assertTrue();
 
         setTimeout(() => {
             hiAppEventV9.removeWatcher(watcher1);
