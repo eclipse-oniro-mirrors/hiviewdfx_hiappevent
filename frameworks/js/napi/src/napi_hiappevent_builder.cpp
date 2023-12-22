@@ -28,7 +28,6 @@ const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
-constexpr size_t MAX_STRING_LEN = 8 * 1024 + 2; // 2 for '\0' and extra symbol
 constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 16;
 const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
 }
@@ -129,7 +128,7 @@ void NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::str
         }
         case napi_string: {
             std::vector<std::string> strs;
-            NapiUtil::GetStrings(env, arr, strs, MAX_STRING_LEN);
+            NapiUtil::GetStrings(env, arr, strs);
             appEventPack_->AddParam(key, strs);
             break;
         }
@@ -159,7 +158,7 @@ void NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &
             appEventPack_->AddParam(key, NapiUtil::GetDouble(env, value));
             break;
         case napi_string:
-            appEventPack_->AddParam(key, NapiUtil::GetString(env, value, MAX_STRING_LEN));
+            appEventPack_->AddParam(key, NapiUtil::GetString(env, value));
             break;
         case napi_object:
             if (NapiUtil::IsArray(env, value)) {

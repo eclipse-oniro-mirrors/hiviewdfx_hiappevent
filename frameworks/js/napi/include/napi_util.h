@@ -45,10 +45,10 @@ int64_t GetInt64(const napi_env env, const napi_value value);
 void GetInt32s(const napi_env env, const napi_value arr, std::vector<int32_t>& ints);
 double GetDouble(const napi_env env, const napi_value value);
 void GetDoubles(const napi_env env, const napi_value arr, std::vector<double>& doubles);
-std::string GetString(const napi_env env, const napi_value value, size_t bufsize = 100); // 100 means default size
-void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs, size_t bufsize = 100);
+std::string GetString(const napi_env env, const napi_value value);
+void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs);
 void GetStringsToSet(
-    const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs, size_t bufsize = 100);
+    const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs);
 napi_valuetype GetType(const napi_env env, const napi_value value);
 napi_valuetype GetArrayType(const napi_env env, const napi_value value);
 uint32_t GetArrayLength(const napi_env env, const napi_value arr);
