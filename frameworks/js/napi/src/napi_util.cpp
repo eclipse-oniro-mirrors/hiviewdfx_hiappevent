@@ -215,18 +215,22 @@ void GetDoubles(const napi_env env, const napi_value arr, std::vector<double>& d
     }
 }
 
-std::string GetString(const napi_env env, const napi_value value, size_t bufsize)
+std::string GetString(const napi_env env, const napi_value value)
 {
-    char strValue[bufsize + 1]; // 1 for '\0'
-    size_t result = 0;
-    if (napi_get_value_string_utf8(env, value, strValue, bufsize, &result) != napi_ok) {
+    size_t bufsize = 0;
+    if (napi_get_value_string_utf8(env, value, nullptr, 0, &bufsize) != napi_ok) {
+        HiLog::Error(LABEL, "failed to get string length");
+        return "";
+    }
+    std::vector<char> charVec(bufsize + 1); // 1 for '\0'
+    if (napi_get_value_string_utf8(env, value, charVec.data(), bufsize + 1, &bufsize) != napi_ok) {
         HiLog::Error(LABEL, "failed to get string value");
         return "";
     }
-    return strValue;
+    return charVec.data();
 }
 
-void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs, size_t bufsize)
+void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs)
 {
     uint32_t len = GetArrayLength(env, arr);
     for (size_t i = 0; i < len; ++i) {
@@ -234,11 +238,11 @@ void GetStrings(const napi_env env, const napi_value arr, std::vector<std::strin
         if (element == nullptr) {
             continue;
         }
-        strs.push_back(GetString(env, element, bufsize));
+        strs.push_back(GetString(env, element));
     }
 }
 
-void GetStringsToSet(const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs, size_t bufsize)
+void GetStringsToSet(const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs)
 {
     uint32_t len = GetArrayLength(env, arr);
     for (size_t i = 0; i < len; ++i) {
@@ -246,7 +250,7 @@ void GetStringsToSet(const napi_env env, const napi_value arr, std::unordered_se
         if (element == nullptr) {
             continue;
         }
-        strs.insert(GetString(env, element, bufsize));
+        strs.insert(GetString(env, element));
     }
 }
 

@@ -32,7 +32,6 @@ namespace HiviewDFX {
 namespace NapiHiAppEventProcessor {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Processor" };
-constexpr size_t MAX_STRING_LEN = 8 * 1024 + 2; // 2 for '\0' and extra symbol
 
 constexpr int ERR_CODE_SUCC = 0;
 constexpr int ERR_CODE_PARAM_FORMAT = -1;
@@ -82,7 +81,7 @@ bool GenConfigStrsProp(const napi_env env, const napi_value config, const std::s
         if (value == nullptr || !NapiUtil::IsArray(env, value) || !NapiUtil::IsArrayType(env, value, napi_string)) {
             return false;
         }
-        NapiUtil::GetStringsToSet(env, value, out, MAX_STRING_LEN);
+        NapiUtil::GetStringsToSet(env, value, out);
     }
     return true;
 }
