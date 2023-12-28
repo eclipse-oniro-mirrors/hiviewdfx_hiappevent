@@ -37,6 +37,7 @@ static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
 static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
 static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr size_t MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
+static constexpr size_t MAX_LENGTH_OF_SPECIAL_STR_PARAM = 1024 * 1024;
 static constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 static constexpr int MAX_LENGTH_OF_USER_INFO_NAME = 256;
 static constexpr int MAX_LENGTH_OF_USER_ID_VALUE = 256;
@@ -105,14 +106,14 @@ void EscapeStringValue(std::string &value)
     value = escapeValue;
 }
 
-bool CheckStrParamLength(std::string& strParamValue)
+bool CheckStrParamLength(std::string& strParamValue, size_t maxLen = MAX_LENGTH_OF_STR_PARAM)
 {
     if (strParamValue.empty()) {
         HiLog::Warn(LABEL, "str param value is empty.");
         return true;
     }
 
-    if (strParamValue.length() > MAX_LENGTH_OF_STR_PARAM) {
+    if (strParamValue.length() > maxLen) {
         return false;
     }
 
@@ -193,9 +194,18 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
     }
 
     const std::unordered_set<std::string> tempTrueNames = {"crash", "anr"};
-    if (param.type == AppEventParamType::STRING && tempTrueNames.find(name) == tempTrueNames.end()
-        && !CheckStrParamLength(param.value.valueUnion.str_)) {
-        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds 8192.", name.c_str());
+    size_t maxLen = tempTrueNames.find(name) == tempTrueNames.end() ? MAX_LENGTH_OF_STR_PARAM :
+        MAX_LENGTH_OF_SPECIAL_STR_PARAM;
+    if (param.type == AppEventParamType::STRING && !CheckStrParamLength(param.value.valueUnion.str_, maxLen)) {
+        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
+            name.c_str(), maxLen);
+        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
+        return false;
+    }
+
+    if (param.type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(param.value.valueUnion.strs_)) {
+        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length of list exceeds 8192.",
+            name.c_str());
         verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
         return false;
     }
@@ -204,13 +214,6 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
         HiLog::Warn(LABEL, "list param=%{public}s is truncated because the list size exceeds 100.", name.c_str());
         verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
         return true;
-    }
-
-    if (param.type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(param.value.valueUnion.strs_)) {
-        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length of list exceeds 8192.",
-            name.c_str());
-        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
-        return false;
     }
     return true;
 }
