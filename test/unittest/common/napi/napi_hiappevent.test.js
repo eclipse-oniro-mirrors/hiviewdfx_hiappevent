@@ -780,55 +780,28 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
-     * @tc.number HiAppEventJsTest012_1
-     * @tc.name: HiAppEventJsTest012_1
-     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
+     * @tc.number HiAppEventJsTest012
+     * @tc.name: HiAppEventJsTest012
+     * @tc.desc: Test event domain.
      * @tc.type: FUNC
      * @tc.require: issueI4BY0R
      */
-    it('HiAppEventJsTest012_1', 0, async function (done) {
-        console.info('HiAppEventJsTest012_1 start');
+    it('HiAppEventJsTest012', 0, async function (done) {
+        console.info('HiAppEventJsTest012 start');
+
+        // Error code 11101001 is returned when the event has invalid event domain.
         let expectErr = createError(11101001, "Invalid event domain.");
         writeDomainV9Test("domain***", expectErr, done);
-    });
-
-    /**
-     * @tc.number HiAppEventJsTest012_2
-     * @tc.name: HiAppEventJsTest012_2
-     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
-     * @tc.type: FUNC
-     * @tc.require: issueI4BY0R
-     */
-    it('HiAppEventJsTest012_2', 0, async function (done) {
-        console.info('HiAppEventJsTest012_2 start');
-        let expectErr = createError(11101001, "Invalid event domain.");
         writeDomainV9Test("domainTest", expectErr, done);
-    });
-
-    /**
-     * @tc.number HiAppEventJsTest012_3
-     * @tc.name: HiAppEventJsTest012_3
-     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
-     * @tc.type: FUNC
-     * @tc.require: issueI4BY0R
-     */
-    it('HiAppEventJsTest012_3', 0, async function (done) {
-        console.info('HiAppEventJsTest012_3 start');
-        let expectErr = createError(11101001, "Invalid event domain.");
+        writeDomainV9Test("123domain", expectErr, done);
+        writeDomainV9Test("_domain", expectErr, done);
+        writeDomainV9Test("domain_", expectErr, done);
         writeDomainV9Test("", expectErr, done);
-    });
-
-    /**
-     * @tc.number HiAppEventJsTest012_4
-     * @tc.name: HiAppEventJsTest012_4
-     * @tc.desc: Error code 11101001 is returned when the event has invalid event domain.
-     * @tc.type: FUNC
-     * @tc.require: issueI4BY0R
-     */
-    it('HiAppEventJsTest012_4', 0, async function (done) {
-        console.info('HiAppEventJsTest012_4 start');
-        let expectErr = createError(11101001, "Invalid event domain.");
         writeDomainV9Test("a".repeat(17), expectErr, done);
+
+        // valid event domain.
+        writeDomainV9Test("a", null, done);
+        writeDomainV9Test("a1", null, done);
     });
 
     /**
@@ -1149,9 +1122,13 @@ describe('HiAppEventJsTest', function () {
         expectErr = createError(11102001, "Invalid watcher name.")
         watcherNameTest("a".repeat(33), expectErr);
         watcherNameTest("", expectErr);
-        watcherNameTest("domain_***", expectErr);
-        watcherNameTest("Domain_test", expectErr);
-        watcherNameTest("_domain_test", expectErr);
+        watcherNameTest("watcher_***", expectErr);
+        watcherNameTest("Watcher_test", expectErr);
+        watcherNameTest("_watcher_test", expectErr);
+        watcherNameTest("watcher_", expectErr);
+        watcherNameTest("123watcher", expectErr);
+        watcherNameTest("a", null);
+        watcherNameTest("a1", null);
 
         console.info('HiAppEventWatcherTest002 end');
     });
@@ -1270,8 +1247,11 @@ describe('HiAppEventJsTest', function () {
         expectErr = createError(11102002, "Invalid filtering event domain.")
         domainTest("**xx", expectErr)
         domainTest("123test", expectErr)
+        domainTest("test_", expectErr)
         domainTest("a".repeat(17), expectErr)
         domainTest("", expectErr)
+        domainTest("a", null)
+        domainTest("a1", null)
 
         // invalid appEventFilter.eventTypes type
         function eventTypesTest(eventTypes, expectErr) {

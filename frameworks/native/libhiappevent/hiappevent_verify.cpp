@@ -304,7 +304,7 @@ bool IsValidDomain(const std::string& eventDomain)
     if (eventDomain.empty() || eventDomain.length() > MAX_LEN_OF_DOMAIN) {
         return false;
     }
-    if (eventDomain != "OS" && !std::regex_match(eventDomain, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"))) {
+    if (eventDomain != "OS" && !std::regex_match(eventDomain, std::regex("^[a-z]([a-z0-9_]*[a-z0-9])*$"))) {
         return false;
     }
     return true;
@@ -323,7 +323,7 @@ bool IsValidWatcherName(const std::string& watcherName)
     if (watcherName.empty() || watcherName.length() > MAX_LEN_OF_WATCHER) {
         return false;
     }
-    return std::regex_match(watcherName, std::regex("^[a-z][a-z0-9_]*[a-z0-9]$"));
+    return std::regex_match(watcherName, std::regex("^[a-z]([a-z0-9_]*[a-z0-9])*$"));
 }
 
 bool IsValidEventType(int eventType)

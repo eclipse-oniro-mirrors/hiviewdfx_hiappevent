@@ -507,4 +507,10 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest014, TestSize.Level0)
 
     res = OH_HiAppEvent_Write("domain_", TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
+    res = OH_HiAppEvent_Write("a", TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    res = OH_HiAppEvent_Write("a1", TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 }
