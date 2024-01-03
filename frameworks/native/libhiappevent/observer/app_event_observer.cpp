@@ -69,7 +69,7 @@ AppEventFilter::AppEventFilter(const std::string& domain, uint32_t types) : doma
 
 bool AppEventFilter::IsValidEvent(std::shared_ptr<AppEventPack> event) const
 {
-    if (domain != event->GetDomain()) {
+    if (!domain.empty() && domain != event->GetDomain()) {
         return false;
     }
     if (!names.empty() && (names.find(event->GetName()) == names.end())) {
@@ -272,7 +272,11 @@ void AppEventObserver::SetReportConfig(const ReportConfig& reportConfig)
         if (eventConfig.domain.empty() && eventConfig.name.empty()) {
             continue;
         }
-        filters_.emplace_back(AppEventFilter(eventConfig.domain, {eventConfig.name}));
+        std::unordered_set<std::string> names;
+        if (!eventConfig.name.empty()) {
+            names.emplace(eventConfig.name);
+        }
+        filters_.emplace_back(AppEventFilter(eventConfig.domain, names));
     }
 }
 

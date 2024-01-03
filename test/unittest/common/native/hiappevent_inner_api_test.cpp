@@ -767,4 +767,50 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest018, TestSize.Level1)
     ASSERT_GT(processorId, 0);
     CheckSameConfig(processorId, expectConfig);
     ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.eventConfigs = {{"", "", true}, {"test_domain", "test_name"}};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest019
+ * @tc.desc: Adding an existing processor with empty domain.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest019, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .eventConfigs = {
+            {"", TEST_EVENT_NAME, true}
+        },
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, config);
+    WriteEventOnce();
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest020
+ * @tc.desc: Adding an existing processor with empty name.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest020, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .eventConfigs = {
+            {TEST_EVENT_DOMAIN, "", true}
+        },
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, config);
+    WriteEventOnce();
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
 }
