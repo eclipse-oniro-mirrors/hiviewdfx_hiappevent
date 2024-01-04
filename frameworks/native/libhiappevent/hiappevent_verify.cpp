@@ -436,7 +436,16 @@ bool IsValidUserPropValue(const std::string& value)
 
 bool IsValidEventConfig(const EventConfig& eventCfg)
 {
-    return IsValidDomain(eventCfg.domain) && IsValidEventName(eventCfg.name);
+    if (eventCfg.domain.empty() && eventCfg.name.empty()) {
+        return false;
+    }
+    if (!eventCfg.domain.empty() && !IsValidDomain(eventCfg.domain)) {
+        return false;
+    }
+    if (!eventCfg.name.empty() && !IsValidEventName(eventCfg.name)) {
+        return false;
+    }
+    return true;
 }
 
 int VerifyReportConfig(ReportConfig& config)
