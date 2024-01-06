@@ -14,37 +14,42 @@
  */
 #include "test_processor.h"
 
-#include <iostream>
+#include <cinttypes>
 
 #include "app_event_processor_mgr.h"
+#include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
+const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "test_processor" };
+
 void PrintReportConfig(int64_t processorSeq)
 {
     ReportConfig config;
     AppEventProcessorMgr::GetProcessorConfig(processorSeq, config);
-    std::cout << ".name=" << config.name << std::endl;
-    std::cout << ".debugMode=" << config.debugMode << std::endl;
-    std::cout << ".routeInfo=" << config.routeInfo << std::endl;
-    std::cout << ".triggerCond.row=" << config.triggerCond.row << std::endl;
-    std::cout << ".triggerCond.timeout=" << config.triggerCond.timeout << std::endl;
-    std::cout << ".triggerCond.onStartup=" << config.triggerCond.onStartup << std::endl;
-    std::cout << ".triggerCond.onBackground=" << config.triggerCond.onBackground << std::endl;
-    std::cout << ".userIdNames.size=" << config.userIdNames.size() << std::endl;
-    std::cout << ".userPropertyNames.size=" << config.userPropertyNames.size() << std::endl;
-    std::cout << ".eventConfigs.size=" << config.eventConfigs.size() << std::endl;
+    HiLog::Info(LABEL, ".name=%{public}s", config.name.c_str());
+    HiLog::Info(LABEL, ".debugMode=%{public}d", config.debugMode);
+    HiLog::Info(LABEL, ".routeInfo=%{public}s", config.routeInfo.c_str());
+    HiLog::Info(LABEL, ".appId=%{public}s", config.appId.c_str());
+    HiLog::Info(LABEL, ".triggerCond.row=%{public}d", config.triggerCond.row);
+    HiLog::Info(LABEL, ".triggerCond.size=%{public}d", config.triggerCond.size);
+    HiLog::Info(LABEL, ".triggerCond.timeout=%{public}d", config.triggerCond.timeout);
+    HiLog::Info(LABEL, ".triggerCond.onStartup=%{public}d", config.triggerCond.onStartup);
+    HiLog::Info(LABEL, ".triggerCond.onBackground=%{public}d", config.triggerCond.onBackground);
+    HiLog::Info(LABEL, ".userIdNames.size=%{public}zu", config.userIdNames.size());
+    HiLog::Info(LABEL, ".userPropertyNames.size=%{public}zu", config.userPropertyNames.size());
+    HiLog::Info(LABEL, ".eventConfigs.size=%{public}zu", config.eventConfigs.size());
 }
 
 void PrintEvent(const AppEventInfo& event)
 {
-    std::cout << "AppEventInfo.domain=" << event.domain << std::endl;
-    std::cout << "AppEventInfo.name=" << event.name << std::endl;
-    std::cout << "AppEventInfo.eventType=" << event.eventType << std::endl;
-    std::cout << "AppEventInfo.timestamp=" << event.timestamp << std::endl;
-    std::cout << "AppEventInfo.params=" << event.params << std::endl;
+    HiLog::Info(LABEL, "AppEventInfo.domain=%{public}s", event.domain.c_str());
+    HiLog::Info(LABEL, "AppEventInfo.name=%{public}s", event.name.c_str());
+    HiLog::Info(LABEL, "AppEventInfo.eventType=%{public}d", event.eventType);
+    HiLog::Info(LABEL, "AppEventInfo.timestamp=%{public}" PRId64, event.timestamp);
+    HiLog::Info(LABEL, "AppEventInfo.params=%{public}s", event.params.c_str());
 }
 }
 
@@ -54,12 +59,12 @@ int TestProcessor::OnReport(
     const std::vector<UserProperty>& userProperties,
     const std::vector<AppEventInfo>& events)
 {
-    std::cout << "OnReport start" << std::endl;
+    HiLog::Info(LABEL, "OnReport start");
     PrintReportConfig(processorSeq);
     for (const auto& event : events) {
         PrintEvent(event);
     }
-    std::cout << "OnReport end" << std::endl;
+    HiLog::Info(LABEL, "OnReport end");
     return 0;
 }
 

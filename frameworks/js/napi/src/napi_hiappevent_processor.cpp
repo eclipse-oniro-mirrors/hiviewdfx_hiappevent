@@ -113,7 +113,12 @@ bool GenConfigIntProp(const napi_env env, const napi_value config, const std::st
 int GenConfigNameProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     std::string name;
-    if (!GenConfigStrProp(env, config, key, name, false) || !IsValidProcessorName(name)) {
+    if (!GenConfigStrProp(env, config, key, name, false)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(key, CONFIG_PROP_TYPE_STR));
+        return ERR_CODE_PARAM_FORMAT;
+    }
+    if (!IsValidProcessorName(name)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Invalid processor name.");
         return ERR_CODE_PARAM_FORMAT;
     }
     out.name = name;
@@ -221,12 +226,9 @@ int GenConfigReportProp(const napi_env env, const napi_value config, HiAppEvent:
         HiLog::Warn(LABEL, "Parameter error. The event isRealTime parameter is invalid.");
         return ERR_CODE_PARAM_INVALID;
     }
-    if (!reportConf.domain.empty() && !IsValidDomain(reportConf.domain)) {
-        HiLog::Warn(LABEL, "Parameter error. The event domain parameter is invalid.");
-        return ERR_CODE_PARAM_INVALID;
-    }
-    if (!reportConf.name.empty() && !IsValidEventName(reportConf.name)) {
-        HiLog::Warn(LABEL, "Parameter error. The event name parameter is invalid.");
+    if (!IsValidEventConfig(reportConf)) {
+        HiLog::Warn(LABEL, "Parameter error. The event config is invalid, domain=%{public}s, name=%{public}s.",
+            reportConf.domain.c_str(), reportConf.name.c_str());
         return ERR_CODE_PARAM_INVALID;
     }
     out = reportConf;
@@ -331,7 +333,6 @@ int TransConfig(const napi_env env, const napi_value config, ReportConfig& out)
         int ret = (prop.func)(env, config, prop.key, out);
         if (ret == ERR_CODE_PARAM_FORMAT) {
             HiLog::Error(LABEL, "failed to add processor, params format error");
-            NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(prop.key, prop.type));
             return -1;
         } else if (ret == ERR_CODE_PARAM_INVALID) {
             HiLog::Warn(LABEL, "Parameter error. The %{public}s parameter is invalid.", prop.key.c_str());
