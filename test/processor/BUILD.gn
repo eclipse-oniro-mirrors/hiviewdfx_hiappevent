@@ -22,6 +22,8 @@ ohos_shared_library("test_processor") {
 
   deps = [ "../../interfaces/native/inner_api:hiappevent_innerapi" ]
 
+  external_deps = [ "hilog:libhilog" ]
+
   part_name = "hiappevent"
   subsystem_name = "hiviewdfx"
 }
