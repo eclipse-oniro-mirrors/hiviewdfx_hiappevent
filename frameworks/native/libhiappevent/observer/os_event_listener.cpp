@@ -47,9 +47,7 @@ OsEventListener::~OsEventListener()
 {
     HiLog::Info(LABEL, "~OsEventListener");
     inotifyStopFlag_ = true;
-    if (inotifyThread_ != nullptr) {
-        inotifyThread_ = nullptr;
-    }
+    inotifyThread_ = nullptr;
     if (inotifyFd_ != -1) {
         (void)inotify_rm_watch(inotifyFd_, inotifyWd_);
         close(inotifyFd_);
@@ -145,8 +143,8 @@ void OsEventListener::HandleDirEvent()
 {
     while (!inotifyStopFlag_) {
         char buffer[BUF_SIZE] = {0};
-        char *offset = buffer;
-        struct inotify_event *event = (struct inotify_event *)buffer;
+        char* offset = buffer;
+        struct inotify_event* event = reinterpret_cast<struct inotify_event*>(buffer);
         if (inotifyFd_ < 0) {
             HiLog::Error(LABEL, "Invalid inotify fd=%{public}d", inotifyFd_);
             break;
@@ -164,7 +162,7 @@ void OsEventListener::HandleDirEvent()
                 HandleInotify(fileName);
             }
             uint32_t tmpLen = sizeof(struct inotify_event) + event->len;
-            event = (struct inotify_event *)(offset + tmpLen);
+            event = reinterpret_cast<struct inotify_event*>(offset + tmpLen);
             offset += tmpLen;
         }
     }

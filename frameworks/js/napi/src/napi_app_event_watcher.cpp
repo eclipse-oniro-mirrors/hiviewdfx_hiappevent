@@ -105,13 +105,13 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
-    work->data = (void*)context_;
+    work->data = static_cast<void*>(context_);
     uv_queue_work_with_qos(
         loop,
         work,
         [](uv_work_t* work) {},
         [](uv_work_t* work, int status) {
-            WatcherContext* context = (WatcherContext*)work->data;
+            WatcherContext* context = static_cast<WatcherContext*>(work->data);
             HiLog::Debug(LABEL, "start to destroy WatcherContext object");
             delete context;
             SafeDeleteWork(work);
@@ -144,13 +144,13 @@ void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(context_->triggerContext->env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
-    work->data = (void*)context_->triggerContext;
+    work->data = static_cast<void*>(context_->triggerContext);
     uv_queue_work_with_qos(
         loop,
         work,
         [] (uv_work_t* work) {},
         [] (uv_work_t* work, int status) {
-            auto context = (OnTriggerContext*)work->data;
+            auto context = static_cast<OnTriggerContext*>(work->data);
             napi_handle_scope scope = nullptr;
             napi_open_handle_scope(context->env, &scope);
             if (scope == nullptr) {
@@ -222,13 +222,13 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(context_->receiveContext->env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
-    work->data = (void*)context_->receiveContext;
+    work->data = static_cast<void*>(context_->receiveContext);
     uv_queue_work_with_qos(
         loop,
         work,
         [] (uv_work_t* work) {},
         [] (uv_work_t* work, int status) {
-            auto context = (OnReceiveContext*)work->data;
+            auto context = static_cast<OnReceiveContext*>(work->data);
             napi_handle_scope scope = nullptr;
             napi_open_handle_scope(context->env, &scope);
             if (scope == nullptr) {
