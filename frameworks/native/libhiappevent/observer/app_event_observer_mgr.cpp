@@ -324,7 +324,6 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
     if (!observer->HasOsDomain()) {
         return true;
     }
-    std::vector<std::shared_ptr<AppEventPack>> events;
     if (listener_ == nullptr) {
         listener_ = std::make_shared<OsEventListener>();
         if (!listener_->StartListening()) {
@@ -332,6 +331,7 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
         }
     }
     if (sendFlag) {
+        std::vector<std::shared_ptr<AppEventPack>> events;
         listener_->GetEvents(events);
         SendEventsToObserver(events, observer);
     }
