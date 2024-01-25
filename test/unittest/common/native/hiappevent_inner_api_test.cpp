@@ -94,6 +94,10 @@ void CheckGetSeqs(const std::string& observer, const std::vector<int64_t>& expec
     std::vector<int64_t> processorSeqs;
     ASSERT_EQ(AppEventProcessorMgr::GetProcessorSeqs(observer, processorSeqs), 0);
     ASSERT_EQ(processorSeqs.size(), expectSeqs.size());
+
+    // test repeated getting seqs
+    ASSERT_EQ(AppEventProcessorMgr::GetProcessorSeqs(observer, processorSeqs), 0);
+    ASSERT_EQ(processorSeqs.size(), expectSeqs.size());
 }
 
 void CheckSameConfig(const ReportConfig& configA, const ReportConfig& configB)

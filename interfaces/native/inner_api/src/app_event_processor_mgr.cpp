@@ -64,6 +64,7 @@ int AppEventProcessorMgr::GetProcessorConfig(int64_t processorSeq, ReportConfig&
 
 int AppEventProcessorMgr::GetProcessorSeqs(const std::string& name, std::vector<int64_t>& processorSeqs)
 {
+    processorSeqs.clear(); // prevent repeated invoking scenarios
     return AppEventStore::GetInstance().QueryObserverSeqs(name, processorSeqs);
 }
 } // namespace HiAppEvent
