@@ -41,6 +41,8 @@ const int ERROR_INVALID_PARAM_NUM = 5;
 const int ERROR_INVALID_LIST_PARAM_SIZE = 6;
 const int ERROR_INVALID_LIST_PARAM_TYPE = 7;
 const int ERROR_DUPLICATE_PARAM = 8;
+const int ERROR_OUT_OF_SEQUENCE = 9;
+const int ERROR_NULL_POINT = 10;
 const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
 } // namespace ErrorCode

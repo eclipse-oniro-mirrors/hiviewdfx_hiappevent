@@ -16,9 +16,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "hiappevent_c.h"
+#include "ndk_event_watcher.h"
 
 #define NEW(type) (type*)malloc(sizeof(type))
 #define NEW_PARAM(uType, uName, uValue, len) ({ \
@@ -286,6 +286,57 @@ ParamList OH_HiAppEvent_AddStringArrayParam(ParamList list, const char* name, co
 bool OH_HiAppEvent_Configure(const char* name, const char* value)
 {
     return HiAppEventInnerConfigure(name, value);
+}
+
+struct HiAppEvent_Watcher* OH_HiAppEvent_CreateWatcher(const char *name)
+{
+    return CreateWatcher(name);
+}
+
+int OH_HiAppEvent_SetAppEventFilter(struct HiAppEvent_Watcher *watcher, const char *domain, uint8_t eventTypes,
+                                    const char *const *names, int namesLen)
+{
+    return SetAppEventFilter(watcher, domain, eventTypes, names, namesLen);
+}
+
+int OH_HiAppEvent_SetTriggerCondition(struct HiAppEvent_Watcher* watcher, uint32_t row, uint32_t size, uint32_t timeOut)
+{
+    return SetTriggerCondition(watcher, row, size, timeOut);
+}
+
+int OH_HiAppEvent_SetWatcherOnTrigger(struct HiAppEvent_Watcher *watcher, OH_HiAppEvent_OnTrigger onTrigger)
+{
+    return SetWatcherOnTrigger(watcher, onTrigger);
+}
+
+int OH_HiAppEvent_SetWatcherOnReceive(struct HiAppEvent_Watcher *watcher, OH_HiAppEvent_OnReceive onReceiver)
+{
+    return SetWatcherOnReceiver(watcher, onReceiver);
+}
+
+int OH_HiAppEvent_AddWatcher(struct HiAppEvent_Watcher* watcher)
+{
+    return AddWatcher(watcher);
+}
+
+int OH_HiAppEvent_TakeWatcherData(struct HiAppEvent_Watcher *watcher, uint32_t size, OH_HiAppEvent_OnTake onTake)
+{
+    return TakeWatcherData(watcher, size, onTake);
+}
+
+void OH_HiAppEvent_ClearData()
+{
+    ClearData();
+}
+
+int OH_HiAppEvent_RemoveWatcher(struct HiAppEvent_Watcher *watcher)
+{
+    return RemoveWatcher(watcher);
+}
+
+void OH_HiAppEvent_DestroyWatcher(struct HiAppEvent_Watcher *watcher)
+{
+    DestroyWatcher(watcher);
 }
 
 int OH_HiAppEvent_Write(const char* domain, const char* name, enum EventType type, const ParamList list)
