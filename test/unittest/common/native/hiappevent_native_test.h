@@ -16,6 +16,7 @@
 #define HIAPPEVENT_NATIVE_TEST_H
 
 #include <gtest/gtest.h>
+#include "hiappevent/hiappevent.h"
 
 class HiAppEventNativeTest : public testing::Test {
 public:
@@ -23,5 +24,8 @@ public:
     static void TearDownTestCase() {}
     void SetUp() {}
     void TearDown() {}
+protected:
+    HiAppEvent_Watcher *onReceiveWatcher;
+    HiAppEvent_Watcher *onTriggerWatcher;
 };
 #endif // HIAPPEVENT_NATIVE_TEST_H
