@@ -1708,7 +1708,16 @@ describe('HiAppEventJsTest', function () {
             appEventFilters: [
                 {
                     domain: hiAppEventV9.domain.OS,
-                    names: [hiAppEventV9.event.APP_CRASH, hiAppEventV9.event.APP_FREEZE, "APP_START"]
+                    names: [
+                        hiAppEventV9.event.APP_CRASH,
+                        hiAppEventV9.event.APP_FREEZE,
+                        "APP_START",
+                        hiAppEventV9.event.APP_LAUNCH,
+                        hiAppEventV9.event.SCROLL_JANK,
+                        hiAppEventV9.event.CPU_USAGE_HIGH,
+                        hiAppEventV9.event.BATTERY_USAGE,
+                        hiAppEventV9.event.RESOURCE_OVERLIMIT
+                    ]
                 },
             ],
             onReceive: simpleReceive
