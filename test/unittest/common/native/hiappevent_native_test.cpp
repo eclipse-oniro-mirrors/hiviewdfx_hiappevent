@@ -62,7 +62,7 @@ static void OnTrigger(int32_t row, int32_t size)
     ASSERT_GT(size, 0);
 }
 
-static void OnTake(const char* const *events, int32_t eventLen)
+static void OnTake(const char* const *events, uint32_t eventLen)
 {
     ASSERT_TRUE(events != nullptr);
     ASSERT_EQ(eventLen, TEST_EVENT_NUM);
@@ -561,10 +561,10 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest014, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest015, TestSize.Level0)
 {
     ASSERT_TRUE(OH_HiAppEvent_CreateWatcher(nullptr) == nullptr);
-    onReceiveWatcher = OH_HiAppEvent_CreateWatcher("test_onReceiver_watcher");
-    ASSERT_TRUE(onReceiveWatcher);
-    onTriggerWatcher = OH_HiAppEvent_CreateWatcher("test_onTrigger_watcher");
-    ASSERT_TRUE(onTriggerWatcher);
+    onReceiveWatcher_ = OH_HiAppEvent_CreateWatcher("test_onReceiver_watcher");
+    ASSERT_TRUE(onReceiveWatcher_ != nullptr);
+    onTriggerWatcher_ = OH_HiAppEvent_CreateWatcher("test_onTrigger_watcher");
+    ASSERT_TRUE(onTriggerWatcher_ != nullptr);
 }
 
 /**
@@ -576,17 +576,18 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest015, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest016, TestSize.Level0)
 {
     const char* filterNames[] =  {TEST_EVENT_NAME};
-    const char* filterNamesWithNullptr[] =  {TEST_EVENT_NAME, nullptr};
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(nullptr, TEST_DOMAIN_NAME, 0, filterNames, 1),
-              ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher, nullptr, 0, filterNames, 1),
-              ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher, TEST_DOMAIN_NAME, 0, nullptr, 2),
-              ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher, TEST_DOMAIN_NAME, 0, filterNamesWithNullptr, 2),
-              ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher, TEST_DOMAIN_NAME, 1 << SECURITY, filterNames, 1), 0);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onTriggerWatcher, TEST_DOMAIN_NAME, 1 << SECURITY, filterNames, 1), 0);
+    const char* filterNamesWithNullptr[] =  {nullptr};
+    constexpr int namsLen = 1;
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(nullptr, TEST_DOMAIN_NAME, 0, filterNames, namsLen),
+              ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, nullptr, 0, filterNames, namsLen),
+              ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, TEST_DOMAIN_NAME, 0, nullptr, namsLen),
+              ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, TEST_DOMAIN_NAME, 0, filterNamesWithNullptr, namsLen),
+              ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, TEST_DOMAIN_NAME, 0, filterNames, namsLen), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onTriggerWatcher_, TEST_DOMAIN_NAME, 0, filterNames, namsLen), 0);
 }
 
 /**
@@ -597,8 +598,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest016, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest017, TestSize.Level0)
 {
-    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(nullptr, OnReceive), ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(onReceiveWatcher, OnReceive), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(nullptr, OnReceive), ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(onReceiveWatcher_, OnReceive), 0);
 }
 
 /**
@@ -609,8 +610,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest017, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest018, TestSize.Level0)
 {
-    ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(nullptr, 2, 0, 0), ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(onTriggerWatcher, 2, 0, 0), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(nullptr, TEST_EVENT_NUM, 0, 0), ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(onTriggerWatcher_, TEST_EVENT_NUM, 0, 0), 0);
 }
 
 /**
@@ -621,10 +622,9 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest018, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest019, TestSize.Level0)
 {
-    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(nullptr, OnTrigger), ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(onTriggerWatcher, OnTrigger), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(nullptr, OnTrigger), ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(onTriggerWatcher_, OnTrigger), 0);
 }
-
 
 /**
  * @tc.name: HiAppEventNDKTest020
@@ -634,9 +634,9 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest019, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest020, TestSize.Level0)
 {
-    ASSERT_EQ(OH_HiAppEvent_AddWatcher(nullptr), ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_AddWatcher(onTriggerWatcher), 0);
-    ASSERT_EQ(OH_HiAppEvent_AddWatcher(onReceiveWatcher), 0);
+    ASSERT_EQ(OH_HiAppEvent_AddWatcher(nullptr), ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_AddWatcher(onTriggerWatcher_), 0);
+    ASSERT_EQ(OH_HiAppEvent_AddWatcher(onReceiveWatcher_), 0);
     for (int i = 0; i < TEST_EVENT_NUM; ++i) {
         WriteEvent();
     }
@@ -650,9 +650,9 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest020, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest021, TestSize.Level0)
 {
-    constexpr int takeNum = 10;
-    ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(nullptr, takeNum, OnTake), ErrorCode::ERROR_NULL_POINT);
-    ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(onTriggerWatcher, takeNum, OnTake), 0);
+    constexpr uint32_t takeNum = 10;
+    ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(nullptr, takeNum, OnTake), ErrorCode::ERROR_INVALID_WATCHER);
+    ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(onTriggerWatcher_, takeNum, OnTake), 0);
 }
 
 /**
@@ -674,10 +674,10 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest022, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
 {
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onTriggerWatcher), 0);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onTriggerWatcher), ErrorCode::ERROR_OUT_OF_SEQUENCE);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onReceiveWatcher), 0);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onReceiveWatcher), ErrorCode::ERROR_OUT_OF_SEQUENCE);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onTriggerWatcher_), 0);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onTriggerWatcher_), ErrorCode::ERROR_WATCHER_NOT_ADDED);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onReceiveWatcher_), 0);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onReceiveWatcher_), ErrorCode::ERROR_WATCHER_NOT_ADDED);
 }
 
 /**
@@ -688,8 +688,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
 {
-    OH_HiAppEvent_DestroyWatcher(onTriggerWatcher);
-    onTriggerWatcher = nullptr;
-    OH_HiAppEvent_DestroyWatcher(onReceiveWatcher);
-    onReceiveWatcher = nullptr;
+    OH_HiAppEvent_DestroyWatcher(onTriggerWatcher_);
+    onTriggerWatcher_ = nullptr;
+    OH_HiAppEvent_DestroyWatcher(onReceiveWatcher_);
+    onReceiveWatcher_ = nullptr;
 }

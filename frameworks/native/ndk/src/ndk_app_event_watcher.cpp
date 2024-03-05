@@ -14,86 +14,96 @@
  */
 
 #include "ndk_app_event_watcher.h"
-#include "app_event_observer_mgr.h"
+
 #include "hilog/log.h"
 #include "hiappevent_base.h"
-#include "app_event_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Ndk_HiAppEvent_Watcher" };
 
-NdkAppEventWatcher::NdkAppEventWatcher(const std::string &name)
-    : observer_(std::make_shared<NdkAppEventObserver>(name)) {}
+NdkAppEventWatcher::NdkAppEventWatcher(const std::string &name) : AppEventWatcher(name) {}
 
-NdkAppEventWatcher::~NdkAppEventWatcher()
+void NdkAppEventWatcher::SetTriggerCondition(int row, int size, int timeOut)
 {
-    if (isRegistered) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(observer_->GetSeq());
-        isRegistered = false;
-    }
+    reportConfig_.triggerCond = {row, size, timeOut};
 }
 
-int NdkAppEventWatcher::SetTriggerCondition(uint32_t row, uint32_t size, uint32_t timeOut)
-{
-    observer_->SetTriggerCondition(row, size, timeOut);
-    return 0;
-}
-
-int NdkAppEventWatcher::SetAppEventFilter(const char *domain, uint8_t eventTypes,
+int NdkAppEventWatcher::AddAppEventFilter(const char* domain, uint8_t eventTypes,
                                           const char *const *names, int namesLen)
 {
-    return observer_->AddAppEventFilter(domain, eventTypes, names, namesLen);
-}
-
-int NdkAppEventWatcher::SetWatcherOnTrigger(OH_HiAppEvent_OnTrigger onTrigger)
-{
-    observer_->SetOnTrigger(onTrigger);
+    if (domain == nullptr) {
+        return ErrorCode::ERROR_INVALID_EVENT_DOMAIN;
+    }
+    uint32_t types = eventTypes << 1;
+    HiAppEvent::AppEventFilter filter{domain, types};
+    if (names == nullptr && namesLen > 0) {
+        return ErrorCode::ERROR_INVALID_EVENT_NAME;
+    }
+    for (int i = 0; i < namesLen; ++i) {
+        if (names[i] == nullptr) {
+            return ErrorCode::ERROR_INVALID_EVENT_NAME;
+        }
+        filter.names.insert(names[i]);
+    }
+    filters_.emplace_back(std::move(filter));
     return 0;
 }
 
-int NdkAppEventWatcher::SetWatcherOnReceiver(OH_HiAppEvent_OnReceive onReceiver)
+void NdkAppEventWatcher::SetOnTrigger(OH_HiAppEvent_OnTrigger onTrigger)
 {
-    observer_->SetOnOnReceive(onReceiver);
-    return 0;
+    onTrigger_ = onTrigger;
 }
 
-int NdkAppEventWatcher::AddWatcher()
+void NdkAppEventWatcher::SetOnOnReceive(OH_HiAppEvent_OnReceive onReceive)
 {
-    AppEventObserverMgr::GetInstance().RegisterObserver(observer_);
-    isRegistered = true;
-    return 0;
+    onReceive_ = onReceive;
 }
 
-int NdkAppEventWatcher::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake onTake)
+void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>> &events)
 {
-    if (!isRegistered) {
-        HiLog::Warn(LABEL, "failed to query events, the observer has not been added");
-        return ErrorCode::ERROR_OUT_OF_SEQUENCE;
+    if (events.empty() || onReceive_ == nullptr) {
+        return;
     }
-    std::vector<std::shared_ptr<AppEventPack>> events;
-    if (AppEventStore::GetInstance().TakeEvents(events, observer_->GetSeq(), size) != 0) {
-        HiLog::Warn(LABEL, "failed to query events, seq=%{public}" PRId64, observer_->GetSeq());
-        return ErrorCode::ERROR_UNKNOWN;
+    std::unordered_map<std::string, std::vector<HiAppEvent_AppEventInfo>> eventMap;
+    constexpr size_t strNumPieceEvent = 3;
+    std::vector<std::string> strings(strNumPieceEvent * events.size());
+    size_t strIndex = 0;
+    for (const auto &event : events) {
+        auto& appEventInfo = eventMap[event->GetName()].emplace_back();
+        strings[strIndex] = event->GetDomain();
+        appEventInfo.domain = strings[strIndex++].c_str();
+        strings[strIndex] = event->GetName();
+        appEventInfo.name = strings[strIndex++].c_str();
+        strings[strIndex] = event->GetParamStr();
+        appEventInfo.params = strings[strIndex++].c_str();
+        appEventInfo.type = EventType(event->GetType());
     }
-    std::vector<std::string> eventStrs(events.size());
-    std::vector<const char*> retEvents;
-    for (size_t t = 0; t < events.size(); ++t) {
-        eventStrs[t] = events[t]->GetEventStr();
-        retEvents.emplace_back(eventStrs[t].c_str());
+    std::vector<HiAppEvent_AppEventGroup> appEventGroup(eventMap.size());
+    uint32_t appEventIndex = 0;
+    for (const auto &[k, v] : eventMap) {
+        appEventGroup[appEventIndex].name = k.c_str();
+        appEventGroup[appEventIndex].appEventInfos = v.data();
+        appEventGroup[appEventIndex].infoLen = v.size();
+        appEventIndex++;
     }
-    onTake(retEvents.data(), static_cast<int32_t>(eventStrs.size()));
-    return 0;
+    std::string domain = events[0]->GetDomain();
+    onReceive_(domain.c_str(), appEventGroup.data(), static_cast<uint32_t>(eventMap.size()));
 }
 
-int NdkAppEventWatcher::RemoveWatcher()
+void NdkAppEventWatcher::OnTrigger(const HiAppEvent::TriggerCondition &triggerCond)
 {
-    if (isRegistered) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(observer_->GetSeq());
-        isRegistered = false;
-        return 0;
+    HiLog::Debug(LABEL, "onTrigger start");
+    if (onTrigger_ == nullptr) {
+        HiLog::Warn(LABEL, "onTrigger_ is nullptr");
+        return;
     }
-    return ErrorCode::ERROR_OUT_OF_SEQUENCE;
+    onTrigger_(triggerCond.row, triggerCond.size);
+}
+
+bool NdkAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
+{
+    return onReceive_ != nullptr;
 }
 }
 }

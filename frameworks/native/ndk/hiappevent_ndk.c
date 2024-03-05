@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
+#include "hiappevent_c.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "hiappevent_c.h"
-#include "ndk_event_watcher.h"
+#include "ndk_app_event_watcher_service.h"
 
 #define NEW(type) (type*)malloc(sizeof(type))
 #define NEW_PARAM(uType, uName, uValue, len) ({ \
@@ -299,7 +300,7 @@ int OH_HiAppEvent_SetAppEventFilter(struct HiAppEvent_Watcher *watcher, const ch
     return SetAppEventFilter(watcher, domain, eventTypes, names, namesLen);
 }
 
-int OH_HiAppEvent_SetTriggerCondition(struct HiAppEvent_Watcher* watcher, uint32_t row, uint32_t size, uint32_t timeOut)
+int OH_HiAppEvent_SetTriggerCondition(struct HiAppEvent_Watcher* watcher, int row, int size, int timeOut)
 {
     return SetTriggerCondition(watcher, row, size, timeOut);
 }

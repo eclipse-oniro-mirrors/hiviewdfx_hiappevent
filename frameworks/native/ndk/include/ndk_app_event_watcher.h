@@ -13,35 +13,34 @@
  * limitations under the License.
  */
 
-#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_APP_EVENT_WATCHER_H
-#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_APP_EVENT_WATCHER_H
+#ifndef HIAPPEVENT_NDK_APPEVENT_WATCHER_H
+#define HIAPPEVENT_NDK_APPEVENT_WATCHER_H
 
 #include <memory>
-#include "ndk_app_event_observer.h"
+
+#include "app_event_watcher.h"
+#include "hiappevent/hiappevent.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class NdkAppEventWatcher {
+class NdkAppEventWatcher : public AppEventWatcher {
 public:
     explicit NdkAppEventWatcher(const std::string& name);
-    ~NdkAppEventWatcher();
-    NdkAppEventWatcher(const NdkAppEventWatcher&) = delete;
-    NdkAppEventWatcher(const NdkAppEventWatcher&&) = delete;
-    NdkAppEventWatcher& operator= (const NdkAppEventWatcher&) = delete;
-    NdkAppEventWatcher& operator= (const NdkAppEventWatcher&&) = delete;
-    int SetAppEventFilter(const char* domain, uint8_t eventTypes, const char* const *names, int namesLen);
-    int SetTriggerCondition(uint32_t row, uint32_t size, uint32_t timeOut);
-    int SetWatcherOnTrigger(OH_HiAppEvent_OnTrigger onTrigger);
-    int SetWatcherOnReceiver(OH_HiAppEvent_OnReceive onReceiver);
 
-    int AddWatcher();
-    int TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake onTake);
-    int RemoveWatcher();
+    void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) override;
+    bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event) override;
+    void SetTriggerCondition(int row, int size, int timeOut);
+    int AddAppEventFilter(const char* domain, uint8_t eventTypes, const char* const *names, int namesLen);
+    void SetOnTrigger(OH_HiAppEvent_OnTrigger onTrigger);
+    void SetOnOnReceive(OH_HiAppEvent_OnReceive onReceive);
+
+protected:
+    void OnTrigger(const HiAppEvent::TriggerCondition& triggerCond) override;
+
 private:
-    std::shared_ptr<NdkAppEventObserver> observer_;
-    bool isRegistered{false};
+    OH_HiAppEvent_OnTrigger onTrigger_{nullptr};
+    OH_HiAppEvent_OnReceive onReceive_{nullptr};
 };
-
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_APP_EVENT_WATCHER_H
+#endif // HIAPPEVENT_NDK_APPEVENT_WATCHER_H

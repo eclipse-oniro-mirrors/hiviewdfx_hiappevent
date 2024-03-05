@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
-#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WATCH_H
-#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WATCH_H
+#ifndef HIAPPEVENT_NDK_APP_EVENT_WATCHER_SERVICE_H
+#define HIAPPEVENT_NDK_APP_EVENT_WATCHER_SERVICE_H
 
 #include <stdint.h>
+
 #include "hiappevent/hiappevent.h"
 
 #ifdef __cplusplus
@@ -27,18 +28,17 @@ struct HiAppEvent_Watcher* CreateWatcher(const char *name);
 int SetAppEventFilter(struct HiAppEvent_Watcher* watcher, const char* domain, uint8_t eventTypes,
                       const char* const *names, int namesLen);
 
-int SetTriggerCondition(struct HiAppEvent_Watcher* watcher, uint32_t row, uint32_t size, uint32_t timeOut);
+int SetTriggerCondition(struct HiAppEvent_Watcher* watcher, int row, int size, int timeOut);
 
 int SetWatcherOnTrigger(struct HiAppEvent_Watcher* watcher, OH_HiAppEvent_OnTrigger onTrigger);
 
 int SetWatcherOnReceiver(struct HiAppEvent_Watcher* watcher, OH_HiAppEvent_OnReceive onReceiver);
 int AddWatcher(struct HiAppEvent_Watcher* watcher);
 int TakeWatcherData(struct HiAppEvent_Watcher* watcher, uint32_t size, OH_HiAppEvent_OnTake onTake);
-void ClearData();
 int RemoveWatcher(struct HiAppEvent_Watcher *watcher);
 void DestroyWatcher(struct HiAppEvent_Watcher* watcher);
 #ifdef __cplusplus
 }
 #endif
 
-#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WATCH_H
+#endif // HIAPPEVENT_NDK_APP_EVENT_WATCHER_SERVICE_H

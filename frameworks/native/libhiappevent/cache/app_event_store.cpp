@@ -349,7 +349,8 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
             + Events::TABLE + " ON " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + "="
             + Events::TABLE + "." + Events::FIELD_SEQ + " WHERE " + AppEventMapping::FIELD_OBSERVER_SEQ + "=?";
         if (size > 0) {
-            sql += " LIMIT " + std::to_string(size);
+            sql += " ORDER BY " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " DESC LIMIT " +
+                std::to_string(size);
         }
         resultSet = dbStore_->QuerySql(sql, std::vector<std::string>{std::to_string(observerSeq)});
     }
