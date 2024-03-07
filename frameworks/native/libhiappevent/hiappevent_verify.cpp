@@ -24,13 +24,17 @@
 #include "hiappevent_config.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventVerify"
+
 using namespace OHOS::HiviewDFX::ErrorCode;
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-static constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_verify" };
-
 constexpr size_t MAX_LEN_OF_WATCHER = 32;
 constexpr size_t MAX_LEN_OF_DOMAIN = 16;
 static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
@@ -109,7 +113,7 @@ void EscapeStringValue(std::string &value)
 bool CheckStrParamLength(std::string& strParamValue, size_t maxLen = MAX_LENGTH_OF_STR_PARAM)
 {
     if (strParamValue.empty()) {
-        HiLog::Warn(LABEL, "str param value is empty.");
+        HILOG_WARN(LOG_CORE, "str param value is empty.");
         return true;
     }
 
@@ -182,13 +186,13 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
 {
     std::string name = param.name;
     if (paramNames.find(name) != paramNames.end()) {
-        HiLog::Warn(LABEL, "param=%{public}s is discarded because param is duplicate.", name.c_str());
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because param is duplicate.", name.c_str());
         verifyRes = ERROR_DUPLICATE_PARAM;
         return false;
     }
 
     if (!CheckParamName(name)) {
-        HiLog::Warn(LABEL, "param=%{public}s is discarded because the paramName is invalid.", name.c_str());
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the paramName is invalid.", name.c_str());
         verifyRes = ERROR_INVALID_PARAM_NAME;
         return false;
     }
@@ -197,21 +201,21 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
     size_t maxLen = tempTrueNames.find(name) == tempTrueNames.end() ? MAX_LENGTH_OF_STR_PARAM :
         MAX_LENGTH_OF_SPECIAL_STR_PARAM;
     if (param.type == AppEventParamType::STRING && !CheckStrParamLength(param.value.valueUnion.str_, maxLen)) {
-        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
             name.c_str(), maxLen);
         verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
         return false;
     }
 
     if (param.type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(param.value.valueUnion.strs_)) {
-        HiLog::Warn(LABEL, "param=%{public}s is discarded because the string length of list exceeds 8192.",
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length of list exceeds 8192.",
             name.c_str());
         verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
         return false;
     }
 
     if (param.type > AppEventParamType::STRING && !CheckListValueSize(param.type, param.value.valueUnion)) {
-        HiLog::Warn(LABEL, "list param=%{public}s is truncated because the list size exceeds 100.", name.c_str());
+        HILOG_WARN(LOG_CORE, "list param=%{public}s is truncated because the list size exceeds 100.", name.c_str());
         verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
         return true;
     }
@@ -222,7 +226,7 @@ using VerifyReportConfigFunc = int (*)(ReportConfig& config);
 int VerifyNameOfReportConfig(ReportConfig& config)
 {
     if (!IsValidProcessorName(config.name)) {
-        HiLog::Error(LABEL, "invalid name=%{public}s", config.name.c_str());
+        HILOG_ERROR(LOG_CORE, "invalid name=%{public}s", config.name.c_str());
         return -1;
     }
     return 0;
@@ -231,7 +235,7 @@ int VerifyNameOfReportConfig(ReportConfig& config)
 int VerifyRouteInfoOfReportConfig(ReportConfig& config)
 {
     if (!IsValidRouteInfo(config.routeInfo)) {
-        HiLog::Warn(LABEL, "invalid routeInfo=%{public}s", config.routeInfo.c_str());
+        HILOG_WARN(LOG_CORE, "invalid routeInfo=%{public}s", config.routeInfo.c_str());
         config.routeInfo = "";
     }
     return 0;
@@ -240,7 +244,7 @@ int VerifyRouteInfoOfReportConfig(ReportConfig& config)
 int VerifyAppIdOfReportConfig(ReportConfig& config)
 {
     if (!IsValidAppId(config.appId)) {
-        HiLog::Warn(LABEL, "invalid appId=%{public}s", config.appId.c_str());
+        HILOG_WARN(LOG_CORE, "invalid appId=%{public}s", config.appId.c_str());
         config.appId = "";
     }
     return 0;
@@ -249,11 +253,11 @@ int VerifyAppIdOfReportConfig(ReportConfig& config)
 int VerifyTriggerCondOfReportConfig(ReportConfig& config)
 {
     if (!IsValidBatchReport(config.triggerCond.row)) {
-        HiLog::Warn(LABEL, "invalid triggerCond.row=%{public}d", config.triggerCond.row);
+        HILOG_WARN(LOG_CORE, "invalid triggerCond.row=%{public}d", config.triggerCond.row);
         config.triggerCond.row = 0;
     }
     if (!IsValidPeriodReport(config.triggerCond.timeout)) {
-        HiLog::Warn(LABEL, "invalid triggerCond.timeout=%{public}d", config.triggerCond.row);
+        HILOG_WARN(LOG_CORE, "invalid triggerCond.timeout=%{public}d", config.triggerCond.row);
         config.triggerCond.timeout = 0;
     }
     // processor does not support the size
@@ -265,7 +269,7 @@ int VerifyUserIdNamesOfReportConfig(ReportConfig& config)
 {
     for (const auto& name : config.userIdNames) {
         if (!IsValidUserIdName(name)) {
-            HiLog::Warn(LABEL, "invalid user id name=%{public}s", name.c_str());
+            HILOG_WARN(LOG_CORE, "invalid user id name=%{public}s", name.c_str());
             config.userIdNames.clear();
             break;
         }
@@ -277,7 +281,7 @@ int VerifyUserPropertyNamesOfReportConfig(ReportConfig& config)
 {
     for (const auto& name : config.userPropertyNames) {
         if (!IsValidUserIdName(name)) {
-            HiLog::Warn(LABEL, "invalid user property name=%{public}s", name.c_str());
+            HILOG_WARN(LOG_CORE, "invalid user property name=%{public}s", name.c_str());
             config.userPropertyNames.clear();
             break;
         }
@@ -289,7 +293,7 @@ int VerifyEventConfigsOfReportConfig(ReportConfig& reportConfig)
 {
     for (const auto& eventConfig : reportConfig.eventConfigs) {
         if (!IsValidEventConfig(eventConfig)) {
-            HiLog::Warn(LABEL, "invalid event configs, domain=%{public}s, name=%{public}s",
+            HILOG_WARN(LOG_CORE, "invalid event configs, domain=%{public}s, name=%{public}s",
                 eventConfig.domain.c_str(), eventConfig.name.c_str());
             reportConfig.eventConfigs.clear();
             break;
@@ -334,15 +338,15 @@ bool IsValidEventType(int eventType)
 int VerifyAppEvent(std::shared_ptr<AppEventPack> event)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
-        HiLog::Error(LABEL, "the HiAppEvent function is disabled.");
+        HILOG_ERROR(LOG_CORE, "the HiAppEvent function is disabled.");
         return ERROR_HIAPPEVENT_DISABLE;
     }
     if (!IsValidDomain(event->GetDomain())) {
-        HiLog::Error(LABEL, "eventDomain=%{public}s is invalid.", event->GetDomain().c_str());
+        HILOG_ERROR(LOG_CORE, "eventDomain=%{public}s is invalid.", event->GetDomain().c_str());
         return ERROR_INVALID_EVENT_DOMAIN;
     }
     if (!IsValidEventName(event->GetName())) {
-        HiLog::Error(LABEL, "eventName=%{public}s is invalid.", event->GetName().c_str());
+        HILOG_ERROR(LOG_CORE, "eventName=%{public}s is invalid.", event->GetName().c_str());
         return ERROR_INVALID_EVENT_NAME;
     }
 
@@ -359,7 +363,7 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack> event)
     }
 
     if (!CheckParamsNum(baseParams)) {
-        HiLog::Warn(LABEL, "params that exceed 32 are discarded because the number of params cannot exceed 32.");
+        HILOG_WARN(LOG_CORE, "params that exceed 32 are discarded because the number of params cannot exceed 32.");
         verifyRes = ERROR_INVALID_PARAM_NUM;
     }
 

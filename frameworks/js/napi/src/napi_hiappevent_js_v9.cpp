@@ -27,10 +27,15 @@
 #include "napi_hiappevent_write.h"
 #include "napi_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "HiappeventNapi"
+
 using namespace OHOS::HiviewDFX;
 
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI" };
 constexpr size_t MAX_PARAM_NUM = 4;
 }
 
@@ -43,7 +48,7 @@ static napi_value AddProcessor(napi_env env, napi_callback_info info)
     }
     napi_value id = nullptr;
     if (!NapiHiAppEventProcessor::AddProcessor(env, params[0], id)) {
-        HiLog::Error(LABEL, "failed to add processor");
+        HILOG_ERROR(LOG_CORE, "failed to add processor");
     }
     return id;
 }
@@ -56,7 +61,7 @@ static napi_value RemoveProcessor(napi_env env, napi_callback_info info)
         return nullptr;
     }
     if (!NapiHiAppEventProcessor::RemoveProcessor(env, params[0])) {
-        HiLog::Error(LABEL, "failed to remove processor");
+        HILOG_ERROR(LOG_CORE, "failed to remove processor");
     }
     return nullptr;
 }
@@ -68,13 +73,13 @@ static napi_value Write(napi_env env, napi_callback_info info)
     NapiHiAppEventBuilder builder;
     auto appEventPack = builder.BuildV9(env, params, paramNum);
     if (appEventPack == nullptr) {
-        HiLog::Error(LABEL, "failed to build appEventPack.");
+        HILOG_ERROR(LOG_CORE, "failed to build appEventPack.");
         return nullptr;
     }
 
     auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
     if (asyncContext == nullptr) {
-        HiLog::Error(LABEL, "failed to new asyncContext.");
+        HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
     }
     asyncContext->appEventPack = appEventPack;
@@ -106,7 +111,7 @@ static napi_value Configure(napi_env env, napi_callback_info info)
         return nullptr;
     }
     if (!NapiHiAppEventConfig::Configure(env, params[0], true)) {
-        HiLog::Error(LABEL, "failed to configure HiAppEvent");
+        HILOG_ERROR(LOG_CORE, "failed to configure HiAppEvent");
     }
     return nullptr;
 }
@@ -119,7 +124,7 @@ static napi_value SetUserId(napi_env env, napi_callback_info info)
         return nullptr;
     }
     if (!NapiHiAppEventUserInfo::SetUserId(env, params[0], params[1])) {
-        HiLog::Error(LABEL, "failed to set userId");
+        HILOG_ERROR(LOG_CORE, "failed to set userId");
     }
     return nullptr;
 }
@@ -134,7 +139,7 @@ static napi_value GetUserId(napi_env env, napi_callback_info info)
 
     napi_value userId = nullptr;
     if (!NapiHiAppEventUserInfo::GetUserId(env, params[0], userId)) {
-        HiLog::Error(LABEL, "failed to get userId");
+        HILOG_ERROR(LOG_CORE, "failed to get userId");
     }
     return userId;
 }
@@ -147,7 +152,7 @@ static napi_value SetUserProperty(napi_env env, napi_callback_info info)
         return nullptr;
     }
     if (!NapiHiAppEventUserInfo::SetUserProperty(env, params[0], params[1])) {
-        HiLog::Error(LABEL, "failed to set userProperty");
+        HILOG_ERROR(LOG_CORE, "failed to set userProperty");
     }
     return nullptr;
 }
@@ -162,7 +167,7 @@ static napi_value GetUserProperty(napi_env env, napi_callback_info info)
 
     napi_value userProperty = nullptr;
     if (!NapiHiAppEventUserInfo::GetUserProperty(env, params[0], userProperty)) {
-        HiLog::Error(LABEL, "failed to get userProperty");
+        HILOG_ERROR(LOG_CORE, "failed to get userProperty");
     }
     return userProperty;
 }

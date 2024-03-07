@@ -26,11 +26,16 @@
 #include "napi_error.h"
 #include "napi_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "NapiHiAppEventWatch"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventWatch {
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Watch" };
 const std::string NAME_PROPERTY = "name";
 const std::string COND_PROPERTY = "triggerCondition";
 const std::string COND_PROPS[] = { "row", "size", "timeOut" };
@@ -257,12 +262,12 @@ napi_value CreateHolder(const napi_env env, size_t argc, const napi_value argv[]
 {
     napi_value constructor = nullptr;
     if (napi_get_reference_value(env, NapiAppEventHolder::constructor_, &constructor) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get constructor of the holder");
+        HILOG_ERROR(LOG_CORE, "failed to get constructor of the holder");
         return NapiUtil::CreateNull(env);
     }
     napi_value holder = nullptr;
     if (napi_new_instance(env, constructor, argc, argv, &holder) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get new instance for holder");
+        HILOG_ERROR(LOG_CORE, "failed to get new instance for holder");
         return NapiUtil::CreateNull(env);
     }
     return holder;
@@ -272,7 +277,7 @@ napi_value CreateHolder(const napi_env env, size_t argc, const napi_value argv[]
 napi_value AddWatcher(const napi_env env, const napi_value watcher)
 {
     if (!IsValidWatcher(env, watcher)) {
-        HiLog::Error(LABEL, "invalid watcher");
+        HILOG_ERROR(LOG_CORE, "invalid watcher");
         return NapiUtil::CreateNull(env);
     }
 
@@ -298,7 +303,7 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher)
     // 4. add the watcher to Manager
     int64_t observerSeq = AppEventObserverMgr::GetInstance().RegisterObserver(watcherPtr);
     if (observerSeq <= 0) {
-        HiLog::Error(LABEL, "invalid observer sequence");
+        HILOG_ERROR(LOG_CORE, "invalid observer sequence");
         return NapiUtil::CreateNull(env);
     }
 

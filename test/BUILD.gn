@@ -57,7 +57,10 @@ ohos_unittest("HiAppEventCacheTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "relational_store:native_rdb" ]
+  external_deps = [
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
 }
 
 ohos_unittest("HiAppEventWatcherTest") {
@@ -76,6 +79,7 @@ ohos_unittest("HiAppEventWatcherTest") {
 
   external_deps = [
     "eventhandler:libeventhandler",
+    "hilog:libhilog",
     "relational_store:native_rdb",
   ]
 }
@@ -127,6 +131,7 @@ ohos_unittest("HiAppEventUserInfoTest") {
 
   external_deps = [
     "eventhandler:libeventhandler",
+    "hilog:libhilog",
     "relational_store:native_rdb",
   ]
 }

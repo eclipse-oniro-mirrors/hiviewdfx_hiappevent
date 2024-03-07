@@ -18,25 +18,30 @@
 #include "file_util.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventDbCleaner"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "HiAppEvent_DbCleaner" };
 const std::string DATABASE_DIR = "databases/";
 
 void ClearAllData()
 {
     if (AppEventStore::GetInstance().DeleteEvent() < 0) {
-        HiLog::Warn(LABEL, "failed to clear event table");
+        HILOG_WARN(LOG_CORE, "failed to clear event table");
     }
     if (AppEventStore::GetInstance().DeleteEventMapping() < 0) {
-        HiLog::Warn(LABEL, "failed to clear event mapping table");
+        HILOG_WARN(LOG_CORE, "failed to clear event mapping table");
     }
     if (AppEventStore::GetInstance().DeleteUserId() < 0) {
-        HiLog::Warn(LABEL, "failed to clear user id table");
+        HILOG_WARN(LOG_CORE, "failed to clear user id table");
     }
     if (AppEventStore::GetInstance().DeleteUserProperty() < 0) {
-        HiLog::Warn(LABEL, "failed to clear user id table");
+        HILOG_WARN(LOG_CORE, "failed to clear user id table");
     }
 }
 }
@@ -47,7 +52,7 @@ uint64_t AppEventDbCleaner::GetFilesSize()
 
 uint64_t AppEventDbCleaner::ClearSpace(uint64_t curSize, uint64_t maxSize)
 {
-    HiLog::Info(LABEL, "start to clear the space occupied by database files");
+    HILOG_INFO(LOG_CORE, "start to clear the space occupied by database files");
     if (curSize <= maxSize) {
         return curSize;
     }
@@ -57,7 +62,7 @@ uint64_t AppEventDbCleaner::ClearSpace(uint64_t curSize, uint64_t maxSize)
 
 void AppEventDbCleaner::ClearData()
 {
-    HiLog::Info(LABEL, "start to clear the db data");
+    HILOG_INFO(LOG_CORE, "start to clear the db data");
     ClearAllData();
 }
 } // namespace HiviewDFX
