@@ -19,16 +19,18 @@
 #include "app_event_processor_mgr.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "TestProcessor"
+
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::HiAppEvent;
-
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, 0xD002D07, "test_processor" };
-}
 
 void __attribute__((constructor)) XInit(void)
 {
     auto processor = std::make_shared<TestProcessor>();
     int ret = AppEventProcessorMgr::RegisterProcessor("test_processor", processor);
-    HiLog::Info(LABEL, "register observer ret=%{public}d", ret);
+    HILOG_INFO(LOG_CORE, "register observer ret=%{public}d", ret);
 }

@@ -27,10 +27,15 @@
 #include "hilog/log.h"
 #include "time_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventWrite"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_Write" };
 std::mutex g_mutex;
 
 std::string GetStorageDirPath()
@@ -54,7 +59,7 @@ void CheckStorageSpace(const std::string& dir)
     if (!HiAppEventClean::IsStorageSpaceFull(dir, maxSize)) {
         return;
     }
-    HiLog::Info(LABEL, "hiappevent dir space is full, start to clean");
+    HILOG_INFO(LOG_CORE, "hiappevent dir space is full, start to clean");
     HiAppEventClean::ReleaseSomeStorageSpace(dir, maxSize);
 }
 
@@ -68,24 +73,24 @@ bool WriteEventToFile(const std::string& filePath, const std::string& event)
 void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
 {
     if (HiAppEventConfig::GetInstance().GetDisable()) {
-        HiLog::Warn(LABEL, "the HiAppEvent function is disabled.");
+        HILOG_WARN(LOG_CORE, "the HiAppEvent function is disabled.");
         return;
     }
     if (appEventPack == nullptr) {
-        HiLog::Error(LABEL, "appEventPack is null.");
+        HILOG_ERROR(LOG_CORE, "appEventPack is null.");
         return;
     }
     std::string dirPath = GetStorageDirPath();
     if (dirPath.empty()) {
-        HiLog::Error(LABEL, "dirPath is null, stop writing the event.");
+        HILOG_ERROR(LOG_CORE, "dirPath is null, stop writing the event.");
         return;
     }
     std::string event = appEventPack->GetEventStr();
-    HiLog::Debug(LABEL, "WriteEvent eventInfo=%{public}s.", event.c_str());
+    HILOG_DEBUG(LOG_CORE, "WriteEvent eventInfo=%{public}s.", event.c_str());
     {
         std::lock_guard<std::mutex> lockGuard(g_mutex);
         if (!FileUtil::IsFileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {
-            HiLog::Error(LABEL, "failed to create hiappevent dir, errno=%{public}d.", errno);
+            HILOG_ERROR(LOG_CORE, "failed to create hiappevent dir, errno=%{public}d.", errno);
             return;
         }
         CheckStorageSpace(dirPath);
@@ -96,7 +101,7 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
             AppEventObserverMgr::GetInstance().HandleEvents(events);
             return;
         }
-        HiLog::Error(LABEL, "failed to write event to log file, errno=%{public}d.", errno);
+        HILOG_ERROR(LOG_CORE, "failed to write event to log file, errno=%{public}d.", errno);
     }
 }
 } // namespace HiviewDFX

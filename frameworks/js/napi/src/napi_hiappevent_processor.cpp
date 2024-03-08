@@ -27,12 +27,16 @@
 #include "napi_error.h"
 #include "napi_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "NapiHiAppEventProcessor"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventProcessor {
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Processor" };
-
 constexpr int ERR_CODE_SUCC = 0;
 constexpr int ERR_CODE_PARAM_FORMAT = -1;
 constexpr int ERR_CODE_PARAM_INVALID = -2;
@@ -215,19 +219,19 @@ int GenConfigReportProp(const napi_env env, const napi_value config, HiAppEvent:
 {
     HiAppEvent::EventConfig reportConf;
     if (!GenConfigStrProp(env, config, EVENT_CONFIG_DOMAIN, reportConf.domain)) {
-        HiLog::Warn(LABEL, "Parameter error. The event domain parameter is invalid.");
+        HILOG_WARN(LOG_CORE, "Parameter error. The event domain parameter is invalid.");
         return ERR_CODE_PARAM_INVALID;
     }
     if (!GenConfigStrProp(env, config, EVENT_CONFIG_NAME, reportConf.name)) {
-        HiLog::Warn(LABEL, "Parameter error. The event name parameter is invalid.");
+        HILOG_WARN(LOG_CORE, "Parameter error. The event name parameter is invalid.");
         return ERR_CODE_PARAM_INVALID;
     }
     if (!GenConfigBoolProp(env, config, EVENT_CONFIG_REALTIME, reportConf.isRealTime)) {
-        HiLog::Warn(LABEL, "Parameter error. The event isRealTime parameter is invalid.");
+        HILOG_WARN(LOG_CORE, "Parameter error. The event isRealTime parameter is invalid.");
         return ERR_CODE_PARAM_INVALID;
     }
     if (!IsValidEventConfig(reportConf)) {
-        HiLog::Warn(LABEL, "Parameter error. The event config is invalid, domain=%{public}s, name=%{public}s.",
+        HILOG_WARN(LOG_CORE, "Parameter error. The event config is invalid, domain=%{public}s, name=%{public}s.",
             reportConf.domain.c_str(), reportConf.name.c_str());
         return ERR_CODE_PARAM_INVALID;
     }
@@ -325,17 +329,17 @@ const ConfigProp CONFIG_PROPS[] = {
 int TransConfig(const napi_env env, const napi_value config, ReportConfig& out)
 {
     if (!NapiUtil::IsObject(env, config)) {
-        HiLog::Error(LABEL, "failed to add processor, params format error");
+        HILOG_ERROR(LOG_CORE, "failed to add processor, params format error");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("config", "Processor"));
         return -1;
     }
     for (auto prop : CONFIG_PROPS) {
         int ret = (prop.func)(env, config, prop.key, out);
         if (ret == ERR_CODE_PARAM_FORMAT) {
-            HiLog::Error(LABEL, "failed to add processor, params format error");
+            HILOG_ERROR(LOG_CORE, "failed to add processor, params format error");
             return -1;
         } else if (ret == ERR_CODE_PARAM_INVALID) {
-            HiLog::Warn(LABEL, "Parameter error. The %{public}s parameter is invalid.", prop.key.c_str());
+            HILOG_WARN(LOG_CORE, "Parameter error. The %{public}s parameter is invalid.", prop.key.c_str());
         }
     }
     return 0;
@@ -351,18 +355,18 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
     }
     std::string name = conf.name;
     if (name.empty()) {
-        HiLog::Error(LABEL, "processor name can not be empty.");
+        HILOG_ERROR(LOG_CORE, "processor name can not be empty.");
         out = NapiUtil::CreateInt64(env, -1);
         return false;
     }
     if (HiAppEvent::ModuleLoader::GetInstance().Load(name) != 0) {
-        HiLog::Warn(LABEL, "failed to add processor=%{public}s, name no found", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, name no found", name.c_str());
         out = NapiUtil::CreateInt64(env, -1);
         return true;
     }
     int64_t processorId = AppEventObserverMgr::GetInstance().RegisterObserver(name, conf);
     if (processorId <= 0) {
-        HiLog::Warn(LABEL, "failed to add processor=%{public}s, register processor error", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, register processor error", name.c_str());
         out = NapiUtil::CreateInt64(env, -1);
         return false;
     }
@@ -373,17 +377,17 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
 bool RemoveProcessor(const napi_env env, const napi_value id)
 {
     if (!NapiUtil::IsNumber(env, id)) {
-        HiLog::Warn(LABEL, "failed to remove processor, params format error");
+        HILOG_WARN(LOG_CORE, "failed to remove processor, params format error");
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("id", "number"));
         return false;
     }
     int64_t processorId = NapiUtil::GetInt64(env, id);
     if (processorId <= 0) {
-        HiLog::Error(LABEL, "failed to remove processor id=%{public}" PRId64, processorId);
+        HILOG_ERROR(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return true;
     }
     if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
-        HiLog::Warn(LABEL, "failed to remove processor id=%{public}" PRId64, processorId);
+        HILOG_WARN(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return false;
     }
     return true;

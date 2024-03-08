@@ -20,12 +20,16 @@
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventAppEventObserver"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_AppEventObserver" };
-
 bool MeetNumberCondition(int currNum, int maxNum)
 {
     return maxNum > 0 && currNum >= maxNum;
@@ -147,7 +151,7 @@ bool AppEventObserver::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
 
 void AppEventObserver::ProcessEvent(std::shared_ptr<AppEventPack> event)
 {
-    HiLog::Debug(LABEL, "observer=%{public}s start to process event", name_.c_str());
+    HILOG_DEBUG(LOG_CORE, "observer=%{public}s start to process event", name_.c_str());
     ++currCond_.row;
     currCond_.size += static_cast<int>(event->GetEventStr().size());
     if (MeetProcessCondition()) {
@@ -181,11 +185,11 @@ void AppEventObserver::OnTrigger(const TriggerCondition& triggerCond)
 void AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     if (AppEventStore::GetInstance().TakeEvents(events, seq_) != 0) {
-        HiLog::Warn(LABEL, "failed to take data from observer=%{public}s, seq=%{public}" PRId64,
+        HILOG_WARN(LOG_CORE, "failed to take data from observer=%{public}s, seq=%{public}" PRId64,
             name_.c_str(), seq_);
         return;
     }
-    HiLog::Info(LABEL, "end to take data from observer=%{public}s, seq=%{public}" PRId64 ", size=%{public}zu",
+    HILOG_INFO(LOG_CORE, "end to take data from observer=%{public}s, seq=%{public}" PRId64 ", size=%{public}zu",
         name_.c_str(), seq_, events.size());
 }
 
