@@ -20,9 +20,14 @@
 #include "hiappevent_base.h"
 #include "app_event_store.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "NdkAppEventWatcherProxy"
+
 namespace OHOS {
 namespace HiviewDFX {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Ndk_HiAppEvent_Watcher" };
 
 NdkAppEventWatcherProxy::NdkAppEventWatcherProxy(const std::string &name)
     : watcher_(std::make_shared<NdkAppEventWatcher>(name)) {}
@@ -69,12 +74,12 @@ int NdkAppEventWatcherProxy::AddWatcher()
 int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake onTake)
 {
     if (!isRegistered_) {
-        HiLog::Warn(LABEL, "failed to query events, the observer has not been added");
+        HILOG_WARN(LOG_CORE, "failed to query events, the observer has not been added");
         return ErrorCode::ERROR_WATCHER_NOT_ADDED;
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
     if (AppEventStore::GetInstance().TakeEvents(events, watcher_->GetSeq(), size) != 0) {
-        HiLog::Warn(LABEL, "failed to query events, seq=%{public}" PRId64, watcher_->GetSeq());
+        HILOG_WARN(LOG_CORE, "failed to query events, seq=%{public}" PRId64, watcher_->GetSeq());
         return ErrorCode::ERROR_UNKNOWN;
     }
     std::vector<std::string> eventStrs(events.size());

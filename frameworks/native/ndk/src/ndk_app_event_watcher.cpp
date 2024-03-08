@@ -18,9 +18,14 @@
 #include "hilog/log.h"
 #include "hiappevent_base.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D7
+
+#undef LOG_TAG
+#define LOG_TAG "NdkAppEventWatcher"
+
 namespace OHOS {
 namespace HiviewDFX {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Ndk_HiAppEvent_Watcher" };
 
 NdkAppEventWatcher::NdkAppEventWatcher(const std::string &name) : AppEventWatcher(name) {}
 
@@ -93,9 +98,9 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
 
 void NdkAppEventWatcher::OnTrigger(const HiAppEvent::TriggerCondition &triggerCond)
 {
-    HiLog::Debug(LABEL, "onTrigger start");
+    HILOG_DEBUG(LOG_CORE, "onTrigger start");
     if (onTrigger_ == nullptr) {
-        HiLog::Warn(LABEL, "onTrigger_ is nullptr");
+        HILOG_WARN(LOG_CORE, "onTrigger_ is nullptr");
         return;
     }
     onTrigger_(triggerCond.row, triggerCond.size);
