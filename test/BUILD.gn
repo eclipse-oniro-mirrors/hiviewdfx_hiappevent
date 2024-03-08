@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//base/hiviewdfx/hiappevent/hiappevent.gni")
 import("//build/test.gni")
 
 native_hiappevent_path = "//base/hiviewdfx/hiappevent/frameworks/native"
@@ -24,6 +25,7 @@ config("hiappevent_config_test") {
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
     "$native_hiappevent_path/libhiappevent/include",
     "$native_hiappevent_path/libhiappevent/observer/include",
+    "$hiappevent_interfaces/native/kits/include",
   ]
 }
 

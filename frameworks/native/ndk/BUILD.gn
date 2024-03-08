@@ -18,12 +18,23 @@ hiappevent_native_path = "//base/hiviewdfx/hiappevent/frameworks/native"
 ohos_shared_library("hiappevent_ndk") {
   include_dirs = [
     "$hiappevent_native_path/libhiappevent/include",
+    "$hiappevent_native_path/ndk/include",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
   ]
 
-  sources = [ "hiappevent_ndk.c" ]
+  sources = [
+    "hiappevent_ndk.c",
+    "src/ndk_app_event_watcher.cpp",
+    "src/ndk_app_event_watcher_proxy.cpp",
+    "src/ndk_app_event_watcher_service.cpp",
+  ]
 
   deps = [ "$hiappevent_native_path/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
 
   part_name = "hiappevent"
   subsystem_name = "hiviewdfx"

@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "hiappevent_base.h"
+#include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_verify.h"
 #include "hiappevent_write.h"
@@ -201,4 +202,9 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
         WriteEvent(appEventPack);
     }
     return res;
+}
+
+void ClearData()
+{
+    HiAppEventClean::ClearData(HiAppEventConfig::GetInstance().GetStorageDir());
 }

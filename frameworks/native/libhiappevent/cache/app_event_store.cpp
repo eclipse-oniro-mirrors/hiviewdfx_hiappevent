@@ -314,22 +314,29 @@ int AppEventStore::QueryUserProperty(const std::string& name, std::string& out)
     return userPropertyDao_->Query(name, out);
 }
 
-int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq)
+int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t size)
 {
     // query the events of the observer
-    if (int ret = QueryEvents(events, observerSeq); ret != DB_SUCC) {
+    if (int ret = QueryEvents(events, observerSeq, size); ret != DB_SUCC) {
         return ret;
+    }
+    if (events.empty()) {
+        return DB_SUCC;
     }
     // delete the events mapping of the observer
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
-    if (appEventMappingDao_->Delete(observerSeq, {}) < 0) {
+    std::vector<int64_t> eventSeqs;
+    for (const auto &event : events) {
+        eventSeqs.emplace_back(event->GetSeq());
+    }
+    if (appEventMappingDao_->Delete(observerSeq, eventSeqs) < 0) {
         HILOG_WARN(LOG_CORE, "failed to delete the events mapping data, observer=%{public}" PRId64, observerSeq);
         return DB_FAILED;
     }
     return DB_SUCC;
 }
 
-int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq)
+int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t size)
 {
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
@@ -338,9 +345,13 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     {
         std::lock_guard<std::mutex> lockGuard(dbMutex_);
-        const std::string sql = "SELECT " + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
+        std::string sql = "SELECT " + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
             + Events::TABLE + " ON " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + "="
             + Events::TABLE + "." + Events::FIELD_SEQ + " WHERE " + AppEventMapping::FIELD_OBSERVER_SEQ + "=?";
+        if (size > 0) {
+            sql += " ORDER BY " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " DESC LIMIT " +
+                std::to_string(size);
+        }
         resultSet = dbStore_->QuerySql(sql, std::vector<std::string>{std::to_string(observerSeq)});
     }
     if (resultSet == nullptr) {
