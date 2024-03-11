@@ -31,7 +31,7 @@
 #define LOG_DOMAIN 0xD002D7
 
 #undef LOG_TAG
-#define LOG_TAG "HiappeventNapi"
+#define LOG_TAG "HiAppEventNapi"
 
 using namespace OHOS::HiviewDFX;
 
