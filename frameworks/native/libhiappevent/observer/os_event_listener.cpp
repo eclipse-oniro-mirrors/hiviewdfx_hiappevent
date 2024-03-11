@@ -30,7 +30,7 @@
 #define LOG_DOMAIN 0xD002D7
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEvent_sEventListener"
+#define LOG_TAG "HiAppEventOsEventListener"
 
 namespace OHOS {
 namespace HiviewDFX {
