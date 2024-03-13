@@ -561,10 +561,10 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest014, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest015, TestSize.Level0)
 {
     ASSERT_TRUE(OH_HiAppEvent_CreateWatcher(nullptr) == nullptr);
-    onReceiveWatcher_ = OH_HiAppEvent_CreateWatcher("test_onReceiver_watcher");
-    ASSERT_TRUE(onReceiveWatcher_ != nullptr);
-    onTriggerWatcher_ = OH_HiAppEvent_CreateWatcher("test_onTrigger_watcher");
-    ASSERT_TRUE(onTriggerWatcher_ != nullptr);
+    g_onReceiveWatcher = OH_HiAppEvent_CreateWatcher("test_onReceiver_watcher");
+    ASSERT_TRUE(g_onReceiveWatcher != nullptr);
+    g_onTriggerWatcher = OH_HiAppEvent_CreateWatcher("test_onTrigger_watcher");
+    ASSERT_TRUE(g_onTriggerWatcher != nullptr);
 }
 
 /**
@@ -580,14 +580,14 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest016, TestSize.Level0)
     constexpr int namsLen = 1;
     ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(nullptr, TEST_DOMAIN_NAME, 0, filterNames, namsLen),
               ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, nullptr, 0, filterNames, namsLen),
-              ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, TEST_DOMAIN_NAME, 0, nullptr, namsLen),
-              ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, TEST_DOMAIN_NAME, 0, filterNamesWithNullptr, namsLen),
-              ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onReceiveWatcher_, TEST_DOMAIN_NAME, 0, filterNames, namsLen), 0);
-    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(onTriggerWatcher_, TEST_DOMAIN_NAME, 0, filterNames, namsLen), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(g_onReceiveWatcher, nullptr, 0, filterNames, namsLen),
+              ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(g_onReceiveWatcher, TEST_DOMAIN_NAME, 0, nullptr, namsLen),
+              ErrorCode::ERROR_INVALID_EVENT_NAME);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(g_onReceiveWatcher, TEST_DOMAIN_NAME, 0, filterNamesWithNullptr, namsLen),
+              ErrorCode::ERROR_INVALID_EVENT_NAME);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(g_onReceiveWatcher, TEST_DOMAIN_NAME, 0, filterNames, namsLen), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetAppEventFilter(g_onTriggerWatcher, TEST_DOMAIN_NAME, 0, filterNames, namsLen), 0);
 }
 
 /**
@@ -599,7 +599,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest016, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest017, TestSize.Level0)
 {
     ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(nullptr, OnReceive), ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(onReceiveWatcher_, OnReceive), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnReceive(g_onReceiveWatcher, OnReceive), 0);
 }
 
 /**
@@ -611,7 +611,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest017, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest018, TestSize.Level0)
 {
     ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(nullptr, TEST_EVENT_NUM, 0, 0), ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(onTriggerWatcher_, TEST_EVENT_NUM, 0, 0), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetTriggerCondition(g_onTriggerWatcher, TEST_EVENT_NUM, 0, 0), 0);
 }
 
 /**
@@ -623,7 +623,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest018, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest019, TestSize.Level0)
 {
     ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(nullptr, OnTrigger), ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(onTriggerWatcher_, OnTrigger), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetWatcherOnTrigger(g_onTriggerWatcher, OnTrigger), 0);
 }
 
 /**
@@ -635,8 +635,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest019, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest020, TestSize.Level0)
 {
     ASSERT_EQ(OH_HiAppEvent_AddWatcher(nullptr), ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_AddWatcher(onTriggerWatcher_), 0);
-    ASSERT_EQ(OH_HiAppEvent_AddWatcher(onReceiveWatcher_), 0);
+    ASSERT_EQ(OH_HiAppEvent_AddWatcher(g_onTriggerWatcher), 0);
+    ASSERT_EQ(OH_HiAppEvent_AddWatcher(g_onReceiveWatcher), 0);
     for (int i = 0; i < TEST_EVENT_NUM; ++i) {
         WriteEvent();
     }
@@ -652,7 +652,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest021, TestSize.Level0)
 {
     constexpr uint32_t takeNum = 10;
     ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(nullptr, takeNum, OnTake), ErrorCode::ERROR_INVALID_WATCHER);
-    ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(onTriggerWatcher_, takeNum, OnTake), 0);
+    ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(g_onTriggerWatcher, takeNum, OnTake), 0);
 }
 
 /**
@@ -674,10 +674,10 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest022, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
 {
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onTriggerWatcher_), 0);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onTriggerWatcher_), ErrorCode::ERROR_WATCHER_NOT_ADDED);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onReceiveWatcher_), 0);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(onReceiveWatcher_), ErrorCode::ERROR_WATCHER_NOT_ADDED);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onTriggerWatcher), 0);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onTriggerWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onReceiveWatcher), 0);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onReceiveWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
 }
 
 /**
@@ -688,8 +688,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
 {
-    OH_HiAppEvent_DestroyWatcher(onTriggerWatcher_);
-    onTriggerWatcher_ = nullptr;
-    OH_HiAppEvent_DestroyWatcher(onReceiveWatcher_);
-    onReceiveWatcher_ = nullptr;
+    OH_HiAppEvent_DestroyWatcher(g_onTriggerWatcher);
+    g_onTriggerWatcher = nullptr;
+    OH_HiAppEvent_DestroyWatcher(g_onReceiveWatcher);
+    g_onReceiveWatcher = nullptr;
 }

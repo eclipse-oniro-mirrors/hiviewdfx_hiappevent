@@ -25,7 +25,7 @@ public:
     void SetUp() {}
     void TearDown() {}
 protected:
-    HiAppEvent_Watcher *onReceiveWatcher_;
-    HiAppEvent_Watcher *onTriggerWatcher_;
+    static inline HiAppEvent_Watcher *g_onReceiveWatcher = nullptr;
+    static inline HiAppEvent_Watcher *g_onTriggerWatcher = nullptr;
 };
 #endif // HIAPPEVENT_NATIVE_TEST_H
