@@ -27,7 +27,7 @@
 #include "storage_acl.h"
 
 #undef LOG_DOMAIN
-#define LOG_DOMAIN 0xD002D7
+#define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
 #define LOG_TAG "HiAppEventOsEventListener"
