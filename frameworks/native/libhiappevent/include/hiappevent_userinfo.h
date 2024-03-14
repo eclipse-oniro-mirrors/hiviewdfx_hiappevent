@@ -19,15 +19,15 @@
 #include <unordered_map>
 
 #include "app_event_observer.h"
-#include "singleton.h"
+#include "nocopyable.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-class UserInfo : public DelayedRefSingleton<UserInfo> {
+class UserInfo : public NoCopyable {
 public:
-    UserInfo();
-    ~UserInfo() {}
+    static UserInfo& GetInstance();
+
     int SetUserId(const std::string& name, const std::string& value);
     int GetUserId(const std::string& name, std::string& out);
     int RemoveUserId(const std::string& name);
@@ -41,6 +41,8 @@ public:
     void ClearData();
 
 private:
+    UserInfo();
+    ~UserInfo() = default;
     void InitUserIds();
     void InitUserProperties();
 
