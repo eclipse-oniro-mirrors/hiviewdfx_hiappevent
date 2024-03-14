@@ -26,10 +26,15 @@
 #include "hitrace/trace.h"
 #include "time_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventBase"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_base" };
 const std::string DEFAULT_DOMAIN = "default";
 
 std::string TrimRightZero(const std::string& str)
@@ -275,7 +280,7 @@ const std::unordered_map<AppEventParamType, GetParamValueFunc> GET_PARAM_VALUE_F
 std::string GetParamValueStr(const AppEventParam& param)
 {
     if (GET_PARAM_VALUE_FUNCS.find(param.value.type) == GET_PARAM_VALUE_FUNCS.end()) {
-        HiLog::Warn(LABEL, "Invalid param value, name=%{public}s", param.name.c_str());
+        HILOG_WARN(LOG_CORE, "Invalid param value, name=%{public}s", param.name.c_str());
         return "";
     }
     return GET_PARAM_VALUE_FUNCS.at(param.value.type)(param.value);

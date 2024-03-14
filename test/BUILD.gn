@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//base/hiviewdfx/hiappevent/hiappevent.gni")
 import("//build/test.gni")
 
 native_hiappevent_path = "//base/hiviewdfx/hiappevent/frameworks/native"
@@ -24,6 +25,7 @@ config("hiappevent_config_test") {
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
     "$native_hiappevent_path/libhiappevent/include",
     "$native_hiappevent_path/libhiappevent/observer/include",
+    "$hiappevent_interfaces/native/kits/include",
   ]
 }
 
@@ -57,7 +59,10 @@ ohos_unittest("HiAppEventCacheTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "relational_store:native_rdb" ]
+  external_deps = [
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
 }
 
 ohos_unittest("HiAppEventWatcherTest") {
@@ -76,6 +81,7 @@ ohos_unittest("HiAppEventWatcherTest") {
 
   external_deps = [
     "eventhandler:libeventhandler",
+    "hilog:libhilog",
     "relational_store:native_rdb",
   ]
 }
@@ -127,6 +133,7 @@ ohos_unittest("HiAppEventUserInfoTest") {
 
   external_deps = [
     "eventhandler:libeventhandler",
+    "hilog:libhilog",
     "relational_store:native_rdb",
   ]
 }

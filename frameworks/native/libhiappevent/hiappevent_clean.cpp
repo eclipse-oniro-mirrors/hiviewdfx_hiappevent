@@ -25,12 +25,16 @@
 #include "hiappevent_userinfo.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventClean"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEventClean {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_Clean" };
-
 void CreateCleaners(const std::string& dir, std::vector<std::shared_ptr<AppEventCleaner>>& cleaners)
 {
     cleaners.push_back(std::make_shared<AppEventDbCleaner>(dir));
@@ -55,7 +59,7 @@ bool IsStorageSpaceFull(const std::string& dir, uint64_t maxSize)
 
 bool ReleaseSomeStorageSpace(const std::string& dir, uint64_t maxSize)
 {
-    HiLog::Info(LABEL, "start to clear the storage space");
+    HILOG_INFO(LOG_CORE, "start to clear the storage space");
     std::vector<std::shared_ptr<AppEventCleaner>> cleaners;
     CreateCleaners(dir, cleaners);
     auto curSize = GetCurStorageSize(dir);

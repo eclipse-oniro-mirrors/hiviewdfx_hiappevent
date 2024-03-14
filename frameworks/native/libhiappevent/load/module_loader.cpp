@@ -21,12 +21,16 @@
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventModuleLoader"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_ModuleLoader" };
-
 std::string GetModulePath(const std::string& moduleName)
 {
     const std::string searchDirs[] = {
@@ -59,7 +63,7 @@ ModuleLoader::~ModuleLoader()
 
     for (auto it = modules_.begin(); it != modules_.end(); ++it) {
         dlclose(it->second);
-        HiLog::Info(LABEL, "succ to unload module=%{public}s", it->first.c_str());
+        HILOG_INFO(LOG_CORE, "succ to unload module=%{public}s", it->first.c_str());
     }
     modules_.clear();
 }
@@ -67,21 +71,21 @@ ModuleLoader::~ModuleLoader()
 int ModuleLoader::Load(const std::string& moduleName)
 {
     if (modules_.find(moduleName) != modules_.end()) {
-        HiLog::Info(LABEL, "the module=%{public}s already exists", moduleName.c_str());
+        HILOG_INFO(LOG_CORE, "the module=%{public}s already exists", moduleName.c_str());
         return 0;
     }
 
     std::string modulePath = GetModulePath(moduleName);
     if (modulePath.empty()) {
-        HiLog::Warn(LABEL, "the module=%{public}s does not exist.", moduleName.c_str());
+        HILOG_WARN(LOG_CORE, "the module=%{public}s does not exist.", moduleName.c_str());
         return -1;
     }
     void* handler = nullptr;
     if (handler = dlopen(modulePath.c_str(), RTLD_GLOBAL); handler == nullptr) {
-        HiLog::Error(LABEL, "failed to load module=%{public}s, error=%{public}s.", modulePath.c_str(), dlerror());
+        HILOG_ERROR(LOG_CORE, "failed to load module=%{public}s, error=%{public}s.", modulePath.c_str(), dlerror());
         return -1;
     }
-    HiLog::Info(LABEL, "succ to load module=%{public}s.", modulePath.c_str());
+    HILOG_INFO(LOG_CORE, "succ to load module=%{public}s.", modulePath.c_str());
     modules_[moduleName] = handler;
     return 0;
 }
@@ -89,23 +93,23 @@ int ModuleLoader::Load(const std::string& moduleName)
 int ModuleLoader::Unload(const std::string& moduleName)
 {
     if (modules_.find(moduleName) == modules_.end()) {
-        HiLog::Warn(LABEL, "the module=%{public}s does not exists", moduleName.c_str());
+        HILOG_WARN(LOG_CORE, "the module=%{public}s does not exists", moduleName.c_str());
         return -1;
     }
     dlclose(modules_[moduleName]);
     modules_.erase(moduleName);
-    HiLog::Info(LABEL, "succ to unload module=%{public}s", moduleName.c_str());
+    HILOG_INFO(LOG_CORE, "succ to unload module=%{public}s", moduleName.c_str());
     return 0;
 }
 
 int ModuleLoader::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
 {
     if (name.empty() || processor == nullptr) {
-        HiLog::Warn(LABEL, "the name or processor is invalid");
+        HILOG_WARN(LOG_CORE, "the name or processor is invalid");
         return -1;
     }
     if (processors_.find(name) != processors_.end()) {
-        HiLog::Warn(LABEL, "the processor already exists");
+        HILOG_WARN(LOG_CORE, "the processor already exists");
         return -1;
     }
     processors_[name] = processor;
@@ -115,7 +119,7 @@ int ModuleLoader::RegisterProcessor(const std::string& name, std::shared_ptr<App
 int ModuleLoader::UnregisterProcessor(const std::string& name)
 {
     if (processors_.find(name) == processors_.end()) {
-        HiLog::Warn(LABEL, "the name is invalid");
+        HILOG_WARN(LOG_CORE, "the name is invalid");
         return -1;
     }
     processors_.erase(name);
@@ -125,7 +129,7 @@ int ModuleLoader::UnregisterProcessor(const std::string& name)
 std::shared_ptr<AppEventObserver> ModuleLoader::CreateProcessorProxy(const std::string& name)
 {
     if (processors_.find(name) == processors_.end()) {
-        HiLog::Warn(LABEL, "the name is invalid");
+        HILOG_WARN(LOG_CORE, "the name is invalid");
         return nullptr;
     }
     return std::make_shared<AppEventProcessorProxy>(name, processors_[name]);

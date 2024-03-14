@@ -177,6 +177,7 @@ bool HiAppEventInnerConfigure(const char* name, const char* value);
 
 int HiAppEventInnerWrite(const char* domain, const char* name, enum EventType type, const ParamList list);
 
+void ClearData();
 #ifdef __cplusplus
 }
 #endif

@@ -21,18 +21,21 @@
 #include "rdb_helper.h"
 #include "sql_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventUserPropertyDao"
+
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_UserPropertyDao" };
-}
 using namespace AppEventCacheCommon;
 using namespace AppEventCacheCommon::UserProperties;
 
 UserPropertyDao::UserPropertyDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
 {
     if (Create() != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to create table=%{public}s", TABLE.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", TABLE.c_str());
     }
 }
 
@@ -71,7 +74,7 @@ int64_t UserPropertyDao::Insert(const std::string& name, const std::string& valu
     if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "insert user property, name=%{public}s, value=%{public}s", name.c_str(), value.c_str());
+    HILOG_INFO(LOG_CORE, "insert user property, name=%{public}s, value=%{public}s", name.c_str(), value.c_str());
     return seq;
 }
 
@@ -91,7 +94,7 @@ int64_t UserPropertyDao::Update(const std::string& name, const std::string& valu
     if (dbStore_->Update(changedRows, bucket, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "update %{public}d user property, name=%{public}s", changedRows, name.c_str());
+    HILOG_INFO(LOG_CORE, "update %{public}d user property, name=%{public}s", changedRows, name.c_str());
     return changedRows;
 }
 
@@ -109,7 +112,7 @@ int UserPropertyDao::Delete(const std::string& name)
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "delete %{public}d user property, name=%{public}s", deleteRows, name.c_str());
+    HILOG_INFO(LOG_CORE, "delete %{public}d user property, name=%{public}s", deleteRows, name.c_str());
     return deleteRows;
 }
 
@@ -123,12 +126,12 @@ int UserPropertyDao::Query(const std::string& name, std::string& out)
     predicates.EqualTo(FIELD_NAME, name);
     auto resultSet = dbStore_->Query(predicates, {FIELD_VALUE});
     if (resultSet == nullptr) {
-        HiLog::Error(LABEL, "failed to query table, name=%{public}s", name.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to query table, name=%{public}s", name.c_str());
         return DB_FAILED;
     }
     if (resultSet->GoToNextRow() == NativeRdb::E_OK) {
         if (resultSet->GetString(0, out) != NativeRdb::E_OK) {
-            HiLog::Error(LABEL, "failed to get value from resultSet, name=%{public}s", name.c_str());
+            HILOG_ERROR(LOG_CORE, "failed to get value from resultSet, name=%{public}s", name.c_str());
             resultSet->Close();
             return DB_FAILED;
         }
@@ -146,7 +149,7 @@ int UserPropertyDao::QueryAll(std::unordered_map<std::string, std::string>& out)
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     auto resultSet = dbStore_->Query(predicates, {FIELD_NAME, FIELD_VALUE});
     if (resultSet == nullptr) {
-        HiLog::Error(LABEL, "failed to query table");
+        HILOG_ERROR(LOG_CORE, "failed to query table");
         return DB_FAILED;
     }
 
@@ -155,7 +158,7 @@ int UserPropertyDao::QueryAll(std::unordered_map<std::string, std::string>& out)
         std::string name;
         std::string value;
         if (resultSet->GetString(0, name) != NativeRdb::E_OK || resultSet->GetString(1, value) != NativeRdb::E_OK) {
-            HiLog::Error(LABEL, "failed to get data from resultSet");
+            HILOG_ERROR(LOG_CORE, "failed to get data from resultSet");
             continue;
         }
         out[name] = value;

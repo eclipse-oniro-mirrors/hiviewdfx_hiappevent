@@ -22,11 +22,13 @@
 #include "napi_hiappevent_write.h"
 #include "napi_util.h"
 
-using namespace OHOS::HiviewDFX;
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
 
-namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NAPI" };
-}
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventNapi"
+
+using namespace OHOS::HiviewDFX;
 
 static napi_value Write(napi_env env, napi_callback_info info)
 {
@@ -37,7 +39,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
 
     auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
     if (asyncContext == nullptr) {
-        HiLog::Error(LABEL, "failed to new asyncContext.");
+        HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return NapiUtil::CreateUndefined(env);
     }
 
@@ -72,7 +74,7 @@ static napi_value Configure(napi_env env, napi_callback_info info)
     napi_value params[PARAM_NUM] = { 0 };
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
     if (paramNum != PARAM_NUM) {
-        HiLog::Error(LABEL, "failed to check the number of configure param");
+        HILOG_ERROR(LOG_CORE, "failed to check the number of configure param");
         return NapiUtil::CreateBoolean(env, false);
     }
     return NapiUtil::CreateBoolean(env, NapiHiAppEventConfig::Configure(env, params[0]));

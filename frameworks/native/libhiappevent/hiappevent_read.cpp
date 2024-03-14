@@ -23,12 +23,17 @@
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventRead"
+
 using namespace std;
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-    constexpr HiLogLabel LABEL = {LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_read"};
     constexpr int FORMAT_TZ_SIZE = 9;
     constexpr int MAX_LOG_COUNT = 1000;
     constexpr int MILLI_TO_MICRO = 1000;
@@ -107,7 +112,7 @@ void LogAssistant::ParseSingFileLogs(vector<string>& logs,
 {
     ifstream fin(logPersistDir + string(APP_EVENT_DIR) + fileName);
     if (!fin) {
-        HiLog::Error(LABEL, "single log file read failed.");
+        HILOG_ERROR(LOG_CORE, "single log file read failed.");
         return;
     }
     string currentLine;
@@ -154,7 +159,7 @@ string LogAssistant::TranslateLongToFormattedTimeStamp(TimeStampVarType timeStam
     time_t ftt = (time_t)(timeStamp / MILLI_TO_MICRO);
     struct tm tmLocal;
     if (localtime_r(&ftt, &tmLocal) == nullptr) {
-        HiLog::Error(LABEL, "failed to get local time.");
+        HILOG_ERROR(LOG_CORE, "failed to get local time.");
         return string();
     }
     char formatTz[FORMAT_TZ_SIZE] = {0};
@@ -198,7 +203,7 @@ void LogAssistant::AllMatchedLogFiles(vector<string>& logFiles, TimeStampVarType
     logFiles.clear();
     DIR* dir = opendir((logPersistDir + APP_EVENT_DIR).c_str());
     if (dir == nullptr) {
-        HiLog::Error(LABEL, "log persisted directory opened failed.");
+        HILOG_ERROR(LOG_CORE, "log persisted directory opened failed.");
         return;
     }
     struct dirent* ent;
@@ -246,7 +251,7 @@ void LogAssistant::PullEventHistoryLog(TimeStampVarType beginTimeStamp,
     }
     vector<string> historyLogs;
     historyLogs.reserve(static_cast<unsigned int>(count));
-    HiLog::Debug(LABEL, "log capacity set to %{public}d", count);
+    HILOG_DEBUG(LOG_CORE, "log capacity set to %{public}d", count);
     ReadHistoryLogFromPersistFile(historyLogs, beginTimeStamp, endTimeStamp, count);
     // Sort all the matched logs in ascending order
     sort(historyLogs.begin(),

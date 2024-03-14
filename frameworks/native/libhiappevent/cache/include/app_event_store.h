@@ -45,8 +45,8 @@ public:
     int64_t InsertUserProperty(const std::string& name, const std::string& value);
     int64_t UpdateUserId(const std::string& name, const std::string& value);
     int64_t UpdateUserProperty(const std::string& name, const std::string& value);
-    int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
-    int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq);
+    int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t eventSize = 0);
+    int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t eventSize = 0);
     int64_t QueryObserverSeq(const std::string& observer, int64_t hashCode = 0);
     int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
     int QueryUserIds(std::unordered_map<std::string, std::string>& out);

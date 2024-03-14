@@ -22,10 +22,15 @@
 #include "napi_error.h"
 #include "napi_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "NapiHiAppEventHolder"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Holder" };
 constexpr size_t PARAM_NUM = 1;
 const std::string HOLDER_CLASS_NAME = "AppEventPackageHolder";
 
@@ -33,7 +38,7 @@ int64_t GetObserverSeqByName(const std::string& name)
 {
     int64_t observerSeq = -1;
     if (observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name); observerSeq <= 0) {
-        HiLog::Warn(LABEL, "failed to query seq by name=%{public}s", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to query seq by name=%{public}s", name.c_str());
         return -1;
     }
     return observerSeq;
@@ -61,7 +66,7 @@ napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info 
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
 
     if (paramNum < PARAM_NUM) {
-        HiLog::Error(LABEL, "hodler failed to construct: invalid param num");
+        HILOG_ERROR(LOG_CORE, "hodler failed to construct: invalid param num");
         return thisVar;
     }
     auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetString(env, params[0]));
@@ -133,7 +138,7 @@ napi_value NapiAppEventHolder::NapiTakeNext(napi_env env, napi_callback_info inf
 
 void NapiAppEventHolder::SetSize(int size)
 {
-    HiLog::Info(LABEL, "hodler seq=%{public}" PRId64 " set size=%{public}d", observerSeq_, size);
+    HILOG_INFO(LOG_CORE, "hodler seq=%{public}" PRId64 " set size=%{public}d", observerSeq_, size);
     takeSize_ = size;
 }
 
@@ -141,11 +146,11 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
 {
     std::vector<std::shared_ptr<AppEventPack>> events;
     if (AppEventStore::GetInstance().QueryEvents(events, observerSeq_) != 0) {
-        HiLog::Warn(LABEL, "failed to query events, seq=%{public}" PRId64, observerSeq_);
+        HILOG_WARN(LOG_CORE, "failed to query events, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
     if (events.empty()) {
-        HiLog::Info(LABEL, "end to query events, seq=%{public}" PRId64, observerSeq_);
+        HILOG_INFO(LOG_CORE, "end to query events, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
 
@@ -155,7 +160,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
     for (auto event : events) {
         std::string eventStr = event->GetEventStr();
         if (static_cast<int>(totalSize + eventStr.size()) > takeSize_) {
-            HiLog::Info(LABEL, "stop to take data, totalSize=%{public}zu, takeSize=%{public}d",
+            HILOG_INFO(LOG_CORE, "stop to take data, totalSize=%{public}zu, takeSize=%{public}d",
                 totalSize, takeSize_);
             break;
         }
@@ -164,11 +169,11 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
         eventSeqs.emplace_back(event->GetSeq());
     }
     if (eventStrs.empty()) {
-        HiLog::Info(LABEL, "take data is empty, seq=%{public}" PRId64, observerSeq_);
+        HILOG_INFO(LOG_CORE, "take data is empty, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
     if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq_, eventSeqs) < 0) {
-        HiLog::Info(LABEL, "failed to delete mapping data, seq=%{public}" PRId64, observerSeq_);
+        HILOG_INFO(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
 

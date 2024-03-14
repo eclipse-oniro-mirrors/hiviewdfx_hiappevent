@@ -26,10 +26,15 @@
 #include "hilog/log.h"
 #include "storage_acl.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventOsEventListener"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_OsEventListener" };
 constexpr int BUF_SIZE = 2048;
 const std::string APP_EVENT_DIR = "/hiappevent";
 const std::string DOMAIN_PROPERTY = "domain";
@@ -46,7 +51,7 @@ OsEventListener::OsEventListener()
 
 OsEventListener::~OsEventListener()
 {
-    HiLog::Info(LABEL, "~OsEventListener");
+    HILOG_INFO(LOG_CORE, "~OsEventListener");
     inotifyStopFlag_ = true;
     inotifyThread_ = nullptr;
     if (inotifyFd_ != -1) {
@@ -61,11 +66,11 @@ void OsEventListener::Init()
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
-        HiLog::Error(LABEL, "Context is null.");
+        HILOG_ERROR(LOG_CORE, "Context is null.");
         return;
     }
     if (context->GetCacheDir().empty()) {
-        HiLog::Error(LABEL, "The files dir obtained from context is empty.");
+        HILOG_ERROR(LOG_CORE, "The files dir obtained from context is empty.");
         return;
     }
     osEventPath_ = context->GetCacheDir() + APP_EVENT_DIR;
@@ -76,7 +81,7 @@ void OsEventListener::Init()
     for (auto& event : historyEvents_) {
         int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
         if (eventSeq <= 0) {
-            HiLog::Warn(LABEL, "failed to store event to db");
+            HILOG_WARN(LOG_CORE, "failed to store event to db");
             continue;
         }
         event->SetSeq(eventSeq);
@@ -105,11 +110,11 @@ bool OsEventListener::RemoveOsEventDir()
 bool OsEventListener::InitDir(const std::string& dirPath)
 {
     if (!FileUtil::IsFileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {
-        HiLog::Error(LABEL, "failed to create dir=%{public}s", dirPath.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to create dir=%{public}s", dirPath.c_str());
         return false;
     }
     if (OHOS::StorageDaemon::AclSetAccess(dirPath, "g:1201:rwx") != 0) {
-        HiLog::Error(LABEL, "failed to set acl access dir=%{public}s", dirPath.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to set acl access dir=%{public}s", dirPath.c_str());
         return false;
     }
     return true;
@@ -120,17 +125,17 @@ bool OsEventListener::RegisterDirListener(const std::string& dirPath)
     if (inotifyFd_ < 0) {
         inotifyFd_ = inotify_init();
         if (inotifyFd_ < 0) {
-            HiLog::Error(LABEL, "failed to inotify init : %s(%s).\n", strerror(errno), dirPath.c_str());
+            HILOG_ERROR(LOG_CORE, "failed to inotify init : %s(%s).\n", strerror(errno), dirPath.c_str());
             return false;
         }
         inotifyWd_ = inotify_add_watch(inotifyFd_, dirPath.c_str(), IN_MOVED_TO | IN_CLOSE_WRITE);
         if (inotifyWd_ < 0) {
-            HiLog::Error(LABEL, "failed to add watch entry : %s(%s).\n", strerror(errno), dirPath.c_str());
+            HILOG_ERROR(LOG_CORE, "failed to add watch entry : %s(%s).\n", strerror(errno), dirPath.c_str());
             close(inotifyFd_);
             inotifyFd_ = -1;
             return false;
         }
-        HiLog::Info(LABEL, "inotify add watch dir=%{public}s successfully", dirPath.c_str());
+        HILOG_INFO(LOG_CORE, "inotify add watch dir=%{public}s successfully", dirPath.c_str());
     }
     inotifyStopFlag_ = false;
     if (inotifyThread_ == nullptr) {
@@ -147,17 +152,17 @@ void OsEventListener::HandleDirEvent()
         char* offset = buffer;
         struct inotify_event* event = reinterpret_cast<struct inotify_event*>(buffer);
         if (inotifyFd_ < 0) {
-            HiLog::Error(LABEL, "Invalid inotify fd=%{public}d", inotifyFd_);
+            HILOG_ERROR(LOG_CORE, "Invalid inotify fd=%{public}d", inotifyFd_);
             break;
         }
         int len = read(inotifyFd_, buffer, BUF_SIZE);
         if (len <= 0) {
-            HiLog::Error(LABEL, "failed to read event");
+            HILOG_ERROR(LOG_CORE, "failed to read event");
             continue;
         }
         while ((offset - buffer) < len) {
             if (event->len != 0) {
-                HiLog::Info(LABEL, "fileName: %{public}s event->mask: 0x%{public}x, event->len: %{public}d",
+                HILOG_INFO(LOG_CORE, "fileName: %{public}s event->mask: 0x%{public}x, event->len: %{public}d",
                     event->name, event->mask, event->len);
                 std::string fileName = FileUtil::GetFilePathByDir(osEventPath_, std::string(event->name));
                 HandleInotify(fileName);
@@ -183,7 +188,7 @@ void OsEventListener::GetEventsFromFiles(
     for (const auto& filePath : files) {
         std::vector<std::string> lines;
         if (!FileUtil::LoadLinesFromFile(filePath, lines)) {
-            HiLog::Error(LABEL, "file open failed, file=%{public}s", filePath.c_str());
+            HILOG_ERROR(LOG_CORE, "file open failed, file=%{public}s", filePath.c_str());
             continue;
         }
         for (const auto& line : lines) {
@@ -200,7 +205,7 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
     Json::Value eventJson;
     Json::Reader reader(Json::Features::strictMode());
     if (!reader.parse(jsonStr, eventJson)) {
-        HiLog::Error(LABEL, "parse event detail info failed, please check the style of json");
+        HILOG_ERROR(LOG_CORE, "parse event detail info failed, please check the style of json");
         return nullptr;
     }
 

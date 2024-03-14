@@ -25,6 +25,8 @@ using HiAppEvent::AppEventFilter;
 
 class AppEventWatcher : public AppEventObserver {
 public:
+    explicit AppEventWatcher(const std::string& name);
+
     AppEventWatcher(
         const std::string& name,
         const std::vector<AppEventFilter>& filters,

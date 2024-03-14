@@ -16,6 +16,8 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+AppEventWatcher::AppEventWatcher(const std::string& name) : AppEventObserver(name) {};
+
 AppEventWatcher::AppEventWatcher(
     const std::string& name,
     const std::vector<AppEventFilter>& filters,

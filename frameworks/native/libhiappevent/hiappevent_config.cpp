@@ -28,10 +28,15 @@
 #include "hilog/log.h"
 #include "module_loader.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventConfig"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_config" };
 const std::string DISABLE = "disable";
 const std::string MAX_STORAGE = "max_storage";
 const std::string DEFAULT_STORAGE_DIR = "";
@@ -78,16 +83,16 @@ bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
 {
     // trans uppercase to underscore and lowercase
     name = TransUpperToUnderscoreAndLower(name);
-    HiLog::Debug(LABEL, "start to configure, name=%{public}s, value=%{public}s.", name.c_str(), value.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to configure, name=%{public}s, value=%{public}s.", name.c_str(), value.c_str());
 
     if (name == "") {
-        HiLog::Error(LABEL, "item name can not be empty.");
+        HILOG_ERROR(LOG_CORE, "item name can not be empty.");
         return false;
     }
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
     if (value == "") {
-        HiLog::Error(LABEL, "item value can not be empty.");
+        HILOG_ERROR(LOG_CORE, "item value can not be empty.");
         return false;
     }
     std::transform(value.begin(), value.end(), value.begin(), ::tolower);
@@ -97,7 +102,7 @@ bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
     } else if (name == MAX_STORAGE) {
         return SetMaxStorageSizeItem(value);
     } else {
-        HiLog::Error(LABEL, "unrecognized configuration item name.");
+        HILOG_ERROR(LOG_CORE, "unrecognized configuration item name.");
         return false;
     }
 }
@@ -109,7 +114,7 @@ bool HiAppEventConfig::SetDisableItem(const std::string& value)
     } else if (value == "false") {
         SetDisable(false);
     } else {
-        HiLog::Error(LABEL, "invalid bool value=%{public}s of the application dotting switch.", value.c_str());
+        HILOG_ERROR(LOG_CORE, "invalid bool value=%{public}s of the application dotting switch.", value.c_str());
         return false;
     }
     return true;
@@ -118,7 +123,7 @@ bool HiAppEventConfig::SetDisableItem(const std::string& value)
 bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
 {
     if (!std::regex_match(value, std::regex("[0-9]+[k|m|g|t]?[b]?"))) {
-        HiLog::Error(LABEL, "invalid value=%{public}s of the event file dir storage quota size.", value.c_str());
+        HILOG_ERROR(LOG_CORE, "invalid value=%{public}s of the event file dir storage quota size.", value.c_str());
         return false;
     }
 
@@ -150,7 +155,7 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
             maxStoSize = numValue * STORAGE_UNIT_TB;
             break;
         default:
-            HiLog::Error(LABEL, "invalid storage unit value=%{public}c.", unitChr);
+            HILOG_ERROR(LOG_CORE, "invalid storage unit value=%{public}c.", unitChr);
             return false;
     }
 
@@ -201,11 +206,11 @@ std::string HiAppEventConfig::GetStorageDir()
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
-        HiLog::Error(LABEL, "Context is null.");
+        HILOG_ERROR(LOG_CORE, "Context is null.");
         return DEFAULT_STORAGE_DIR;
     }
     if (context->GetFilesDir().empty()) {
-        HiLog::Error(LABEL, "The files dir obtained from context is empty.");
+        HILOG_ERROR(LOG_CORE, "The files dir obtained from context is empty.");
         return DEFAULT_STORAGE_DIR;
     }
     std::string dir = context->GetFilesDir() + APP_EVENT_DIR;

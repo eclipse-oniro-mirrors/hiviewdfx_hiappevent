@@ -18,20 +18,23 @@
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventAppEventHandler"
+
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_AppEventHandler" };
-}
 AppEventHandler::AppEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
     : AppExecFwk::EventHandler(runner)
 {
-    HiLog::Info(LABEL, "AppEventHandler instance created");
+    HILOG_INFO(LOG_CORE, "AppEventHandler instance created");
 }
 
 AppEventHandler::~AppEventHandler()
 {
-    HiLog::Info(LABEL, "AppEventHandler instance destroyed");
+    HILOG_INFO(LOG_CORE, "AppEventHandler instance destroyed");
 }
 
 void AppEventHandler::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
@@ -39,7 +42,7 @@ void AppEventHandler::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
     if (event->GetInnerEventId() == AppEventType::WATCHER_TIMEOUT) {
         AppEventObserverMgr::GetInstance().HandleTimeout();
     } else {
-        HiLog::Warn(LABEL, "invalid event id=%{public}u", event->GetInnerEventId());
+        HILOG_WARN(LOG_CORE, "invalid event id=%{public}u", event->GetInnerEventId());
     }
 }
 } // namespace HiviewDFX

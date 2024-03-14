@@ -20,17 +20,20 @@
 #include "rdb_helper.h"
 #include "sql_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventAppEventObserverDao"
+
 namespace OHOS {
 namespace HiviewDFX {
 using namespace AppEventCacheCommon;
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_AppEventObserverDao" };
-}
 
 AppEventObserverDao::AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
 {
     if (Create() != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to create table=%{public}s", Observers::TABLE.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", Observers::TABLE.c_str());
     }
 }
 
@@ -75,7 +78,7 @@ int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashC
     predicates.EqualTo(Observers::FIELD_HASH, hashCode);
     auto resultSet = dbStore_->Query(predicates, {Observers::FIELD_SEQ});
     if (resultSet == nullptr) {
-        HiLog::Error(LABEL, "failed to query table, observer name=%{public}s, hash code=%{public}" PRId64,
+        HILOG_ERROR(LOG_CORE, "failed to query table, observer name=%{public}s, hash code=%{public}" PRId64,
             observer.c_str(), hashCode);
         return DB_FAILED;
     }
@@ -83,7 +86,7 @@ int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashC
     // the hash code is unique, so get only the first
     int64_t observerSeq = 0;
     if (resultSet->GoToNextRow() == NativeRdb::E_OK && resultSet->GetLong(0, observerSeq) == NativeRdb::E_OK) {
-        HiLog::Info(LABEL, "succ to query observer seq=%{public}" PRId64 ", name=%{public}s, hash=%{public}" PRId64,
+        HILOG_INFO(LOG_CORE, "succ to query observer seq=%{public}" PRId64 ", name=%{public}s, hash=%{public}" PRId64,
             observerSeq, observer.c_str(), hashCode);
         resultSet->Close();
         return observerSeq;
@@ -98,13 +101,13 @@ int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int6
     predicates.EqualTo(Observers::FIELD_NAME, observer);
     auto resultSet = dbStore_->Query(predicates, {Observers::FIELD_SEQ});
     if (resultSet == nullptr) {
-        HiLog::Error(LABEL, "failed to query table, observer=%{public}s", observer.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to query table, observer=%{public}s", observer.c_str());
         return DB_FAILED;
     }
     while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
         int64_t observerSeq = 0;
         if (resultSet->GetLong(0, observerSeq) != NativeRdb::E_OK) {
-            HiLog::Error(LABEL, "failed to get seq value from resultSet, observer=%{public}s", observer.c_str());
+            HILOG_ERROR(LOG_CORE, "failed to get seq value from resultSet, observer=%{public}s", observer.c_str());
             continue;
         }
         observerSeqs.emplace_back(observerSeq);
@@ -119,10 +122,10 @@ int AppEventObserverDao::Delete(const std::string& observer)
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_NAME, observer);
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        HiLog::Error(LABEL, "failed to delete records, observer=%{public}s", observer.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to delete records, observer=%{public}s", observer.c_str());
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "delete %{public}d records, observer=%{public}s", deleteRows, observer.c_str());
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, observer=%{public}s", deleteRows, observer.c_str());
     return deleteRows;
 }
 
@@ -132,10 +135,10 @@ int AppEventObserverDao::Delete(int64_t observerSeq)
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_SEQ, observerSeq);
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        HiLog::Error(LABEL, "failed to delete records, observer seq=%{public}" PRId64, observerSeq);
+        HILOG_ERROR(LOG_CORE, "failed to delete records, observer seq=%{public}" PRId64, observerSeq);
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
     return deleteRows;
 }
 } // namespace HiviewDFX

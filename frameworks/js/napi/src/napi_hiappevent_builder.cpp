@@ -20,10 +20,15 @@
 #include "napi_error.h"
 #include "napi_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "NapiHiAppEventBuilder"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "Napi_HiAppEvent_Builder" };
 const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string TYPE_PROPERTY = "eventType";
@@ -137,7 +142,7 @@ void NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::str
             break;
         }
         default: {
-            HiLog::Error(LABEL, "array param value type is invalid");
+            HILOG_ERROR(LOG_CORE, "array param value type is invalid");
             result_ = ERROR_INVALID_LIST_PARAM_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
@@ -167,7 +172,7 @@ void NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &
             }
             [[fallthrough]];
         default:
-            HiLog::Error(LABEL, "param value type is invalid");
+            HILOG_ERROR(LOG_CORE, "param value type is invalid");
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
@@ -182,7 +187,7 @@ void NapiHiAppEventBuilder::AddParams2EventPack(napi_env env, const napi_value p
     for (auto key : keys) {
         if (key.length() > MAX_LENGTH_OF_PARAM_NAME) {
             result_ = ERROR_INVALID_PARAM_NAME;
-            HiLog::Info(LABEL, "the length=%{public}zu of the param key is invalid", key.length());
+            HILOG_INFO(LOG_CORE, "the length=%{public}zu of the param key is invalid", key.length());
             continue;
         }
         napi_value value = NapiUtil::GetProperty(env, paramObj, key);

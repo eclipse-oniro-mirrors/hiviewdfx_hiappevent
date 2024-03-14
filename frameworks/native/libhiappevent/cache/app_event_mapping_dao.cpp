@@ -23,17 +23,20 @@
 #include "rdb_helper.h"
 #include "sql_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventAppEvenMappingDao"
+
 namespace OHOS {
 namespace HiviewDFX {
 using namespace AppEventCacheCommon;
 using namespace AppEventCacheCommon::AppEventMapping;
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_AppEvenMappingDao" };
-}
 AppEventMappingDao::AppEventMappingDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
 {
     if (Create() != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to create table=%{public}s", TABLE.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", TABLE.c_str());
     }
 }
 
@@ -89,7 +92,7 @@ int AppEventMappingDao::Delete(int64_t observerSeq, const std::vector<int64_t>& 
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
     return deleteRows;
 }
 } // namespace HiviewDFX

@@ -28,11 +28,16 @@
 #include "rdb_helper.h"
 #include "sql_util.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventStore"
+
 using namespace OHOS::HiviewDFX::AppEventCacheCommon;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_Store" };
 const char* DATABASE_NAME = "appevent.db";
 const char* DATABASE_DIR = "databases/";
 
@@ -41,11 +46,11 @@ int GetIntFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet
     int value = 0;
     int colIndex = 0;
     if (resultSet->GetColumnIndex(colName, colIndex) != NativeRdb::E_OK) {
-        HiLog::Warn(LABEL, "failed to get column index, colName=%{public}s", colName.c_str());
+        HILOG_WARN(LOG_CORE, "failed to get column index, colName=%{public}s", colName.c_str());
         return value;
     }
     if (resultSet->GetInt(colIndex, value) != NativeRdb::E_OK) {
-        HiLog::Warn(LABEL, "failed to get int value, colName=%{public}s", colName.c_str());
+        HILOG_WARN(LOG_CORE, "failed to get int value, colName=%{public}s", colName.c_str());
     }
     return value;
 }
@@ -55,11 +60,11 @@ int64_t GetLongFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resu
     int64_t value = 0;
     int colIndex = 0;
     if (resultSet->GetColumnIndex(colName, colIndex) != NativeRdb::E_OK) {
-        HiLog::Warn(LABEL, "failed to get column index, colName=%{public}s", colName.c_str());
+        HILOG_WARN(LOG_CORE, "failed to get column index, colName=%{public}s", colName.c_str());
         return value;
     }
     if (resultSet->GetLong(colIndex, value) != NativeRdb::E_OK) {
-        HiLog::Warn(LABEL, "failed to get long value, colName=%{public}s", colName.c_str());
+        HILOG_WARN(LOG_CORE, "failed to get long value, colName=%{public}s", colName.c_str());
     }
     return value;
 }
@@ -69,11 +74,11 @@ std::string GetStringFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet
     std::string value;
     int colIndex = 0;
     if (resultSet->GetColumnIndex(colName, colIndex) != NativeRdb::E_OK) {
-        HiLog::Warn(LABEL, "failed to get column index, colName=%{public}s", colName.c_str());
+        HILOG_WARN(LOG_CORE, "failed to get column index, colName=%{public}s", colName.c_str());
         return value;
     }
     if (resultSet->GetString(colIndex, value) != NativeRdb::E_OK) {
-        HiLog::Warn(LABEL, "failed to get string value, colName=%{public}s", colName.c_str());
+        HILOG_WARN(LOG_CORE, "failed to get string value, colName=%{public}s", colName.c_str());
     }
     return value;
 }
@@ -100,13 +105,13 @@ std::shared_ptr<AppEventPack> GetEventFromResultSet(std::shared_ptr<NativeRdb::A
 
 int AppEventStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
 {
-    HiLog::Debug(LABEL, "OnCreate start to create db");
+    HILOG_DEBUG(LOG_CORE, "OnCreate start to create db");
     return NativeRdb::E_OK;
 }
 
 int AppEventStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion)
 {
-    HiLog::Debug(LABEL, "OnUpgrade, oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
+    HILOG_DEBUG(LOG_CORE, "OnUpgrade, oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
     return NativeRdb::E_OK;
 }
 
@@ -133,7 +138,7 @@ int AppEventStore::InitDbStore()
     AppEventStoreCallback callback;
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, dbVersion, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
-        HiLog::Error(LABEL, "failed to create db store, ret=%{pulic}d", ret);
+        HILOG_ERROR(LOG_CORE, "failed to create db store, ret=%{pulic}d", ret);
         return DB_FAILED;
     }
 
@@ -144,7 +149,7 @@ int AppEventStore::InitDbStore()
     appEventMappingDao_ = std::make_shared<AppEventMappingDao>(dbStore_);
     userIdDao_ = std::make_shared<UserIdDao>(dbStore_);
     userPropertyDao_ = std::make_shared<UserPropertyDao>(dbStore_);
-    HiLog::Info(LABEL, "create db store successfully");
+    HILOG_INFO(LOG_CORE, "create db store successfully");
     return DB_SUCC;
 }
 
@@ -152,12 +157,12 @@ bool AppEventStore::InitDbStoreDir()
 {
     std::string dir = HiAppEventConfig::GetInstance().GetStorageDir();
     if (dir.empty()) {
-        HiLog::Error(LABEL, "failed to init db dir, path is empty");
+        HILOG_ERROR(LOG_CORE, "failed to init db dir, path is empty");
         return false;
     }
     dirPath_ = FileUtil::GetFilePathByDir(dir, DATABASE_DIR);
     if (!FileUtil::IsFileExists(dirPath_) && !FileUtil::ForceCreateDirectory(dirPath_)) {
-        HiLog::Error(LABEL, "failed to create database dir, errno=%{public}d", errno);
+        HILOG_ERROR(LOG_CORE, "failed to create database dir, errno=%{public}d", errno);
         return false;
     }
     return true;
@@ -172,10 +177,10 @@ int AppEventStore::DestroyDbStore()
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     dbStore_ = nullptr;
     if (int ret = NativeRdb::RdbHelper::DeleteRdbStore(dirPath_ + DATABASE_NAME); ret != NativeRdb::E_OK) {
-        HiLog::Error(LABEL, "failed to destroy db store, ret=%{pulic}d", ret);
+        HILOG_ERROR(LOG_CORE, "failed to destroy db store, ret=%{pulic}d", ret);
         return DB_FAILED;
     }
-    HiLog::Info(LABEL, "destroy db store successfully");
+    HILOG_INFO(LOG_CORE, "destroy db store successfully");
     return DB_SUCC;
 }
 
@@ -309,22 +314,29 @@ int AppEventStore::QueryUserProperty(const std::string& name, std::string& out)
     return userPropertyDao_->Query(name, out);
 }
 
-int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq)
+int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t size)
 {
     // query the events of the observer
-    if (int ret = QueryEvents(events, observerSeq); ret != DB_SUCC) {
+    if (int ret = QueryEvents(events, observerSeq, size); ret != DB_SUCC) {
         return ret;
+    }
+    if (events.empty()) {
+        return DB_SUCC;
     }
     // delete the events mapping of the observer
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
-    if (appEventMappingDao_->Delete(observerSeq, {}) < 0) {
-        HiLog::Warn(LABEL, "failed to delete the events mapping data, observer=%{public}" PRId64, observerSeq);
+    std::vector<int64_t> eventSeqs;
+    for (const auto &event : events) {
+        eventSeqs.emplace_back(event->GetSeq());
+    }
+    if (appEventMappingDao_->Delete(observerSeq, eventSeqs) < 0) {
+        HILOG_WARN(LOG_CORE, "failed to delete the events mapping data, observer=%{public}" PRId64, observerSeq);
         return DB_FAILED;
     }
     return DB_SUCC;
 }
 
-int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq)
+int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t size)
 {
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
@@ -333,13 +345,17 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
     std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
     {
         std::lock_guard<std::mutex> lockGuard(dbMutex_);
-        const std::string sql = "SELECT " + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
+        std::string sql = "SELECT " + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
             + Events::TABLE + " ON " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + "="
             + Events::TABLE + "." + Events::FIELD_SEQ + " WHERE " + AppEventMapping::FIELD_OBSERVER_SEQ + "=?";
+        if (size > 0) {
+            sql += " ORDER BY " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " DESC LIMIT " +
+                std::to_string(size);
+        }
         resultSet = dbStore_->QuerySql(sql, std::vector<std::string>{std::to_string(observerSeq)});
     }
     if (resultSet == nullptr) {
-        HiLog::Warn(LABEL, "result set is null, observer=%{public}" PRId64, observerSeq);
+        HILOG_WARN(LOG_CORE, "result set is null, observer=%{public}" PRId64, observerSeq);
         return DB_FAILED;
     }
     while (resultSet->GoToNextRow() == NativeRdb::E_OK) {

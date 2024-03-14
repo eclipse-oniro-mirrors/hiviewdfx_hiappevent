@@ -19,11 +19,16 @@
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "HiAppEventNapiUtil"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiUtil {
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, HIAPPEVENT_DOMAIN, "HiAppEvent_NapiUtil" };
 const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string EVENT_TYPE_PROPERTY = "eventType";
@@ -65,7 +70,7 @@ bool IsArray(const napi_env env, const napi_value value)
 {
     bool result = false;
     if (napi_is_array(env, value, &result) != napi_ok) {
-        HiLog::Error(LABEL, "failed to check array type");
+        HILOG_ERROR(LOG_CORE, "failed to check array type");
         return false;
     }
     return result;
@@ -86,7 +91,7 @@ napi_valuetype GetType(const napi_env env, const napi_value value)
 {
     napi_valuetype type;
     if (napi_typeof(env, value, &type) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get value type");
+        HILOG_ERROR(LOG_CORE, "failed to get value type");
         return napi_undefined;
     }
     return type;
@@ -96,7 +101,7 @@ napi_valuetype GetArrayType(const napi_env env, const napi_value arr)
 {
     uint32_t result = 0;
     if (napi_get_array_length(env, arr, &result) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get the length of array");
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
         return napi_undefined;
     }
 
@@ -104,7 +109,7 @@ napi_valuetype GetArrayType(const napi_env env, const napi_value arr)
     for (size_t i = 0; i < result; ++i) {
         napi_value element = nullptr;
         if (napi_get_element(env, arr, i, &element) != napi_ok) {
-            HiLog::Error(LABEL, "failed to get the element of array");
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
             return napi_undefined;
         }
         if (i == 0) {
@@ -112,7 +117,7 @@ napi_valuetype GetArrayType(const napi_env env, const napi_value arr)
             continue;
         }
         if (type != GetType(env, element)) {
-            HiLog::Error(LABEL, "array has different element types");
+            HILOG_ERROR(LOG_CORE, "array has different element types");
             return napi_undefined;
         }
     }
@@ -123,7 +128,7 @@ uint32_t GetArrayLength(const napi_env env, const napi_value arr)
 {
     uint32_t result = 0;
     if (napi_get_array_length(env, arr, &result) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get the length of array");
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
         return 0;
     }
     return result;
@@ -133,7 +138,7 @@ napi_value GetElement(const napi_env env, const napi_value arr, uint32_t index)
 {
     napi_value element = nullptr;
     if (napi_get_element(env, arr, index, &element) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get the element of array.");
+        HILOG_ERROR(LOG_CORE, "failed to get the element of array.");
         return nullptr;
     }
     return element;
@@ -143,7 +148,7 @@ bool GetBoolean(const napi_env env, const napi_value value)
 {
     bool bValue = false;
     if (napi_get_value_bool(env, value, &bValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get bool value");
+        HILOG_ERROR(LOG_CORE, "failed to get bool value");
         return false;
     }
     return bValue;
@@ -165,7 +170,7 @@ int32_t GetInt32(const napi_env env, const napi_value value)
 {
     int32_t iValue = 0;
     if (napi_get_value_int32(env, value, &iValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get int32 value");
+        HILOG_ERROR(LOG_CORE, "failed to get int32 value");
         return 0;
     }
     return iValue;
@@ -175,7 +180,7 @@ int64_t GetInt64(const napi_env env, const napi_value value)
 {
     int64_t iValue = 0;
     if (napi_get_value_int64(env, value, &iValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get int64 value");
+        HILOG_ERROR(LOG_CORE, "failed to get int64 value");
         return 0;
     }
     return iValue;
@@ -197,7 +202,7 @@ double GetDouble(const napi_env env, const napi_value value)
 {
     double dValue = 0;
     if (napi_get_value_double(env, value, &dValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get double value");
+        HILOG_ERROR(LOG_CORE, "failed to get double value");
         return 0;
     }
     return dValue;
@@ -219,12 +224,12 @@ std::string GetString(const napi_env env, const napi_value value)
 {
     size_t bufsize = 0;
     if (napi_get_value_string_utf8(env, value, nullptr, 0, &bufsize) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get string length");
+        HILOG_ERROR(LOG_CORE, "failed to get string length");
         return "";
     }
     std::vector<char> charVec(bufsize + 1); // 1 for '\0'
     if (napi_get_value_string_utf8(env, value, charVec.data(), bufsize + 1, &bufsize) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get string value");
+        HILOG_ERROR(LOG_CORE, "failed to get string value");
         return "";
     }
     return charVec.data();
@@ -258,7 +263,7 @@ bool HasProperty(const napi_env env, const napi_value object, const std::string&
 {
     bool result = false;
     if (napi_has_named_property(env, object, name.c_str(), &result) != napi_ok) {
-        HiLog::Error(LABEL, "failed to check whether the object has the named property");
+        HILOG_ERROR(LOG_CORE, "failed to check whether the object has the named property");
         return false;
     }
     return result;
@@ -271,7 +276,7 @@ napi_value GetProperty(const napi_env env, const napi_value object, const std::s
     }
     napi_value value = nullptr;
     if (napi_get_named_property(env, object, name.c_str(), &value) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get property=%{public}s from object", name.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to get property=%{public}s from object", name.c_str());
         return nullptr;
     }
     return value;
@@ -281,18 +286,18 @@ void GetPropertyNames(const napi_env env, const napi_value object, std::vector<s
 {
     napi_value propertyNames = nullptr;
     if (napi_get_property_names(env, object, &propertyNames) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get property names.");
+        HILOG_ERROR(LOG_CORE, "failed to get property names.");
         return;
     }
     uint32_t len = 0;
     if (napi_get_array_length(env, propertyNames, &len) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get array length");
+        HILOG_ERROR(LOG_CORE, "failed to get array length");
         return;
     }
     for (uint32_t i = 0; i < len; ++i) {
         napi_value element = nullptr;
         if (napi_get_element(env, propertyNames, i, &element) != napi_ok) {
-            HiLog::Error(LABEL, "failed to get the element of array");
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
             continue;
         }
         names.push_back(GetString(env, element));
@@ -303,7 +308,7 @@ napi_value GetReferenceValue(const napi_env env, const napi_ref funcRef)
 {
     napi_value refValue = nullptr;
     if (napi_get_reference_value(env, funcRef, &refValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get reference value");
+        HILOG_ERROR(LOG_CORE, "failed to get reference value");
         return nullptr;
     }
     return refValue;
@@ -313,7 +318,7 @@ size_t GetCbInfo(const napi_env env, napi_callback_info info, napi_value argv[],
 {
     size_t paramNum = argc;
     if (napi_get_cb_info(env, info, &paramNum, argv, nullptr, nullptr) != napi_ok) {
-        HiLog::Error(LABEL, "failed to get callback info");
+        HILOG_ERROR(LOG_CORE, "failed to get callback info");
         return 0;
     }
     return paramNum;
@@ -323,7 +328,7 @@ napi_ref CreateReference(const napi_env env, const napi_value func)
 {
     napi_ref ref = nullptr;
     if (napi_create_reference(env, func, 1, &ref) != napi_ok) { // 1 means initial reference count
-        HiLog::Error(LABEL, "failed to create reference");
+        HILOG_ERROR(LOG_CORE, "failed to create reference");
         return nullptr;
     }
     return ref;
@@ -333,7 +338,7 @@ napi_value CreateNull(const napi_env env)
 {
     napi_value nullValue = nullptr;
     if (napi_get_null(env, &nullValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create null");
+        HILOG_ERROR(LOG_CORE, "failed to create null");
         return nullptr;
     }
     return nullValue;
@@ -343,7 +348,7 @@ napi_value CreateUndefined(const napi_env env)
 {
     napi_value undefinedValue = nullptr;
     if (napi_get_undefined(env, &undefinedValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create undefined");
+        HILOG_ERROR(LOG_CORE, "failed to create undefined");
         return nullptr;
     }
     return undefinedValue;
@@ -353,7 +358,7 @@ napi_value CreateBoolean(const napi_env env, bool bValue)
 {
     napi_value boolValue = nullptr;
     if (napi_get_boolean(env, bValue, &boolValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create boolean");
+        HILOG_ERROR(LOG_CORE, "failed to create boolean");
         return nullptr;
     }
     return boolValue;
@@ -363,7 +368,7 @@ napi_value CreateInt32(const napi_env env, int32_t num)
 {
     napi_value intValue = nullptr;
     if (napi_create_int32(env, num, &intValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create int32");
+        HILOG_ERROR(LOG_CORE, "failed to create int32");
         return nullptr;
     }
     return intValue;
@@ -373,7 +378,7 @@ napi_value CreateInt64(const napi_env env, int64_t num)
 {
     napi_value intValue = nullptr;
     if (napi_create_int64(env, num, &intValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create int64");
+        HILOG_ERROR(LOG_CORE, "failed to create int64");
         return nullptr;
     }
     return intValue;
@@ -383,7 +388,7 @@ napi_value CreateString(const napi_env env, const std::string& str)
 {
     napi_value strValue = nullptr;
     if (napi_create_string_utf8(env, str.c_str(), NAPI_AUTO_LENGTH, &strValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create string");
+        HILOG_ERROR(LOG_CORE, "failed to create string");
         return nullptr;
     }
     return strValue;
@@ -402,7 +407,7 @@ napi_value CreateObject(const napi_env env)
 {
     napi_value obj = nullptr;
     if (napi_create_object(env, &obj) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create object");
+        HILOG_ERROR(LOG_CORE, "failed to create object");
         return nullptr;
     }
     return obj;
@@ -412,11 +417,11 @@ napi_value CreateObject(const napi_env env, const std::string& key, const napi_v
 {
     napi_value obj = nullptr;
     if (napi_create_object(env, &obj) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create object");
+        HILOG_ERROR(LOG_CORE, "failed to create object");
         return nullptr;
     }
     if (napi_set_named_property(env, obj, key.c_str(), value) != napi_ok) {
-        HiLog::Error(LABEL, "failed to set property");
+        HILOG_ERROR(LOG_CORE, "failed to set property");
         return nullptr;
     }
     return obj;
@@ -426,7 +431,7 @@ napi_value CreateArray(const napi_env env)
 {
     napi_value arr = nullptr;
     if (napi_create_array(env, &arr) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create array");
+        HILOG_ERROR(LOG_CORE, "failed to create array");
         return nullptr;
     }
     return arr;
@@ -436,7 +441,7 @@ napi_value CreateDouble(const napi_env env, double dValue)
 {
     napi_value doubleValue = nullptr;
     if (napi_create_double(env, dValue, &doubleValue) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create double");
+        HILOG_ERROR(LOG_CORE, "failed to create double");
         return nullptr;
     }
     return doubleValue;
@@ -445,14 +450,14 @@ napi_value CreateDouble(const napi_env env, double dValue)
 void SetElement(const napi_env env, const napi_value obj, uint32_t index, const napi_value value)
 {
     if (napi_set_element(env, obj, index, value) != napi_ok) {
-        HiLog::Error(LABEL, "failed to set element");
+        HILOG_ERROR(LOG_CORE, "failed to set element");
     }
 }
 
 void SetNamedProperty(const napi_env env, const napi_value obj, const std::string& key, const napi_value value)
 {
     if (napi_set_named_property(env, obj, key.c_str(), value) != napi_ok) {
-        HiLog::Error(LABEL, "failed to set property");
+        HILOG_ERROR(LOG_CORE, "failed to set property");
     }
 }
 
@@ -488,7 +493,7 @@ void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow)
     }
 
     if (napi_throw_error(env, std::to_string(code).c_str(), msg.c_str()) != napi_ok) {
-        HiLog::Error(LABEL, "failed to throw error, code=%{public}d, msg=%{public}s", code, msg.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to throw error, code=%{public}d, msg=%{public}s", code, msg.c_str());
     }
 }
 
@@ -496,7 +501,7 @@ napi_value CreateError(napi_env env, int code, const std::string& msg)
 {
     napi_value err = nullptr;
     if (napi_create_error(env, CreateString(env, std::to_string(code)), CreateString(env, msg), &err) != napi_ok) {
-        HiLog::Error(LABEL, "failed to create error");
+        HILOG_ERROR(LOG_CORE, "failed to create error");
         return nullptr;
     }
     return err;
@@ -579,7 +584,7 @@ napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr)
     Json::Value jsonValue;
     Json::Reader reader(Json::Features::strictMode());
     if (!reader.parse(jsonStr, jsonValue)) {
-        HiLog::Error(LABEL, "parse event detail info failed, please check the style of json");
+        HILOG_ERROR(LOG_CORE, "parse event detail info failed, please check the style of json");
         return nullptr;
     }
     return CreateValueByJson(env, jsonValue);
