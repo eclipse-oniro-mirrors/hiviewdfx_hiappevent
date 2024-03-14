@@ -103,7 +103,7 @@ bool OsEventListener::StartListening()
 
 bool OsEventListener::RemoveOsEventDir()
 {
-    HiLog::Info(LABEL, "rm dir");
+    HILOG_INFO(LOG_CORE, "rm dir");
     return FileUtil::ForceRemoveDirectory(osEventPath_) && FileUtil::ForceRemoveDirectory(OS_LOG_PATH);
 }
 
