@@ -41,6 +41,7 @@ const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string EVENT_TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
+const std::string OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
 }
 
 OsEventListener::OsEventListener()
@@ -97,13 +98,13 @@ void OsEventListener::GetEvents(std::vector<std::shared_ptr<AppEventPack>>& even
 
 bool OsEventListener::StartListening()
 {
-    return InitDir(osEventPath_) && RegisterDirListener(osEventPath_);
+    return InitDir(OS_LOG_PATH) && InitDir(osEventPath_) && RegisterDirListener(osEventPath_);
 }
 
 bool OsEventListener::RemoveOsEventDir()
 {
     HILOG_INFO(LOG_CORE, "rm dir");
-    return FileUtil::ForceRemoveDirectory(osEventPath_);
+    return FileUtil::ForceRemoveDirectory(osEventPath_) && FileUtil::ForceRemoveDirectory(OS_LOG_PATH);
 }
 
 bool OsEventListener::InitDir(const std::string& dirPath)
