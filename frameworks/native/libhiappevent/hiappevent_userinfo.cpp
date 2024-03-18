@@ -39,6 +39,12 @@ constexpr int DB_FAILED = -1;
 std::mutex g_mutex;
 }
 
+UserInfo& UserInfo::GetInstance()
+{
+    static UserInfo userInfo;
+    return userInfo;
+}
+
 UserInfo::UserInfo() : userIdVersion_(0), userPropertyVersion_(0)
 {
     InitUserIds();
