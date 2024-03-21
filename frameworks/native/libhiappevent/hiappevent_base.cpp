@@ -367,8 +367,8 @@ void AppEventPack::InitTimeZone()
 
 void AppEventPack::InitProcessInfo()
 {
-    pid_ = getpid();
-    tid_ = gettid();
+    pid_ = getprocpid();
+    tid_ = getproctid();
 }
 
 void AppEventPack::InitTraceInfo()
