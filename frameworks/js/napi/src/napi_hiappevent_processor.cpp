@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -55,12 +55,15 @@ const std::string EVENT_CONFIGS = "eventConfigs";
 const std::string EVENT_CONFIG_DOMAIN = "domain";
 const std::string EVENT_CONFIG_NAME = "name";
 const std::string EVENT_CONFIG_REALTIME = "isRealTime";
+const std::string CONFIG_ID = "configId";
+const std::string CUSTOM_CONFIG = "customConfigs";
 
 const std::string CONFIG_PROP_TYPE_STR = "string";
 const std::string CONFIG_PROP_TYPE_STR_ARRAY = "string array";
 const std::string CONFIG_PROP_TYPE_BOOL = "boolean";
 const std::string CONFIG_PROP_TYPE_NUM = "number";
 const std::string CONFIG_PROP_TYPE_EVENT_CONFIG = "AppEventReportConfig array";
+const std::string CONFIG_PROP_TYPE_RECORD_STRING = "Record string";
 }
 
 bool GenConfigStrProp(const napi_env env, const napi_value config, const std::string& key, std::string& out,
@@ -262,6 +265,44 @@ int GenConfigEventConfigsProp(const napi_env env, const napi_value config, const
     return ERR_CODE_SUCC;
 }
 
+int GenConfigIdProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
+{
+    if (!GenConfigIntProp(env, config, key, out.configId) || !IsValidConfigId(out.configId)) {
+        HILOG_WARN(LOG_CORE, "invalid configId");
+        return ERR_CODE_PARAM_INVALID;
+    }
+    return ERR_CODE_SUCC;
+}
+
+int GenConfigCustomConfigsProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
+{
+    if (!NapiUtil::HasProperty(env, config, key)) {
+        return ERR_CODE_SUCC;
+    }
+    napi_value napiObject = NapiUtil::GetProperty(env, config, key);
+    if (napiObject == nullptr || !NapiUtil::IsObject(env, napiObject)) {
+        HILOG_WARN(LOG_CORE, "invalid customConfigs");
+        return ERR_CODE_PARAM_INVALID;
+    }
+    std::vector<std::string> keys;
+    NapiUtil::GetPropertyNames(env, napiObject, keys);
+    if (!IsValidCustomConfigsNum(keys.size())) {
+        HILOG_WARN(LOG_CORE, "invalid keys size=%{public}zu", keys.size());
+        return ERR_CODE_PARAM_INVALID;
+    }
+    std::unordered_map<std::string, std::string> customConfigs;
+    for (auto key : keys) {
+        std::string value;
+        if (!GenConfigStrProp(env, napiObject, key, value) || !IsValidCustomConfig(key, value)) {
+            HILOG_WARN(LOG_CORE, "invalid key name=%{public}s", key.c_str());
+            return ERR_CODE_PARAM_INVALID;
+        }
+        customConfigs.insert(std::pair<std::string, std::string>(key, value));
+    }
+    out.customConfigs = customConfigs;
+    return ERR_CODE_SUCC;
+}
+
 typedef struct ConfigProp {
     std::string type;
     std::string key;
@@ -323,6 +364,16 @@ const ConfigProp CONFIG_PROPS[] = {
         .type = CONFIG_PROP_TYPE_EVENT_CONFIG,
         .key = EVENT_CONFIGS,
         .func = GenConfigEventConfigsProp
+    },
+    {
+        .type = CONFIG_PROP_TYPE_NUM,
+        .key = CONFIG_ID,
+        .func = GenConfigIdProp
+    },
+    {
+        .type = CONFIG_PROP_TYPE_RECORD_STRING,
+        .key = CUSTOM_CONFIG,
+        .func = GenConfigCustomConfigsProp
     }
 };
 

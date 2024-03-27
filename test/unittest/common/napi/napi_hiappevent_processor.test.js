@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -115,7 +115,11 @@ describe('HiAppEventJsTest', function () {
                     name: "test_name",
                     isRealTime: true,
                 }
-            ]
+            ],
+            configId: 1,
+            customConfigs: {
+                "str_key": "str_value"
+            }
         };
         validProcessorTest(processor1, done);
     });
@@ -216,5 +220,113 @@ describe('HiAppEventJsTest', function () {
             name: 'a'.repeat(maxLen + 1),
         };
         invalidProcessorTest(processor6, expectErr2);
+    });
+
+    /**
+     * @tc.number: HiAppEventProcessorTest003
+     * @tc.name: HiAppEventProcessorTest
+     * @tc.desc: Add processor with same processorId.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventProcessorTest003', 0, function () {
+        let config = {
+            name: "test_processor",
+            configId: 1,
+        };
+        let processorId1 = hiAppEvent.addProcessor(config);
+        expect(processorId1).assertLarger(0);
+
+        config.customConfigs = {
+            "str_key": "str_value"
+        };
+        let processorId2 = hiAppEvent.addProcessor(config);
+        expect(processorId2).assertLarger(0);
+        expect(processorId2 == processorId1).assertTrue();
+
+        config.configId = 0;
+        let processorId3 = hiAppEvent.addProcessor(config);
+        expect(processorId3).assertLarger(0);
+        expect(processorId3 != processorId2).assertTrue();
+
+        hiAppEvent.removeProcessor(processorId1);
+        hiAppEvent.removeProcessor(processorId2);
+        hiAppEvent.removeProcessor(processorId3);
+    });
+
+    /**
+     * @tc.number: HiAppEventProcessorTest004_1
+     * @tc.name: HiAppEventProcessorTest
+     * @tc.desc: Add processor with invalid configId.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventProcessorTest004_1', 0, function () {
+        let expectConfig = {
+            name: "test_processor",
+            configId: 0,
+        }
+        let processorId = hiAppEvent.addProcessor(expectConfig);
+        expect(processorId).assertLarger(0);
+
+        let config = {
+            name: "test_processor",
+            configId: -1,
+        };
+        let processorId1 = hiAppEvent.addProcessor(config);
+        expect(processorId1).assertLarger(0);
+        expect(processorId1 == processorId).assertTrue();
+
+        hiAppEvent.removeProcessor(processorId);
+    });
+
+    /**
+     * @tc.number: HiAppEventProcessorTest004_2
+     * @tc.name: HiAppEventProcessorTest
+     * @tc.desc: Add processor with invalid customConfigs.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventProcessorTest004_2', 0, function () {
+        let expectConfig = {
+            name: "test_processor",
+            customConfigs: {},
+        }
+        let processorId = hiAppEvent.addProcessor(expectConfig);
+        expect(processorId).assertLarger(0);
+
+        let config = {
+            name: "test_processor",
+            customConfigs: {
+                "": "str_value"
+            },
+        };
+        let processorId1 = hiAppEvent.addProcessor(config);
+        expect(processorId1).assertLarger(0);
+        expect(processorId1 == processorId).assertTrue();
+
+        config.customConfigs = {
+            "***key": "str_value"
+        };
+        let processorId2 = hiAppEvent.addProcessor(config);
+        expect(processorId2).assertLarger(0);
+        expect(processorId2 == processorId).assertTrue();
+
+        let invalidName = "a".repeat(32 + 1);
+        config.customConfigs = {
+            invalidName: "str_value"
+        };
+        let processorId3 = hiAppEvent.addProcessor(config);
+        expect(processorId3).assertLarger(0);
+        expect(processorId3 == processorId).assertTrue();
+
+        config.customConfigs = {
+            "str_key": "a".repeat(1024 + 1)
+        };
+        let processorId4 = hiAppEvent.addProcessor(config);
+        expect(processorId4).assertLarger(0);
+        expect(processorId4 == processorId).assertTrue();
+
+        hiAppEvent.removeProcessor(processorId);
     });
 });

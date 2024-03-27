@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,6 +45,8 @@ void PrintReportConfig(int64_t processorSeq)
     HILOG_INFO(LOG_CORE, ".userIdNames.size=%{public}zu", config.userIdNames.size());
     HILOG_INFO(LOG_CORE, ".userPropertyNames.size=%{public}zu", config.userPropertyNames.size());
     HILOG_INFO(LOG_CORE, ".eventConfigs.size=%{public}zu", config.eventConfigs.size());
+    HILOG_INFO(LOG_CORE, ".configId=%{public}d", config.configId);
+    HILOG_INFO(LOG_CORE, ".customConfigs.size=%{public}zu", config.customConfigs.size());
 }
 
 void PrintEvent(const AppEventInfo& event)
