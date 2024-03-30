@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -286,8 +286,12 @@ void AppEventObserver::SetReportConfig(const ReportConfig& reportConfig)
 
 int64_t AppEventObserver::GenerateHashCode()
 {
-    return reportConfig_.name.empty()
-        ? 0 // default hash code for watcher
+    if (reportConfig_.name.empty()) {
+        // default hash code for watcher
+        return 0;
+    }
+    return (reportConfig_.configId > 0)
+        ? static_cast<int64_t>(reportConfig_.configId)
         : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
 }
 

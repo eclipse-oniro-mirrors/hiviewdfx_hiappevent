@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -792,16 +792,16 @@ describe('HiAppEventJsTest', function () {
         // Error code 11101001 is returned when the event has invalid event domain.
         let expectErr = createError(11101001, "Invalid event domain.");
         writeDomainV9Test("domain***", expectErr, done);
-        writeDomainV9Test("domainTest", expectErr, done);
         writeDomainV9Test("123domain", expectErr, done);
         writeDomainV9Test("_domain", expectErr, done);
         writeDomainV9Test("domain_", expectErr, done);
         writeDomainV9Test("", expectErr, done);
-        writeDomainV9Test("a".repeat(17), expectErr, done);
+        writeDomainV9Test("a".repeat(33), expectErr, done);
 
         // valid event domain.
         writeDomainV9Test("a", null, done);
         writeDomainV9Test("a1", null, done);
+        writeDomainV9Test("domainTest", null, done);
     });
 
     /**
@@ -1123,7 +1123,7 @@ describe('HiAppEventJsTest', function () {
         watcherNameTest("a".repeat(33), expectErr);
         watcherNameTest("", expectErr);
         watcherNameTest("watcher_***", expectErr);
-        watcherNameTest("Watcher_test", expectErr);
+        watcherNameTest("Watcher_test", null);
         watcherNameTest("_watcher_test", expectErr);
         watcherNameTest("watcher_", expectErr);
         watcherNameTest("123watcher", expectErr);
@@ -1248,10 +1248,11 @@ describe('HiAppEventJsTest', function () {
         domainTest("**xx", expectErr)
         domainTest("123test", expectErr)
         domainTest("test_", expectErr)
-        domainTest("a".repeat(17), expectErr)
+        domainTest("a".repeat(33), expectErr)
         domainTest("", expectErr)
         domainTest("a", null)
         domainTest("a1", null)
+        domainTest("Domain_1", null)
 
         // invalid appEventFilter.eventTypes type
         function eventTypesTest(eventTypes, expectErr) {

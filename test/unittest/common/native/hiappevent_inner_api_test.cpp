@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -87,6 +87,8 @@ void CheckGetEmptyConfig(int64_t processorSeq)
     ASSERT_TRUE(config.userIdNames.empty());
     ASSERT_TRUE(config.userPropertyNames.empty());
     ASSERT_TRUE(config.eventConfigs.empty());
+    ASSERT_EQ(config.configId, 0);
+    ASSERT_TRUE(config.customConfigs.empty());
 }
 
 void CheckGetSeqs(const std::string& observer, const std::vector<int64_t>& expectSeqs)
@@ -114,6 +116,8 @@ void CheckSameConfig(const ReportConfig& configA, const ReportConfig& configB)
     ASSERT_EQ(configA.userIdNames.size(), configB.userIdNames.size());
     ASSERT_EQ(configA.userPropertyNames.size(), configB.userPropertyNames.size());
     ASSERT_EQ(configA.eventConfigs.size(), configB.eventConfigs.size());
+    ASSERT_EQ(configA.configId, configB.configId);
+    ASSERT_EQ(configA.customConfigs.size(), configB.customConfigs.size());
 }
 
 void CheckSameConfig(int64_t processorSeq, const ReportConfig& testConfig)
@@ -134,6 +138,8 @@ void CheckSetConfig(int64_t processorSeq)
         .userIdNames = {"test_id"},
         .userPropertyNames = {"test_property"},
         .eventConfigs = {{"test_domain", "test_name", true}},
+        .configId = 1,
+        .customConfigs = {{"str_key", "str_value"}},
     };
     ASSERT_EQ(AppEventProcessorMgr::SetProcessorConfig(processorSeq, testConfig), 0);
     ReportConfig getConfig;
@@ -510,6 +516,8 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest010, TestSize.Level1)
         .userIdNames = {"test_id"},
         .userPropertyNames = {"test_property"},
         .eventConfigs = {{"test_domain", "test_name", true}, {"test_domain", "test_realtime"}},
+        .configId = 1,
+        .customConfigs = {{"str_key", "str_value"}, {"str_key1", "str_value1"}},
     };
     int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
     ASSERT_GT(processorId, 0);
@@ -816,5 +824,89 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest020, TestSize.Level1)
     ASSERT_GT(processorId, 0);
     CheckSameConfig(processorId, config);
     WriteEventOnce();
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest021
+ * @tc.desc: Adding an processor with same processorId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest021, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configId = 1,
+    };
+    int64_t processorId1 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId1, 0);
+
+    config.eventConfigs = {{"test_domain", "test_name", true}, {"test_domain", "test_realtime"}};
+    int64_t processorId2 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId2, 0);
+    ASSERT_EQ(processorId1, processorId2);
+
+    config.configId = 0;
+    int64_t processorId3 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId3, 0);
+    ASSERT_NE(processorId2, processorId3);
+
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId1), 0);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId2), 0);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId3), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest022
+ * @tc.desc: Adding an processor with invalid configId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest022, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configId = -1,
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .configId = 0, // default configId
+    };
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest023
+ * @tc.desc: Adding an processor with invalid customConfigs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest023, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .customConfigs = {{"", "test_str"}},
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    ReportConfig expectConfig = {
+        .name = "test_processor",
+        .customConfigs = {}, // default customConfigs value
+    };
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    config.customConfigs = {{"**name", "value"}};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+
+    constexpr size_t limitLen = 1024;
+    config.customConfigs = {{"test_name", std::string(limitLen + 1, 'a')}};
+    processorId = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId, 0);
+    CheckSameConfig(processorId, expectConfig);
     ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
 }

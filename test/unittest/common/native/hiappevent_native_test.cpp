@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -530,14 +530,14 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest014, TestSize.Level0)
     res = OH_HiAppEvent_Write("", TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
 
-    constexpr size_t limitLen = 16;
+    constexpr size_t limitLen = 32;
     res = OH_HiAppEvent_Write(std::string(limitLen, 'a').c_str(), TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     res = OH_HiAppEvent_Write(std::string(limitLen + 1, 'a').c_str(), TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
 
     res = OH_HiAppEvent_Write("AAAaaa", TEST_EVENT_NAME, SECURITY, nullptr);
-    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+    ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
     res = OH_HiAppEvent_Write("abc***", TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);

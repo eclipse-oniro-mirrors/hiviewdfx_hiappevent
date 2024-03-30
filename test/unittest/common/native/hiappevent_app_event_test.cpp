@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -106,7 +106,7 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest002, TestSize.Level1)
     event4.AddParam("123AAA", TEST_INT_VALUE);
     ASSERT_EQ(Write(event4), ERROR_INVALID_PARAM_NAME);
 
-    constexpr size_t limitLen = 16;
+    constexpr size_t limitLen = 32;
     Event event5(TEST_DOMAIN, TEST_NAME, BEHAVIOR);
     event5.AddParam(std::string(limitLen, 'a'), TEST_INT_VALUE);
     ASSERT_EQ(Write(event5), HIAPPEVENT_VERIFY_SUCCESSFUL);
@@ -225,15 +225,15 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest006, TestSize.Level1)
     ASSERT_EQ(Write(event), HIAPPEVENT_VERIFY_SUCCESSFUL);
 
     Event event1("Domain", TEST_NAME, TEST_TYPE);
-    ASSERT_EQ(Write(event1), ERROR_INVALID_EVENT_DOMAIN);
+    ASSERT_EQ(Write(event1), HIAPPEVENT_VERIFY_SUCCESSFUL);
     Event event2("123_domain", TEST_NAME, TEST_TYPE);
-    ASSERT_EQ(Write(event1), ERROR_INVALID_EVENT_DOMAIN);
+    ASSERT_EQ(Write(event2), ERROR_INVALID_EVENT_DOMAIN);
     Event event3("domain**", TEST_NAME, TEST_TYPE);
     ASSERT_EQ(Write(event3), ERROR_INVALID_EVENT_DOMAIN);
     Event event4("domain_", TEST_NAME, TEST_TYPE);
     ASSERT_EQ(Write(event4), ERROR_INVALID_EVENT_DOMAIN);
 
-    constexpr size_t limitLen = 16;
+    constexpr size_t limitLen = 32;
     Event event5(std::string(limitLen, 'a'), TEST_NAME, BEHAVIOR);
     ASSERT_EQ(Write(event5), HIAPPEVENT_VERIFY_SUCCESSFUL);
     Event event6(std::string(limitLen + 1, 'a'), TEST_NAME, BEHAVIOR);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,9 +36,9 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr size_t MAX_LEN_OF_WATCHER = 32;
-constexpr size_t MAX_LEN_OF_DOMAIN = 16;
+constexpr size_t MAX_LEN_OF_DOMAIN = 32;
 static constexpr int MAX_LENGTH_OF_EVENT_NAME = 48;
-static constexpr int MAX_LENGTH_OF_PARAM_NAME = 16;
+static constexpr int MAX_LENGTH_OF_PARAM_NAME = 32;
 static constexpr unsigned int MAX_NUM_OF_PARAMS = 32;
 static constexpr size_t MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
 static constexpr size_t MAX_LENGTH_OF_SPECIAL_STR_PARAM = 1024 * 1024;
@@ -48,6 +48,9 @@ static constexpr int MAX_LENGTH_OF_USER_ID_VALUE = 256;
 static constexpr int MAX_LENGTH_OF_USER_PROPERTY_VALUE = 1024;
 static constexpr int MAX_LENGTH_OF_PROCESSOR_NAME = 256;
 static constexpr int MAX_LEN_OF_BATCH_REPORT = 1000;
+static constexpr size_t MAX_NUM_OF_CUSTOM_CONFIGS = 32;
+static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_NAME = 32;
+static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
 
 bool IsValidName(const std::string& name, size_t maxSize)
 {
@@ -301,6 +304,32 @@ int VerifyEventConfigsOfReportConfig(ReportConfig& reportConfig)
     }
     return 0;
 }
+
+int VerifyConfigIdOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidConfigId(config.configId)) {
+        HILOG_WARN(LOG_CORE, "invalid configId=%{public}d", config.configId);
+        config.configId = 0;
+    }
+    return 0;
+}
+
+int VerifyCustomConfigsOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidCustomConfigsNum(config.customConfigs.size())) {
+        HILOG_WARN(LOG_CORE, "invalid keys size=%{public}zu", config.customConfigs.size());
+        config.customConfigs.clear();
+        return 0;
+    }
+    for (const auto& item : config.customConfigs) {
+        if (!IsValidCustomConfig(item.first, item.second)) {
+            HILOG_WARN(LOG_CORE, "invalid key name=%{public}s", item.first.c_str());
+            config.customConfigs.clear();
+            break;
+        }
+    }
+    return 0;
+}
 }
 
 bool IsValidDomain(const std::string& eventDomain)
@@ -308,7 +337,7 @@ bool IsValidDomain(const std::string& eventDomain)
     if (eventDomain.empty() || eventDomain.length() > MAX_LEN_OF_DOMAIN) {
         return false;
     }
-    if (eventDomain != "OS" && !std::regex_match(eventDomain, std::regex("^[a-z]([a-z0-9_]*[a-z0-9])*$"))) {
+    if (eventDomain != "OS" && !std::regex_match(eventDomain, std::regex("^[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*$"))) {
         return false;
     }
     return true;
@@ -327,7 +356,7 @@ bool IsValidWatcherName(const std::string& watcherName)
     if (watcherName.empty() || watcherName.length() > MAX_LEN_OF_WATCHER) {
         return false;
     }
-    return std::regex_match(watcherName, std::regex("^[a-z]([a-z0-9_]*[a-z0-9])*$"));
+    return std::regex_match(watcherName, std::regex("^[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*$"));
 }
 
 bool IsValidEventType(int eventType)
@@ -452,6 +481,24 @@ bool IsValidEventConfig(const EventConfig& eventCfg)
     return true;
 }
 
+bool IsValidConfigId(int configId)
+{
+    return configId >= 0;
+}
+
+bool IsValidCustomConfigsNum(size_t num)
+{
+    return num <= MAX_NUM_OF_CUSTOM_CONFIGS;
+}
+
+bool IsValidCustomConfig(const std::string& name, const std::string& value)
+{
+    if (!IsValidName(name, MAX_LENGTH_OF_CUSTOM_CONFIG_NAME) || value.length() > MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE) {
+        return false;
+    }
+    return true;
+}
+
 int VerifyReportConfig(ReportConfig& config)
 {
     const VerifyReportConfigFunc verifyFuncs[] = {
@@ -462,6 +509,8 @@ int VerifyReportConfig(ReportConfig& config)
         VerifyUserIdNamesOfReportConfig,
         VerifyUserPropertyNamesOfReportConfig,
         VerifyEventConfigsOfReportConfig,
+        VerifyConfigIdOfReportConfig,
+        VerifyCustomConfigsOfReportConfig,
     };
     for (const auto verifyFunc : verifyFuncs) {
         if (verifyFunc(config) != 0) {
