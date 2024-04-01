@@ -120,7 +120,7 @@ AppEventObserverMgr::AppEventObserverMgr()
 
 void AppEventObserverMgr::CreateEventHandler()
 {
-    auto runner = AppExecFwk::EventRunner::Create("AppEventHandler");
+    auto runner = AppExecFwk::EventRunner::Create("OS_AppEvent");
     if (runner == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to create event runner");
         return;
