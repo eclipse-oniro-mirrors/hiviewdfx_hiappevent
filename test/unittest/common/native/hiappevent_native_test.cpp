@@ -113,7 +113,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest001, TestSize.Level0)
     OH_HiAppEvent_AddInt32ArrayParam(list, "int32_arr_key", nums3, sizeof(nums3) / sizeof(nums3[0]));
     int64_t num4 = 1;
     OH_HiAppEvent_AddInt64Param(list, "int64_key", num4);
-    int64_t nums4[] = {1ll, INT64_MAX, INT64_MIN};
+    int64_t nums4[] = {1LL, INT64_MAX, INT64_MIN};
     OH_HiAppEvent_AddInt64ArrayParam(list, "int64_arr_key", nums4, sizeof(nums4) / sizeof(nums4[0]));
     float num5 = 465.1234;
     OH_HiAppEvent_AddFloatParam(list, "float_key", num5);
