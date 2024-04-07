@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,6 +69,7 @@ void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
     eventMap["CPU_USAGE_HIGH"] = NapiUtil::CreateString(env, "CPU_USAGE_HIGH");
     eventMap["BATTERY_USAGE"] = NapiUtil::CreateString(env, "BATTERY_USAGE");
     eventMap["RESOURCE_OVERLIMIT"] = NapiUtil::CreateString(env, "RESOURCE_OVERLIMIT");
+    eventMap["ADDRESS_SANITIZER"] = NapiUtil::CreateString(env, "ADDRESS_SANITIZER");
 }
 
 void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
