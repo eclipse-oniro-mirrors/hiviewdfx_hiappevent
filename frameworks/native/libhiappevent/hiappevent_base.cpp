@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <vector>
 
+#include "application_context.h"
 #include "hilog/log.h"
 #include "hitrace/trace.h"
 #include "time_util.h"
@@ -353,6 +354,7 @@ AppEventPack::AppEventPack(const std::string& domain, const std::string& name, i
     InitTimeZone();
     InitProcessInfo();
     InitTraceInfo();
+    InitRunningId();
 }
 
 void AppEventPack::InitTime()
@@ -381,6 +383,20 @@ void AppEventPack::InitTraceInfo()
     spanId_ = static_cast<int64_t>(hitraceId.GetSpanId());
     pspanId_ = static_cast<int64_t>(hitraceId.GetParentSpanId());
     traceFlag_ = hitraceId.GetFlags();
+}
+
+void AppEventPack::InitRunningId()
+{
+    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
+        OHOS::AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr) {
+        HILOG_ERROR(LOG_CORE, "Context is null.");
+        return;
+    }
+    runningId_ = context->GetAppRunningUniqueId();
+    if (runningId_.empty()) {
+        HILOG_ERROR(LOG_CORE, "The running id from context is empty.");
+    }
 }
 
 void AppEventPack::AddParam(const std::string& key)
@@ -537,6 +553,19 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<std::strin
     baseParams_.push_back(appEventParam);
 }
 
+void AppEventPack::AddCustomParams(const std::unordered_map<std::string, std::string>& customParams)
+{
+    std::string paramStr = GetParamStr();
+    if (!paramStr.empty()) {
+        std::stringstream jsonStr;
+        for (auto it = customParams.begin(); it != customParams.end(); ++it) {
+            jsonStr << "," << "\"" << it->first << "\":" << it->second;
+        }
+        paramStr.insert(paramStr.size() - 2, jsonStr.str()); // 2 for '}'
+        paramStr_ = paramStr;
+    }
+}
+
 std::string AppEventPack::GetEventStr() const
 {
     std::stringstream jsonStr;
@@ -611,6 +640,18 @@ void AppEventPack::AddParamsToJsonString(std::stringstream& jsonStr) const
     jsonStr.seekp(-1, std::ios_base::end); // -1 for delete ','
 }
 
+void AppEventPack::GetCustomParams(std::vector<CustomEventParam>& customParams) const
+{
+    for (const auto& param : baseParams_) {
+        CustomEventParam customParam = {
+            .key = param.name,
+            .value = GetParamValueStr(param),
+            .type = param.value.type,
+        };
+        customParams.push_back(customParam);
+    }
+}
+
 int64_t AppEventPack::GetSeq() const
 {
     return seq_;
@@ -669,6 +710,11 @@ int64_t AppEventPack::GetPspanId() const
 int AppEventPack::GetTraceFlag() const
 {
     return traceFlag_;
+}
+
+std::string AppEventPack::GetRunningId() const
+{
+    return runningId_;
 }
 
 void AppEventPack::SetSeq(int64_t seq)
@@ -734,6 +780,11 @@ void AppEventPack::SetTraceFlag(int traceFlag)
 void AppEventPack::SetParamStr(const std::string& paramStr)
 {
     paramStr_ = paramStr;
+}
+
+void AppEventPack::SetRunningId(const std::string& runningId)
+{
+    runningId_ = runningId;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

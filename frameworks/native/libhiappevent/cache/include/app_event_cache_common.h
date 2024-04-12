@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +40,7 @@ const std::string FIELD_PSPAN_ID = "pspan_id";
 const std::string FIELD_TRACE_FLAG = "trace_flag";
 const std::string FIELD_PARAMS = "params";
 const std::string FIELD_SIZE = "size";
+const std::string FIELD_RUNNING_ID = "running_id";
 } // namespace Events
 
 namespace Observers {
@@ -69,6 +70,17 @@ const std::string FIELD_SEQ = "seq";
 const std::string FIELD_NAME = "name";
 const std::string FIELD_VALUE = "value";
 } // namespace UserProperties
+
+namespace CustomEventParams {
+const std::string TABLE = "custom_event_params";
+const std::string FIELD_SEQ = "seq";
+const std::string FIELD_RUNNING_ID = "running_id";
+const std::string FIELD_DOMAIN = "domain";
+const std::string FIELD_NAME = "name";
+const std::string FIELD_PARAM_KEY = "param_key";
+const std::string FIELD_PARAM_VALUE = "param_value";
+const std::string FIELD_PARAM_TYPE = "param_type";
+} // namespace CustomEventParams
 } // namespace AppEventCacheCommon
 } // namespace HiviewDFX
 } // namespace OHOS

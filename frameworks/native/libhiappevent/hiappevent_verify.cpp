@@ -51,6 +51,8 @@ static constexpr int MAX_LEN_OF_BATCH_REPORT = 1000;
 static constexpr size_t MAX_NUM_OF_CUSTOM_CONFIGS = 32;
 static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_NAME = 32;
 static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
+static constexpr size_t MAX_NUM_OF_CUSTOM_PARAMS = 64;
+static constexpr size_t MAX_LENGTH_OF_CUSTOM_PARAM = 1024;
 
 bool IsValidName(const std::string& name, size_t maxSize)
 {
@@ -153,18 +155,21 @@ bool CheckListValueSize(AppEventParamType type, AppEventParamValue::ValueUnion& 
     return false;
 }
 
-bool CheckStringLengthOfList(std::vector<std::string>& strs)
+bool CheckStringLengthOfList(std::vector<std::string>& strs, size_t maxTotalLen = 0)
 {
     if (strs.empty()) {
         return true;
     }
-
+    size_t totalLen = 0;
     for (auto it = strs.begin(); it != strs.end(); it++) {
         if (!CheckStrParamLength(*it)) {
             return false;
         }
+        totalLen += (*it).length();
     }
-
+    if (maxTotalLen > 0 && totalLen > maxTotalLen) {
+        return false;
+    }
     return true;
 }
 
@@ -222,6 +227,40 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
         verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
         return true;
     }
+    return true;
+}
+
+bool VerifyCustomAppEventParam(AppEventParam& param, std::unordered_set<std::string>& paramNames, int& verifyRes)
+{
+    std::string name = param.name;
+    if (paramNames.find(name) != paramNames.end()) {
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because param is duplicate.", name.c_str());
+        verifyRes = ERROR_DUPLICATE_PARAM;
+        return false;
+    }
+
+    if (!CheckParamName(name)) {
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the paramName is invalid.", name.c_str());
+        verifyRes = ERROR_INVALID_PARAM_NAME;
+        return false;
+    }
+
+    if (param.type == AppEventParamType::STRING
+        && !CheckStrParamLength(param.value.valueUnion.str_, MAX_LENGTH_OF_CUSTOM_PARAM)) {
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
+            name.c_str(), MAX_LENGTH_OF_CUSTOM_PARAM);
+        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
+        return false;
+    }
+
+    if (param.type == AppEventParamType::STRVECTOR
+        && !CheckStringLengthOfList(param.value.valueUnion.strs_, MAX_LENGTH_OF_CUSTOM_PARAM)) {
+        HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length of list exceeds %{public}zu.",
+            name.c_str(), MAX_LENGTH_OF_CUSTOM_PARAM);
+        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
+        return false;
+    }
+
     return true;
 }
 
@@ -396,6 +435,36 @@ int VerifyAppEvent(std::shared_ptr<AppEventPack> event)
         verifyRes = ERROR_INVALID_PARAM_NUM;
     }
 
+    return verifyRes;
+}
+
+int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event)
+{
+    if (HiAppEventConfig::GetInstance().GetDisable()) {
+        HILOG_ERROR(LOG_CORE, "the HiAppEvent function is disabled.");
+        return ERROR_HIAPPEVENT_DISABLE;
+    }
+    if (!IsValidDomain(event->GetDomain())) {
+        HILOG_ERROR(LOG_CORE, "eventDomain=%{public}s is invalid.", event->GetDomain().c_str());
+        return ERROR_INVALID_EVENT_DOMAIN;
+    }
+    if (!event->GetName().empty() && !IsValidEventName(event->GetName())) {
+        HILOG_ERROR(LOG_CORE, "eventName=%{public}s is invalid.", event->GetName().c_str());
+        return ERROR_INVALID_EVENT_NAME;
+    }
+
+    std::list<AppEventParam>& baseParams = event->baseParams_;
+    if (baseParams.size() > MAX_NUM_OF_CUSTOM_PARAMS) {
+        HILOG_WARN(LOG_CORE, "params that exceed 48 are discarded because the number of params cannot exceed 48.");
+        return ERROR_INVALID_CUSTOM_PARAM_NUM;
+    }
+    int verifyRes = HIAPPEVENT_VERIFY_SUCCESSFUL;
+    std::unordered_set<std::string> paramNames;
+    for (auto it = baseParams.begin(); it != baseParams.end(); it++) {
+        if (!VerifyCustomAppEventParam(*it, paramNames, verifyRes)) {
+            break;
+        }
+    }
     return verifyRes;
 }
 

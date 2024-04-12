@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,7 @@ constexpr int ERR_INVALID_PARAM_NUM = 11101003;
 constexpr int ERR_INVALID_STR_LEN = 11101004;
 constexpr int ERR_INVALID_KEY = 11101005;
 constexpr int ERR_INVALID_ARR_LEN = 11101006;
+constexpr int ERR_INVALID_CUSTOM_PARAM_NUM = 11101007;
 
 // business error of addWatcher function
 constexpr int ERR_INVALID_WATCHER_NAME = 11102001;

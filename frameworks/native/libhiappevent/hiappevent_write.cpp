@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 #include <mutex>
 #include <string>
 
+#include "app_event_store.h"
 #include "app_event_observer_mgr.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
@@ -36,6 +37,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+constexpr int DB_FAILED = -1;
 std::mutex g_mutex;
 
 std::string GetStorageDirPath()
@@ -103,6 +105,20 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
         }
         HILOG_ERROR(LOG_CORE, "failed to write event to log file, errno=%{public}d.", errno);
     }
+}
+
+int SetEventParam(std::shared_ptr<AppEventPack> appEventPack)
+{
+    if (appEventPack == nullptr) {
+        HILOG_ERROR(LOG_CORE, "appEventPack is null.");
+        return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+    }
+    int res = AppEventStore::GetInstance().InsertCustomEventParams(appEventPack);
+    if (res == DB_FAILED) {
+        HILOG_ERROR(LOG_CORE, "failed to insert event param, domain=%{public}s.", appEventPack->GetDomain().c_str());
+        res = ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+    }
+    return res;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

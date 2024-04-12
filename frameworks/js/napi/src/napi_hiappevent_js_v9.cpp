@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include "napi_app_event_holder.h"
 #include "napi_error.h"
 #include "napi_hiappevent_builder.h"
+#include "napi_hiappevent_builder_param.h"
 #include "napi_hiappevent_config.h"
 #include "napi_hiappevent_processor.h"
 #include "napi_hiappevent_userinfo.h"
@@ -198,6 +199,39 @@ static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
     return NapiHiAppEventWatch::RemoveWatcher(env, params[0]);
 }
 
+static napi_value SetEventParam(napi_env env, napi_callback_info info)
+{
+    napi_value params[MAX_PARAM_NUM] = { 0 };
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    NapiHiAppEventBuilderParam builder;
+    auto appEventPack = builder.BuildEventParam(env, params, paramNum);
+    if (appEventPack == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to build appEventPack.");
+        return nullptr;
+    }
+
+    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    if (asyncContext == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
+        return nullptr;
+    }
+    asyncContext->appEventPack = appEventPack;
+    asyncContext->result = builder.GetResult();
+
+    // if the build is successful, the event verification is performed
+    if (asyncContext->result >= 0) {
+        if (auto ret = VerifyCustomEventParams(asyncContext->appEventPack); ret != 0) {
+            asyncContext->result = ret;
+        }
+    }
+
+    napi_value promise = nullptr;
+    napi_create_promise(env, &asyncContext->deferred, &promise);
+
+    NapiHiAppEventWrite::SetEventParam(env, asyncContext);
+    return promise;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
@@ -212,7 +246,8 @@ static napi_value Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("configure", Configure),
         DECLARE_NAPI_FUNCTION("clearData", ClearData),
         DECLARE_NAPI_FUNCTION("addWatcher", AddWatcher),
-        DECLARE_NAPI_FUNCTION("removeWatcher", RemoveWatcher)
+        DECLARE_NAPI_FUNCTION("removeWatcher", RemoveWatcher),
+        DECLARE_NAPI_FUNCTION("setEventParam", SetEventParam)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
     NapiHiAppEventInit::InitNapiClassV9(env, exports);
