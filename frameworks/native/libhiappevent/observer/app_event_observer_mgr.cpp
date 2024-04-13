@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,6 +46,7 @@ void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
             continue;
         }
         event->SetSeq(eventSeq);
+        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
     }
 }
 
@@ -338,6 +339,7 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
     if (sendFlag) {
         std::vector<std::shared_ptr<AppEventPack>> events;
         listener_->GetEvents(events);
+        StoreEventsToDb(events);
         SendEventsToObserver(events, observer);
     }
     return true;

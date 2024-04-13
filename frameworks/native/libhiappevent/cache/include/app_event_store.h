@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@
 #include "app_event_dao.h"
 #include "app_event_mapping_dao.h"
 #include "app_event_observer_dao.h"
+#include "custom_event_param_dao.h"
 #include "user_id_dao.h"
 #include "user_property_dao.h"
 #include "rdb_store.h"
@@ -43,6 +44,7 @@ public:
     int64_t InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
     int64_t InsertUserId(const std::string& name, const std::string& value);
     int64_t InsertUserProperty(const std::string& name, const std::string& value);
+    int64_t InsertCustomEventParams(std::shared_ptr<AppEventPack> event);
     int64_t UpdateUserId(const std::string& name, const std::string& value);
     int64_t UpdateUserProperty(const std::string& name, const std::string& value);
     int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t eventSize = 0);
@@ -53,11 +55,13 @@ public:
     int QueryUserId(const std::string& name, std::string& out);
     int QueryUserProperties(std::unordered_map<std::string, std::string>& out);
     int QueryUserProperty(const std::string& name, std::string& out);
+    int QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> event);
     int DeleteObserver(int64_t observerSeq);
     int DeleteEventMapping(int64_t observerSeq = 0, const std::vector<int64_t>& eventSeqs = {});
     int DeleteUserId(const std::string& name = "");
     int DeleteUserProperty(const std::string& name = "");
     int DeleteEvent(int64_t eventSeq = 0);
+    int DeleteCustomEventParams(const std::string& runningId);
 
 private:
     bool InitDbStoreDir();
@@ -69,6 +73,7 @@ private:
     std::shared_ptr<AppEventMappingDao> appEventMappingDao_;
     std::shared_ptr<UserIdDao> userIdDao_;
     std::shared_ptr<UserPropertyDao> userPropertyDao_;
+    std::shared_ptr<CustomEventParamDao> customEventParamDao_;
     std::string dirPath_;
     std::mutex dbMutex_;
 };

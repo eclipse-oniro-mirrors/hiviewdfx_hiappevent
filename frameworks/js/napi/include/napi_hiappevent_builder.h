@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,22 +33,24 @@ public:
     std::shared_ptr<AppEventPack> Build(const napi_env env, const napi_value params[], size_t len);
     std::shared_ptr<AppEventPack> BuildV9(const napi_env env, const napi_value params[], size_t len);
 
-private:
+protected:
+    virtual void AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr);
     bool IsValidEventDomain(const napi_env env, const napi_value domain);
     bool IsValidEventName(const napi_env env, const napi_value name);
-    bool IsValidEventType(const napi_env env, const napi_value type);
     bool IsValidEventParam(const napi_env env, const napi_value param);
+    void AddParams2EventPack(napi_env env, const napi_value paramObj);
+
+private:
+    bool IsValidEventType(const napi_env env, const napi_value type);
     bool IsValidEventInfo(const napi_env env, const napi_value eventInfo);
     bool IsOldWriteParams(const napi_env env, const napi_value params[], size_t len);
     bool IsNewWriteParams(const napi_env env, const napi_value params[], size_t len);
-    void AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr);
     void AddParam2EventPack(napi_env env, const std::string &key, const napi_value value);
-    void AddParams2EventPack(napi_env env, const napi_value paramObj);
     void BuildEventPack(napi_env env, const napi_value params[]);
     void BuildEventPack(napi_env env, const napi_value eventInfo);
     void BuildCallback(const napi_env env, const napi_value callback);
 
-private:
+protected:
     bool isV9_;
     int result_;
     napi_ref callback_;

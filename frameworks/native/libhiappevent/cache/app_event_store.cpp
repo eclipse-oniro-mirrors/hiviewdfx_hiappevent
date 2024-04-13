@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +40,7 @@ namespace HiviewDFX {
 namespace {
 const char* DATABASE_NAME = "appevent.db";
 const char* DATABASE_DIR = "databases/";
+static constexpr size_t MAX_NUM_OF_CUSTOM_PARAMS = 64;
 
 int GetIntFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet, const std::string& colName)
 {
@@ -99,6 +100,7 @@ std::shared_ptr<AppEventPack> GetEventFromResultSet(std::shared_ptr<NativeRdb::A
     event->SetPspanId(GetLongFromResultSet(resultSet, Events::FIELD_PSPAN_ID));
     event->SetTraceFlag(GetIntFromResultSet(resultSet, Events::FIELD_TRACE_FLAG));
     event->SetParamStr(GetStringFromResultSet(resultSet, Events::FIELD_PARAMS));
+    event->SetRunningId(GetStringFromResultSet(resultSet, Events::FIELD_RUNNING_ID));
     return event;
 }
 }
@@ -149,6 +151,7 @@ int AppEventStore::InitDbStore()
     appEventMappingDao_ = std::make_shared<AppEventMappingDao>(dbStore_);
     userIdDao_ = std::make_shared<UserIdDao>(dbStore_);
     userPropertyDao_ = std::make_shared<UserPropertyDao>(dbStore_);
+    customEventParamDao_ = std::make_shared<CustomEventParamDao>(dbStore_);
     HILOG_INFO(LOG_CORE, "create db store successfully");
     return DB_SUCC;
 }
@@ -232,6 +235,51 @@ int64_t AppEventStore::InsertUserProperty(const std::string& name, const std::st
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     return userPropertyDao_->Insert(name, value);
+}
+
+int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> event)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    dbStore_->BeginTransaction();
+    std::unordered_set<std::string> paramkeys;
+    customEventParamDao_->QueryParamkeys(paramkeys, event->GetRunningId(), event->GetDomain(), event->GetName());
+    std::vector<CustomEventParam> customParams;
+    event->GetCustomParams(customParams);
+    if (customParams.empty()) {
+        return DB_SUCC;
+    }
+    // check params num of same (runningid, domain, name)
+    size_t totalNum = customParams.size();
+    for (const auto& param : customParams) {
+        if (paramkeys.find(param.key) == paramkeys.end()) {
+            totalNum++;
+        }
+    }
+    if (totalNum > MAX_NUM_OF_CUSTOM_PARAMS) {
+        return ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM;
+    }
+    std::vector<NativeRdb::ValuesBucket> buckets;
+    for (const auto& param : customParams) {
+        if (paramkeys.find(param.key) == paramkeys.end()) {
+            if (customEventParamDao_->Insert(param, event->GetRunningId(), event->GetDomain(), event->GetName())
+                == DB_FAILED) {
+                dbStore_->RollBack();
+                return DB_FAILED;
+            }
+        } else {
+            if (customEventParamDao_->Update(param, event->GetRunningId(), event->GetDomain(), event->GetName())
+                == DB_FAILED) {
+                dbStore_->RollBack();
+                return DB_FAILED;
+            }
+        }
+    }
+    dbStore_->Commit();
+    return DB_SUCC;
 }
 
 int64_t AppEventStore::UpdateUserId(const std::string& name, const std::string& value)
@@ -360,9 +408,27 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
     }
     while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
         auto event = GetEventFromResultSet(resultSet);
+        // query custom event params, and add to AppEventPack
+        std::unordered_map<std::string, std::string> params;
+        customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain());
+        customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain(), event->GetName());
+        event->AddCustomParams(params);
         events.emplace_back(event);
     }
     resultSet->Close();
+    return DB_SUCC;
+}
+
+int AppEventStore::QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> event)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    std::unordered_map<std::string, std::string> params;
+    customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain());
+    customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain(), event->GetName());
+    event->AddCustomParams(params);
     return DB_SUCC;
 }
 
@@ -417,6 +483,15 @@ int AppEventStore::DeleteEvent(int64_t eventSeq)
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     return appEventDao_->Delete(eventSeq);
+}
+
+int AppEventStore::DeleteCustomEventParams(const std::string& runningId)
+{
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    return customEventParamDao_->Delete(runningId);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

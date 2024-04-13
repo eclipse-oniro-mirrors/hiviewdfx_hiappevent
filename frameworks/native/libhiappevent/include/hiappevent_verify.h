@@ -28,6 +28,7 @@ using HiAppEvent::ReportConfig;
 using HiAppEvent::EventConfig;
 
 int VerifyAppEvent(std::shared_ptr<AppEventPack> event);
+int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event);
 int VerifyReportConfig(ReportConfig& config);
 
 bool IsValidDomain(const std::string& domain);

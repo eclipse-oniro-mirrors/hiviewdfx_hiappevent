@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,11 +43,11 @@ int AppEventDao::Create()
     /**
      * table: events
      *
-     * |-------|--------|------|------|------|-----|-----|----------|---------|----------|------------|--------|
-     * |  seq  | domain | name | type |  tz  | pid | tid | trace_id | span_id | pspan_id | trace_flag | params |
-     * |-------|--------|------|------|------|-----|-----|----------|---------|----------|------------|--------|
-     * | INT64 |  TEXT  | TEXT |  INT | TEXT | INT | INT |  INT64   |  INT64  |   INT64  |    INT     |  TEXT  |
-     * |-------|--------|------|------|------|-----|-----|----------|---------|----------|------------|--------|
+     * |-------|--------|------|------|------|-----|-----|----------|---------|----------|------------|--------|------------|
+     * |  seq  | domain | name | type |  tz  | pid | tid | trace_id | span_id | pspan_id | trace_flag | params | running_id |
+     * |-------|--------|------|------|------|-----|-----|----------|---------|----------|------------|--------|------------|
+     * | INT64 |  TEXT  | TEXT |  INT | TEXT | INT | INT |  INT64   |  INT64  |   INT64  |    INT     |  TEXT  |    TEXT    |
+     * |-------|--------|------|------|------|-----|-----|----------|---------|----------|------------|--------|------------|
      */
     const std::vector<std::pair<std::string, std::string>> fields = {
         {Events::FIELD_DOMAIN, SqlUtil::SQL_TEXT_TYPE},
@@ -62,6 +62,7 @@ int AppEventDao::Create()
         {Events::FIELD_PSPAN_ID, SqlUtil::SQL_INT_TYPE},
         {Events::FIELD_TRACE_FLAG, SqlUtil::SQL_INT_TYPE},
         {Events::FIELD_PARAMS, SqlUtil::SQL_TEXT_TYPE},
+        {Events::FIELD_RUNNING_ID, SqlUtil::SQL_TEXT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(Events::TABLE, fields);
     if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
@@ -85,6 +86,7 @@ int64_t AppEventDao::Insert(std::shared_ptr<AppEventPack> event)
     bucket.PutLong(Events::FIELD_PSPAN_ID, event->GetPspanId());
     bucket.PutInt(Events::FIELD_TRACE_FLAG, event->GetTraceFlag());
     bucket.PutString(Events::FIELD_PARAMS, event->GetParamStr());
+    bucket.PutString(Events::FIELD_RUNNING_ID, event->GetRunningId());
     int64_t seq = 0;
     if (dbStore_->Insert(seq, Events::TABLE, bucket) != NativeRdb::E_OK) {
         return DB_FAILED;

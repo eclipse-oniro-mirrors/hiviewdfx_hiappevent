@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,6 +43,7 @@ const int ERROR_INVALID_PARAM_NUM = 5;
 const int ERROR_INVALID_LIST_PARAM_SIZE = 6;
 const int ERROR_INVALID_LIST_PARAM_TYPE = 7;
 const int ERROR_DUPLICATE_PARAM = 8;
+const int ERROR_INVALID_CUSTOM_PARAM_NUM = 9;
 const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
 } // namespace ErrorCode
@@ -149,11 +150,18 @@ struct AppEventParam {
 };
 using AppEventParam = struct AppEventParam;
 
+struct CustomEventParam {
+    std::string key;
+    std::string value;
+    int type;
+};
+using CustomEventParam = struct CustomEventParam;
+
 class AppEventPack {
 public:
     AppEventPack() = default;
     AppEventPack(const std::string& name, int type);
-    AppEventPack(const std::string& domain, const std::string& name, int type);
+    AppEventPack(const std::string& domain, const std::string& name, int type = 0);
     ~AppEventPack() {}
 
 public:
@@ -178,6 +186,7 @@ public:
     void AddParam(const std::string& key, const std::vector<double>& ds);
     void AddParam(const std::string& key, const std::vector<const char*>& cps);
     void AddParam(const std::string& key, const std::vector<std::string>& strs);
+    void AddCustomParams(const std::unordered_map<std::string, std::string>& customParams);
 
     int64_t GetSeq() const;
     std::string GetDomain() const;
@@ -193,6 +202,8 @@ public:
     int GetTraceFlag() const;
     std::string GetEventStr() const;
     std::string GetParamStr() const;
+    std::string GetRunningId() const;
+    void GetCustomParams(std::vector<CustomEventParam>& customParams) const;
 
     void SetSeq(int64_t seq);
     void SetDomain(const std::string& domain);
@@ -207,14 +218,17 @@ public:
     void SetPspanId(int64_t pspanId);
     void SetTraceFlag(int traceFlag);
     void SetParamStr(const std::string& paramStr);
+    void SetRunningId(const std::string& runningId);
 
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack> appEventPack);
+    friend int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event);
 
 private:
     void InitTime();
     void InitTimeZone();
     void InitProcessInfo();
     void InitTraceInfo();
+    void InitRunningId();
     void AddBaseInfoToJsonString(std::stringstream& jsonStr) const;
     void AddTraceInfoToJsonString(std::stringstream& jsonStr) const;
     void AddParamsInfoToJsonString(std::stringstream& jsonStr) const;
@@ -233,6 +247,7 @@ private:
     int64_t spanId_ = 0;
     int64_t pspanId_ = 0;
     int traceFlag_ = 0;
+    std::string runningId_;
     std::list<AppEventParam> baseParams_;
     std::string paramStr_;
 };

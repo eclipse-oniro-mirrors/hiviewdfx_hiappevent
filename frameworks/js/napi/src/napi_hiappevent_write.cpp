@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,8 @@ napi_value BuildErrorByResult(const napi_env env, int result)
             { NapiError::ERR_INVALID_PARAM_NUM, "Invalid number of event parameters." } },
         { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE,
             { NapiError::ERR_INVALID_ARR_LEN, "Invalid array length of the event parameter." } },
+        { ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM,
+            { NapiError::ERR_INVALID_CUSTOM_PARAM_NUM, "Invalid number of set event parameters." }},
     };
     return errMap.find(result) == errMap.end() ? NapiUtil::CreateNull(env) :
         NapiUtil::CreateError(env, errMap.at(result).first, errMap.at(result).second);
@@ -92,6 +94,41 @@ void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
                 napi_value retValue = nullptr;
                 napi_call_function(env, nullptr, callback, RESULT_SIZE, results, &retValue);
                 napi_delete_reference(env, asyncContext->callback);
+            }
+            napi_delete_async_work(env, asyncContext->asyncWork);
+            delete asyncContext;
+        },
+        (void*)asyncContext, &asyncContext->asyncWork);
+    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
+}
+
+void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext)
+{
+    napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventSetEventParam");
+    napi_create_async_work(env, nullptr, resource,
+        [](napi_env env, void* data) {
+            HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
+            if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
+                asyncContext->result = SetEventParam(asyncContext->appEventPack);
+            }
+        },
+        [](napi_env env, napi_status status, void* data) {
+            HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
+            napi_value results[RESULT_SIZE] = { 0 };
+            if (asyncContext->result == 0) {
+                results[ERR_INDEX] = NapiUtil::CreateNull(env);
+                results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
+            } else {
+                results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
+                results[VALUE_INDEX] = NapiUtil::CreateNull(env);
+            }
+
+            if (asyncContext->deferred != nullptr) { // promise
+                if (asyncContext->result == 0) {
+                    napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
+                } else {
+                    napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
+                }
             }
             napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,6 +41,7 @@ const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string EVENT_TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
+const std::string RUNNING_ID_PROPERTY = "app_running_unique_id";
 const std::string OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
 }
 
@@ -210,19 +211,22 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
     }
 
     auto appEventPack = std::make_shared<AppEventPack>();
-    auto eventNameList = eventJson.getMemberNames();
-    for (auto it = eventNameList.cbegin(); it != eventNameList.cend(); ++it) {
-        auto propertyName = *it;
-        if (propertyName == DOMAIN_PROPERTY && eventJson[propertyName].isString()) {
-            appEventPack->SetDomain(eventJson[propertyName].asString());
-        } else if (propertyName == NAME_PROPERTY && eventJson[propertyName].isString()) {
-            appEventPack->SetName(eventJson[propertyName].asString());
-        } else if (propertyName == EVENT_TYPE_PROPERTY && eventJson[propertyName].isInt()) {
-            appEventPack->SetType(eventJson[propertyName].asInt());
-        } else if (propertyName == PARAM_PROPERTY) {
-            std::string paramStr = Json::FastWriter().write(eventJson[propertyName]);
-            appEventPack->SetParamStr(paramStr);
+    if (eventJson.isMember(DOMAIN_PROPERTY) && eventJson[DOMAIN_PROPERTY].isString()) {
+        appEventPack->SetDomain(eventJson[DOMAIN_PROPERTY].asString());
+    }
+    if (eventJson.isMember(NAME_PROPERTY) && eventJson[NAME_PROPERTY].isString()) {
+        appEventPack->SetName(eventJson[NAME_PROPERTY].asString());
+    }
+    if (eventJson.isMember(EVENT_TYPE_PROPERTY) && eventJson[EVENT_TYPE_PROPERTY].isInt()) {
+        appEventPack->SetType(eventJson[EVENT_TYPE_PROPERTY].asInt());
+    }
+    if (eventJson.isMember(PARAM_PROPERTY) && eventJson[PARAM_PROPERTY].isObject()) {
+        Json::Value paramsJson = eventJson[PARAM_PROPERTY];
+        if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
+            appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
+            paramsJson.removeMember(RUNNING_ID_PROPERTY);
         }
+        appEventPack->SetParamStr(Json::FastWriter().write(paramsJson));
     }
     return appEventPack;
 }
