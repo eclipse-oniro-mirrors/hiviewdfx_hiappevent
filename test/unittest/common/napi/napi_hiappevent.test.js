@@ -297,6 +297,14 @@ describe('HiAppEventJsTest', function () {
         };
         let expectErr = createError(11101005, "Invalid event parameter name.");
         writeParamsV9Test(params, expectErr, done);
+
+        params = {};
+        params['a'.repeat(33)] = "value";
+        writeParamsV9Test(params, expectErr, done);
+
+        params = {};
+        params['a'.repeat(32)] = "value";
+        writeParamsV9Test(params, null, done);
     });
 
     /**
@@ -802,6 +810,7 @@ describe('HiAppEventJsTest', function () {
         writeDomainV9Test("a", null, done);
         writeDomainV9Test("a1", null, done);
         writeDomainV9Test("domainTest", null, done);
+        writeDomainV9Test("a".repeat(32), null, done);
     });
 
     /**
@@ -838,8 +847,7 @@ describe('HiAppEventJsTest', function () {
         for (var i = 1; i <= 33; i++) {
             params["key" + i] = "value" + i;
         }
-        params['a'.repeat(17)] = 'value_invalid'; // invalid param name
-        params["key34"] = "value34";
+        params['a'.repeat(33)] = 'value_invalid'; // invalid param name
         let expectErr = createError(11101003, "Invalid number of event parameters.");
         writeParamsV9Test(params, expectErr, done);
     });
@@ -1129,6 +1137,7 @@ describe('HiAppEventJsTest', function () {
         watcherNameTest("123watcher", expectErr);
         watcherNameTest("a", null);
         watcherNameTest("a1", null);
+        watcherNameTest("a".repeat(32), null);
 
         console.info('HiAppEventWatcherTest002 end');
     });

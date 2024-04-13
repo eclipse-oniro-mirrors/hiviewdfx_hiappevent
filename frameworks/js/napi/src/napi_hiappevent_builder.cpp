@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,7 +33,7 @@ const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
-constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 16;
+constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
 const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
 }
 using namespace OHOS::HiviewDFX::ErrorCode;
