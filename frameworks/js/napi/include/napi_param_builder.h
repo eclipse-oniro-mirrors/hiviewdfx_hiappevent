@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_BUILDER_PARAM_H
-#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_BUILDER_PARAM_H
+#ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_PARAM_BUILDER_H
+#define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_PARAM_BUILDER_H
 
 #include <memory>
 
@@ -25,20 +25,23 @@ namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 
-class NapiHiAppEventBuilderParam : public NapiHiAppEventBuilder {
+class NapiParamBuilder : public NapiHiAppEventBuilder {
 public:
-    NapiHiAppEventBuilderParam() {}
-    ~NapiHiAppEventBuilderParam() {}
-    int GetResult() const;
+    NapiParamBuilder()
+    {
+        isV9_ = true;
+    }
+    ~NapiParamBuilder() {}
     std::shared_ptr<AppEventPack> BuildEventParam(const napi_env env, const napi_value params[], size_t len);
 
 protected:
     virtual void AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr) override;
+    virtual void AddParams2EventPack(napi_env env, const napi_value paramObj) override;
 
 private:
-    bool IsValidSetEventParams(const napi_env env, const napi_value params[], size_t len);
+    bool IsValidParams(const napi_env env, const napi_value params[], size_t len);
     void BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_BUILDER_PARAM_H
+#endif // HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_PARAM_BUILDER_H

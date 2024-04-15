@@ -117,9 +117,10 @@ int CustomEventParamDao::Delete(const std::string& runningId)
         return DB_FAILED;
     }
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    if (!runningId.empty()) {
-        predicates.EqualTo(FIELD_RUNNING_ID, runningId);
+    if (runningId.empty()) {
+        return DB_SUCC;
     }
+    predicates.EqualTo(FIELD_RUNNING_ID, runningId);
     int deleteRows = 0;
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;

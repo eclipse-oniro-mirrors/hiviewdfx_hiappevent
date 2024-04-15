@@ -153,7 +153,7 @@ using AppEventParam = struct AppEventParam;
 struct CustomEventParam {
     std::string key;
     std::string value;
-    int type;
+    int type = 0;
 };
 using CustomEventParam = struct CustomEventParam;
 

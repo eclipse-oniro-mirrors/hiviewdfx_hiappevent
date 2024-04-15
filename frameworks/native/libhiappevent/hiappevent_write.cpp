@@ -116,7 +116,7 @@ int SetEventParam(std::shared_ptr<AppEventPack> appEventPack)
     int res = AppEventStore::GetInstance().InsertCustomEventParams(appEventPack);
     if (res == DB_FAILED) {
         HILOG_ERROR(LOG_CORE, "failed to insert event param, domain=%{public}s.", appEventPack->GetDomain().c_str());
-        res = ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+        return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
     }
     return res;
 }

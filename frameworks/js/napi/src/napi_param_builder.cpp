@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "napi_hiappevent_builder_param.h"
+#include "napi_param_builder.h"
 
 #include "hiappevent_base.h"
 #include "hiappevent_verify.h"
@@ -24,7 +24,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "NapiHiAppEventBuilderParam"
+#define LOG_TAG "NapiParamBuilder"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -33,11 +33,12 @@ constexpr size_t MIN_NUM_PARAMETERS = 2; // the min number of params for setEven
 constexpr int INDEX_OF_PARAMS = 0;
 constexpr int INDEX_OF_DOMAIN = 1;
 constexpr int INDEX_OF_NAME = 2;
+constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
 const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[string]";
 }
 using namespace OHOS::HiviewDFX::ErrorCode;
 
-bool NapiHiAppEventBuilderParam::IsValidSetEventParams(const napi_env env, const napi_value params[], size_t len)
+bool NapiParamBuilder::IsValidParams(const napi_env env, const napi_value params[], size_t len)
 {
     if (!NapiHiAppEventBuilder::IsValidEventParam(env, params[INDEX_OF_PARAMS])
         || !NapiHiAppEventBuilder::IsValidEventDomain(env, params[INDEX_OF_DOMAIN])) {
@@ -48,28 +49,44 @@ bool NapiHiAppEventBuilderParam::IsValidSetEventParams(const napi_env env, const
         : true;
 }
 
-void NapiHiAppEventBuilderParam::AddArrayParam2EventPack(napi_env env, const std::string &key,
+void NapiParamBuilder::AddArrayParam2EventPack(napi_env env, const std::string &key,
     const napi_value arr)
 {
     napi_valuetype type = NapiUtil::GetArrayType(env, arr);
-    switch (type) {
-        case napi_string: {
-            std::vector<std::string> strs;
-            NapiUtil::GetStrings(env, arr, strs);
-            appEventPack_->AddParam(key, strs);
+    if (type != napi_string) {
+        HILOG_ERROR(LOG_CORE, "array param value type is invalid");
+        result_ = ERROR_INVALID_LIST_PARAM_TYPE;
+        std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
+        return;
+    }
+    std::vector<std::string> strs;
+    NapiUtil::GetStrings(env, arr, strs);
+    appEventPack_->AddParam(key, strs);
+}
+
+void NapiParamBuilder::AddParams2EventPack(napi_env env, const napi_value paramObj)
+{
+    std::vector<std::string> keys;
+    NapiUtil::GetPropertyNames(env, paramObj, keys);
+    for (auto key : keys) {
+        if (key.length() > MAX_LENGTH_OF_PARAM_NAME) {
+            result_ = ERROR_INVALID_PARAM_NAME;
+            HILOG_ERROR(LOG_CORE, "the length=%{public}zu of the param key is invalid", key.length());
             break;
         }
-        default: {
-            HILOG_ERROR(LOG_CORE, "array param value type is invalid");
-            result_ = ERROR_INVALID_LIST_PARAM_TYPE;
+        napi_value value = NapiUtil::GetProperty(env, paramObj, key);
+        if (value == nullptr) {
+            result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
             break;
         }
+        AddParam2EventPack(env, key, value);
     }
 }
 
-void NapiHiAppEventBuilderParam::BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len)
+void NapiParamBuilder::BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len)
 {
     std::string domain = NapiUtil::GetString(env, params[INDEX_OF_DOMAIN]);
     std::string name;
@@ -80,24 +97,25 @@ void NapiHiAppEventBuilderParam::BuildCustomEventParamPack(napi_env env, const n
     NapiHiAppEventBuilder::AddParams2EventPack(env, params[INDEX_OF_PARAMS]);
 }
 
-std::shared_ptr<AppEventPack> NapiHiAppEventBuilderParam::BuildEventParam(const napi_env env,
+std::shared_ptr<AppEventPack> NapiParamBuilder::BuildEventParam(const napi_env env,
     const napi_value params[], size_t len)
 {
-    isV9_ = true;
     if (len < MIN_NUM_PARAMETERS) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("setEventParam"), isV9_);
         return nullptr;
     }
-    if (!IsValidSetEventParams(env, params, len)) {
+    if (!IsValidParams(env, params, len)) {
         return nullptr;
     }
     BuildCustomEventParamPack(env, params, len);
-    return appEventPack_;
-}
 
-int NapiHiAppEventBuilderParam::GetResult() const
-{
-    return result_;
+    // if the build is successful, the event verification is performed
+    if (appEventPack_ != nullptr && result_ >= 0) {
+        if (auto ret = VerifyCustomEventParams(appEventPack_); ret != 0) {
+            result_ = ret;
+        }
+    }
+    return appEventPack_;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
