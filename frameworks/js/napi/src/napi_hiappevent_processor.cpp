@@ -291,13 +291,13 @@ int GenConfigCustomConfigsProp(const napi_env env, const napi_value config, cons
         return ERR_CODE_PARAM_INVALID;
     }
     std::unordered_map<std::string, std::string> customConfigs;
-    for (auto key : keys) {
+    for (const auto& localKey : keys) {
         std::string value;
-        if (!GenConfigStrProp(env, napiObject, key, value) || !IsValidCustomConfig(key, value)) {
-            HILOG_WARN(LOG_CORE, "invalid key name=%{public}s", key.c_str());
+        if (!GenConfigStrProp(env, napiObject, localKey, value) || !IsValidCustomConfig(localKey, value)) {
+            HILOG_WARN(LOG_CORE, "invalid key name=%{public}s", localKey.c_str());
             return ERR_CODE_PARAM_INVALID;
         }
-        customConfigs.insert(std::pair<std::string, std::string>(key, value));
+        customConfigs.insert(std::pair<std::string, std::string>(localKey, value));
     }
     out.customConfigs = customConfigs;
     return ERR_CODE_SUCC;
