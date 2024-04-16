@@ -103,6 +103,15 @@ std::shared_ptr<AppEventPack> GetEventFromResultSet(std::shared_ptr<NativeRdb::A
     event->SetRunningId(GetStringFromResultSet(resultSet, Events::FIELD_RUNNING_ID));
     return event;
 }
+
+void UpToDbVersion2(NativeRdb::RdbStore& rdbStore)
+{
+    std::string sql = "ALTER TABLE " + Events::TABLE + " ADD COLUMN "
+        + Events::FIELD_RUNNING_ID + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
+    if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 1 to 2, ret=%{pulic}d", ret);
+    }
+}
 }
 
 int AppEventStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
@@ -114,6 +123,11 @@ int AppEventStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
 int AppEventStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion)
 {
     HILOG_DEBUG(LOG_CORE, "OnUpgrade, oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
+    for (int i = oldVersion; i < newVersion; ++i) {
+        if (i == 1) { // upgrade db version from 1 to 2
+            UpToDbVersion2(rdbStore);
+        }
+    }
     return NativeRdb::E_OK;
 }
 
@@ -136,7 +150,7 @@ int AppEventStore::InitDbStore()
     int ret = NativeRdb::E_OK;
     NativeRdb::RdbStoreConfig config(dirPath_ + DATABASE_NAME);
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
-    const int dbVersion = 1;
+    const int dbVersion = 2; // 2 means new db version
     AppEventStoreCallback callback;
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, dbVersion, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
@@ -245,26 +259,26 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
 
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     dbStore_->BeginTransaction();
-    std::unordered_set<std::string> paramkeys;
-    customEventParamDao_->QueryParamkeys(paramkeys, event->GetRunningId(), event->GetDomain(), event->GetName());
-    std::vector<CustomEventParam> customParams;
-    event->GetCustomParams(customParams);
-    if (customParams.empty()) {
+    std::unordered_set<std::string> oldParamkeys;
+    customEventParamDao_->QueryParamkeys(oldParamkeys, event->GetRunningId(), event->GetDomain(), event->GetName());
+    std::vector<CustomEventParam> newParams;
+    event->GetCustomParams(newParams);
+    if (newParams.empty()) {
         return DB_SUCC;
     }
     // check params num of same (runningid, domain, name)
-    size_t totalNum = customParams.size();
-    for (const auto& param : customParams) {
-        if (paramkeys.find(param.key) == paramkeys.end()) {
-            totalNum++;
+    size_t totalNum = oldParamkeys.size();
+    for (const auto& param : newParams) {
+        if (oldParamkeys.find(param.key) == oldParamkeys.end()) {
+            ++totalNum;
         }
     }
     if (totalNum > MAX_NUM_OF_CUSTOM_PARAMS) {
         return ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
-    for (const auto& param : customParams) {
-        if (paramkeys.find(param.key) == paramkeys.end()) {
+    for (const auto& param : newParams) {
+        if (oldParamkeys.find(param.key) == oldParamkeys.end()) {
             if (customEventParamDao_->Insert(param, event->GetRunningId(), event->GetDomain(), event->GetName())
                 == DB_FAILED) {
                 dbStore_->RollBack();

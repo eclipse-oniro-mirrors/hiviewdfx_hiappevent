@@ -35,17 +35,17 @@ public:
 
 protected:
     virtual void AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr);
+    virtual void AddParams2EventPack(napi_env env, const napi_value paramObj);
+    void AddParam2EventPack(napi_env env, const std::string &key, const napi_value value);
     bool IsValidEventDomain(const napi_env env, const napi_value domain);
     bool IsValidEventName(const napi_env env, const napi_value name);
     bool IsValidEventParam(const napi_env env, const napi_value param);
-    void AddParams2EventPack(napi_env env, const napi_value paramObj);
 
 private:
     bool IsValidEventType(const napi_env env, const napi_value type);
     bool IsValidEventInfo(const napi_env env, const napi_value eventInfo);
     bool IsOldWriteParams(const napi_env env, const napi_value params[], size_t len);
     bool IsNewWriteParams(const napi_env env, const napi_value params[], size_t len);
-    void AddParam2EventPack(napi_env env, const std::string &key, const napi_value value);
     void BuildEventPack(napi_env env, const napi_value params[]);
     void BuildEventPack(napi_env env, const napi_value eventInfo);
     void BuildCallback(const napi_env env, const napi_value callback);

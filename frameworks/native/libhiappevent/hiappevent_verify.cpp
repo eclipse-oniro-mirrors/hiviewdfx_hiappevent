@@ -230,38 +230,34 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
     return true;
 }
 
-bool VerifyCustomAppEventParam(AppEventParam& param, std::unordered_set<std::string>& paramNames, int& verifyRes)
+int VerifyCustomAppEventParam(AppEventParam& param, std::unordered_set<std::string>& paramNames)
 {
     std::string name = param.name;
     if (paramNames.find(name) != paramNames.end()) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because param is duplicate.", name.c_str());
-        verifyRes = ERROR_DUPLICATE_PARAM;
-        return false;
+        return ERROR_DUPLICATE_PARAM;
     }
 
     if (!CheckParamName(name)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the paramName is invalid.", name.c_str());
-        verifyRes = ERROR_INVALID_PARAM_NAME;
-        return false;
+        return ERROR_INVALID_PARAM_NAME;
     }
 
     if (param.type == AppEventParamType::STRING
         && !CheckStrParamLength(param.value.valueUnion.str_, MAX_LENGTH_OF_CUSTOM_PARAM)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
             name.c_str(), MAX_LENGTH_OF_CUSTOM_PARAM);
-        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
-        return false;
+        return ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
 
     if (param.type == AppEventParamType::STRVECTOR
         && !CheckStringLengthOfList(param.value.valueUnion.strs_, MAX_LENGTH_OF_CUSTOM_PARAM)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length of list exceeds %{public}zu.",
             name.c_str(), MAX_LENGTH_OF_CUSTOM_PARAM);
-        verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
-        return false;
+        return ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
 
-    return true;
+    return HIAPPEVENT_VERIFY_SUCCESSFUL;
 }
 
 using VerifyReportConfigFunc = int (*)(ReportConfig& config);
@@ -458,14 +454,13 @@ int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event)
         HILOG_WARN(LOG_CORE, "params that exceed 48 are discarded because the number of params cannot exceed 48.");
         return ERROR_INVALID_CUSTOM_PARAM_NUM;
     }
-    int verifyRes = HIAPPEVENT_VERIFY_SUCCESSFUL;
     std::unordered_set<std::string> paramNames;
-    for (auto it = baseParams.begin(); it != baseParams.end(); it++) {
-        if (!VerifyCustomAppEventParam(*it, paramNames, verifyRes)) {
-            break;
+    for (auto it = baseParams.begin(); it != baseParams.end(); ++it) {
+        if (int ret = VerifyCustomAppEventParam(*it, paramNames); ret != HIAPPEVENT_VERIFY_SUCCESSFUL) {
+            return ret;
         }
     }
-    return verifyRes;
+    return HIAPPEVENT_VERIFY_SUCCESSFUL;
 }
 
 bool IsValidPropName(const std::string& name, size_t maxSize)

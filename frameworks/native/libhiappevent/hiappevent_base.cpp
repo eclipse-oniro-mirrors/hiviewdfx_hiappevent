@@ -37,6 +37,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const std::string DEFAULT_DOMAIN = "default";
+constexpr size_t MIN_PARAM_STR_LEN = 3; // 3: '{}\0'
 
 std::string TrimRightZero(const std::string& str)
 {
@@ -555,13 +556,21 @@ void AppEventPack::AddParam(const std::string& key, const std::vector<std::strin
 
 void AppEventPack::AddCustomParams(const std::unordered_map<std::string, std::string>& customParams)
 {
+    if (customParams.empty()) {
+        return;
+    }
     std::string paramStr = GetParamStr();
-    if (!paramStr.empty()) {
+    if (paramStr.size() >= MIN_PARAM_STR_LEN) {
         std::stringstream jsonStr;
-        for (auto it = customParams.begin(); it != customParams.end(); ++it) {
-            jsonStr << "," << "\"" << it->first << "\":" << it->second;
+        if (paramStr.size() > MIN_PARAM_STR_LEN) {
+            jsonStr << ",";
         }
-        paramStr.insert(paramStr.size() - 2, jsonStr.str()); // 2 for '}'
+        for (auto it = customParams.begin(); it != customParams.end(); ++it) {
+            jsonStr << "\"" << it->first << "\":" << it->second << ",";
+        }
+        std::string customParamStr = jsonStr.str();
+        customParamStr.erase(customParamStr.end() - 1); // -1 for delete ','
+        paramStr.insert(paramStr.size() - 2, customParamStr); // 2 for '}\0'
         paramStr_ = paramStr;
     }
 }
@@ -623,9 +632,8 @@ void AppEventPack::AddParamsInfoToJsonString(std::stringstream& jsonStr) const
 
     // for event from the db
     size_t paramStrLen = paramStr_.length();
-    constexpr size_t minParamStrLen = 3; // 3: '{}\0'
-    if (paramStrLen > minParamStrLen) {
-        jsonStr << "," << paramStr_.substr(1, paramStrLen - minParamStrLen); // 1: '{' for next char
+    if (paramStrLen > MIN_PARAM_STR_LEN) {
+        jsonStr << "," << paramStr_.substr(1, paramStrLen - MIN_PARAM_STR_LEN); // 1: '{' for next char
     }
 }
 

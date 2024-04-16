@@ -108,25 +108,23 @@ void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext)
     napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
             HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
-            if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
-                asyncContext->result = SetEventParam(asyncContext->appEventPack);
+            if (asyncContext->appEventPack != nullptr && asyncContext->result == 0) {
+                if (auto ret = SetEventParam(asyncContext->appEventPack); ret > 0) {
+                    asyncContext->result = ret;
+                }
             }
         },
         [](napi_env env, napi_status status, void* data) {
             HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
             napi_value results[RESULT_SIZE] = { 0 };
-            if (asyncContext->result == 0) {
-                results[ERR_INDEX] = NapiUtil::CreateNull(env);
-                results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
-            } else {
-                results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
-                results[VALUE_INDEX] = NapiUtil::CreateNull(env);
-            }
-
-            if (asyncContext->deferred != nullptr) { // promise
+            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
                 if (asyncContext->result == 0) {
+                    results[ERR_INDEX] = NapiUtil::CreateNull(env);
+                    results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
                     napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
                 } else {
+                    results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
+                    results[VALUE_INDEX] = NapiUtil::CreateNull(env);
                     napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
                 }
             }

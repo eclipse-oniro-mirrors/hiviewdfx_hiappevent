@@ -209,7 +209,9 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
         HILOG_ERROR(LOG_CORE, "parse event detail info failed, please check the style of json");
         return nullptr;
     }
-
+    if (!eventJson.isObject()) {
+        return nullptr;
+    }
     auto appEventPack = std::make_shared<AppEventPack>();
     if (eventJson.isMember(DOMAIN_PROPERTY) && eventJson[DOMAIN_PROPERTY].isString()) {
         appEventPack->SetDomain(eventJson[DOMAIN_PROPERTY].asString());

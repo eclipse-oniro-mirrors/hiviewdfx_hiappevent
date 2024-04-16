@@ -19,13 +19,13 @@
 #include "napi_app_event_holder.h"
 #include "napi_error.h"
 #include "napi_hiappevent_builder.h"
-#include "napi_hiappevent_builder_param.h"
 #include "napi_hiappevent_config.h"
 #include "napi_hiappevent_processor.h"
 #include "napi_hiappevent_userinfo.h"
 #include "napi_hiappevent_init.h"
 #include "napi_hiappevent_watch.h"
 #include "napi_hiappevent_write.h"
+#include "napi_param_builder.h"
 #include "napi_util.h"
 
 #undef LOG_DOMAIN
@@ -203,7 +203,7 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
-    NapiHiAppEventBuilderParam builder;
+    NapiParamBuilder builder;
     auto appEventPack = builder.BuildEventParam(env, params, paramNum);
     if (appEventPack == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to build appEventPack.");
@@ -217,13 +217,6 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
     }
     asyncContext->appEventPack = appEventPack;
     asyncContext->result = builder.GetResult();
-
-    // if the build is successful, the event verification is performed
-    if (asyncContext->result >= 0) {
-        if (auto ret = VerifyCustomEventParams(asyncContext->appEventPack); ret != 0) {
-            asyncContext->result = ret;
-        }
-    }
 
     napi_value promise = nullptr;
     napi_create_promise(env, &asyncContext->deferred, &promise);
