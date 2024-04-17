@@ -176,7 +176,7 @@ int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> 
         return observerSeq;
     }
 
-    std::lock_guard<std::mutex> lock(observerMutex_);
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
     observers_[observerSeq] = observer;
     HILOG_INFO(LOG_CORE, "register observer=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
@@ -206,7 +206,7 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
 
 int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq)
 {
-    std::lock_guard<std::mutex> lock(observerMutex_);
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
     if (observers_.find(observerSeq) == observers_.cend()) {
         HILOG_WARN(LOG_CORE, "observer seq=%{public}" PRId64 " is not exist", observerSeq);
         return 0;
@@ -263,7 +263,7 @@ int64_t AppEventObserverMgr::InitObserver(std::shared_ptr<AppEventObserver> obse
 
 void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
-    std::lock_guard<std::mutex> lock(observerMutex_);
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
     if (observers_.empty()) {
         return;
     }
@@ -281,7 +281,7 @@ void AppEventObserverMgr::HandleTimeout()
         return;
     }
     handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
-    std::lock_guard<std::mutex> lock(observerMutex_);
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ProcessTimeout();
     }
@@ -290,7 +290,7 @@ void AppEventObserverMgr::HandleTimeout()
 void AppEventObserverMgr::HandleBackground()
 {
     HILOG_INFO(LOG_CORE, "start to handle background");
-    std::lock_guard<std::mutex> lock(observerMutex_);
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ProcessBackground();
     }
@@ -299,7 +299,7 @@ void AppEventObserverMgr::HandleBackground()
 void AppEventObserverMgr::HandleClearUp()
 {
     HILOG_INFO(LOG_CORE, "start to handle clear up");
-    std::lock_guard<std::mutex> lock(observerMutex_);
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ResetCurrCondition();
     }
