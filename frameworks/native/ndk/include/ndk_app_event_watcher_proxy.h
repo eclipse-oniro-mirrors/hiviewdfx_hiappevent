@@ -40,7 +40,6 @@ public:
     int RemoveWatcher();
 private:
     std::shared_ptr<NdkAppEventWatcher> watcher_;
-    bool isRegistered_{false};
 };
 
 } // namespace HiviewDFX
