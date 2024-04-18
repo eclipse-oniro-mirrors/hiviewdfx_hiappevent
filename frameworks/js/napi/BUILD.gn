@@ -65,6 +65,7 @@ ohos_shared_library("hiappevent_v9") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hilog:libhilog",
     "napi:ace_napi",
     "relational_store:native_rdb",
