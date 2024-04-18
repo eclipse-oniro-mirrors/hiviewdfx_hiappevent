@@ -32,15 +32,6 @@ namespace HiviewDFX {
 NdkAppEventWatcherProxy::NdkAppEventWatcherProxy(const std::string &name)
     : watcher_(std::make_shared<NdkAppEventWatcher>(name)) {}
 
-NdkAppEventWatcherProxy::~NdkAppEventWatcherProxy()
-{
-    int64_t watcherSeq = watcher_->GetSeq();
-    if (watcherSeq > 0) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(watcherSeq);
-        watcher_->SetSeq(0);
-    }
-}
-
 int NdkAppEventWatcherProxy::SetTriggerCondition(int row, int size, int timeOut)
 {
     watcher_->SetTriggerCondition(row, size, timeOut);

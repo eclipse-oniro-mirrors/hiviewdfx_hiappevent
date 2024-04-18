@@ -93,5 +93,7 @@ int RemoveWatcher(struct HiAppEvent_Watcher *watcher)
 void DestroyWatcher(struct HiAppEvent_Watcher* watcher)
 {
     CHECK_WATCHER_PTR(watcher)
-    delete reinterpret_cast<NdkAppEventWatcherProxy *>(watcher);
+    auto *watcherProxy = reinterpret_cast<NdkAppEventWatcherProxy *>(watcher);
+    watcherProxy->RemoveWatcher();
+    delete watcherProxy;
 }
