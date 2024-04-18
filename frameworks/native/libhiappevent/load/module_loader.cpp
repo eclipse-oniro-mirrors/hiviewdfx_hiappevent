@@ -34,7 +34,7 @@ namespace {
 std::string GetModulePath(const std::string& moduleName)
 {
     const std::string searchDirs[] = {
-        "/system/lib/", "/system/lib64/"
+        "/system/lib/platformsdk/", "/system/lib64/platformsdk/", "/system/lib/", "/system/lib64/"
     };
     std::string modulePath;
     std::string libName = "lib" + moduleName + ".z.so";

@@ -15,22 +15,22 @@
 <configuration ver="2.0">
     <target name="HiAppEventInnerApiTest">
         <preparer>
-            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib64/" src="out"/>
-            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib/" src="out"/>
+            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib64/platformsdk/" src="out"/>
+            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib/platformsdk/" src="out"/>
         </preparer>
         <cleaner>
-            <option name="shell" value="rm -rf /system/lib64/libtest_processor.z.so"/>
-            <option name="shell" value="rm -rf /system/lib/libtest_processor.z.so"/>
+            <option name="shell" value="rm -rf /system/lib64/platformsdk/libtest_processor.z.so"/>
+            <option name="shell" value="rm -rf /system/lib/platformsdk/libtest_processor.z.so"/>
         </cleaner>
     </target>
     <target name="HiAppEventJsTest">
         <preparer>
-            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib64/" src="out"/>
-            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib/" src="out"/>
+            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib64/platformsdk/" src="out"/>
+            <option name="push" value="hiviewdfx/hiappevent/libtest_processor.z.so -> /system/lib/platformsdk/" src="out"/>
         </preparer>
         <cleaner>
-            <option name="shell" value="rm -rf /system/lib64/libtest_processor.z.so"/>
-            <option name="shell" value="rm -rf /system/lib/libtest_processor.z.so"/>
+            <option name="shell" value="rm -rf /system/lib64/platformsdk/libtest_processor.z.so"/>
+            <option name="shell" value="rm -rf /system/lib/platformsdk/libtest_processor.z.so"/>
         </cleaner>
     </target>
 </configuration>
