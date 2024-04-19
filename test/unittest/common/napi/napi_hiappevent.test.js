@@ -1727,8 +1727,7 @@ describe('HiAppEventJsTest', function () {
                         hiAppEventV9.event.CPU_USAGE_HIGH,
                         hiAppEventV9.event.BATTERY_USAGE,
                         hiAppEventV9.event.RESOURCE_OVERLIMIT,
-                        hiAppEventV9.event.ADDRESS_SANITIZER,
-                        hiAppEventV9.event.MAIN_THREAD_JANK
+                        hiAppEventV9.event.ADDRESS_SANITIZER
                     ]
                 },
             ],
