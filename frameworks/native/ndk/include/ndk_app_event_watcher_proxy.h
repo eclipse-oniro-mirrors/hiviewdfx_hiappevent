@@ -25,7 +25,6 @@ namespace HiviewDFX {
 class NdkAppEventWatcherProxy {
 public:
     explicit NdkAppEventWatcherProxy(const std::string& name);
-    ~NdkAppEventWatcherProxy();
     NdkAppEventWatcherProxy(const NdkAppEventWatcherProxy&) = delete;
     NdkAppEventWatcherProxy(const NdkAppEventWatcherProxy&&) = delete;
     NdkAppEventWatcherProxy& operator= (const NdkAppEventWatcherProxy&) = delete;
@@ -40,7 +39,6 @@ public:
     int RemoveWatcher();
 private:
     std::shared_ptr<NdkAppEventWatcher> watcher_;
-    bool isRegistered_{false};
 };
 
 } // namespace HiviewDFX

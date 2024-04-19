@@ -32,14 +32,6 @@ namespace HiviewDFX {
 NdkAppEventWatcherProxy::NdkAppEventWatcherProxy(const std::string &name)
     : watcher_(std::make_shared<NdkAppEventWatcher>(name)) {}
 
-NdkAppEventWatcherProxy::~NdkAppEventWatcherProxy()
-{
-    if (isRegistered_) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(watcher_->GetSeq());
-        isRegistered_ = false;
-    }
-}
-
 int NdkAppEventWatcherProxy::SetTriggerCondition(int row, int size, int timeOut)
 {
     watcher_->SetTriggerCondition(row, size, timeOut);
@@ -67,13 +59,12 @@ int NdkAppEventWatcherProxy::SetWatcherOnReceiver(OH_HiAppEvent_OnReceive onRece
 int NdkAppEventWatcherProxy::AddWatcher()
 {
     AppEventObserverMgr::GetInstance().RegisterObserver(watcher_);
-    isRegistered_ = true;
     return 0;
 }
 
 int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake onTake)
 {
-    if (!isRegistered_) {
+    if (watcher_->GetSeq() == 0) {
         HILOG_WARN(LOG_CORE, "failed to query events, the observer has not been added");
         return ErrorCode::ERROR_WATCHER_NOT_ADDED;
     }
@@ -94,9 +85,10 @@ int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake
 
 int NdkAppEventWatcherProxy::RemoveWatcher()
 {
-    if (isRegistered_) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(watcher_->GetSeq());
-        isRegistered_ = false;
+    int64_t watcherSeq = watcher_->GetSeq();
+    if (watcherSeq > 0) {
+        AppEventObserverMgr::GetInstance().UnregisterObserver(watcherSeq);
+        watcher_->SetSeq(0);
         return 0;
     }
     return ErrorCode::ERROR_WATCHER_NOT_ADDED;
