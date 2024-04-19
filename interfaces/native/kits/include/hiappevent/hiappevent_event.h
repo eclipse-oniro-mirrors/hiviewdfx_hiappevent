@@ -144,6 +144,14 @@ extern "C" {
 #define EVENT_ADDRESS_SANITIZER "ADDRESS_SANITIZER"
 
 /**
+ * @brief app main thread jank event.
+ *
+ * @since 12
+ * @version 1.0
+ */
+#define EVENT_MAIN_THREAD_JANK "MAIN_THREAD_JANK"
+
+/**
  * @brief OS domain.
  *
  * @since 12
