@@ -1830,3 +1830,4 @@ describe('HiAppEventJsTest', function () {
         }, 1000);
     });
 });
+
