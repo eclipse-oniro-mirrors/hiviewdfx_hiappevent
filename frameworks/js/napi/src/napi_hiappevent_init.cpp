@@ -70,6 +70,7 @@ void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
     eventMap["BATTERY_USAGE"] = NapiUtil::CreateString(env, "BATTERY_USAGE");
     eventMap["RESOURCE_OVERLIMIT"] = NapiUtil::CreateString(env, "RESOURCE_OVERLIMIT");
     eventMap["ADDRESS_SANITIZER"] = NapiUtil::CreateString(env, "ADDRESS_SANITIZER");
+    eventMap["MAIN_THREAD_JANK"] = NapiUtil::CreateString(env, "MAIN_THREAD_JANK");
 }
 
 void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
