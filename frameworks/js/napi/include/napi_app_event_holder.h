@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,18 +19,20 @@
 #include <string>
 #include <vector>
 
+#include "hiappevent_base.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 struct AppEventPackage {
-    AppEventPackage() : packageId(0), row(0), size(0), events(0) {}
+    AppEventPackage() : packageId(0), row(0), size(0), data(0), events(0) {}
     ~AppEventPackage() {}
     int packageId;
     int row;
     int size;
-    std::vector<std::string> events;
+    std::vector<std::string> data;
+    std::vector<std::shared_ptr<AppEventPack>> events;
 };
 
 class NapiAppEventHolder {
@@ -39,9 +41,11 @@ public:
     ~NapiAppEventHolder() {}
     static napi_value NapiConstructor(napi_env env, napi_callback_info info);
     static napi_value NapiExport(napi_env env, napi_value exports);
+    static napi_value NapiSetRow(napi_env env, napi_callback_info info);
     static napi_value NapiSetSize(napi_env env, napi_callback_info info);
     static napi_value NapiTakeNext(napi_env env, napi_callback_info info);
 
+    void SetRow(int row);
     void SetSize(int size);
     std::shared_ptr<AppEventPackage> TakeNext();
 
@@ -50,9 +54,12 @@ public:
 
 private:
     std::string name_;
+    int takeRow_;
     int takeSize_;
     int packageId_;
     int64_t observerSeq_;
+    bool hasSetRow_;
+    bool hasSetSize_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

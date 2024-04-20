@@ -409,10 +409,10 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
         std::lock_guard<std::mutex> lockGuard(dbMutex_);
         std::string sql = "SELECT " + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
             + Events::TABLE + " ON " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + "="
-            + Events::TABLE + "." + Events::FIELD_SEQ + " WHERE " + AppEventMapping::FIELD_OBSERVER_SEQ + "=?";
+            + Events::TABLE + "." + Events::FIELD_SEQ + " WHERE " + AppEventMapping::FIELD_OBSERVER_SEQ + "=?"
+            + " ORDER BY " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " DESC ";
         if (size > 0) {
-            sql += " ORDER BY " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " DESC LIMIT " +
-                std::to_string(size);
+            sql += " LIMIT " + std::to_string(size);
         }
         resultSet = dbStore_->QuerySql(sql, std::vector<std::string>{std::to_string(observerSeq)});
     }
