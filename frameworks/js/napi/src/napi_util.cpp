@@ -600,6 +600,15 @@ napi_value CreateEventInfo(napi_env env, std::shared_ptr<AppEventPack> event)
     return obj;
 }
 
+napi_value CreateEventInfoArray(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events)
+{
+    napi_value arr = CreateArray(env);
+    for (size_t i = 0; i < events.size(); ++i) {
+        SetElement(env, arr, i, CreateEventInfo(env, events[i]));
+    }
+    return arr;
+}
+
 napi_value CreateEventGroups(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     std::unordered_map<std::string, std::vector<std::shared_ptr<AppEventPack>>> eventMap;

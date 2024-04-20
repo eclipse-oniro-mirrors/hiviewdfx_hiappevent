@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -85,6 +85,7 @@ napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValu
 napi_value CreateValueByJson(napi_env env, const Json::Value& jsonValue);
 napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr);
 napi_value CreateEventInfo(napi_env env, std::shared_ptr<AppEventPack> event);
+napi_value CreateEventInfoArray(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events);
 napi_value CreateEventGroups(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events);
 } // namespace NapiUtil
 } // namespace HiviewDFX
