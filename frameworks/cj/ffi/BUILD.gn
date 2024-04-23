@@ -1,0 +1,60 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+
+ohos_shared_library("cj_hiappevent_ffi") {
+  defines = []
+  include_dirs = [
+    "include/",
+    "../../../frameworks/native/libhiappevent/include/",
+    "../../../frameworks/native/libhiappevent/observer/include/",
+    "../../../interfaces/native/inner_api/include/",
+    "../../../frameworks/native/libhiappevent/load/include/",
+    "../../../frameworks/native/libhiappevent/utility/include/",
+  ]
+
+  if (build_ohos_sdk) {
+    defines += [ "PREVIEWER" ]
+    sources = [ "src/hiappevent_mock.cpp" ]
+  } else {
+    sources = [
+      "./src/appevent_packageholder_impl.cpp",
+      "./src/appevent_watcher_impl.cpp",
+      "./src/error.cpp",
+      "./src/hiappevent_ffi.cpp",
+      "./src/hiappevent_impl.cpp",
+    ]
+  }
+
+  deps = [
+    "../../native/libhiappevent:libhiappevent_base",
+    "../../native/libhiappevent/cache:hiappevent_cache",
+    "../../native/libhiappevent/cleaner:hiappevent_cleaner",
+    "../../native/libhiappevent/observer:hiappevent_observer",
+  ]
+
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "napi:ace_napi",
+    "napi:cj_bind_ffi",
+    "napi:cj_bind_native",
+    "relational_store:native_rdb",
+  ]
+
+  innerapi_tags = [ "platformsdk" ]
+
+  part_name = "hiappevent"
+  subsystem_name = "hiviewdfx"
+}
