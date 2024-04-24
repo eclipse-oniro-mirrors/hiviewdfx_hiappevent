@@ -451,7 +451,7 @@ int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event)
 
     std::list<AppEventParam>& baseParams = event->baseParams_;
     if (baseParams.size() > MAX_NUM_OF_CUSTOM_PARAMS) {
-        HILOG_WARN(LOG_CORE, "params that exceed 48 are discarded because the number of params cannot exceed 48.");
+        HILOG_WARN(LOG_CORE, "params that exceed 64 are discarded because the number of params cannot exceed 64.");
         return ERROR_INVALID_CUSTOM_PARAM_NUM;
     }
     std::unordered_set<std::string> paramNames;

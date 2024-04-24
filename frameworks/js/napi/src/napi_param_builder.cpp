@@ -94,7 +94,7 @@ void NapiParamBuilder::BuildCustomEventParamPack(napi_env env, const napi_value 
         name = NapiUtil::GetString(env, params[INDEX_OF_NAME]);
     }
     appEventPack_ = std::make_shared<AppEventPack>(domain, name);
-    NapiHiAppEventBuilder::AddParams2EventPack(env, params[INDEX_OF_PARAMS]);
+    AddParams2EventPack(env, params[INDEX_OF_PARAMS]);
 }
 
 std::shared_ptr<AppEventPack> NapiParamBuilder::BuildEventParam(const napi_env env,
