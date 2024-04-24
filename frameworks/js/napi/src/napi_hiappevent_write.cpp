@@ -49,7 +49,7 @@ napi_value BuildErrorByResult(const napi_env env, int result)
         { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE,
             { NapiError::ERR_INVALID_ARR_LEN, "Invalid array length of the event parameter." } },
         { ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM,
-            { NapiError::ERR_INVALID_CUSTOM_PARAM_NUM, "Invalid number of set event parameters." }},
+            { NapiError::ERR_INVALID_CUSTOM_PARAM_NUM, "The number of parameter keys exceeds the limit." }},
     };
     return errMap.find(result) == errMap.end() ? NapiUtil::CreateNull(env) :
         NapiUtil::CreateError(env, errMap.at(result).first, errMap.at(result).second);
