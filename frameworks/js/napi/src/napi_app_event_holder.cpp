@@ -72,6 +72,9 @@ napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info 
         return thisVar;
     }
     auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetString(env, params[0]));
+    if (holder == nullptr) {
+        return thisVar;
+    }
     napi_wrap(
         env, thisVar, holder,
         [](napi_env env, void* data, void* hint) {
