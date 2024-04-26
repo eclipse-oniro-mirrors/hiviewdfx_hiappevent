@@ -113,6 +113,9 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest002, TestSize.Level1)
     Event event6(TEST_DOMAIN, TEST_NAME, BEHAVIOR);
     event6.AddParam(std::string(limitLen + 1, 'a'), TEST_INT_VALUE);
     ASSERT_EQ(Write(event6), ERROR_INVALID_PARAM_NAME);
+    Event event7(TEST_DOMAIN, TEST_NAME, BEHAVIOR);
+    event7.AddParam(std::string(limitLen - 1, 'a') + "_", TEST_INT_VALUE);
+    ASSERT_EQ(Write(event7), ERROR_INVALID_PARAM_NAME);
 
     std::cout << "HiAppEventAppEventTest002 end" << std::endl;
 }
@@ -240,6 +243,8 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest006, TestSize.Level1)
     ASSERT_EQ(Write(event6), ERROR_INVALID_EVENT_DOMAIN);
     Event event7("", TEST_NAME, BEHAVIOR);
     ASSERT_EQ(Write(event7), ERROR_INVALID_EVENT_DOMAIN);
+    Event event8(std::string(limitLen - 1, 'a') + "_", TEST_NAME, BEHAVIOR);
+    ASSERT_EQ(Write(event8), ERROR_INVALID_EVENT_DOMAIN);
 
     std::cout << "HiAppEventAppEventTest006 end" << std::endl;
 }

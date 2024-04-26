@@ -298,12 +298,17 @@ describe('HiAppEventJsTest', function () {
         let expectErr = createError(11101005, "Invalid event parameter name.");
         writeParamsV9Test(params, expectErr, done);
 
+        const MAX_LENGTH_OF_PARAM_NAME = 32;
         params = {};
-        params['a'.repeat(33)] = "value";
+        params['a'.repeat(MAX_LENGTH_OF_PARAM_NAME + 1)] = "value";
         writeParamsV9Test(params, expectErr, done);
 
         params = {};
-        params['a'.repeat(32)] = "value";
+        params['a'.repeat(MAX_LENGTH_OF_PARAM_NAME - 1) + "_"] = "value";
+        writeParamsV9Test(params, expectErr, done);
+
+        params = {};
+        params['a'.repeat(MAX_LENGTH_OF_PARAM_NAME)] = "value";
         writeParamsV9Test(params, null, done);
     });
 
@@ -543,8 +548,13 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventJsTest009_4', 0, async function (done) {
         console.info('HiAppEventJsTest009_3 start');
+        const MAX_LENGTH_OF_EVENT_NAME = 48;
         let expectErr = createError(11101002, "Invalid event name.");
-        writeNameV9Test("a".repeat(49), expectErr, done);
+        writeNameV9Test("a".repeat(MAX_LENGTH_OF_EVENT_NAME + 1), expectErr, done);
+
+        writeNameV9Test("a".repeat(MAX_LENGTH_OF_EVENT_NAME - 1) + "_", expectErr, done);
+
+        writeNameV9Test("a".repeat(MAX_LENGTH_OF_EVENT_NAME), null, done);
     });
 
     /**
@@ -797,20 +807,22 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventJsTest012', 0, async function (done) {
         console.info('HiAppEventJsTest012 start');
 
+        const MAX_LEN_OF_DOMAIN = 32;
         // Error code 11101001 is returned when the event has invalid event domain.
         let expectErr = createError(11101001, "Invalid event domain.");
         writeDomainV9Test("domain***", expectErr, done);
         writeDomainV9Test("123domain", expectErr, done);
         writeDomainV9Test("_domain", expectErr, done);
         writeDomainV9Test("domain_", expectErr, done);
+        writeDomainV9Test("a".repeat(MAX_LEN_OF_DOMAIN - 1) + "_", expectErr, done);
         writeDomainV9Test("", expectErr, done);
-        writeDomainV9Test("a".repeat(33), expectErr, done);
+        writeDomainV9Test("a".repeat(MAX_LEN_OF_DOMAIN + 1), expectErr, done);
 
         // valid event domain.
         writeDomainV9Test("a", null, done);
         writeDomainV9Test("a1", null, done);
         writeDomainV9Test("domainTest", null, done);
-        writeDomainV9Test("a".repeat(32), null, done);
+        writeDomainV9Test("a".repeat(MAX_LEN_OF_DOMAIN), null, done);
     });
 
     /**
@@ -1126,18 +1138,20 @@ describe('HiAppEventJsTest', function () {
         watcherNameTest(true, expectErr);
         watcherNameTest(123, expectErr);
 
+        const MAX_LEN_OF_WATCHER = 32;
         // invalid watcher name value
         expectErr = createError(11102001, "Invalid watcher name.")
-        watcherNameTest("a".repeat(33), expectErr);
+        watcherNameTest("a".repeat(MAX_LEN_OF_WATCHER + 1), expectErr);
         watcherNameTest("", expectErr);
         watcherNameTest("watcher_***", expectErr);
         watcherNameTest("Watcher_test", null);
         watcherNameTest("_watcher_test", expectErr);
         watcherNameTest("watcher_", expectErr);
         watcherNameTest("123watcher", expectErr);
+        watcherNameTest("a".repeat(MAX_LEN_OF_WATCHER - 1) + "_", expectErr);
         watcherNameTest("a", null);
         watcherNameTest("a1", null);
-        watcherNameTest("a".repeat(32), null);
+        watcherNameTest("a".repeat(MAX_LEN_OF_WATCHER), null);
 
         console.info('HiAppEventWatcherTest002 end');
     });

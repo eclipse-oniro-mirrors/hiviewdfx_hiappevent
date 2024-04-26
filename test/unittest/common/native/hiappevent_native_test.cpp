@@ -536,6 +536,10 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest014, TestSize.Level0)
     res = OH_HiAppEvent_Write(std::string(limitLen + 1, 'a').c_str(), TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
 
+    std::string invalidDomain = std::string(limitLen - 1, 'a') + "_";
+    res = OH_HiAppEvent_Write(invalidDomain.c_str(), TEST_EVENT_NAME, SECURITY, nullptr);
+    ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_DOMAIN);
+
     res = OH_HiAppEvent_Write("AAAaaa", TEST_EVENT_NAME, SECURITY, nullptr);
     ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 

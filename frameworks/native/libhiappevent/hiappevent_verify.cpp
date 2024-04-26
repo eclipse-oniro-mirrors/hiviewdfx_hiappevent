@@ -17,7 +17,6 @@
 
 #include <cctype>
 #include <iterator>
-#include <regex>
 #include <unordered_set>
 
 #include "hiappevent_base.h"
@@ -54,13 +53,13 @@ static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
 static constexpr size_t MAX_NUM_OF_CUSTOM_PARAMS = 64;
 static constexpr size_t MAX_LENGTH_OF_CUSTOM_PARAM = 1024;
 
-bool IsValidName(const std::string& name, size_t maxSize)
+bool IsValidName(const std::string& name, size_t maxSize, bool allowDollarSign = true)
 {
     if (name.empty() || name.length() > maxSize) {
         return false;
     }
-    // start char is [$a-zA-Z]
-    if (!isalpha(name[0]) && name[0] != '$') {
+    // start char is [$a-zA-Z] or [a-zA-Z]
+    if (!isalpha(name[0]) && (!allowDollarSign || name[0] != '$')) {
         return false;
     }
     // end char is [a-zA-Z0-9]
@@ -369,13 +368,7 @@ int VerifyCustomConfigsOfReportConfig(ReportConfig& config)
 
 bool IsValidDomain(const std::string& eventDomain)
 {
-    if (eventDomain.empty() || eventDomain.length() > MAX_LEN_OF_DOMAIN) {
-        return false;
-    }
-    if (eventDomain != "OS" && !std::regex_match(eventDomain, std::regex("^[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*$"))) {
-        return false;
-    }
-    return true;
+    return IsValidName(eventDomain, MAX_LEN_OF_DOMAIN, false);
 }
 
 bool IsValidEventName(const std::string& eventName)
@@ -388,10 +381,7 @@ bool IsValidEventName(const std::string& eventName)
 
 bool IsValidWatcherName(const std::string& watcherName)
 {
-    if (watcherName.empty() || watcherName.length() > MAX_LEN_OF_WATCHER) {
-        return false;
-    }
-    return std::regex_match(watcherName, std::regex("^[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*$"));
+    return IsValidName(watcherName, MAX_LEN_OF_WATCHER, false);
 }
 
 bool IsValidEventType(int eventType)
