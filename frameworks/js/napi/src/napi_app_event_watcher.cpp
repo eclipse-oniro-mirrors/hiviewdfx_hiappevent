@@ -110,12 +110,17 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
+    if (work == nullptr) {
+        return;
+    }
     work->data = static_cast<void*>(context_);
     uv_queue_work_with_qos(
         loop,
         work,
-        [](uv_work_t* work) {},
-        [](uv_work_t* work, int status) {
+        [] (uv_work_t* work) {
+            HILOG_DEBUG(LOG_CORE, "enter uv work callback.");
+        },
+        [] (uv_work_t* work, int status) {
             WatcherContext* context = static_cast<WatcherContext*>(work->data);
             HILOG_DEBUG(LOG_CORE, "start to destroy WatcherContext object");
             delete context;
@@ -128,9 +133,15 @@ void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder
 {
     if (context_ == nullptr) {
         context_ = new(std::nothrow) WatcherContext();
+        if (context_ == nullptr) {
+            return;
+        }
     }
     if (context_->triggerContext == nullptr) {
         context_->triggerContext = new(std::nothrow) OnTriggerContext();
+        if (context_->triggerContext == nullptr) {
+            return;
+        }
     }
     context_->triggerContext->env = env;
     context_->triggerContext->holder = NapiUtil::CreateReference(env, holder);
@@ -149,11 +160,14 @@ void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(context_->triggerContext->env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
+    if (work == nullptr) {
+        return;
+    }
     work->data = static_cast<void*>(context_->triggerContext);
     uv_queue_work_with_qos(
         loop,
         work,
-        [] (uv_work_t* work) {},
+        [] (uv_work_t* work) { HILOG_DEBUG(LOG_CORE, "enter uv work callback."); },
         [] (uv_work_t* work, int status) {
             auto context = static_cast<OnTriggerContext*>(work->data);
             napi_handle_scope scope = nullptr;
@@ -190,9 +204,15 @@ void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value trigg
     HILOG_DEBUG(LOG_CORE, "start to init OnTrigger");
     if (context_ == nullptr) {
         context_ = new(std::nothrow) WatcherContext();
+        if (context_ == nullptr) {
+            return;
+        }
     }
     if (context_->triggerContext == nullptr) {
         context_->triggerContext = new(std::nothrow) OnTriggerContext();
+        if (context_->triggerContext == nullptr) {
+            return;
+        }
     }
     context_->triggerContext->env = env;
     context_->triggerContext->onTrigger = NapiUtil::CreateReference(env, triggerFunc);
@@ -203,9 +223,15 @@ void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value rece
     HILOG_DEBUG(LOG_CORE, "start to init onReceive");
     if (context_ == nullptr) {
         context_ = new(std::nothrow) WatcherContext();
+        if (context_ == nullptr) {
+            return;
+        }
     }
     if (context_->receiveContext == nullptr) {
         context_->receiveContext = new(std::nothrow) OnReceiveContext();
+        if (context_->receiveContext == nullptr) {
+            return;
+        }
     }
     context_->receiveContext->env = env;
     context_->receiveContext->onReceive = NapiUtil::CreateReference(env, receiveFunc);
@@ -214,11 +240,8 @@ void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value rece
 void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     HILOG_DEBUG(LOG_CORE, "onEvents start");
-    if (context_ == nullptr || context_->receiveContext == nullptr) {
-        HILOG_ERROR(LOG_CORE, "onReceive context is null");
-        return;
-    }
-    if (events.empty()) {
+    if (context_ == nullptr || context_->receiveContext == nullptr || events.empty()) {
+        HILOG_ERROR(LOG_CORE, "onReceive context is null or events is empty");
         return;
     }
     context_->receiveContext->domain = events[0]->GetDomain();
@@ -227,11 +250,16 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(context_->receiveContext->env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
+    if (work == nullptr) {
+        return;
+    }
     work->data = static_cast<void*>(context_->receiveContext);
     uv_queue_work_with_qos(
         loop,
         work,
-        [] (uv_work_t* work) {},
+        [] (uv_work_t* work) {
+            HILOG_DEBUG(LOG_CORE, "enter uv work callback.");
+        },
         [] (uv_work_t* work, int status) {
             auto context = static_cast<OnReceiveContext*>(work->data);
             napi_handle_scope scope = nullptr;
