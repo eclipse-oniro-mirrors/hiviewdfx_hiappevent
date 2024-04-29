@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -181,25 +181,25 @@ void HiAppEventConfig::SetMaxStorageSize(uint64_t size)
 
 void HiAppEventConfig::SetStorageDir(const std::string& dir)
 {
-    {
-        std::lock_guard<std::mutex> lockGuard(g_mutex);
-        this->storageDir = dir;
-        LogAssistant::Instance().UpdateHiAppEventLogDir(dir);
-    }
+    this->storageDir = dir;
+    LogAssistant::Instance().UpdateHiAppEventLogDir(dir);
 }
 
 bool HiAppEventConfig::GetDisable()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     return this->disable;
 }
 
 uint64_t HiAppEventConfig::GetMaxStorageSize()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     return this->maxStorageSize;
 }
 
 std::string HiAppEventConfig::GetStorageDir()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (!this->storageDir.empty()) {
         return this->storageDir;
     }
