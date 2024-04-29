@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -82,6 +82,7 @@ int UserInfo::GetUserId(const std::string& name, std::string& out)
 {
     HILOG_DEBUG(LOG_CORE, "start to get userId, name=%{public}s.", name.c_str());
 
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (userIds_.find(name) == userIds_.end()) {
         HILOG_INFO(LOG_CORE, "no userid, name=%{public}s.", name.c_str());
         return 0;
@@ -139,6 +140,7 @@ int UserInfo::GetUserProperty(const std::string& name, std::string& out)
 {
     HILOG_DEBUG(LOG_CORE, "start to get userProperty, name=%{public}s.", name.c_str());
 
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (userProperties_.find(name) == userProperties_.end()) {
         HILOG_INFO(LOG_CORE, "no user property, name=%{public}s.", name.c_str());
         return 0;
@@ -185,6 +187,7 @@ void UserInfo::InitUserProperties()
 
 std::vector<HiAppEvent::UserId> UserInfo::GetUserIds()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     std::vector<HiAppEvent::UserId> userIds;
     for (auto it = userIds_.begin(); it != userIds_.end(); it++) {
         HiAppEvent::UserId userId;
@@ -197,6 +200,7 @@ std::vector<HiAppEvent::UserId> UserInfo::GetUserIds()
 
 std::vector<HiAppEvent::UserProperty> UserInfo::GetUserProperties()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     std::vector<HiAppEvent::UserProperty> userProperties;
     for (auto it = userProperties_.begin(); it != userProperties_.end(); it++) {
         HiAppEvent::UserProperty userProperty;
@@ -209,16 +213,19 @@ std::vector<HiAppEvent::UserProperty> UserInfo::GetUserProperties()
 
 int64_t UserInfo::GetUserIdVersion()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     return userIdVersion_;
 }
 
 int64_t UserInfo::GetUserPropertyVersion()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     return userPropertyVersion_;
 }
 
 void UserInfo::ClearData()
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     userIdVersion_ = 0;
     userPropertyVersion_ = 0;
     userIds_.clear();
