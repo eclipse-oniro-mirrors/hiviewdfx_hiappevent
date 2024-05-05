@@ -1476,6 +1476,7 @@ describe('HiAppEventJsTest', function () {
                 expect(curSize >= 200).assertTrue()
                 expect(holder != null).assertTrue()
 
+                holder.setSize(curSize);
                 let eventPkg = holder.takeNext();
                 expect(eventPkg != null).assertTrue()
                 expect(eventPkg.packageId).assertEqual(0)
