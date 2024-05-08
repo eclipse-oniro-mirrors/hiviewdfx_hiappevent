@@ -49,6 +49,8 @@ std::string GetModulePath(const std::string& moduleName)
 }
 }
 std::mutex ModuleLoader::instanceMutex_;
+std::mutex ModuleLoader::moduleMutex_;
+std::mutex ModuleLoader::processorMutex_;
 
 ModuleLoader& ModuleLoader::GetInstance()
 {
@@ -70,6 +72,7 @@ ModuleLoader::~ModuleLoader()
 
 int ModuleLoader::Load(const std::string& moduleName)
 {
+    std::lock_guard<std::mutex> lock(moduleMutex_);
     if (modules_.find(moduleName) != modules_.end()) {
         HILOG_INFO(LOG_CORE, "the module=%{public}s already exists", moduleName.c_str());
         return 0;
@@ -92,6 +95,7 @@ int ModuleLoader::Load(const std::string& moduleName)
 
 int ModuleLoader::Unload(const std::string& moduleName)
 {
+    std::lock_guard<std::mutex> lock(moduleMutex_);
     if (modules_.find(moduleName) == modules_.end()) {
         HILOG_WARN(LOG_CORE, "the module=%{public}s does not exists", moduleName.c_str());
         return -1;
@@ -108,6 +112,7 @@ int ModuleLoader::RegisterProcessor(const std::string& name, std::shared_ptr<App
         HILOG_WARN(LOG_CORE, "the name or processor is invalid");
         return -1;
     }
+    std::lock_guard<std::mutex> lock(processorMutex_);
     if (processors_.find(name) != processors_.end()) {
         HILOG_WARN(LOG_CORE, "the processor already exists");
         return -1;
@@ -118,6 +123,7 @@ int ModuleLoader::RegisterProcessor(const std::string& name, std::shared_ptr<App
 
 int ModuleLoader::UnregisterProcessor(const std::string& name)
 {
+    std::lock_guard<std::mutex> lock(processorMutex_);
     if (processors_.find(name) == processors_.end()) {
         HILOG_WARN(LOG_CORE, "the name is invalid");
         return -1;
@@ -128,6 +134,7 @@ int ModuleLoader::UnregisterProcessor(const std::string& name)
 
 std::shared_ptr<AppEventObserver> ModuleLoader::CreateProcessorProxy(const std::string& name)
 {
+    std::lock_guard<std::mutex> lock(processorMutex_);
     if (processors_.find(name) == processors_.end()) {
         HILOG_WARN(LOG_CORE, "the name is invalid");
         return nullptr;

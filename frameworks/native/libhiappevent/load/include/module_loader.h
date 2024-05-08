@@ -44,6 +44,8 @@ private:
 
 private:
     static std::mutex instanceMutex_;
+    static std::mutex moduleMutex_;
+    static std::mutex processorMutex_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX
