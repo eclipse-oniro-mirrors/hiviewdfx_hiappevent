@@ -42,6 +42,7 @@
         "//base/hiviewdfx/hiappevent/frameworks/native/ndk:hiappevent_ndk",
         "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent",
         "//base/hiviewdfx/hiappevent/frameworks/js/napi:hiappevent_v9",
+        "//base/hiviewdfx/hiappevent/frameworks/cj/ffi:cj_hiappevent_ffi",
         "//base/hiviewdfx/hiappevent/interfaces/native/inner_api:hiappevent_innerapi"
       ],
       "inner_kits": [
