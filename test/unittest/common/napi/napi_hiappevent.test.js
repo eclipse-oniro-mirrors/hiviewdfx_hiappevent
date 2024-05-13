@@ -1679,6 +1679,7 @@ describe('HiAppEventJsTest', function () {
             },
             onTrigger: function (curRow, curSize, holder) {
                 console.info('HiAppEventWatcherTest013.onTrigger start');
+                holder.setRow(testRow);
                 let eventPkg = holder.takeNext();
                 expect(eventPkg.data.length).assertEqual(testRow)
                 console.info('HiAppEventWatcherTest013.onTrigger end');
