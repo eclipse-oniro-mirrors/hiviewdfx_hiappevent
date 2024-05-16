@@ -39,10 +39,7 @@ ohos_shared_library("hiappevent") {
 }
 
 ohos_shared_library("hiappevent_v9") {
-  include_dirs = [
-    "include/",
-    "//third_party/jsoncpp/include",
-  ]
+  include_dirs = [ "include/" ]
 
   sources = [
     "./src/napi_app_event_holder.cpp",
@@ -59,14 +56,12 @@ ohos_shared_library("hiappevent_v9") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [
-    "../../native/libhiappevent:libhiappevent_base",
-    "//third_party/jsoncpp:jsoncpp",
-  ]
+  deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "ffrt:libffrt",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "napi:ace_napi",
     "relational_store:native_rdb",
   ]
