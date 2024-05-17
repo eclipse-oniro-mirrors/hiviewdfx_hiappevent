@@ -20,7 +20,6 @@ config("hiappevent_watcher_config") {
     "../include",
     "../load/include",
     "../../../../interfaces/native/inner_api/include",
-    "//third_party/jsoncpp/include",
   ]
 }
 
@@ -40,7 +39,6 @@ ohos_source_set("hiappevent_observer") {
   deps = [
     "../cache:hiappevent_cache",
     "../utility:hiappevent_utility",
-    "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [
@@ -51,6 +49,7 @@ ohos_source_set("hiappevent_observer") {
     "eventhandler:libeventhandler",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "storage_service:storage_manager_acl",
   ]

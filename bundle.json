@@ -32,9 +32,9 @@
         "ipc",
         "napi",
         "relational_store",
-        "storage_service"
-      ],
-      "third_party": ["jsoncpp"]
+        "storage_service",
+        "jsoncpp"
+      ]
     },
     "build": {
       "sub_component": [
