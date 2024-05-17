@@ -68,7 +68,7 @@ AppEventPackageHolderImpl::AppEventPackageHolderImpl(const std::string& name, in
 
 void AppEventPackageHolderImpl::SetSize(int size)
 {
-    LOGI("hodler seq=%{public}lld, set size=%{public}d", observerSeq_, size);
+    LOGI("hodler seq=%{public}" PRIi64 ", set size=%{public}d", observerSeq_, size);
     takeSize_ = size;
 }
 
@@ -91,7 +91,7 @@ std::tuple<int32_t, RetAppEventPackage> AppEventPackageHolderImpl::TakeNext()
     for (const auto& event : events) {
         std::string eventStr = event->GetEventStr();
         if (static_cast<int>(totalSize + eventStr.size()) > takeSize_) {
-            LOGI("stop to take data, totalSize=%{public}zu, takeSize=%{public}lld", totalSize, takeSize_);
+            LOGI("stop to take data, totalSize=%{public}zu, takeSize=%{public}" PRIi64 "", totalSize, takeSize_);
             break;
         }
         totalSize += eventStr.size();

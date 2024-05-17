@@ -143,11 +143,11 @@ int64_t HiAppEventImpl::AddProcessor(const ReportConfig& conf)
 int HiAppEventImpl::RemoveProcessor(int64_t processorId)
 {
     if (processorId <= 0) {
-        LOGE("failed to remove processor id=%{public}lld", processorId);
+        LOGE("failed to remove processor id=%{public}" PRIi64 "", processorId);
         return SUCCESS_CODE;
     }
     if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
-        LOGE("failed to remove processor id=%{public}lld", processorId);
+        LOGE("failed to remove processor id=%{public}" PRIi64"", processorId);
         return ERR_CODE_PARAM_INVALID;
     }
     return SUCCESS_CODE;
