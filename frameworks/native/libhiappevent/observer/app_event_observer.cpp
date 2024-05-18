@@ -30,6 +30,8 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
+constexpr int MAX_SIZE_ON_EVENTS = 100;
+
 bool MeetNumberCondition(int currNum, int maxNum)
 {
     return maxNum > 0 && currNum >= maxNum;
@@ -184,7 +186,7 @@ void AppEventObserver::OnTrigger(const TriggerCondition& triggerCond)
 
 void AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
-    if (AppEventStore::GetInstance().TakeEvents(events, seq_) != 0) {
+    if (AppEventStore::GetInstance().QueryEvents(events, seq_, MAX_SIZE_ON_EVENTS) != 0) {
         HILOG_WARN(LOG_CORE, "failed to take data from observer=%{public}s, seq=%{public}" PRId64,
             name_.c_str(), seq_);
         return;

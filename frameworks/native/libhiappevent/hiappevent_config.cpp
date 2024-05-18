@@ -23,6 +23,7 @@
 #include "app_event_observer_mgr.h"
 #include "application_context.h"
 #include "context.h"
+#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
@@ -47,7 +48,7 @@ constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
 constexpr uint64_t STORAGE_UNIT_TB = STORAGE_UNIT_GB * 1024;
 constexpr int DECIMAL_UNIT = 10;
 
-std::mutex g_mutex;
+ffrt::mutex g_mutex;
 
 std::string TransUpperToUnderscoreAndLower(const std::string& str)
 {
@@ -165,18 +166,14 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
 
 void HiAppEventConfig::SetDisable(bool disable)
 {
-    {
-        std::lock_guard<std::mutex> lockGuard(g_mutex);
-        this->disable = disable;
-    }
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
+    this->disable = disable;
 }
 
 void HiAppEventConfig::SetMaxStorageSize(uint64_t size)
 {
-    {
-        std::lock_guard<std::mutex> lockGuard(g_mutex);
-        this->maxStorageSize = size;
-    }
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
+    this->maxStorageSize = size;
 }
 
 void HiAppEventConfig::SetStorageDir(const std::string& dir)
@@ -187,19 +184,19 @@ void HiAppEventConfig::SetStorageDir(const std::string& dir)
 
 bool HiAppEventConfig::GetDisable()
 {
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
     return this->disable;
 }
 
 uint64_t HiAppEventConfig::GetMaxStorageSize()
 {
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
     return this->maxStorageSize;
 }
 
 std::string HiAppEventConfig::GetStorageDir()
 {
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
     if (!this->storageDir.empty()) {
         return this->storageDir;
     }

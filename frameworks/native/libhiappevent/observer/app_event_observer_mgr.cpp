@@ -36,6 +36,7 @@ using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 namespace {
 constexpr int TIMEOUT_INTERVAL = 1000; // 1s
+constexpr int MAX_SIZE_ON_EVENTS = 100;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
@@ -55,6 +56,31 @@ int64_t StoreEventMappingToDb(int64_t eventSeq, int64_t observerSeq)
     return AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
 }
 
+void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& events,
+    std::shared_ptr<AppEventObserver> observer, bool isOldEvents = false)
+{
+    std::vector<std::shared_ptr<AppEventPack>> realTimeEvents;
+    for (const auto& event : events) {
+        if (!observer->VerifyEvent(event)) {
+            continue;
+        }
+        if (!isOldEvents) {
+            int64_t observerSeq = observer->GetSeq();
+            if (StoreEventMappingToDb(event->GetSeq(), observerSeq) < 0) {
+                HILOG_ERROR(LOG_CORE, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
+            }
+        }
+        if (observer->IsRealTimeEvent(event)) {
+            realTimeEvents.emplace_back(event);
+        } else {
+            observer->ProcessEvent(event);
+        }
+    }
+    if (!realTimeEvents.empty()) {
+        observer->OnEvents(realTimeEvents);
+    }
+}
+
 int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
     const std::string& name, int64_t hashCode)
 {
@@ -65,50 +91,32 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
         return -1;
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
-    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq) < 0) {
+    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq, MAX_SIZE_ON_EVENTS) < 0) {
         HILOG_ERROR(LOG_CORE, "failed to take events, seq=%{public}" PRId64, observerSeq);
         return -1;
     }
+    observer->SetSeq(observerSeq);
     if (!events.empty()) {
-        TriggerCondition triggerCond;
-        for (auto event : events) {
-            triggerCond.row++;
-            triggerCond.size += static_cast<int>(event->GetEventStr().size());
+        if (hashCode == 0) {
+            // send old events to watcher where init
+            SendEventsToObserver(events, observer, true);
+        } else {
+            TriggerCondition triggerCond;
+            for (auto event : events) {
+                triggerCond.row++;
+                triggerCond.size += static_cast<int>(event->GetEventStr().size());
+            }
+            observer->SetCurrCondition(triggerCond);
         }
-        observer->SetCurrCondition(triggerCond);
     }
     return observerSeq;
 }
-
-void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& events,
-    std::shared_ptr<AppEventObserver> observer)
-{
-    std::vector<std::shared_ptr<AppEventPack>> realTimeEvents;
-    for (const auto& event : events) {
-        if (!observer->VerifyEvent(event)) {
-            continue;
-        }
-        if (observer->IsRealTimeEvent(event)) {
-            realTimeEvents.emplace_back(event);
-        } else {
-            int64_t observerSeq = observer->GetSeq();
-            if (StoreEventMappingToDb(event->GetSeq(), observerSeq) < 0) {
-                HILOG_WARN(LOG_CORE, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
-                return;
-            }
-            observer->ProcessEvent(event);
-        }
-    }
-    if (!realTimeEvents.empty()) {
-        observer->OnEvents(realTimeEvents);
-    }
 }
-}
-std::mutex AppEventObserverMgr::instanceMutex_;
+ffrt::mutex AppEventObserverMgr::instanceMutex_;
 
 AppEventObserverMgr& AppEventObserverMgr::GetInstance()
 {
-    std::lock_guard<std::mutex> lock(instanceMutex_);
+    std::lock_guard<ffrt::mutex> lock(instanceMutex_);
     static AppEventObserverMgr instance;
     return instance;
 }
@@ -330,6 +338,7 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
     if (!observer->HasOsDomain()) {
         return true;
     }
+    std::lock_guard<ffrt::mutex> lock(listenerMutex_);
     if (listener_ == nullptr) {
         listener_ = std::make_shared<OsEventListener>();
         if (!listener_->StartListening()) {
@@ -339,7 +348,6 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
     if (sendFlag) {
         std::vector<std::shared_ptr<AppEventPack>> events;
         listener_->GetEvents(events);
-        StoreEventsToDb(events);
         SendEventsToObserver(events, observer);
     }
     return true;
@@ -352,6 +360,7 @@ void AppEventObserverMgr::UnregisterOsEventListener()
             return;
         }
     }
+    std::lock_guard<ffrt::mutex> lock(listenerMutex_);
     if (listener_ != nullptr) {
         listener_->RemoveOsEventDir();
         listener_ = nullptr;

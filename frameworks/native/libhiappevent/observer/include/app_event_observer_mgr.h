@@ -67,9 +67,10 @@ private:
     std::shared_ptr<AppStateCallback> appStateCallback_;
     ffrt::mutex observerMutex_;
     std::shared_ptr<OsEventListener> listener_;
+    ffrt::mutex listenerMutex_;
 
 private:
-    static std::mutex instanceMutex_;
+    static ffrt::mutex instanceMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

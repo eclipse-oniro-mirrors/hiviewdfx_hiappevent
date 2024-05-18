@@ -74,7 +74,6 @@ protected:
     virtual void OnTrigger(const TriggerCondition& triggerCond);
 
 private:
-    int StoreEventToDb(std::shared_ptr<AppEventPack> event);
     void QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events);
     bool MeetProcessCondition();
     bool MeetTimeoutCondition();
