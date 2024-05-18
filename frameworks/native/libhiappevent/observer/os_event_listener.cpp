@@ -86,6 +86,7 @@ void OsEventListener::Init()
             continue;
         }
         event->SetSeq(eventSeq);
+        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
     }
     for (const auto& file : files) {
         (void)FileUtil::RemoveFile(file);

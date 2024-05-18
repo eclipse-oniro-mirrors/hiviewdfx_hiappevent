@@ -56,7 +56,10 @@ ohos_shared_library("hiappevent_v9") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [ "../../native/libhiappevent:libhiappevent_base" ]
+  deps = [
+    "../../native/libhiappevent:libhiappevent_base",
+    "../../native/libhiappevent/utility:hiappevent_utility",
+  ]
 
   external_deps = [
     "ffrt:libffrt",

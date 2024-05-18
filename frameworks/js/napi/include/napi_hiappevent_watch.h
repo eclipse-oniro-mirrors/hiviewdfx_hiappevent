@@ -23,8 +23,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventWatch {
-napi_value AddWatcher(const napi_env env, const napi_value watcher);
-napi_value RemoveWatcher(const napi_env env, const napi_value watcher);
+napi_value AddWatcher(const napi_env env, const napi_value watcher, uint64_t beginTime);
+napi_value RemoveWatcher(const napi_env env, const napi_value watcher, uint64_t beginTime);
 } // namespace NapiHiAppEventWatch
 } // namespace HiviewDFX
 } // namespace OHOS

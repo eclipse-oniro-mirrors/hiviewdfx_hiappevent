@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,8 @@
  */
 #include "napi_app_event_watcher.h"
 
+#include "app_event_store.h"
+#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 #include "napi_util.h"
@@ -37,16 +39,21 @@ void SafeDeleteWork(uv_work_t* work)
         delete work;
     }
 }
-}
-OnTriggerContext::OnTriggerContext()
-{
-    env = nullptr;
-    onTrigger = nullptr;
-    holder = nullptr;
-    row = 0;
-    size = 0;
-}
 
+void SyncDeleteEventMapping(int64_t observerSeq, const std::vector<std::shared_ptr<AppEventPack>>& events)
+{
+    std::vector<int64_t> eventSeqs;
+    for (const auto& event : events) {
+        eventSeqs.emplace_back(event->GetSeq());
+    }
+    ffrt::submit([observerSeq, eventSeqs]() {
+        if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq, eventSeqs) < 0) {
+            HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
+                observerSeq, eventSeqs.size());
+        }
+        }, {}, {}, ffrt::task_attr().name("hiappevent_delete_event_map"));
+}
+}
 OnTriggerContext::~OnTriggerContext()
 {
     if (onTrigger != nullptr) {
@@ -57,23 +64,11 @@ OnTriggerContext::~OnTriggerContext()
     }
 }
 
-OnReceiveContext::OnReceiveContext()
-{
-    env = nullptr;
-    onReceive = nullptr;
-}
-
 OnReceiveContext::~OnReceiveContext()
 {
     if (onReceive != nullptr) {
         napi_delete_reference(env, onReceive);
     }
-}
-
-WatcherContext::WatcherContext()
-{
-    triggerContext = nullptr;
-    receiveContext = nullptr;
 }
 
 WatcherContext::~WatcherContext()
@@ -111,6 +106,7 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
     napi_get_uv_event_loop(env, &loop);
     uv_work_t* work = new(std::nothrow) uv_work_t();
     if (work == nullptr) {
+        delete context_;
         return;
     }
     work->data = static_cast<void*>(context_);
@@ -239,13 +235,14 @@ void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value rece
 
 void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
-    HILOG_DEBUG(LOG_CORE, "onEvents start");
+    HILOG_DEBUG(LOG_CORE, "onEvents start, seq=%{public}" PRId64 ", event num=%{public}zu", GetSeq(), events.size());
     if (context_ == nullptr || context_->receiveContext == nullptr || events.empty()) {
         HILOG_ERROR(LOG_CORE, "onReceive context is null or events is empty");
         return;
     }
     context_->receiveContext->domain = events[0]->GetDomain();
     context_->receiveContext->events = events;
+    context_->receiveContext->observerSeq = GetSeq();
 
     uv_loop_t* loop = nullptr;
     napi_get_uv_event_loop(context_->receiveContext->env, &loop);
@@ -254,12 +251,8 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
         return;
     }
     work->data = static_cast<void*>(context_->receiveContext);
-    uv_queue_work_with_qos(
-        loop,
-        work,
-        [] (uv_work_t* work) {
-            HILOG_DEBUG(LOG_CORE, "enter uv work callback.");
-        },
+    uv_queue_work_with_qos(loop, work,
+        [] (uv_work_t* work) { HILOG_DEBUG(LOG_CORE, "enter uv work callback."); },
         [] (uv_work_t* work, int status) {
             auto context = static_cast<OnReceiveContext*>(work->data);
             napi_handle_scope scope = nullptr;
@@ -281,7 +274,9 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
                 NapiUtil::CreateEventGroups(context->env, context->events)
             };
             napi_value ret = nullptr;
-            if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) != napi_ok) {
+            if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
+                SyncDeleteEventMapping(context->observerSeq, context->events);
+            } else {
                 HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
             }
             napi_close_handle_scope(context->env, scope);

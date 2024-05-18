@@ -24,6 +24,7 @@
 #include "app_event_mapping_dao.h"
 #include "app_event_observer_dao.h"
 #include "custom_event_param_dao.h"
+#include "ffrt.h"
 #include "user_id_dao.h"
 #include "user_property_dao.h"
 #include "rdb_store.h"
@@ -75,7 +76,7 @@ private:
     std::shared_ptr<UserPropertyDao> userPropertyDao_;
     std::shared_ptr<CustomEventParamDao> customEventParamDao_;
     std::string dirPath_;
-    std::mutex dbMutex_;
+    ffrt::mutex dbMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

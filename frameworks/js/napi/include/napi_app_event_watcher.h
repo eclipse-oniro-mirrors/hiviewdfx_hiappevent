@@ -22,29 +22,27 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct OnTriggerContext {
-    OnTriggerContext();
     ~OnTriggerContext();
-    napi_env env;
-    napi_ref onTrigger;
-    napi_ref holder;
-    int row;
-    int size;
+    napi_env env = nullptr;
+    napi_ref onTrigger = nullptr;
+    napi_ref holder = nullptr;
+    int row = 0;
+    int size = 0;
 };
 
 struct OnReceiveContext {
-    OnReceiveContext();
     ~OnReceiveContext();
-    napi_env env;
-    napi_ref onReceive;
+    napi_env env = nullptr;
+    napi_ref onReceive = nullptr;
     std::string domain;
     std::vector<std::shared_ptr<AppEventPack>> events;
+    int64_t observerSeq = 0;
 };
 
 struct WatcherContext {
-    WatcherContext();
     ~WatcherContext();
-    OnTriggerContext* triggerContext;
-    OnReceiveContext* receiveContext;
+    OnTriggerContext* triggerContext = nullptr;
+    OnReceiveContext* receiveContext = nullptr;
 };
 
 class NapiAppEventWatcher : public AppEventWatcher {

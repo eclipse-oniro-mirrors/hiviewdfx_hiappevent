@@ -15,6 +15,8 @@
 
 #include "ndk_app_event_watcher.h"
 
+#include "app_event_store.h"
+#include "ffrt.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
 
@@ -74,6 +76,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
     constexpr size_t strNumPieceEvent = 3;
     std::vector<std::string> strings(strNumPieceEvent * events.size());
     size_t strIndex = 0;
+    std::vector<int64_t> eventSeqs;
     for (const auto &event : events) {
         auto& appEventInfo = eventMap[event->GetName()].emplace_back();
         strings[strIndex] = event->GetDomain();
@@ -83,6 +86,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
         strings[strIndex] = event->GetParamStr();
         appEventInfo.params = strings[strIndex++].c_str();
         appEventInfo.type = EventType(event->GetType());
+        eventSeqs.emplace_back(event->GetSeq());
     }
     std::vector<HiAppEvent_AppEventGroup> appEventGroup(eventMap.size());
     uint32_t appEventIndex = 0;
@@ -92,6 +96,13 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
         appEventGroup[appEventIndex].infoLen = v.size();
         appEventIndex++;
     }
+    int64_t observerSeq = GetSeq();
+    ffrt::submit([observerSeq, eventSeqs]() {
+        if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq, eventSeqs) < 0) {
+            HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
+                observerSeq, eventSeqs.size());
+        }
+        }, {}, {}, ffrt::task_attr().name("appevent_delete"));
     std::string domain = events[0]->GetDomain();
     onReceive_(domain.c_str(), appEventGroup.data(), static_cast<uint32_t>(eventMap.size()));
 }

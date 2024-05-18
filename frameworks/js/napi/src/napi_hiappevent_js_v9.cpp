@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "app_event_stat.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_verify.h"
@@ -27,6 +28,7 @@
 #include "napi_hiappevent_write.h"
 #include "napi_param_builder.h"
 #include "napi_util.h"
+#include "time_util.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -175,32 +177,39 @@ static napi_value GetUserProperty(napi_env env, napi_callback_info info)
 
 static napi_value ClearData(napi_env env, napi_callback_info info)
 {
+    uint64_t beginTime = TimeUtil::GetMilliseconds();
     HiAppEventClean::ClearData(NapiHiAppEventConfig::GetStorageDir());
+    AppEventStat::SyncWriteApiEndEvent("clearData", beginTime, AppEventStat::SUCCESS, 0);
     return NapiUtil::CreateUndefined(env);
 }
 
 static napi_value AddWatcher(napi_env env, napi_callback_info info)
 {
+    uint64_t beginTime = TimeUtil::GetMilliseconds();
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addWatcher is 1
+        AppEventStat::SyncWriteApiEndEvent("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
         return nullptr;
     }
-    return NapiHiAppEventWatch::AddWatcher(env, params[0]);
+    return NapiHiAppEventWatch::AddWatcher(env, params[0], beginTime);
 }
 
 static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
 {
+    uint64_t beginTime = TimeUtil::GetMilliseconds();
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeWatcher is 1
+        AppEventStat::SyncWriteApiEndEvent("removeWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
         return nullptr;
     }
-    return NapiHiAppEventWatch::RemoveWatcher(env, params[0]);
+    return NapiHiAppEventWatch::RemoveWatcher(env, params[0], beginTime);
 }
 
 static napi_value SetEventParam(napi_env env, napi_callback_info info)
 {
+    uint64_t beginTime = TimeUtil::GetMilliseconds();
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
     NapiParamBuilder builder;
