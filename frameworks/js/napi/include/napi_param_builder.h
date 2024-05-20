@@ -35,12 +35,12 @@ public:
     std::shared_ptr<AppEventPack> BuildEventParam(const napi_env env, const napi_value params[], size_t len);
 
 protected:
-    virtual void AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr) override;
-    virtual void AddParams2EventPack(napi_env env, const napi_value paramObj) override;
+    virtual bool AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr) override;
+    virtual bool AddParams2EventPack(napi_env env, const napi_value paramObj) override;
 
 private:
     bool IsValidParams(const napi_env env, const napi_value params[], size_t len);
-    void BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len);
+    bool BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -34,9 +34,9 @@ public:
     std::shared_ptr<AppEventPack> BuildV9(const napi_env env, const napi_value params[], size_t len);
 
 protected:
-    virtual void AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr);
-    virtual void AddParams2EventPack(napi_env env, const napi_value paramObj);
-    void AddParam2EventPack(napi_env env, const std::string &key, const napi_value value);
+    virtual bool AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr);
+    virtual bool AddParams2EventPack(napi_env env, const napi_value paramObj);
+    bool AddParam2EventPack(napi_env env, const std::string &key, const napi_value value);
     bool IsValidEventDomain(const napi_env env, const napi_value domain);
     bool IsValidEventName(const napi_env env, const napi_value name);
     bool IsValidEventParam(const napi_env env, const napi_value param);
@@ -47,7 +47,7 @@ private:
     bool IsOldWriteParams(const napi_env env, const napi_value params[], size_t len);
     bool IsNewWriteParams(const napi_env env, const napi_value params[], size_t len);
     void BuildEventPack(napi_env env, const napi_value params[]);
-    void BuildEventPack(napi_env env, const napi_value eventInfo);
+    bool BuildEventPack(napi_env env, const napi_value eventInfo);
     void BuildCallback(const napi_env env, const napi_value callback);
 
 protected:

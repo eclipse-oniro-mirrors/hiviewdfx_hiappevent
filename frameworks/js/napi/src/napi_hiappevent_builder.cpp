@@ -114,7 +114,7 @@ bool NapiHiAppEventBuilder::IsNewWriteParams(const napi_env env, const napi_valu
     return IsValidEventInfo(env, params[0]);
 }
 
-void NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::string &key,
+bool NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::string &key,
     const napi_value arr)
 {
     napi_valuetype type = NapiUtil::GetArrayType(env, arr);
@@ -146,12 +146,13 @@ void NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::str
             result_ = ERROR_INVALID_LIST_PARAM_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
-            break;
+            return false;
         }
     }
+    return true;
 }
 
-void NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &key,
+bool NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &key,
     const napi_value value)
 {
     napi_valuetype type = NapiUtil::GetType(env, value);
@@ -167,8 +168,7 @@ void NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &
             break;
         case napi_object:
             if (NapiUtil::IsArray(env, value)) {
-                AddArrayParam2EventPack(env, key, value);
-                break;
+                return AddArrayParam2EventPack(env, key, value);
             }
             [[fallthrough]];
         default:
@@ -176,11 +176,12 @@ void NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
-            break;
+            return false;
     }
+    return true;
 }
 
-void NapiHiAppEventBuilder::AddParams2EventPack(napi_env env, const napi_value paramObj)
+bool NapiHiAppEventBuilder::AddParams2EventPack(napi_env env, const napi_value paramObj)
 {
     std::vector<std::string> keys;
     NapiUtil::GetPropertyNames(env, paramObj, keys);
@@ -195,10 +196,13 @@ void NapiHiAppEventBuilder::AddParams2EventPack(napi_env env, const napi_value p
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
-            continue;
+            return false;
         }
-        AddParam2EventPack(env, key, value);
+        if (!AddParam2EventPack(env, key, value)) {
+            return false;
+        }
     }
+    return true;
 }
 
 void NapiHiAppEventBuilder::BuildEventPack(napi_env env, const napi_value params[])
@@ -210,14 +214,14 @@ void NapiHiAppEventBuilder::BuildEventPack(napi_env env, const napi_value params
     AddParams2EventPack(env, params[index]);
 }
 
-void NapiHiAppEventBuilder::BuildEventPack(napi_env env, const napi_value eventInfo)
+bool NapiHiAppEventBuilder::BuildEventPack(napi_env env, const napi_value eventInfo)
 {
     std::string domain = NapiUtil::GetString(env, NapiUtil::GetProperty(env, eventInfo, DOMAIN_PROPERTY));
     std::string name = NapiUtil::GetString(env, NapiUtil::GetProperty(env, eventInfo, NAME_PROPERTY));
     int32_t type = NapiUtil::GetInt32(env, NapiUtil::GetProperty(env, eventInfo, TYPE_PROPERTY));
     appEventPack_ = std::make_shared<AppEventPack>(domain, name, type);
     napi_value param = NapiUtil::GetProperty(env, eventInfo, PARAM_PROPERTY);
-    AddParams2EventPack(env, param);
+    return AddParams2EventPack(env, param);
 }
 
 void NapiHiAppEventBuilder::BuildCallback(const napi_env env, const napi_value callback)
@@ -256,7 +260,9 @@ std::shared_ptr<AppEventPack> NapiHiAppEventBuilder::BuildV9(const napi_env env,
     if (!IsNewWriteParams(env, params, len)) {
         return nullptr;
     }
-    BuildEventPack(env, params[0]);
+    if (!BuildEventPack(env, params[0])) {
+        return nullptr;
+    }
     BuildCallback(env, params[len - 1]); // (len - 1) means the last param
     return appEventPack_;
 }
