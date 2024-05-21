@@ -49,7 +49,7 @@ bool NapiParamBuilder::IsValidParams(const napi_env env, const napi_value params
         : true;
 }
 
-void NapiParamBuilder::AddArrayParam2EventPack(napi_env env, const std::string &key,
+bool NapiParamBuilder::AddArrayParam2EventPack(napi_env env, const std::string &key,
     const napi_value arr)
 {
     napi_valuetype type = NapiUtil::GetArrayType(env, arr);
@@ -58,14 +58,15 @@ void NapiParamBuilder::AddArrayParam2EventPack(napi_env env, const std::string &
         result_ = ERROR_INVALID_LIST_PARAM_TYPE;
         std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
-        return;
+        return false;
     }
     std::vector<std::string> strs;
     NapiUtil::GetStrings(env, arr, strs);
     appEventPack_->AddParam(key, strs);
+    return true;
 }
 
-void NapiParamBuilder::AddParams2EventPack(napi_env env, const napi_value paramObj)
+bool NapiParamBuilder::AddParams2EventPack(napi_env env, const napi_value paramObj)
 {
     std::vector<std::string> keys;
     NapiUtil::GetPropertyNames(env, paramObj, keys);
@@ -80,13 +81,16 @@ void NapiParamBuilder::AddParams2EventPack(napi_env env, const napi_value paramO
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
             std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
-            break;
+            return false;
         }
-        AddParam2EventPack(env, key, value);
+        if (!AddParam2EventPack(env, key, value)) {
+            return false;
+        }
     }
+    return true;
 }
 
-void NapiParamBuilder::BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len)
+bool NapiParamBuilder::BuildCustomEventParamPack(napi_env env, const napi_value params[], size_t len)
 {
     std::string domain = NapiUtil::GetString(env, params[INDEX_OF_DOMAIN]);
     std::string name;
@@ -94,7 +98,7 @@ void NapiParamBuilder::BuildCustomEventParamPack(napi_env env, const napi_value 
         name = NapiUtil::GetString(env, params[INDEX_OF_NAME]);
     }
     appEventPack_ = std::make_shared<AppEventPack>(domain, name);
-    AddParams2EventPack(env, params[INDEX_OF_PARAMS]);
+    return AddParams2EventPack(env, params[INDEX_OF_PARAMS]);
 }
 
 std::shared_ptr<AppEventPack> NapiParamBuilder::BuildEventParam(const napi_env env,
@@ -107,7 +111,9 @@ std::shared_ptr<AppEventPack> NapiParamBuilder::BuildEventParam(const napi_env e
     if (!IsValidParams(env, params, len)) {
         return nullptr;
     }
-    BuildCustomEventParamPack(env, params, len);
+    if (!BuildCustomEventParamPack(env, params, len)) {
+        return nullptr;
+    }
 
     // if the build is successful, the event verification is performed
     if (appEventPack_ != nullptr && result_ >= 0) {

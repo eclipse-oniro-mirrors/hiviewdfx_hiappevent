@@ -98,8 +98,9 @@ static napi_value Write(napi_env env, napi_callback_info info)
     }
 
     napi_value promise = nullptr;
-    if (asyncContext->callback == nullptr) {
-        napi_create_promise(env, &asyncContext->deferred, &promise);
+    if (asyncContext->callback == nullptr && napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "callback is null, failed to create promise.");
+        return nullptr;
     }
 
     NapiHiAppEventWrite::Write(env, asyncContext);
@@ -228,7 +229,10 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
     asyncContext->result = builder.GetResult();
 
     napi_value promise = nullptr;
-    napi_create_promise(env, &asyncContext->deferred, &promise);
+    if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to create promise.");
+        return nullptr;
+    }
 
     NapiHiAppEventWrite::SetEventParam(env, asyncContext);
     return promise;
