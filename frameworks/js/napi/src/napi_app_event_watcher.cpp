@@ -40,7 +40,7 @@ void SafeDeleteWork(uv_work_t* work)
     }
 }
 
-void SyncDeleteEventMapping(int64_t observerSeq, const std::vector<std::shared_ptr<AppEventPack>>& events)
+void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     std::vector<int64_t> eventSeqs;
     for (const auto& event : events) {
@@ -51,7 +51,7 @@ void SyncDeleteEventMapping(int64_t observerSeq, const std::vector<std::shared_p
             HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
                 observerSeq, eventSeqs.size());
         }
-        }, {}, {}, ffrt::task_attr().name("hiappevent_delete_event_map"));
+        }, {}, {}, ffrt::task_attr().name("appevent_del_map"));
 }
 }
 OnTriggerContext::~OnTriggerContext()
@@ -275,7 +275,7 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
             };
             napi_value ret = nullptr;
             if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
-                SyncDeleteEventMapping(context->observerSeq, context->events);
+                DeleteEventMappingAsync(context->observerSeq, context->events);
             } else {
                 HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
             }

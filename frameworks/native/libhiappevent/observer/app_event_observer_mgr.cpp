@@ -36,7 +36,7 @@ using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 namespace {
 constexpr int TIMEOUT_INTERVAL = 1000; // 1s
-constexpr int MAX_SIZE_ON_EVENTS = 100;
+constexpr int MAX_SIZE_OF_INIT = 100;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
@@ -91,7 +91,7 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
         return -1;
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
-    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq, MAX_SIZE_ON_EVENTS) < 0) {
+    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq, MAX_SIZE_OF_INIT) < 0) {
         HILOG_ERROR(LOG_CORE, "failed to take events, seq=%{public}" PRId64, observerSeq);
         return -1;
     }

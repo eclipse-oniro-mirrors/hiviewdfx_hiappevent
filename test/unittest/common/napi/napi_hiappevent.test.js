@@ -1423,7 +1423,10 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventWatcherTest007', 0, async function (done) {
         console.info('HiAppEventWatcherTest007 start');
         let watcher = {
-            name: "watcher",
+            name: "watcher_007",
+            appEventFilters: [
+                { domain: TEST_DOMAIN },
+            ],
             triggerCondition: {
                 row: 1
             },
@@ -1465,7 +1468,10 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventWatcherTest008', 0, async function (done) {
         console.info('HiAppEventWatcherTest008 start');
         let watcher = {
-            name: "watcher",
+            name: "watcher_008",
+            appEventFilters: [
+                { domain: TEST_DOMAIN },
+            ],
             triggerCondition: {
                 row: 10,
                 size: 200,

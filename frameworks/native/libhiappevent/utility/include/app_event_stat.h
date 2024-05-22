@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_COMMON_APP_EVENT_STAT_H
-#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_COMMON_APP_EVENT_STAT_H
+#ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_APP_EVENT_STAT_H
+#define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_APP_EVENT_STAT_H
 
 #include <string>
 
@@ -23,8 +23,8 @@ namespace AppEventStat {
 constexpr int SUCCESS = 0;
 constexpr int FAILED = 1;
 
-void SyncWriteApiEndEvent(const std::string& apiName, uint64_t beginTime, int result, int errCode);
+void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int result, int errCode);
 } // namespace AppEventStat
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_COMMON_APP_EVENT_STAT_H
+#endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_UTILITY_APP_EVENT_STAT_H
