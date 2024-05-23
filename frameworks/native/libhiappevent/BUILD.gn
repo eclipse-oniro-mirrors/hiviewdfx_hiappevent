@@ -17,7 +17,6 @@ import("//build/ohos.gni")
 config("libhiappevent_source_config") {
   visibility = [ "*:*" ]
   include_dirs = [
-    "common/include",
     "include",
     "load/include",
     "../../../interfaces/native/inner_api/include",
@@ -33,7 +32,6 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   sources = [
-    "common/app_event_stat.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
     "hiappevent_clean.cpp",

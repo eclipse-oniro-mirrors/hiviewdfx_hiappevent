@@ -14,6 +14,8 @@
  */
 #include "app_event_stat.h"
 
+#include <random>
+
 #include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
@@ -21,13 +23,24 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventPack;
 namespace AppEventStat {
+namespace {
 constexpr int BEHAVIOR = 4;
-void SyncWriteApiEndEvent(const std::string& apiName, uint64_t beginTime, int result, int errCode)
+constexpr size_t UUID_CHAR_ARRAY_LENGTH = 37;
+
+uint64_t RandomNum()
+{
+    std::random_device seed;
+    std::mt19937_64 gen(seed());
+    std::uniform_int_distribution<uint64_t> dis(0, std::numeric_limits<uint64_t>::max());
+    return dis(gen);
+}
+}
+
+void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int result, int errCode)
 {
     auto appEventPack = std::make_shared<AppEventPack>("api_diagnostic", "api_exec_end", BEHAVIOR);
-    appEventPack->AddParam("trans_id", "transId_" + std::to_string(std::rand()));
+    appEventPack->AddParam("trans_id", "transId_" + std::to_string(RandomNum()));
     appEventPack->AddParam("api_name", apiName);
     appEventPack->AddParam("sdk_name", "PerformanceAnalysisKit");
     appEventPack->AddParam("begin_time", static_cast<int64_t>(beginTime));
@@ -36,7 +49,7 @@ void SyncWriteApiEndEvent(const std::string& apiName, uint64_t beginTime, int re
     appEventPack->AddParam("error_code", errCode);
     ffrt::submit([appEventPack]() {
         WriteEvent(appEventPack);
-        }, {}, {}, ffrt::task_attr().name("hiappevent_api_end_event"));
+        }, {}, {}, ffrt::task_attr().name("appevent_api_end"));
 }
 } // namespace AppEventStat
 } // namespace HiviewDFX

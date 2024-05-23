@@ -19,6 +19,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiError {
+constexpr int ERR_OK = 0;
 // common api error
 constexpr int ERR_PARAM = 401;
 

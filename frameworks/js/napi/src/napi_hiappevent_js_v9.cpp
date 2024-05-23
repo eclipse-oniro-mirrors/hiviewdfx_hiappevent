@@ -180,7 +180,7 @@ static napi_value ClearData(napi_env env, napi_callback_info info)
 {
     uint64_t beginTime = TimeUtil::GetMilliseconds();
     HiAppEventClean::ClearData(NapiHiAppEventConfig::GetStorageDir());
-    AppEventStat::SyncWriteApiEndEvent("clearData", beginTime, AppEventStat::SUCCESS, 0);
+    AppEventStat::WriteApiEndEventAsync("clearData", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
     return NapiUtil::CreateUndefined(env);
 }
 
@@ -189,7 +189,7 @@ static napi_value AddWatcher(napi_env env, napi_callback_info info)
     uint64_t beginTime = TimeUtil::GetMilliseconds();
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addWatcher is 1
-        AppEventStat::SyncWriteApiEndEvent("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
+        AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
         return nullptr;
     }
@@ -201,7 +201,7 @@ static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
     uint64_t beginTime = TimeUtil::GetMilliseconds();
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeWatcher is 1
-        AppEventStat::SyncWriteApiEndEvent("removeWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
+        AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
         return nullptr;
     }
@@ -210,7 +210,6 @@ static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
 
 static napi_value SetEventParam(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = TimeUtil::GetMilliseconds();
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
     NapiParamBuilder builder;

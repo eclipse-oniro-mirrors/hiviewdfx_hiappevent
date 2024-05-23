@@ -102,7 +102,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
             HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
                 observerSeq, eventSeqs.size());
         }
-        }, {}, {}, ffrt::task_attr().name("appevent_delete"));
+        }, {}, {}, ffrt::task_attr().name("appevent_del_map"));
     std::string domain = events[0]->GetDomain();
     onReceive_(domain.c_str(), appEventGroup.data(), static_cast<uint32_t>(eventMap.size()));
 }

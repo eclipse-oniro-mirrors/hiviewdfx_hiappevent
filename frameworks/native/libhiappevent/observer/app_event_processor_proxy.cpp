@@ -60,9 +60,13 @@ void AppEventProcessorProxy::OnEvents(const std::vector<std::shared_ptr<AppEvent
         eventInfos.emplace_back(CreateAppEventInfo(event));
         eventSeqs.emplace_back(event->GetSeq());
     }
-    if (processor_->OnReport(GetSeq(), userIds, userProperties, eventInfos) == 0 &&
-        AppEventStore::GetInstance().DeleteEventMapping(GetSeq(), eventSeqs) < 0) {
-        HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
+    if (processor_->OnReport(GetSeq(), userIds, userProperties, eventInfos) == 0) {
+        if (AppEventStore::GetInstance().DeleteEventMapping(GetSeq(), eventSeqs) < 0) {
+            HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
+                GetSeq(), eventSeqs.size());
+        }
+    } else {
+        HILOG_DEBUG(LOG_CORE, "failed to report event, seq=%{public}" PRId64 ", event num=%{public}zu",
             GetSeq(), eventSeqs.size());
     }
 }

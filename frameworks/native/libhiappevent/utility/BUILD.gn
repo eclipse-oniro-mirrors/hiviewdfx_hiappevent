@@ -15,17 +15,23 @@ import("//build/ohos.gni")
 
 config("hiappevent_utility_config") {
   visibility = [ "*:*" ]
-  include_dirs = [ "include" ]
+  include_dirs = [
+    "include",
+    "../include",
+  ]
 }
 
 ohos_source_set("hiappevent_utility") {
   public_configs = [ ":hiappevent_utility_config" ]
 
   sources = [
+    "app_event_stat.cpp",
     "file_util.cpp",
     "sql_util.cpp",
     "time_util.cpp",
   ]
+
+  external_deps = [ "ffrt:libffrt" ]
 
   part_name = "hiappevent"
   subsystem_name = "hiviewdfx"
