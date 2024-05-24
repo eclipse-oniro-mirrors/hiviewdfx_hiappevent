@@ -54,7 +54,7 @@ void AppEventProcessorProxy::OnEvents(const std::vector<std::shared_ptr<AppEvent
     GetValidUserIds(userIds);
     std::vector<UserProperty> userProperties;
     GetValidUserProperties(userProperties);
-    std::vector<AppEventInfo> eventInfos(events.size());
+    std::vector<AppEventInfo> eventInfos;
     std::vector<int64_t> eventSeqs;
     for (const auto& event : events) {
         eventInfos.emplace_back(CreateAppEventInfo(event));
