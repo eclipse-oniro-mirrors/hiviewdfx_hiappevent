@@ -21,7 +21,7 @@ namespace CJSystemapi {
 namespace HiAppEvent {
 using namespace OHOS::HiviewDFX::ErrorCode;
 
-const std::unordered_map<int, int> errMap = {
+const std::unordered_map<int, int> ERR_MAP = {
     { ERROR_INVALID_EVENT_NAME, ERR_INVALID_NAME },
     { ERROR_INVALID_EVENT_DOMAIN, ERR_INVALID_DOMAIN },
     { ERROR_HIAPPEVENT_DISABLE, ERR_DISABLE },
@@ -33,8 +33,8 @@ const std::unordered_map<int, int> errMap = {
 
 int GetErrorCode(int errCode)
 {
-    if (errMap.find(errCode) != errMap.end()) {
-        return errMap.at(errCode);
+    if (ERR_MAP.find(errCode) != ERR_MAP.end()) {
+        return ERR_MAP.at(errCode);
     } else {
         return ERR_PARAM;
     }
