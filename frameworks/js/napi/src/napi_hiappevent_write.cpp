@@ -39,7 +39,7 @@ napi_value BuildErrorByResult(const napi_env env, int result)
         { ErrorCode::ERROR_INVALID_EVENT_DOMAIN,
             { NapiError::ERR_INVALID_DOMAIN, "Invalid event domain." } },
         { ErrorCode::ERROR_HIAPPEVENT_DISABLE,
-            { NapiError::ERR_DISABLE, "Function is disabled." } },
+            { NapiError::ERR_DISABLE, "Function disabled." } },
         { ErrorCode::ERROR_INVALID_PARAM_NAME,
             { NapiError::ERR_INVALID_KEY, "Invalid event parameter name." } },
         { ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH,

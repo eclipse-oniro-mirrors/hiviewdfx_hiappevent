@@ -107,11 +107,11 @@ napi_value NapiAppEventHolder::NapiSetRow(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
     if (paramNum < PARAM_NUM) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("row"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size"));
         return nullptr;
     }
     if (!NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("row", "number"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size", "number"));
         return nullptr;
     }
     if (int num = NapiUtil::GetInt32(env, params[0]); num > 0) {
@@ -119,7 +119,7 @@ napi_value NapiAppEventHolder::NapiSetRow(napi_env env, napi_callback_info info)
         napi_unwrap(env, thisVar, (void**)&holder);
         holder->SetRow(num);
     } else {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid row value.");
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid size value.");
     }
     return NapiUtil::CreateUndefined(env);
 }

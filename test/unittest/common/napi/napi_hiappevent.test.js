@@ -943,7 +943,7 @@ describe('HiAppEventJsTest', function () {
             disable: true
         });
 
-        let expectErr = createError(11100001, "Function is disabled.");
+        let expectErr = createError(11100001, "Function disabled.");
         writeNameV9Test("config_test", expectErr, done);
     });
 

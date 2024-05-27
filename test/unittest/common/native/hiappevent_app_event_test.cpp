@@ -274,7 +274,7 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest007, TestSize.Level1)
 
 /**
  * @tc.name: HiAppEventAppEventTest008
- * @tc.desc: Test the writing of logging function is disabled.
+ * @tc.desc: Test the writing of logging function disabled.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest008, TestSize.Level1)
