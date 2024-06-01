@@ -25,7 +25,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "NapiHiAppEventHolder"
+#define LOG_TAG "NapiHolder"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -191,7 +191,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
         return nullptr;
     }
     if (events.empty()) {
-        HILOG_INFO(LOG_CORE, "end to query events, seq=%{public}" PRId64, observerSeq_);
+        HILOG_DEBUG(LOG_CORE, "end to query events, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
 

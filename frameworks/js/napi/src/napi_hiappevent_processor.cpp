@@ -31,7 +31,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "NapiHiAppEventProcessor"
+#define LOG_TAG "NapiProcessor"
 
 namespace OHOS {
 namespace HiviewDFX {

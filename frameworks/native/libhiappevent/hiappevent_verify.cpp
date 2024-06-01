@@ -27,7 +27,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventVerify"
+#define LOG_TAG "Verify"
 
 using namespace OHOS::HiviewDFX::ErrorCode;
 
@@ -117,7 +117,6 @@ void EscapeStringValue(std::string &value)
 bool CheckStrParamLength(std::string& strParamValue, size_t maxLen = MAX_LENGTH_OF_STR_PARAM)
 {
     if (strParamValue.empty()) {
-        HILOG_WARN(LOG_CORE, "str param value is empty.");
         return true;
     }
 

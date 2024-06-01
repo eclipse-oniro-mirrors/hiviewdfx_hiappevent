@@ -27,7 +27,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventAppEvenMappingDao"
+#define LOG_TAG "EvenMappingDao"
 
 namespace OHOS {
 namespace HiviewDFX {

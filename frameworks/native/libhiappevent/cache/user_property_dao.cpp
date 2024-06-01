@@ -25,7 +25,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventUserPropertyDao"
+#define LOG_TAG "UserPropertyDao"
 
 namespace OHOS {
 namespace HiviewDFX {
