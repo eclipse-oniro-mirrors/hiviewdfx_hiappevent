@@ -326,6 +326,7 @@ void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::Hivie
         eventMap[event->GetName()].emplace_back(event);
     }
     eventGroups.size = static_cast<int64_t>(eventMap.size());
+    eventGroups.head = nullptr;
     if (eventGroups.size > 0) {
         RetAppEventGroup* retValue1 = static_cast<RetAppEventGroup*>
                                         (malloc(sizeof(RetAppEventGroup) * eventGroups.size));
@@ -358,6 +359,9 @@ void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::Hivie
         eventGroups.head = retValue1;
     }
     char* cjDomain = MallocCString(context_->receiveContext->domain);
+    if (cjDomain == nullptr) {
+        LOGE("malloc is failed");
+    }
     context_->receiveContext->onReceive(cjDomain, eventGroups);
 }
 
