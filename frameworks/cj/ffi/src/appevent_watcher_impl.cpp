@@ -353,16 +353,12 @@ void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::Hivie
                 retValue2[i].CArrParamters = CreateValueByJsonStr(it.second[i]->GetParamStr());
             }
             appEventInfos.head = retValue2;
-            retValue1[index].appEventInfos = appEventInfos;
-            ++index;
+            retValue1[index++].appEventInfos = appEventInfos;
         }
         eventGroups.head = retValue1;
     }
     char* cjDomain = MallocCString(context_->receiveContext->domain);
-    if (cjDomain == nullptr) {
-        LOGE("malloc is failed");
-    }
-    context_->receiveContext->onReceive(cjDomain, eventGroups);
+    cjDomain == nullptr? LOGE("malloc is failed") : context_->receiveContext->onReceive(cjDomain, eventGroups);
 }
 
 void AppEventWatcherImpl::OnTrigger(const HiviewDFX::TriggerCondition& triggerCond)
