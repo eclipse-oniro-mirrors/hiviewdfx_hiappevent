@@ -309,29 +309,21 @@ CArrParameters CreateValueByJsonStr(const std::string& jsonStr)
     return pameters;
 }
 
-void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::HiviewDFX::AppEventPack>>& events)
+CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::HiviewDFX::AppEventPack>>& events)
 {
-    if (context_ == nullptr || context_->receiveContext == nullptr) {
-        LOGE("onReceive context is null");
-        return;
-    }
-    if (events.empty()) {
-        return;
-    }
-    context_->receiveContext->domain = events[0]->GetDomain();
-    context_->receiveContext->events = events;
     CArrRetAppEventGroup eventGroups;
     std::unordered_map<std::string, std::vector<std::shared_ptr<AppEventPack>>> eventMap;
     for (const auto& event : events) {
         eventMap[event->GetName()].emplace_back(event);
     }
     eventGroups.size = static_cast<int64_t>(eventMap.size());
+    eventGroups.head = nullptr;
     if (eventGroups.size > 0) {
         RetAppEventGroup* retValue1 = static_cast<RetAppEventGroup*>
                                         (malloc(sizeof(RetAppEventGroup) * eventGroups.size));
         if (retValue1 == nullptr) {
             LOGE("malloc is failed");
-            return;
+            return eventGroups;
         }
         size_t index = 0;
         for (const auto& it : eventMap) {
@@ -343,7 +335,7 @@ void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::Hivie
             if (retValue2 == nullptr) {
                 delete retValue1;
                 LOGE("malloc is failed");
-                return;
+                return eventGroups;
             }
             for (size_t i = 0; i < it.second.size(); ++i) {
                 retValue2[i].domain = MallocCString(it.second[i]->GetDomain());
@@ -352,12 +344,30 @@ void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::Hivie
                 retValue2[i].CArrParamters = CreateValueByJsonStr(it.second[i]->GetParamStr());
             }
             appEventInfos.head = retValue2;
-            retValue1[index].appEventInfos = appEventInfos;
-            ++index;
+            retValue1[index++].appEventInfos = appEventInfos;
         }
         eventGroups.head = retValue1;
     }
+    return eventGroups;
+}
+
+void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::HiviewDFX::AppEventPack>>& events)
+{
+    if (context_ == nullptr || context_->receiveContext == nullptr) {
+        LOGE("onReceive context is null");
+        return;
+    }
+    if (events.empty()) {
+        return;
+    }
+    context_->receiveContext->domain = events[0]->GetDomain();
+    context_->receiveContext->events = events;
+    CArrRetAppEventGroup eventGroups = getEventGroups(events);
     char* cjDomain = MallocCString(context_->receiveContext->domain);
+    if (cjDomain == nullptr || eventGroups.head == nullptr) {
+        LOGE("malloc is failed");
+        return;
+    }
     context_->receiveContext->onReceive(cjDomain, eventGroups);
 }
 
