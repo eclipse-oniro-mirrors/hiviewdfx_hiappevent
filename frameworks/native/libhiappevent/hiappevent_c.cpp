@@ -29,7 +29,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventC"
+#define LOG_TAG "AppEventC"
 
 using namespace OHOS::HiviewDFX;
 

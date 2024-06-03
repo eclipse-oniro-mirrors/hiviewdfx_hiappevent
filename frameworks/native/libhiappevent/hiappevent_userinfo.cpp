@@ -27,7 +27,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventUserInfo"
+#define LOG_TAG "UserInfo"
 
 namespace OHOS {
 namespace HiviewDFX {

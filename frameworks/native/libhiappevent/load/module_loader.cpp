@@ -25,7 +25,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventModuleLoader"
+#define LOG_TAG "ModuleLoader"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -74,7 +74,7 @@ int ModuleLoader::Load(const std::string& moduleName)
 {
     std::lock_guard<std::mutex> lock(moduleMutex_);
     if (modules_.find(moduleName) != modules_.end()) {
-        HILOG_INFO(LOG_CORE, "the module=%{public}s already exists", moduleName.c_str());
+        HILOG_DEBUG(LOG_CORE, "the module=%{public}s already exists", moduleName.c_str());
         return 0;
     }
 

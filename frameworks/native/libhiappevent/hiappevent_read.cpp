@@ -27,7 +27,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventRead"
+#define LOG_TAG "Read"
 
 using namespace std;
 

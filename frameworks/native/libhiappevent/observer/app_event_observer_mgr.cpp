@@ -28,7 +28,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventObserverMgr"
+#define LOG_TAG "ObserverMgr"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -275,7 +275,7 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
     if (observers_.empty()) {
         return;
     }
-    HILOG_INFO(LOG_CORE, "start to handle events");
+    HILOG_DEBUG(LOG_CORE, "start to handle events");
     StoreEventsToDb(events);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         SendEventsToObserver(events, it->second);

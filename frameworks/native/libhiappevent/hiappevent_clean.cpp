@@ -29,7 +29,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HiAppEventClean"
+#define LOG_TAG "Clean"
 
 namespace OHOS {
 namespace HiviewDFX {

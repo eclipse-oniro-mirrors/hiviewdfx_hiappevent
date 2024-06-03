@@ -24,7 +24,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "NdkAppEventWatcherProxy"
+#define LOG_TAG "NdkWatcherProxy"
 
 namespace OHOS {
 namespace HiviewDFX {
