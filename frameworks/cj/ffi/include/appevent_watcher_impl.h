@@ -49,7 +49,7 @@ struct OnTriggerContext {
 struct OnReceiveContext {
     ~OnReceiveContext();
     std::function<void(char*, CArrRetAppEventGroup)> onReceive = nullptr;
-    std::string domain = nullptr;
+    std::string domain = "";
     std::vector<std::shared_ptr<OHOS::HiviewDFX::AppEventPack>> events;
 };
 

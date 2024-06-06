@@ -31,6 +31,8 @@ using namespace OHOS::HiviewDFX;
 using namespace OHOS::CJSystemapi::HiAppEvent;
 
 namespace {
+constexpr int ERR_CODE_PARAM_FORMAT = -1;
+constexpr int ERR_CODE_PARAM_INVALID = -2;
 const int8_t INT32_VALUE = 0;
 const int8_t DOUBLE_VALUE = 1;
 const int8_t STRING_VALUE = 2;
@@ -99,7 +101,7 @@ int ConvertReportConfig(const CProcessor& processor, ReportConfig& conf)
     if (processor.name != nullptr && IsValidProcessorName(std::string(processor.name))) {
         conf.name = processor.name;
     } else {
-        return ERR_CODE_PARAM_INVALID;
+        return ERR_CODE_PARAM_FORMAT;
     }
     conf.debugMode = processor.debugMode;
     conf.routeInfo = processor.routeInfo;
@@ -209,7 +211,7 @@ RetDataBool FfiOHOSHiAppEventAddProcessor(CProcessor processor)
     RetDataBool ret = { .code = ErrorCode::ERROR_UNKNOWN, .data = false };
     ReportConfig conf;
     int res = ConvertReportConfig(processor, conf);
-    if (res == ERR_CODE_PARAM_INVALID) {
+    if (res == ERR_CODE_PARAM_FORMAT) {
         LOGE("failed to add processor, params format error");
         ret.code = ERR_PARAM;
         ret.data = false;
@@ -217,7 +219,7 @@ RetDataBool FfiOHOSHiAppEventAddProcessor(CProcessor processor)
     }
     if (HiAppEvent::ModuleLoader::GetInstance().Load(conf.name) != 0) {
         LOGE("failed to add processor=%{public}s, name no found", conf.name.c_str());
-        return {ERR_CODE_PARAM_INVALID, true};
+        return {ERR_CODE_PARAM_FORMAT, true};
     }
     int64_t processorId = HiAppEventImpl::AddProcessor(conf);
     if (processorId <= 0) {
