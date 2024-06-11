@@ -27,7 +27,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const std::string DATABASE_DIR = "databases/";
+const std::string DATABASE_NAME = "databases/appevent.db";
 
 void ClearAllData()
 {
@@ -47,7 +47,7 @@ void ClearAllData()
 }
 uint64_t AppEventDbCleaner::GetFilesSize()
 {
-    return FileUtil::GetDirSize(path_ + DATABASE_DIR);
+    return FileUtil::GetFileSize(path_ + DATABASE_NAME);
 }
 
 uint64_t AppEventDbCleaner::ClearSpace(uint64_t curSize, uint64_t maxSize)
