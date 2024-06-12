@@ -53,7 +53,7 @@ UserInfo::UserInfo() : userIdVersion_(0), userPropertyVersion_(0)
 
 int UserInfo::SetUserId(const std::string& name, const std::string& value)
 {
-    HILOG_DEBUG(LOG_CORE, "start to set userId, name=%{public}s, value=%{public}s.", name.c_str(), value.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to set userId, name=%{public}s.", name.c_str());
 
     std::string out;
     if (AppEventStore::GetInstance().QueryUserId(name, out) == DB_FAILED) {
@@ -111,7 +111,7 @@ int UserInfo::RemoveUserId(const std::string& name)
 
 int UserInfo::SetUserProperty(const std::string& name, const std::string& value)
 {
-    HILOG_DEBUG(LOG_CORE, "start to set userProperty, name=%{public}s, value=%{public}s.", name.c_str(), value.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to set userProperty, name=%{public}s.", name.c_str());
 
     std::string out;
     if (AppEventStore::GetInstance().QueryUserProperty(name, out) == DB_FAILED) {

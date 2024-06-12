@@ -74,7 +74,7 @@ int64_t UserIdDao::Insert(const std::string& name, const std::string& value)
     if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HILOG_INFO(LOG_CORE, "insert userid, name=%{public}s, value=%{public}s", name.c_str(), value.c_str());
+    HILOG_INFO(LOG_CORE, "insert userid, name=%{public}s", name.c_str());
     return seq;
 }
 

@@ -271,7 +271,7 @@ int VerifyNameOfReportConfig(ReportConfig& config)
 int VerifyRouteInfoOfReportConfig(ReportConfig& config)
 {
     if (!IsValidRouteInfo(config.routeInfo)) {
-        HILOG_WARN(LOG_CORE, "invalid routeInfo=%{public}s", config.routeInfo.c_str());
+        HILOG_WARN(LOG_CORE, "invalid routeInfo.");
         config.routeInfo = "";
     }
     return 0;
@@ -280,7 +280,7 @@ int VerifyRouteInfoOfReportConfig(ReportConfig& config)
 int VerifyAppIdOfReportConfig(ReportConfig& config)
 {
     if (!IsValidAppId(config.appId)) {
-        HILOG_WARN(LOG_CORE, "invalid appId=%{public}s", config.appId.c_str());
+        HILOG_WARN(LOG_CORE, "invalid appId.");
         config.appId = "";
     }
     return 0;
