@@ -89,7 +89,8 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
         return;
     }
     std::string event = appEventPack->GetEventStr();
-    HILOG_DEBUG(LOG_CORE, "WriteEvent eventInfo=%{public}s.", event.c_str());
+    HILOG_DEBUG(LOG_CORE, "WriteEvent domain=%{public}s, name=%{public}s.",
+        appEventPack->GetDomain().c_str(), appEventPack->GetName().c_str());
     {
         std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
         if (!FileUtil::IsFileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {

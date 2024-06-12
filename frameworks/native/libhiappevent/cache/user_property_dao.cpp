@@ -74,7 +74,7 @@ int64_t UserPropertyDao::Insert(const std::string& name, const std::string& valu
     if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HILOG_INFO(LOG_CORE, "insert user property, name=%{public}s, value=%{public}s", name.c_str(), value.c_str());
+    HILOG_INFO(LOG_CORE, "insert user property, name=%{public}s", name.c_str());
     return seq;
 }
 
