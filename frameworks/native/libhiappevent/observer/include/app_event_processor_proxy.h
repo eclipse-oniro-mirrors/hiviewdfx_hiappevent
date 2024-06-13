@@ -23,7 +23,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-class AppEventProcessorProxy : public AppEventObserver {
+class AppEventProcessorProxy : public AppEventObserver, public std::enable_shared_from_this<AppEventProcessorProxy> {
 public:
     AppEventProcessorProxy(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
         : AppEventObserver(name), processor_(processor), userIdVersion_(-1), userPropertyVersion_(-1) {}

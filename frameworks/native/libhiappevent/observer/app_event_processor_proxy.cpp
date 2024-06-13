@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "app_event_store.h"
+#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_userinfo.h"
 #include "hilog/log.h"
@@ -54,21 +55,27 @@ void AppEventProcessorProxy::OnEvents(const std::vector<std::shared_ptr<AppEvent
     GetValidUserIds(userIds);
     std::vector<UserProperty> userProperties;
     GetValidUserProperties(userProperties);
-    std::vector<AppEventInfo> eventInfos;
-    std::vector<int64_t> eventSeqs;
-    for (const auto& event : events) {
-        eventInfos.emplace_back(CreateAppEventInfo(event));
-        eventSeqs.emplace_back(event->GetSeq());
-    }
-    if (processor_->OnReport(GetSeq(), userIds, userProperties, eventInfos) == 0) {
-        if (AppEventStore::GetInstance().DeleteEventMapping(GetSeq(), eventSeqs) < 0) {
-            HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
-                GetSeq(), eventSeqs.size());
+    int64_t observerSeq = GetSeq();
+
+    // async
+    auto proxyPtr = shared_from_this();
+    ffrt::submit([proxyPtr, observerSeq, userIds, userProperties, events]() {
+        std::vector<AppEventInfo> eventInfos;
+        std::vector<int64_t> eventSeqs;
+        for (const auto& event : events) {
+            eventInfos.emplace_back(CreateAppEventInfo(event));
+            eventSeqs.emplace_back(event->GetSeq());
         }
-    } else {
-        HILOG_DEBUG(LOG_CORE, "failed to report event, seq=%{public}" PRId64 ", event num=%{public}zu",
-            GetSeq(), eventSeqs.size());
-    }
+        if (proxyPtr->processor_->OnReport(observerSeq, userIds, userProperties, eventInfos) == 0) {
+            if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq, eventSeqs) < 0) {
+                HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
+                    observerSeq, eventSeqs.size());
+            }
+        } else {
+            HILOG_DEBUG(LOG_CORE, "failed to report event, seq=%{public}" PRId64 ", event num=%{public}zu",
+                observerSeq, eventSeqs.size());
+        }
+        }, {}, {}, ffrt::task_attr().name("appevent_report"));
 }
 
 void AppEventProcessorProxy::GetValidUserIds(std::vector<UserId>& userIds)

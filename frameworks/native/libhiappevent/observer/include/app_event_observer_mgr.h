@@ -62,7 +62,6 @@ private:
 
 private:
     std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
-    std::unordered_map<int64_t, ReportConfig> configs_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
     ffrt::mutex observerMutex_;

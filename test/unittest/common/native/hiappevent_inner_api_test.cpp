@@ -45,6 +45,7 @@ void WriteEventOnce()
     std::vector<std::shared_ptr<AppEventPack>> events;
     events.emplace_back(event);
     AppEventObserverMgr::GetInstance().HandleEvents(events);
+    sleep(1); // 1s
 }
 
 void CheckRegisterObserver(const std::string& observer,
@@ -198,6 +199,23 @@ void CheckSetOnBackgroundConfig(int64_t processorSeq)
     };
     ASSERT_EQ(AppEventProcessorMgr::SetProcessorConfig(processorSeq, testConfig), 0);
 }
+
+void CheckOnReport(
+    const std::vector<UserId>& userIds,
+    const std::vector<UserProperty>& userProperties,
+    const std::vector<AppEventInfo>& events)
+{
+    ASSERT_EQ(userIds.size(), 0);
+    ASSERT_EQ(userProperties.size(), 0);
+    ASSERT_GT(events.size(), 0);
+    for (const auto& event : events) {
+        ASSERT_EQ(event.domain, TEST_EVENT_DOMAIN);
+        ASSERT_EQ(event.name, TEST_EVENT_NAME);
+        ASSERT_EQ(event.eventType, TEST_EVENT_TYPE);
+        ASSERT_GT(event.timestamp, 0);
+        ASSERT_EQ(event.params, "{\"int_key\":1,\"double_key\":1.2,\"bool_key\":false,\"str_key\":\"str\"}\n");
+    }
+}
 }
 
 class HiAppEventInnerApiTest : public testing::Test {
@@ -237,9 +255,6 @@ int AppEventProcessorTest::OnReport(
     std::cout << "UserId size=" << userIds.size() << std::endl;
     std::cout << "UserProperty size=" << userProperties.size() << std::endl;
     std::cout << "AppEventInfo size=" << events.size() << std::endl;
-    if (events.size() == 0) {
-        return 0;
-    }
     for (const auto& event : events) {
         std::cout << "AppEventInfo.domain=" << event.domain << std::endl;
         std::cout << "AppEventInfo.name=" << event.name << std::endl;
@@ -247,6 +262,7 @@ int AppEventProcessorTest::OnReport(
         std::cout << "AppEventInfo.timestamp=" << event.timestamp << std::endl;
         std::cout << "AppEventInfo.params=" << event.params << std::endl;
     }
+    CheckOnReport(userIds, userProperties, events);
     return 0;
 }
 
@@ -440,6 +456,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest007, TestSize.Level0)
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);
     AppEventObserverMgr::GetInstance().HandleBackground();
+    sleep(1); // 1s
     ASSERT_EQ(processor->GetReportTimes(), 1);
 
     CheckUnregisterObserver(TEST_PROCESSOR_NAME);
@@ -475,6 +492,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest008, TestSize.Level0)
 
     int64_t processorSeq2 = AppEventObserverMgr::GetInstance().RegisterObserver(TEST_PROCESSOR_NAME, config);
     ASSERT_EQ(processorSeq1, processorSeq2);
+    sleep(1); // 1s
     ASSERT_EQ(processor->GetReportTimes(), 1);
 
     CheckUnregisterObserver(TEST_PROCESSOR_NAME);
