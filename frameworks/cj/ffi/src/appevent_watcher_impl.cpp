@@ -333,7 +333,7 @@ CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::Hivi
             CAppEventInfo* retValue2 = static_cast<CAppEventInfo*>(malloc(sizeof(CAppEventInfo)
                                         * it.second.size()));
             if (retValue2 == nullptr) {
-                delete retValue1;
+                free(retValue1);
                 LOGE("malloc is failed");
                 return eventGroups;
             }
