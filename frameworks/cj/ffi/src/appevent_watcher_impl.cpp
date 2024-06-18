@@ -368,6 +368,7 @@ void AppEventWatcherImpl::OnEvents(const std::vector<std::shared_ptr<OHOS::Hivie
     }
     char* cjDomain = MallocCString(context_->receiveContext->domain);
     if (cjDomain == nullptr) {
+        free(eventGroups.head);
         LOGE("malloc is failed");
         return;
     }
