@@ -253,6 +253,11 @@ int64_t AppEventStore::InsertUserProperty(const std::string& name, const std::st
 
 int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> event)
 {
+    std::vector<CustomEventParam> newParams;
+    event->GetCustomParams(newParams);
+    if (newParams.empty()) {
+        return DB_SUCC;
+    }
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -261,11 +266,6 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
     dbStore_->BeginTransaction();
     std::unordered_set<std::string> oldParamkeys;
     customEventParamDao_->QueryParamkeys(oldParamkeys, event->GetRunningId(), event->GetDomain(), event->GetName());
-    std::vector<CustomEventParam> newParams;
-    event->GetCustomParams(newParams);
-    if (newParams.empty()) {
-        return DB_SUCC;
-    }
     // check params num of same (runningid, domain, name)
     size_t totalNum = oldParamkeys.size();
     for (const auto& param : newParams) {
@@ -274,6 +274,7 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
         }
     }
     if (totalNum > MAX_NUM_OF_CUSTOM_PARAMS) {
+        dbStore_->RollBack();
         return ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM;
     }
     std::vector<NativeRdb::ValuesBucket> buckets;
