@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <sys/stat.h>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -32,6 +33,8 @@ bool ForceRemoveDirectory(const std::string& dir, bool isDeleteSelf = true);
 void GetDirFiles(const std::string& dir, std::vector<std::string>& files);
 uint64_t GetDirSize(const std::string& dir);
 uint64_t GetFileSize(const std::string& file);
+bool ChangeMode(const std::string& file, const mode_t& mode);
+bool CreateFile(const std::string& file, const mode_t& mode);
 bool SaveStringToFile(const std::string& file, const std::string& content, bool isTrunc = false);
 std::string GetFilePathByDir(const std::string& dir, const std::string& fileName);
 bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& lines);
