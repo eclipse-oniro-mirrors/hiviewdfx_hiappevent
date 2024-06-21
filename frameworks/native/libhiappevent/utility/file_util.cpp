@@ -26,6 +26,7 @@ namespace HiviewDFX {
 namespace FileUtil {
 namespace {
 const char PATH_DELIMITER = '/';
+constexpr mode_t FILE_PERM_600 = S_IRUSR | S_IWUSR;
 }
 bool IsFileExists(const std::string& file)
 {
@@ -144,12 +145,34 @@ uint64_t GetFileSize(const std::string& file)
     return stat(file.c_str(), &statBuf) == 0 ? static_cast<uint64_t>(statBuf.st_size) : 0;
 }
 
+bool ChangeMode(const std::string& file, const mode_t& mode)
+{
+    return (chmod(file.c_str(), mode) == 0);
+}
+
+bool CreateFile(const std::string& file, const mode_t& mode)
+{
+    if (IsFileExists(file)) {
+        return true;
+    }
+    std::ofstream fout(file);
+    if (!fout.is_open()) {
+        return false;
+    }
+    fout.flush();
+    fout.close();
+    return ChangeMode(file, mode);
+}
+
 bool SaveStringToFile(const std::string& file, const std::string& content, bool isTrunc)
 {
     if (content.empty()) {
         return true;
     }
 
+    if (!CreateFile(file, FILE_PERM_600)) {
+        return false;
+    }
     std::ofstream os;
     if (isTrunc) {
         os.open(file.c_str(), std::ios::out | std::ios::trunc);
