@@ -26,7 +26,6 @@ namespace HiviewDFX {
 namespace AppEventStat {
 namespace {
 constexpr int BEHAVIOR = 4;
-constexpr size_t UUID_CHAR_ARRAY_LENGTH = 37;
 
 uint64_t RandomNum()
 {
