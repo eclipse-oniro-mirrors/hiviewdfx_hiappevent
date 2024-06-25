@@ -34,6 +34,7 @@ const std::string TEST_EVENT_DOMAIN = "test_domain";
 const std::string TEST_EVENT_NAME = "test_name";
 constexpr int TEST_EVENT_TYPE = 1;
 const std::string TEST_PACKAGE = "{\"domain_\":\"hiappevent\", \"name_\":\"testEvent\"}";
+const std::string TEST_RUNNING_ID = "running_test";
 
 std::shared_ptr<AppEventPack> CreateAppEventPack()
 {
@@ -234,3 +235,59 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest005, TestSize.Level1)
     }
 }
 
+/**
+ * @tc.name: HiAppEventDBTest006
+ * @tc.desc: check the query result of DB operation.
+ * @tc.type: FUNC
+ * @tc.require: issueI5K0X6
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest006, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. open the db.
+     * @tc.steps: step2. insert record to the tables, insert custom param.
+     * @tc.steps: step3. query records from tables.
+     * @tc.steps: step3. delete custom param, query records from tables.
+     */
+    int result = AppEventStore::GetInstance().InitDbStore();;
+    ASSERT_EQ(result, 0);
+
+    auto event = CreateAppEventPack();
+    event->SetRunningId(TEST_RUNNING_ID);
+    int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
+    ASSERT_GT(eventSeq, 0);
+    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME);
+    ASSERT_GT(observerSeq, 0);
+    int64_t mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    ASSERT_GT(mappingSeq, 0);
+    auto eventParams = CreateAppEventPack();
+    eventParams->SetRunningId(TEST_RUNNING_ID);
+    eventParams->AddParam("custom_data", "value_str");
+    int64_t ret = AppEventStore::GetInstance().InsertCustomEventParams(eventParams);
+    ASSERT_EQ(ret, 0);
+
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    result = AppEventStore::GetInstance().QueryEvents(events, observerSeq);
+    ASSERT_EQ(result, 0);
+    ASSERT_GT(events.size(), 0);
+    ASSERT_EQ(events[0]->GetDomain(), TEST_EVENT_DOMAIN);
+    ASSERT_EQ(events[0]->GetName(), TEST_EVENT_NAME);
+    ASSERT_EQ(events[0]->GetType(), TEST_EVENT_TYPE);
+    ASSERT_EQ(events[0]->GetRunningId(), TEST_RUNNING_ID);
+    ASSERT_EQ(events[0]->GetParamStr(), "{\"custom_data\":\"value_str\"}\n");
+
+    // delete custom params
+    AppEventStore::GetInstance().DeleteCustomEventParams(TEST_RUNNING_ID);
+    std::vector<std::shared_ptr<AppEventPack>> events1;
+    result = AppEventStore::GetInstance().QueryEvents(events1, observerSeq, 1);
+    ASSERT_EQ(result, 0);
+    ASSERT_EQ(events1.size(), 1);
+    ASSERT_EQ(events1[0]->GetDomain(), TEST_EVENT_DOMAIN);
+    ASSERT_EQ(events1[0]->GetName(), TEST_EVENT_NAME);
+    ASSERT_EQ(events1[0]->GetType(), TEST_EVENT_TYPE);
+    ASSERT_EQ(events1[0]->GetRunningId(), TEST_RUNNING_ID);
+    ASSERT_EQ(events1[0]->GetParamStr(), "{}\n");
+
+    result = AppEventStore::GetInstance().DestroyDbStore();;
+    ASSERT_EQ(result, 0);
+}
