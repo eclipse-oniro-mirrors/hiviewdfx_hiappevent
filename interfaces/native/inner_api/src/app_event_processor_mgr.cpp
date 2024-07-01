@@ -24,6 +24,9 @@ namespace HiviewDFX {
 namespace HiAppEvent {
 int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     ReportConfig realConfig = config;
     if (int ret = VerifyReportConfig(realConfig); ret != 0) {
         return ret;
@@ -36,16 +39,25 @@ int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
 
 int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     return AppEventObserverMgr::GetInstance().UnregisterObserver(processorId);
 }
 
 int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     return ModuleLoader::GetInstance().RegisterProcessor(name, processor);
 }
 
 int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     if (int ret = AppEventObserverMgr::GetInstance().UnregisterObserver(name); ret < 0) {
         return ret;
     }
@@ -54,16 +66,25 @@ int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
 
 int AppEventProcessorMgr::SetProcessorConfig(int64_t processorSeq, const ReportConfig& config)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     return AppEventObserverMgr::GetInstance().SetReportConfig(processorSeq, config);
 }
 
 int AppEventProcessorMgr::GetProcessorConfig(int64_t processorSeq, ReportConfig& config)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     return AppEventObserverMgr::GetInstance().GetReportConfig(processorSeq, config);
 }
 
 int AppEventProcessorMgr::GetProcessorSeqs(const std::string& name, std::vector<int64_t>& processorSeqs)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     processorSeqs.clear(); // prevent repeated invoking scenarios
     return AppEventStore::GetInstance().QueryObserverSeqs(name, processorSeqs);
 }

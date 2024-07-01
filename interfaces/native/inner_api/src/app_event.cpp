@@ -78,6 +78,9 @@ void Event::AddParam(const std::string& key, const std::vector<std::string>& val
 
 int Write(const Event& event)
 {
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
     int ret = VerifyAppEvent(event.eventPack_);
     if (ret >= 0) {
         WriteEvent(event.eventPack_);

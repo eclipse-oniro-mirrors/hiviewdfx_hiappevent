@@ -48,6 +48,7 @@ bool IsValidEventConfig(const EventConfig& eventCfg);
 bool IsValidConfigId(int configId);
 bool IsValidCustomConfigsNum(size_t num);
 bool IsValidCustomConfig(const std::string& name, const std::string& value);
+bool IsApp();
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HI_APP_EVENT_VERIFY_H
