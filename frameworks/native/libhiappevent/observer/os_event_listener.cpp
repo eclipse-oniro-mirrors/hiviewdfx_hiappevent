@@ -141,7 +141,7 @@ bool OsEventListener::RegisterDirListener(const std::string& dirPath)
     }
     inotifyStopFlag_ = false;
     if (inotifyThread_ == nullptr) {
-        inotifyThread_ = std::make_unique<std::thread>(&OsEventListener::HandleDirEvent, this);
+        inotifyThread_ = std::make_unique<std::thread>([this] { this->HandleDirEvent(); });
         inotifyThread_->detach();
     }
     return true;
