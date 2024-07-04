@@ -22,6 +22,7 @@
 #include "hiappevent/hiappevent.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
+#include "hiappevent_userinfo.h"
 #include "time_util.h"
 
 using namespace testing::ext;
@@ -668,6 +669,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest021, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest022, TestSize.Level0)
 {
     OH_HiAppEvent_ClearData();
+    ASSERT_EQ(HiAppEvent::UserInfo::GetInstance().GetUserIdVersion(), 0);
+    ASSERT_EQ(HiAppEvent::UserInfo::GetInstance().GetUserPropertyVersion(), 0);
 }
 
 /**
@@ -693,7 +696,9 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
 {
     OH_HiAppEvent_DestroyWatcher(g_onTriggerWatcher);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onTriggerWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
     g_onTriggerWatcher = nullptr;
     OH_HiAppEvent_DestroyWatcher(g_onReceiveWatcher);
+    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onReceiveWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
     g_onReceiveWatcher = nullptr;
 }
