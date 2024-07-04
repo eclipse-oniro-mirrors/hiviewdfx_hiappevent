@@ -24,12 +24,14 @@
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
+using namespace OHOS::HiviewDFX::ErrorCode;
 using namespace OHOS::HiviewDFX::HiAppEvent;
 namespace {
 const std::string TEST_PROCESSOR_NAME = "test_processor";
 const std::string TEST_EVENT_DOMAIN = "test_domain";
 const std::string TEST_EVENT_NAME = "test_name";
 constexpr int TEST_EVENT_TYPE = 1;
+constexpr int32_t TEST_UID = 200000 * 100;
 
 void WriteEventOnce()
 {
@@ -279,6 +281,34 @@ int AppEventProcessorTest::ValidateUserProperty(const UserProperty& userProperty
 int AppEventProcessorTest::ValidateEvent(const AppEventInfo& event)
 {
     return (event.domain.find("test") == std::string::npos) ? -1 : 0;
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest000
+ * @tc.desc: check the api AppEventProcessorMgr not app.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest000, TestSize.Level0)
+{
+    auto processor = std::make_shared<AppEventProcessorTest>();
+    ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(TEST_PROCESSOR_NAME, processor), ERROR_NOT_APP);
+    ASSERT_EQ(AppEventProcessorMgr::UnregisterProcessor(TEST_PROCESSOR_NAME), ERROR_NOT_APP);
+
+    std::vector<int64_t> processorSeqs;
+    ASSERT_EQ(AppEventProcessorMgr::GetProcessorSeqs(TEST_PROCESSOR_NAME, processorSeqs), ERROR_NOT_APP);
+
+    int64_t processorSeq = 0;
+    ReportConfig config = {
+        .name = TEST_PROCESSOR_NAME,
+    };
+    ASSERT_EQ(AppEventProcessorMgr::SetProcessorConfig(processorSeq, config), ERROR_NOT_APP);
+    ASSERT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorSeq, config), ERROR_NOT_APP);
+
+    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), ERROR_NOT_APP);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorSeq), ERROR_NOT_APP);
+
+    // set app uid
+    setuid(TEST_UID);
 }
 
 /**

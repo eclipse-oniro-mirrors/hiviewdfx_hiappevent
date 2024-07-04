@@ -46,6 +46,7 @@ const int ERROR_DUPLICATE_PARAM = 8;
 const int ERROR_INVALID_CUSTOM_PARAM_NUM = 9;
 const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
+const int ERROR_NOT_APP = -200;
 } // namespace ErrorCode
 
 /**

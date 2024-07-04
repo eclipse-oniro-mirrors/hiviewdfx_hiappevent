@@ -32,6 +32,7 @@ const std::string TEST_NAME = "test_domain";
 const EventType TEST_TYPE = FAULT;
 constexpr int32_t TEST_INT_VALUE = 1;
 const std::string TEST_STR_VALUE = "test_value";
+constexpr int32_t TEST_UID = 200000 * 100;
 
 class HiAppEventAppEventTest : public testing::Test {
 public:
@@ -46,6 +47,26 @@ void HiAppEventAppEventTest::SetUp()
 
 void HiAppEventAppEventTest::TearDown()
 {}
+}
+
+/**
+ * @tc.name: HiAppEventAppEventTest000
+ * @tc.desc: Test the writing of not app.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest000, TestSize.Level1)
+{
+    std::cout << "HiAppEventAppEventTest000 start" << std::endl;
+
+    Event event(TEST_DOMAIN, TEST_NAME, FAULT);
+    int ret = Write(event);
+    ASSERT_EQ(ret, ERROR_NOT_APP);
+
+    setuid(TEST_UID);
+    ret = Write(event);
+    ASSERT_EQ(ret, HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    std::cout << "HiAppEventAppEventTest000 end" << std::endl;
 }
 
 /**

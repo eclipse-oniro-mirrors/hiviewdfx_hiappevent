@@ -17,6 +17,7 @@
 
 #include <cctype>
 #include <iterator>
+#include <unistd.h>
 #include <unordered_set>
 
 #include "hiappevent_base.h"
@@ -52,6 +53,7 @@ static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_NAME = 32;
 static constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
 static constexpr size_t MAX_NUM_OF_CUSTOM_PARAMS = 64;
 static constexpr size_t MAX_LENGTH_OF_CUSTOM_PARAM = 1024;
+constexpr int MIN_APP_UID = 20000;
 
 bool IsValidName(const std::string& name, size_t maxSize, bool allowDollarSign = true)
 {
@@ -571,6 +573,11 @@ int VerifyReportConfig(ReportConfig& config)
         }
     }
     return 0;
+}
+
+bool IsApp()
+{
+    return getuid() >= MIN_APP_UID;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
