@@ -65,7 +65,7 @@ public:
         const std::string& name,
         const std::vector<HiviewDFX::AppEventFilter>& filters,
         HiviewDFX::TriggerCondition cond);
-    ~AppEventWatcherImpl();
+    ~AppEventWatcherImpl() override;
     void InitTrigger(void (*callbackRef)(int, int, int64_t));
     void InitHolder(AppEventPackageHolderImpl* holder);
     void InitReceiver(void (*callbackRef)(char*, CArrRetAppEventGroup));
