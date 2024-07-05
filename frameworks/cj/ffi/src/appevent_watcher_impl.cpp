@@ -341,7 +341,7 @@ CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::Hivi
                 retValue2[i].domain = MallocCString(it.second[i]->GetDomain());
                 retValue2[i].name = MallocCString(it.second[i]->GetName());
                 retValue2[i].event = it.second[i]->GetType();
-                retValue2[i].CArrParamters = CreateValueByJsonStr(it.second[i]->GetParamStr());
+                retValue2[i].cArrParamters = CreateValueByJsonStr(it.second[i]->GetParamStr());
             }
             appEventInfos.head = retValue2;
             retValue1[index++].appEventInfos = appEventInfos;

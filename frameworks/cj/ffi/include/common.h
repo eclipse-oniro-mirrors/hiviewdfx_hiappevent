@@ -40,7 +40,7 @@ extern "C" {
         const char* domain = nullptr;
         const char* name = nullptr;
         int event = 0;
-        CArrParameters CArrParamters;
+        CArrParameters cArrParamters;
     };
 
     struct CAppEventReportConfig {

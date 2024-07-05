@@ -197,7 +197,7 @@ int FfiOHOSHiAppEventConfigure(CConfigOption config)
 int FfiOHOSHiAppEventWrite(CAppEventInfo info)
 {
     auto appEventPack_ = std::make_shared<AppEventPack>(info.domain, info.name, info.event);
-    AddParams2EventPack(info.CArrParamters, appEventPack_);
+    AddParams2EventPack(info.cArrParamters, appEventPack_);
     int code = HiAppEventImpl::Write(appEventPack_);
     if (code != SUCCESS_CODE) {
         LOGE("HiAppEvent::FfiOHOSHiAppEventWrite failed");
