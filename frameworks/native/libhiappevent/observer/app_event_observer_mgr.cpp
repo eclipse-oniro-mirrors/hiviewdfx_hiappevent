@@ -337,7 +337,8 @@ int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& conf
 
 bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag)
 {
-    if (!observer->HasOsDomain()) {
+    uint64_t mask = observer->GetOsEventsMask();
+    if (mask == 0) {
         return true;
     }
     std::lock_guard<ffrt::mutex> lock(listenerMutex_);
@@ -346,6 +347,9 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
         if (!listener_->StartListening()) {
             return false;
         }
+    }
+    if (!listener_->UpdateListenedEvents(mask)) {
+        return false;
     }
     if (sendFlag) {
         std::vector<std::shared_ptr<AppEventPack>> events;

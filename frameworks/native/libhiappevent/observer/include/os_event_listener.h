@@ -32,6 +32,7 @@ public:
     bool StartListening();
     bool RemoveOsEventDir();
     void GetEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
+    bool UpdateListenedEvents(uint64_t eventsMask);
 
 private:
     void Init();
@@ -49,6 +50,7 @@ private:
     std::string osEventPath_;
     std::unique_ptr<std::thread> inotifyThread_ = nullptr;
     std::vector<std::shared_ptr<AppEventPack>> historyEvents_;
+    uint64_t osEventsMask_ = 0;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
