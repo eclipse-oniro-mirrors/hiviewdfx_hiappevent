@@ -19,6 +19,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/xattr.h>
 #include <unistd.h>
 
 namespace OHOS {
@@ -217,6 +218,11 @@ bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& li
         return true;
     }
     return false;
+}
+
+bool SetDirXattr(const std::string& dir, const std::string& name, const std::string& value)
+{
+    return setxattr(dir.c_str(), name.c_str(), value.c_str(), strlen(value.c_str()), 0) == 0;
 }
 } // namespace FileUtil
 } // namespace HiviewDFX
