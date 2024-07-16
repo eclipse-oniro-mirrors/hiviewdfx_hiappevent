@@ -42,8 +42,6 @@ struct AppEventFilter {
     AppEventFilter(const std::string& domain, uint32_t types);
 
     bool IsValidEvent(std::shared_ptr<AppEventPack> event) const;
-    bool IsValidEvent(const std::string& eventDomain, const std::string& eventName, int eventType) const;
-    uint64_t GetOsEventsMask() const;
 };
 
 class AppEventObserver {
@@ -69,11 +67,8 @@ public:
     // used to identify the observer with the same config
     int64_t GenerateHashCode();
 
-    // used to reset the current status when condition is met or data is cleared.
+    // userd to reset the current status when condition is met or data is cleared.
     void ResetCurrCondition();
-
-    // used to match os events.
-    uint64_t GetOsEventsMask();
 
 protected:
     virtual void OnTrigger(const TriggerCondition& triggerCond);

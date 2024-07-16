@@ -16,10 +16,8 @@
 
 #include <sstream>
 
-#include "app_event.h"
 #include "app_event_store.h"
 #include "hiappevent_base.h"
-#include "hiappevent_common.h"
 #include "hilog/log.h"
 
 #undef LOG_DOMAIN
@@ -33,24 +31,6 @@ namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
 constexpr int MAX_SIZE_ON_EVENTS = 100;
-constexpr uint64_t BIT_MASK = 1;
-struct OsEventPosInfo {
-    std::string name;
-    EventType type;
-    uint8_t pos; // means position in binary
-};
-const std::vector<OsEventPosInfo> OS_EVENT_POS_INFOS = {
-    { APP_CRASH, FAULT, 0 },
-    { APP_FREEZE, FAULT, 1 },
-    { APP_LAUNCH, BEHAVIOR, 2 },
-    { SCROLL_JANK, FAULT, 3 },
-    { CPU_USAGE_HIGH, FAULT, 4 },
-    { BATTERY_USAGE, STATISTIC, 5 },
-    { RESOURCE_OVERLIMIT, FAULT, 6 },
-    { ADDRESS_SANITIZER, FAULT, 7 },
-    { MAIN_THREAD_JANK, FAULT, 8 },
-    { APP_START, BEHAVIOR, 9 },
-};
 
 bool MeetNumberCondition(int currNum, int maxNum)
 {
@@ -95,35 +75,16 @@ AppEventFilter::AppEventFilter(const std::string& domain, uint32_t types) : doma
 
 bool AppEventFilter::IsValidEvent(std::shared_ptr<AppEventPack> event) const
 {
-    return IsValidEvent(event->GetDomain(), event->GetName(), event->GetType());
-}
-
-bool AppEventFilter::IsValidEvent(const std::string& eventDomain, const std::string& eventName, int eventType) const
-{
-    if (domain.empty()) {
+    if (!domain.empty() && domain != event->GetDomain()) {
         return false;
     }
-    if (!domain.empty() && domain != eventDomain) {
+    if (!names.empty() && (names.find(event->GetName()) == names.end())) {
         return false;
     }
-    if (!names.empty() && (names.find(eventName) == names.end())) {
-        return false;
-    }
-    if (types != 0 && !(types & (1 << eventType))) { // 1: bit mask
+    if (types != 0 && !(types & (1 << event->GetType()))) { // 1: bit mask
         return false;
     }
     return true;
-}
-
-uint64_t AppEventFilter::GetOsEventsMask() const
-{
-    uint64_t mask = 0;
-    for (const auto& event : OS_EVENT_POS_INFOS) {
-        if (IsValidEvent(DOMAIN_OS, event.name, event.type)) {
-            mask |= (BIT_MASK << event.pos);
-        }
-    }
-    return mask;
 }
 
 bool EventConfig::IsValidEvent(std::shared_ptr<AppEventPack> event) const
@@ -342,20 +303,11 @@ bool AppEventObserver::HasOsDomain()
         return false;
     }
     for (const auto& filter : filters_) {
-        if (filter.domain == DOMAIN_OS) {
+        if (filter.domain == "OS") {
             return true;
         }
     }
     return false;
-}
-
-uint64_t AppEventObserver::GetOsEventsMask()
-{
-    uint64_t mask = 0;
-    for (const auto& filter : filters_) {
-        mask |= filter.GetOsEventsMask();
-    }
-    return mask;
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX
