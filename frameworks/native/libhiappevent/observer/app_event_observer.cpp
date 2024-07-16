@@ -40,16 +40,16 @@ struct OsEventPosInfo {
     uint8_t pos; // means position in binary
 };
 const std::vector<OsEventPosInfo> OS_EVENT_POS_INFOS = {
-    { APP_CRASH, FAULT, 0 },
-    { APP_FREEZE, FAULT, 1 },
-    { APP_LAUNCH, BEHAVIOR, 2 },
-    { SCROLL_JANK, FAULT, 3 },
-    { CPU_USAGE_HIGH, FAULT, 4 },
-    { BATTERY_USAGE, STATISTIC, 5 },
-    { RESOURCE_OVERLIMIT, FAULT, 6 },
-    { ADDRESS_SANITIZER, FAULT, 7 },
-    { MAIN_THREAD_JANK, FAULT, 8 },
-    { APP_START, BEHAVIOR, 9 },
+    { EVENT_APP_CRASH, FAULT, 0 },
+    { EVENT_APP_FREEZE, FAULT, 1 },
+    { EVENT_APP_LAUNCH, BEHAVIOR, 2 },
+    { EVENT_SCROLL_JANK, FAULT, 3 },
+    { EVENT_CPU_USAGE_HIGH, FAULT, 4 },
+    { EVENT_BATTERY_USAGE, STATISTIC, 5 },
+    { EVENT_RESOURCE_OVERLIMIT, FAULT, 6 },
+    { EVENT_ADDRESS_SANITIZER, FAULT, 7 },
+    { EVENT_MAIN_THREAD_JANK, FAULT, 8 },
+    { EVENT_APP_START, BEHAVIOR, 9 },
 };
 
 bool MeetNumberCondition(int currNum, int maxNum)
