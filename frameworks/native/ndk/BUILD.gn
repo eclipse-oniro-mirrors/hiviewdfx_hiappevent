@@ -24,6 +24,8 @@ ohos_shared_library("hiappevent_ndk") {
 
   sources = [
     "hiappevent_ndk.c",
+    "src/ndk_app_event_processor.cpp",
+    "src/ndk_app_event_processor_service.cpp",
     "src/ndk_app_event_watcher.cpp",
     "src/ndk_app_event_watcher_proxy.cpp",
     "src/ndk_app_event_watcher_service.cpp",

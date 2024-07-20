@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "ndk_app_event_processor_service.h"
 #include "ndk_app_event_watcher_service.h"
 
 #define NEW(type) (type*)malloc(sizeof(type))
@@ -343,4 +344,62 @@ void OH_HiAppEvent_DestroyWatcher(struct HiAppEvent_Watcher *watcher)
 int OH_HiAppEvent_Write(const char* domain, const char* name, enum EventType type, const ParamList list)
 {
     return HiAppEventInnerWrite(domain, name, type, list);
+}
+
+struct HiAppEvent_Processor* OH_HiAppEvent_CreateProcessor(const char* name)
+{
+    return CreateProcessor(name);
+}
+
+int OH_HiAppEvent_SetReportRoute(struct HiAppEvent_Processor* processor, const char* appId, const char* routeInfo)
+{
+    return SetReportRoute(processor, appId, routeInfo);
+}
+
+int OH_HiAppEvent_SetReportPolicy(struct HiAppEvent_Processor* processor, int periodReport, int batchReport,
+    bool onStartReport, bool onBackgroundReport)
+{
+    return SetReportPolicy(processor, periodReport, batchReport, onStartReport, onBackgroundReport);
+}
+
+int OH_HiAppEvent_SetReportEvent(struct HiAppEvent_Processor* processor, const char* domain, const char* name,
+    bool isRealTime)
+{
+    return SetReportEvent(processor, domain, name, isRealTime);
+}
+
+int OH_HiAppEvent_SetCustomConfig(struct HiAppEvent_Processor* processor, const char* key, const char* value)
+{
+    return SetCustomConfig(processor, key, value);
+}
+
+int OH_HiAppEvent_SetConfigId(struct HiAppEvent_Processor* processor, int configId)
+{
+    return SetConfigId(processor, configId);
+}
+
+int OH_HiAppEvent_SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * userIdNames, int size)
+{
+    return SetReportUserId(processor, userIdNames, size);
+}
+
+int OH_HiAppEvent_SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* const * userPropertyNames,
+    int size)
+{
+    return SetReportUserProperty(processor, userPropertyNames, size);
+}
+
+int64_t OH_HiAppEvent_AddProcessor(struct HiAppEvent_Processor* processor)
+{
+    return AddProcessor(processor);
+}
+
+void OH_HiAppEvent_DestoryProcessor(struct HiAppEvent_Processor* processor)
+{
+    DestoryProcessor(processor);
+}
+
+int OH_HiAppEvent_RemoveProcessor(int64_t processorId)
+{
+    return RemoveProcessor(processorId);
 }
