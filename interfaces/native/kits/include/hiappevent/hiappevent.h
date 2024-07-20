@@ -581,6 +581,16 @@ int OH_HiAppEvent_RemoveWatcher(HiAppEvent_Watcher* watcher);
  * @version 1.0
  */
 void OH_HiAppEvent_ClearData();
+
+/**
+ * @brief The HiAppEvent_Processor structure is designed to process events, allowing it to be invoked when the event
+ * occurs.
+ *
+ * @syscap SystemCapability.HiviewDFX.HiAppEvent
+ * @since 12
+ * @version 1.0
+ */
+typedef struct HiAppEvent_Processor HiAppEvent_Processor;
 #ifdef __cplusplus
 }
 #endif
