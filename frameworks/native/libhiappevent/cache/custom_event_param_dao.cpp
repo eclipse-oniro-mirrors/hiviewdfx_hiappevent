@@ -111,21 +111,17 @@ int64_t CustomEventParamDao::Update(const CustomEventParam& param,
     return changedRows;
 }
 
-int CustomEventParamDao::Delete(const std::string& runningId)
+int CustomEventParamDao::Delete()
 {
     if (dbStore_ == nullptr) {
         return DB_FAILED;
     }
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    if (runningId.empty()) {
-        return DB_SUCC;
-    }
-    predicates.EqualTo(FIELD_RUNNING_ID, runningId);
     int deleteRows = 0;
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         return DB_FAILED;
     }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records, runningId=%{public}s", deleteRows, runningId.c_str());
+    HILOG_INFO(LOG_CORE, "delete %{public}d records", deleteRows);
     return deleteRows;
 }
 

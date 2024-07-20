@@ -214,5 +214,24 @@ std::string HiAppEventConfig::GetStorageDir()
     SetStorageDir(dir);
     return this->storageDir;
 }
+
+std::string HiAppEventConfig::GetRunningId()
+{
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
+    if (!this->runningId.empty()) {
+        return this->runningId;
+    }
+    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
+        OHOS::AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr) {
+        HILOG_ERROR(LOG_CORE, "Context is null.");
+        return "";
+    }
+    this->runningId = context->GetAppRunningUniqueId();
+    if (this->runningId.empty()) {
+        HILOG_ERROR(LOG_CORE, "The running id from context is empty.");
+    }
+    return this->runningId;
+}
 } // namespace HiviewDFX
 } // namespace OHOS

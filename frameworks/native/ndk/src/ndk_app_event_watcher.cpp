@@ -98,7 +98,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
     }
     int64_t observerSeq = GetSeq();
     ffrt::submit([observerSeq, eventSeqs]() {
-        if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq, eventSeqs) < 0) {
+        if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
             HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
                 observerSeq, eventSeqs.size());
         }

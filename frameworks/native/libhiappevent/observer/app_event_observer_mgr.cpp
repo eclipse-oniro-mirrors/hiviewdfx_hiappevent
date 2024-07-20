@@ -51,24 +51,26 @@ void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
     }
 }
 
-int64_t StoreEventMappingToDb(int64_t eventSeq, int64_t observerSeq)
+void StoreEventMappingToDb(const std::vector<std::shared_ptr<AppEventPack>>& events,
+    std::shared_ptr<AppEventObserver> observer)
 {
-    return AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    for (const auto& event : events) {
+        if (observer->VerifyEvent(event)) {
+            int64_t observerSeq = observer->GetSeq();
+            if (AppEventStore::GetInstance().InsertEventMapping(event->GetSeq(), observerSeq) < 0) {
+                HILOG_ERROR(LOG_CORE, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
+            }
+        }
+    }
 }
 
 void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& events,
-    std::shared_ptr<AppEventObserver> observer, bool isOldEvents = false)
+    std::shared_ptr<AppEventObserver> observer)
 {
     std::vector<std::shared_ptr<AppEventPack>> realTimeEvents;
     for (const auto& event : events) {
         if (!observer->VerifyEvent(event)) {
             continue;
-        }
-        if (!isOldEvents) {
-            int64_t observerSeq = observer->GetSeq();
-            if (StoreEventMappingToDb(event->GetSeq(), observerSeq) < 0) {
-                HILOG_ERROR(LOG_CORE, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
-            }
         }
         if (observer->IsRealTimeEvent(event)) {
             realTimeEvents.emplace_back(event);
@@ -99,7 +101,7 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
     if (!events.empty()) {
         if (hashCode == 0) {
             // send old events to watcher where init
-            SendEventsToObserver(events, observer, true);
+            SendEventsToObserver(events, observer);
         } else {
             TriggerCondition triggerCond;
             for (auto event : events) {
@@ -272,12 +274,16 @@ int64_t AppEventObserverMgr::InitObserver(std::shared_ptr<AppEventObserver> obse
 void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    if (observers_.empty()) {
+    if (observers_.empty() || events.empty()) {
         return;
     }
-    HILOG_DEBUG(LOG_CORE, "start to handle events");
+    HILOG_DEBUG(LOG_CORE, "start to handle events size=%{public}zu", events.size());
     StoreEventsToDb(events);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+        StoreEventMappingToDb(events, it->second);
+    }
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+        // send events to observer, and then delete events not in event mapping
         SendEventsToObserver(events, it->second);
     }
 }
@@ -354,6 +360,7 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
     if (sendFlag) {
         std::vector<std::shared_ptr<AppEventPack>> events;
         listener_->GetEvents(events);
+        StoreEventMappingToDb(events, observer);
         SendEventsToObserver(events, observer);
     }
     return true;

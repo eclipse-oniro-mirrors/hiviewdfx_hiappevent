@@ -31,6 +31,7 @@ public:
     ~AppEventDao() = default;
     int64_t Insert(std::shared_ptr<AppEventPack> event);
     int Delete(int64_t eventSeq);
+    int Delete(const std::vector<int64_t>& eventSeqs);
 
 private:
     int Create();

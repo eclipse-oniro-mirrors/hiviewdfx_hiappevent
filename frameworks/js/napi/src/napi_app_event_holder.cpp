@@ -215,7 +215,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
         HILOG_INFO(LOG_CORE, "take data is empty, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
-    if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq_, eventSeqs) < 0) {
+    if (!AppEventStore::GetInstance().DeleteData(observerSeq_, eventSeqs)) {
         HILOG_INFO(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }

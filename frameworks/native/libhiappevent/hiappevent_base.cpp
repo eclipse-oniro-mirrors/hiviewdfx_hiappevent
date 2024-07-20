@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <vector>
 
-#include "application_context.h"
+#include "hiappevent_config.h"
 #include "hilog/log.h"
 #include "hitrace/trace.h"
 #include "time_util.h"
@@ -388,16 +388,7 @@ void AppEventPack::InitTraceInfo()
 
 void AppEventPack::InitRunningId()
 {
-    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
-        OHOS::AbilityRuntime::Context::GetApplicationContext();
-    if (context == nullptr) {
-        HILOG_ERROR(LOG_CORE, "Context is null.");
-        return;
-    }
-    runningId_ = context->GetAppRunningUniqueId();
-    if (runningId_.empty()) {
-        HILOG_ERROR(LOG_CORE, "The running id from context is empty.");
-    }
+    runningId_ = HiAppEventConfig::GetInstance().GetRunningId();
 }
 
 void AppEventPack::AddParam(const std::string& key)

@@ -27,6 +27,7 @@ public:
     bool GetDisable();
     uint64_t GetMaxStorageSize();
     std::string GetStorageDir();
+    std::string GetRunningId();
 
 private:
     HiAppEventConfig() {}
@@ -42,6 +43,7 @@ private:
     bool disable = false;
     uint64_t maxStorageSize = 10 * 1024 * 1024; // max storage size is 10M, 10 * 1024 * 1024 Byte
     std::string storageDir = "";
+    std::string runningId = "";
 };
 } // namespace HiviewDFX
 } // namespace OHOS

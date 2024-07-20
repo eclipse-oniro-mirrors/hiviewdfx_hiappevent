@@ -32,7 +32,7 @@ public:
         const std::string& runningId, const std::string& domain, const std::string& name);
     int64_t Update(const CustomEventParam& param,
         const std::string& runningId, const std::string& domain, const std::string& name);
-    int Delete(const std::string& runningId);
+    int Delete();
     int Query(std::unordered_map<std::string, std::string>& params,
         const std::string& runningId, const std::string& domain, const std::string& name = "");
     int QueryParamkeys(std::unordered_set<std::string>& out,
