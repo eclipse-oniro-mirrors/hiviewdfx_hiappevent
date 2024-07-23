@@ -24,6 +24,7 @@
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
+#include "parameters.h"
 #include "storage_acl.h"
 
 #undef LOG_DOMAIN
@@ -44,6 +45,7 @@ const std::string PARAM_PROPERTY = "params";
 const std::string RUNNING_ID_PROPERTY = "app_running_unique_id";
 const std::string OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
 const std::string XATTR_NAME = "user.appevent";
+const std::string KEY_HIAPPEVENT_ENABLE = "hiviewdfx.hiappevent.enable";
 }
 
 OsEventListener::OsEventListener()
@@ -101,6 +103,11 @@ void OsEventListener::GetEvents(std::vector<std::shared_ptr<AppEventPack>>& even
 
 bool OsEventListener::StartListening()
 {
+    if (!OHOS::system::GetBoolParameter(KEY_HIAPPEVENT_ENABLE, true)) {
+        HILOG_INFO(LOG_CORE, "hiappevent is disabled");
+        RemoveOsEventDir();
+        return false;
+    }
     return InitDir(OS_LOG_PATH) && InitDir(osEventPath_) && RegisterDirListener(osEventPath_);
 }
 
