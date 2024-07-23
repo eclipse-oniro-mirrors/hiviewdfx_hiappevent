@@ -29,6 +29,7 @@
         "ffrt",
         "hitrace",
         "hilog",
+        "init",
         "ipc",
         "napi",
         "relational_store",
