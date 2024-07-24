@@ -39,7 +39,7 @@ char* MallocCString(const std::string& origin)
 
 CArrString ConvertArrString(std::vector<std::string>& vecStr)
 {
-    CArrString arrStr;
+    CArrString arrStr{0};
     if (vecStr.empty()) {
         return arrStr;
     }

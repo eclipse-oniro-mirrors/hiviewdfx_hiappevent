@@ -314,12 +314,18 @@ void FfiOHOSHiAppEventclearData()
 int64_t FfiOHOSHiAppEventConstructor(char* cWatcherName)
 {
     auto nativeHolder = OHOS::FFI::FFIData::Create<AppEventPackageHolderImpl>(cWatcherName, -1L);
+    if (nativeHolder == nullptr) {
+        return -1;
+    }
     return nativeHolder->GetID();
 }
  
 int FfiOHOSHiAppEventSetSize(int64_t id, int size)
 {
     auto nativeAppEventPackageHolder = OHOS::FFI::FFIData::GetData<AppEventPackageHolderImpl>(id);
+    if (nativeAppEventPackageHolder == nullptr) {
+        return -1;
+    }
     int ret = SUCCESS_CODE;
     if (size >= 0) {
         nativeAppEventPackageHolder->SetSize(size);
@@ -332,6 +338,9 @@ int FfiOHOSHiAppEventSetSize(int64_t id, int size)
 ReTakeNext FfiOHOSHiAppEventTakeNext(int64_t id)
 {
     auto nativeAppEventPackageHolder = OHOS::FFI::FFIData::GetData<AppEventPackageHolderImpl>(id);
+    if (nativeAppEventPackageHolder == nullptr) {
+        return ReTakeNext{.status = -1, .event = RetAppEventPackage{0}};
+    }
     auto [state, package] = nativeAppEventPackageHolder->TakeNext();
     ReTakeNext ret;
     ret.status = state;

@@ -21,6 +21,29 @@ using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace CJSystemapi {
 namespace HiAppEvent {
+void FreeCParameters(CParameters par)
+{
+    free(par.key);
+    free(par.value);
+}
+
+void FreeCArrParameters(CArrParameters par)
+{
+    if (par.head != nullptr) {
+        for (size_t i = 0; i < par.size; i++) {
+            FreeCParameters(par.head[i]);
+        }
+        free(par.head);
+    }
+}
+
+void FreeCAppEventInfo(CAppEventInfo info)
+{
+    free(const_cast<char*>(info.domain));
+    free(const_cast<char*>(info.name));
+    FreeCArrParameters(info.cArrParamters);
+}
+
 OnTriggerContext::~OnTriggerContext()
 {
     if (onTrigger != nullptr) {
@@ -283,7 +306,7 @@ void CreateValueByJson(CParameters &retValue, const Json::Value& jsonValue)
 
 CArrParameters CreateValueByJsonStr(const std::string& jsonStr)
 {
-    CArrParameters pameters;
+    CArrParameters pameters{0};
     Json::Value jsonValue;
     Json::Reader reader(Json::Features::strictMode());
     if (!reader.parse(jsonStr, jsonValue)) {
@@ -309,6 +332,24 @@ CArrParameters CreateValueByJsonStr(const std::string& jsonStr)
     return pameters;
 }
 
+void FreeRetValue(RetAppEventGroup* retValue, size_t index)
+{
+    if (retValue == nullptr) {
+        return;
+    }
+    for (size_t i = 0; i < index; i++) {
+        free(retValue[i].name);
+        if (retValue[i].appEventInfos.head == nullptr) {
+            continue;
+        }
+        for (size_t j = 0; j < retValue[i].appEventInfos.size; j++) {
+            FreeCAppEventInfo(retValue[i].appEventInfos.head[j]);
+        }
+    }
+    free(retValue);
+    LOGE("malloc is failed");
+}
+
 CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::HiviewDFX::AppEventPack>>& events)
 {
     CArrRetAppEventGroup eventGroups;
@@ -326,6 +367,7 @@ CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::Hivi
             return eventGroups;
         }
         size_t index = 0;
+        bool fail = false;
         for (const auto& it : eventMap) {
             retValue1[index].name = MallocCString(it.first);
             CArrAppEventInfo appEventInfos;
@@ -333,9 +375,9 @@ CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::Hivi
             CAppEventInfo* retValue2 = static_cast<CAppEventInfo*>(malloc(sizeof(CAppEventInfo)
                                         * it.second.size()));
             if (retValue2 == nullptr) {
-                free(retValue1);
-                LOGE("malloc is failed");
-                return eventGroups;
+                free(retValue1[index].name);
+                fail = true;
+                break;
             }
             for (size_t i = 0; i < it.second.size(); ++i) {
                 retValue2[i].domain = MallocCString(it.second[i]->GetDomain());
@@ -345,6 +387,10 @@ CArrRetAppEventGroup getEventGroups(const std::vector<std::shared_ptr<OHOS::Hivi
             }
             appEventInfos.head = retValue2;
             retValue1[index++].appEventInfos = appEventInfos;
+        }
+        if (fail) {
+            FreeRetValue(retValue1, index);
+            return CArrRetAppEventGroup{0};
         }
         eventGroups.head = retValue1;
     }
