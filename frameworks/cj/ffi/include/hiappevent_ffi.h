@@ -22,18 +22,18 @@
 #include "common.h"
 
 extern "C" {
-    int FfiOHOSHiAppEventConfigure(CConfigOption config);
-    int FfiOHOSHiAppEventWrite(CAppEventInfo info);
-    RetDataBool FfiOHOSHiAppEventAddProcessor(CProcessor processor);
-    int FfiOHOSHiAppEventSetUserId(const char* name, const char* value);
-    RetDataCString FfiOHOSHiAppEventGetUserId(const char* name);
-    int FfiOHOSHiAppEventSetUserProperty(const char* name, const char* value);
-    RetDataCString FfiOHOSHiAppEventgetUserProperty(const char* name);
-    int64_t FfiOHOSHiAppEventConstructor(char* cWatcherName);
-    int FfiOHOSHiAppEventSetSize(int64_t id, int size);
-    ReTakeNext FfiOHOSHiAppEventTakeNext(int64_t id);
-    RetDataI64 FfiOHOSHiAppEventAddWatcher(CWatcher watcher);
-    int FfiOHOSHiAppEventRemoveWatcher(CWatcher watcher);
+    FFI_EXPORT int FfiOHOSHiAppEventConfigure(CConfigOption config);
+    FFI_EXPORT int FfiOHOSHiAppEventWrite(CAppEventInfo info);
+    FFI_EXPORT RetDataBool FfiOHOSHiAppEventAddProcessor(CProcessor processor);
+    FFI_EXPORT int FfiOHOSHiAppEventSetUserId(const char* name, const char* value);
+    FFI_EXPORT RetDataCString FfiOHOSHiAppEventGetUserId(const char* name);
+    FFI_EXPORT int FfiOHOSHiAppEventSetUserProperty(const char* name, const char* value);
+    FFI_EXPORT RetDataCString FfiOHOSHiAppEventgetUserProperty(const char* name);
+    FFI_EXPORT int64_t FfiOHOSHiAppEventConstructor(char* cWatcherName);
+    FFI_EXPORT int FfiOHOSHiAppEventSetSize(int64_t id, int size);
+    FFI_EXPORT ReTakeNext FfiOHOSHiAppEventTakeNext(int64_t id);
+    FFI_EXPORT RetDataI64 FfiOHOSHiAppEventAddWatcher(CWatcher watcher);
+    FFI_EXPORT int FfiOHOSHiAppEventRemoveWatcher(CWatcher watcher);
 }
 
 #endif
