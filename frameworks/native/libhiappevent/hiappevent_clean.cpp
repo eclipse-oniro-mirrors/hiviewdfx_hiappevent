@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@
 #include "app_event_log_cleaner.h"
 #include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
+#include "hiappevent_config.h"
 #include "hiappevent_userinfo.h"
 #include "hilog/log.h"
 
@@ -35,6 +36,10 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEventClean {
 namespace {
+constexpr int EVENT_COUNT_OF_CHECK_SPACE = 1000;
+
+static int g_eventCount = -1;
+
 void CreateCleaners(const std::string& dir, std::vector<std::shared_ptr<AppEventCleaner>>& cleaners)
 {
     cleaners.push_back(std::make_shared<AppEventDbCleaner>(dir));
@@ -86,6 +91,20 @@ void ClearData(const std::string& dir)
     for (auto& cleaner : cleaners) { // clear the db data first
         cleaner->ClearData();
     }
+}
+
+void CheckStorageSpace()
+{
+    if (g_eventCount == -1 || g_eventCount >= (EVENT_COUNT_OF_CHECK_SPACE - 1)) {
+        std::string dir = HiAppEventConfig::GetInstance().GetStorageDir();
+        auto maxSize = HiAppEventConfig::GetInstance().GetMaxStorageSize();
+        if (!IsStorageSpaceFull(dir, maxSize)) {
+            return;
+        }
+        HILOG_INFO(LOG_CORE, "hiappevent dir space is full, start to clean");
+        ReleaseSomeStorageSpace(dir, maxSize);
+    }
+    g_eventCount = (++g_eventCount) % EVENT_COUNT_OF_CHECK_SPACE;
 }
 } // namespace HiAppEventClean
 } // namespace HiviewDFX

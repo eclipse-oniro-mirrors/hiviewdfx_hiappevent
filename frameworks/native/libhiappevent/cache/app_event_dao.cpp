@@ -112,5 +112,25 @@ int AppEventDao::Delete(int64_t eventSeq)
     HILOG_INFO(LOG_CORE, "delete %{public}d records, eventSeq=%{public}" PRId64, deleteRows, eventSeq);
     return deleteRows;
 }
+
+int AppEventDao::Delete(const std::vector<int64_t>& eventSeqs)
+{
+    if (eventSeqs.empty()) {
+        return DB_SUCC;
+    }
+    NativeRdb::AbsRdbPredicates predicates(Events::TABLE);
+    std::vector<std::string> eventSeqStrs(eventSeqs.size());
+    std::transform(eventSeqs.begin(), eventSeqs.end(), eventSeqStrs.begin(), [](int64_t eventSeq) {
+        return std::to_string(eventSeq);
+    });
+    predicates.In(Events::FIELD_SEQ, eventSeqStrs);
+
+    int deleteRows = 0;
+    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
+        return DB_FAILED;
+    }
+    HILOG_INFO(LOG_CORE, "delete %{public}d records", deleteRows);
+    return deleteRows;
+}
 } // namespace HiviewDFX
 } // namespace OHOS

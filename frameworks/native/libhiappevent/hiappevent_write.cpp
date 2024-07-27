@@ -46,24 +46,9 @@ std::string GetStorageDirPath()
     return HiAppEventConfig::GetInstance().GetStorageDir();
 }
 
-uint64_t GetMaxStorageSize()
-{
-    return HiAppEventConfig::GetInstance().GetMaxStorageSize();
-}
-
 std::string GetStorageFileName()
 {
     return "app_event_" + TimeUtil::GetDate() + ".log";
-}
-
-void CheckStorageSpace(const std::string& dir)
-{
-    auto maxSize = GetMaxStorageSize();
-    if (!HiAppEventClean::IsStorageSpaceFull(dir, maxSize)) {
-        return;
-    }
-    HILOG_INFO(LOG_CORE, "hiappevent dir space is full, start to clean");
-    HiAppEventClean::ReleaseSomeStorageSpace(dir, maxSize);
 }
 
 bool WriteEventToFile(const std::string& filePath, const std::string& event)
@@ -97,7 +82,7 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
             HILOG_ERROR(LOG_CORE, "failed to create hiappevent dir, errno=%{public}d.", errno);
             return;
         }
-        CheckStorageSpace(dirPath);
+        HiAppEventClean::CheckStorageSpace();
         std::string filePath = FileUtil::GetFilePathByDir(dirPath, GetStorageFileName());
         if (WriteEventToFile(filePath, event)) {
             std::vector<std::shared_ptr<AppEventPack>> events;

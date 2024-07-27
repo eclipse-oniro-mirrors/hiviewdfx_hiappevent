@@ -95,5 +95,36 @@ int AppEventMappingDao::Delete(int64_t observerSeq, const std::vector<int64_t>& 
     HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
     return deleteRows;
 }
+
+int AppEventMappingDao::QueryExistEvent(const std::vector<int64_t>& eventSeqs,
+    std::unordered_set<int64_t>& existEventSeqs)
+{
+    if (eventSeqs.empty()) {
+        return DB_SUCC;
+    }
+    NativeRdb::AbsRdbPredicates predicates(TABLE);
+    std::vector<std::string> eventSeqStrs(eventSeqs.size());
+    std::transform(eventSeqs.begin(), eventSeqs.end(), eventSeqStrs.begin(), [](int64_t eventSeq) {
+        return std::to_string(eventSeq);
+    });
+    predicates.In(FIELD_EVENT_SEQ, eventSeqStrs);
+
+    auto resultSet = dbStore_->Query(predicates, {FIELD_EVENT_SEQ});
+    if (resultSet == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to query table, event size=%{public}zu", eventSeqs.size());
+        return DB_FAILED;
+    }
+    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+        int64_t existEventSeq = 0;
+        if (resultSet->GetLong(0, existEventSeq) != NativeRdb::E_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get event seq value from resultSet");
+            resultSet->Close();
+            return DB_FAILED;
+        }
+        existEventSeqs.insert(existEventSeq);
+    }
+    resultSet->Close();
+    return DB_SUCC;
+}
 } // namespace HiviewDFX
 } // namespace OHOS

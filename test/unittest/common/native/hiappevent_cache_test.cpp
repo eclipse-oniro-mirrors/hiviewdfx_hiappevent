@@ -277,7 +277,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest006, TestSize.Level0)
     ASSERT_EQ(events[0]->GetParamStr(), "{\"custom_data\":\"value_str\"}\n");
 
     // delete custom params
-    AppEventStore::GetInstance().DeleteCustomEventParams(TEST_RUNNING_ID);
+    AppEventStore::GetInstance().DeleteCustomEventParams();
     std::vector<std::shared_ptr<AppEventPack>> events1;
     result = AppEventStore::GetInstance().QueryEvents(events1, observerSeq, 1);
     ASSERT_EQ(result, 0);

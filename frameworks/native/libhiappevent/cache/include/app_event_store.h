@@ -62,7 +62,12 @@ public:
     int DeleteUserId(const std::string& name = "");
     int DeleteUserProperty(const std::string& name = "");
     int DeleteEvent(int64_t eventSeq = 0);
-    int DeleteCustomEventParams(const std::string& runningId);
+    int DeleteCustomEventParams();
+    int DeleteEvent(const std::vector<int64_t>& eventSeqs);
+    int DeleteUnusedParamsExceptCurId(const std::string& curRunningId);
+    int DeleteUnusedEventMapping();
+    int DeleteHistoryEvent(int reservedNum, int reservedNumOs);
+    bool DeleteData(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
     bool InitDbStoreDir();
