@@ -30,7 +30,7 @@ void FreeCParameters(CParameters par)
 void FreeCArrParameters(CArrParameters par)
 {
     if (par.head != nullptr) {
-        for (size_t i = 0; i < par.size; i++) {
+        for (int64_t i = 0; i < par.size; i++) {
             FreeCParameters(par.head[i]);
         }
         free(par.head);
@@ -342,7 +342,7 @@ void FreeRetValue(RetAppEventGroup* retValue, size_t index)
         if (retValue[i].appEventInfos.head == nullptr) {
             continue;
         }
-        for (size_t j = 0; j < retValue[i].appEventInfos.size; j++) {
+        for (int64_t j = 0; j < retValue[i].appEventInfos.size; j++) {
             FreeCAppEventInfo(retValue[i].appEventInfos.head[j]);
         }
     }
