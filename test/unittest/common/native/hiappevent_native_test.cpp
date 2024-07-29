@@ -23,6 +23,7 @@
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
 #include "hiappevent_userinfo.h"
+#include "ndk_app_event_processor_service.h"
 #include "time_util.h"
 
 using namespace testing::ext;
@@ -36,6 +37,9 @@ const char* TEST_EVENT_PARAM_KEY = "test_param_key";
 const char* TEST_EVENT_PARAM = "{\"test_param_key\":1}";
 constexpr int TEST_EVENT_PARAM_LENGTH = 20;
 constexpr int TEST_EVENT_NUM = 2;
+
+const char* TEST_PROCESSOR_NAME = "test_processor";
+constexpr int32_t TEST_UID = 200000*100;
 
 static void WriteEvent()
 {
@@ -685,20 +689,95 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
     ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onTriggerWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
     ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onReceiveWatcher), 0);
     ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onReceiveWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
+    OH_HiAppEvent_DestroyWatcher(g_onTriggerWatcher);
+    g_onTriggerWatcher = nullptr;
+    OH_HiAppEvent_DestroyWatcher(g_onReceiveWatcher);
+    g_onReceiveWatcher = nullptr;
 }
 
 /**
  * @tc.name: HiAppEventNDKTest024
- * @tc.desc: check the function of OH_HiAppEvent_DestroyWatcher.
+ * @tc.desc: check ndk interface of AddProcessor.
  * @tc.type: FUNC
- * @tc.require: issueI8OY2U
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
 {
-    OH_HiAppEvent_DestroyWatcher(g_onTriggerWatcher);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onTriggerWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
-    g_onTriggerWatcher = nullptr;
-    OH_HiAppEvent_DestroyWatcher(g_onReceiveWatcher);
-    ASSERT_EQ(OH_HiAppEvent_RemoveWatcher(g_onReceiveWatcher), ErrorCode::ERROR_WATCHER_NOT_ADDED);
-    g_onReceiveWatcher = nullptr;
+    ASSERT_EQ(CreateProcessor(TEST_PROCESSOR_NAME), nullptr);
+    ASSERT_EQ(SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(SetReportEvent(nullptr, nullptr, nullptr, false), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(SetCustomConfig(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(SetConfigId(nullptr, 0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(AddProcessor(nullptr), ErrorCode::ERROR_NOT_APP);
+    DestoryProcessor(nullptr);
+    ASSERT_EQ(RemoveProcessor(0), ErrorCode::ERROR_NOT_APP);
+
+    // set app uid
+    setuid(TEST_UID);
+
+    ASSERT_EQ(CreateProcessor(nullptr), nullptr);
+    ASSERT_EQ(SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(SetReportEvent(nullptr, nullptr, nullptr, false), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(SetCustomConfig(nullptr, nullptr, nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(SetConfigId(nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(AddProcessor(nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
+    DestoryProcessor(nullptr);
+    ASSERT_EQ(RemoveProcessor(0), ErrorCode::ERROR_PROCESSOR_NOT_ADDED);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest025
+ * @tc.desc: check ndk interface of AddProcessor.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest025, TestSize.Level0)
+{
+    ASSERT_EQ(CreateProcessor(""), nullptr);
+    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+    ASSERT_TRUE(processor != nullptr);
+    ASSERT_EQ(SetReportRoute(processor, nullptr, nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(SetReportRoute(processor, "", ""), 0);
+    ASSERT_EQ(SetReportPolicy(processor, -1, 0, false, false), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(SetReportEvent(processor, nullptr, nullptr, false), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(SetCustomConfig(processor, nullptr, nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(SetCustomConfig(processor, "", ""), ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
+    ASSERT_EQ(SetConfigId(processor, -1), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(SetReportUserId(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    const char* userStrs[] = {"aaa", ""};
+    ASSERT_EQ(SetReportUserId(processor, userStrs, 0), 0);
+    ASSERT_EQ(SetReportUserProperty(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(SetReportUserProperty(processor, userStrs, 0), 0);
+    int seq = AddProcessor(processor);
+    ASSERT_GT(seq, 0);
+    DestoryProcessor(processor);
+    ASSERT_EQ(RemoveProcessor(seq), 0);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest026
+ * @tc.desc: check ndk interface of AddProcessor.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest026, TestSize.Level0)
+{
+    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+    ASSERT_TRUE(processor != nullptr);
+    ASSERT_EQ(SetReportRoute(processor, "test_appid", "test_routeInfo"), 0);
+    ASSERT_EQ(SetReportPolicy(processor, 2, 2, false, false), 0);
+    ASSERT_EQ(SetReportEvent(processor, "test_domain", "test_name", false), 0);
+    ASSERT_EQ(SetCustomConfig(processor, "str_key", "str_value"), 0);
+    ASSERT_EQ(SetConfigId(processor, 1), 0);
+    const char* userIds[] = {"test_id"};
+    ASSERT_EQ(SetReportUserId(processor, userIds, 1), 0);
+    const char* userProperties[] = {"test_property"};
+    ASSERT_EQ(SetReportUserProperty(processor, userProperties, 1), 0);
+    int seq = AddProcessor(processor);
+    ASSERT_GT(seq, 0);
+    DestoryProcessor(processor);
+    ASSERT_EQ(RemoveProcessor(seq), 0);
 }

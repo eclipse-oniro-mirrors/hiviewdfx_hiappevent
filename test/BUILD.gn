@@ -25,6 +25,7 @@ config("hiappevent_config_test") {
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
     "$native_hiappevent_path/libhiappevent/include",
     "$native_hiappevent_path/libhiappevent/observer/include",
+    "$native_hiappevent_path/ndk/include",
     "$hiappevent_interfaces/native/kits/include",
   ]
 }
