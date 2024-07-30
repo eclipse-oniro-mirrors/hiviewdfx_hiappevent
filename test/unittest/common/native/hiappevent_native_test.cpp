@@ -39,7 +39,7 @@ constexpr int TEST_EVENT_PARAM_LENGTH = 20;
 constexpr int TEST_EVENT_NUM = 2;
 
 const char* TEST_PROCESSOR_NAME = "test_processor";
-constexpr int32_t TEST_UID = 200000*100;
+constexpr int32_t TEST_UID = 200000 * 100;
 
 static void WriteEvent()
 {
