@@ -25,19 +25,20 @@
 #include "app_event_observer_dao.h"
 #include "custom_event_param_dao.h"
 #include "ffrt.h"
-#include "user_id_dao.h"
-#include "user_property_dao.h"
+#include "nocopyable.h"
 #include "rdb_store.h"
 #include "singleton.h"
+#include "user_id_dao.h"
+#include "user_property_dao.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 
-class AppEventStore : public DelayedRefSingleton<AppEventStore>  {
+class AppEventStore : public NoCopyable {
 public:
-    AppEventStore();
-    ~AppEventStore();
+    static AppEventStore& GetInstance();
+
     int InitDbStore();
     int DestroyDbStore();
     int64_t InsertEvent(std::shared_ptr<AppEventPack> event);
@@ -70,6 +71,8 @@ public:
     bool DeleteData(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
+    AppEventStore();
+    ~AppEventStore();
     bool InitDbStoreDir();
 
 private:

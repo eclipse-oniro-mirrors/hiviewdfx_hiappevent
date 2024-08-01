@@ -143,6 +143,12 @@ AppEventStore::~AppEventStore()
     dbStore_ = nullptr;
 }
 
+AppEventStore& AppEventStore::GetInstance()
+{
+    static AppEventStore instance;
+    return instance;
+}
+
 int AppEventStore::InitDbStore()
 {
     if (!InitDbStoreDir()) {
