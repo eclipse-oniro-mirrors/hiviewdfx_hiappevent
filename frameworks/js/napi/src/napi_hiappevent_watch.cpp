@@ -232,8 +232,7 @@ TriggerCondition GetCondition(const napi_env env, const napi_value watcher)
         NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_TIMEOUT, "Invalid timeout value.");
         return resCond;
     }
-    constexpr int scale = 30; // step of time is 30s
-    resCond.timeout = timeout * scale;
+    resCond.timeout = timeout * HiAppEvent::TIMEOUT_STEP;
     return resCond;
 }
 

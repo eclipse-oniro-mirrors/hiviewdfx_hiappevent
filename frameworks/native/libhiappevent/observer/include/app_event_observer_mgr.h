@@ -21,6 +21,7 @@
 
 #include "app_event_observer.h"
 #include "ffrt.h"
+#include "nocopyable.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -33,12 +34,12 @@ using HiAppEvent::AppEventObserver;
 using HiAppEvent::AppStateCallback;
 using HiAppEvent::ReportConfig;
 
-class AppEventObserverMgr {
+class AppEventObserverMgr : public NoCopyable {
 public:
-    AppEventObserverMgr();
-    ~AppEventObserverMgr();
     static AppEventObserverMgr& GetInstance();
 
+    void CreateEventHandler();
+    void DestroyEventHandler();
     int64_t RegisterObserver(std::shared_ptr<AppEventObserver> observer);
     int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config = {});
     int UnregisterObserver(int64_t observerSeq);
@@ -52,8 +53,9 @@ public:
     int GetReportConfig(int64_t observerSeq, ReportConfig& config);
 
 private:
-    void CreateEventHandler();
-    void DestroyEventHandler();
+    AppEventObserverMgr();
+    ~AppEventObserverMgr();
+    void SendEventToHandler();
     void RegisterAppStateCallback();
     void UnregisterAppStateCallback();
     int64_t InitObserver(std::shared_ptr<AppEventObserver> observer);
@@ -67,6 +69,7 @@ private:
     ffrt::mutex observerMutex_;
     std::shared_ptr<OsEventListener> listener_;
     ffrt::mutex listenerMutex_;
+    bool hasHandleTimeout_ = false;
 
 private:
     static ffrt::mutex instanceMutex_;

@@ -53,11 +53,13 @@ void HiAppEventWatcherTest::SetUp()
 {
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
     (void)AppEventStore::GetInstance().InitDbStore();
+    AppEventObserverMgr::GetInstance().CreateEventHandler();
 }
 
 void HiAppEventWatcherTest::TearDown()
 {
     (void)AppEventStore::GetInstance().DestroyDbStore();
+    AppEventObserverMgr::GetInstance().DestroyEventHandler();
 }
 
 class AppEventWatcherTest : public AppEventWatcher {

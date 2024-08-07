@@ -111,7 +111,7 @@ void UpToDbVersion2(NativeRdb::RdbStore& rdbStore)
     std::string sql = "ALTER TABLE " + Events::TABLE + " ADD COLUMN "
         + Events::FIELD_RUNNING_ID + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
     if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
-        HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 1 to 2, ret=%{pulic}d", ret);
+        HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 1 to 2, ret=%{public}d", ret);
     }
 }
 }
@@ -162,7 +162,7 @@ int AppEventStore::InitDbStore()
     AppEventStoreCallback callback;
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, dbVersion, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to create db store, ret=%{pulic}d", ret);
+        HILOG_ERROR(LOG_CORE, "failed to create db store, ret=%{public}d", ret);
         return DB_FAILED;
     }
 
@@ -200,7 +200,7 @@ int AppEventStore::DestroyDbStore()
     }
     dbStore_ = nullptr;
     if (int ret = NativeRdb::RdbHelper::DeleteRdbStore(dirPath_ + DATABASE_NAME); ret != NativeRdb::E_OK) {
-        HILOG_ERROR(LOG_CORE, "failed to destroy db store, ret=%{pulic}d", ret);
+        HILOG_ERROR(LOG_CORE, "failed to destroy db store, ret=%{public}d", ret);
         return DB_FAILED;
     }
     HILOG_INFO(LOG_CORE, "destroy db store successfully");

@@ -33,7 +33,7 @@ NdkAppEventWatcher::NdkAppEventWatcher(const std::string &name) : AppEventWatche
 
 void NdkAppEventWatcher::SetTriggerCondition(int row, int size, int timeOut)
 {
-    reportConfig_.triggerCond = {row, size, timeOut};
+    reportConfig_.triggerCond = {row, size, timeOut * HiAppEvent::TIMEOUT_STEP};
 }
 
 int NdkAppEventWatcher::AddAppEventFilter(const char* domain, uint8_t eventTypes,

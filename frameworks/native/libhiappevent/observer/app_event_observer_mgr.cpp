@@ -35,7 +35,7 @@ namespace HiviewDFX {
 using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 namespace {
-constexpr int TIMEOUT_INTERVAL = 1000; // 1s
+constexpr int TIMEOUT_INTERVAL = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
@@ -137,7 +137,6 @@ void AppEventObserverMgr::CreateEventHandler()
         return;
     }
     handler_ = std::make_shared<AppEventHandler>(runner);
-    handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
 }
 
 void AppEventObserverMgr::RegisterAppStateCallback()
@@ -160,7 +159,7 @@ AppEventObserverMgr::~AppEventObserverMgr()
 
 void AppEventObserverMgr::DestroyEventHandler()
 {
-    handler_= nullptr;
+    handler_ = nullptr;
 }
 
 void AppEventObserverMgr::UnregisterAppStateCallback()
@@ -282,23 +281,40 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         StoreEventMappingToDb(events, it->second);
     }
+    bool needSend = false;
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         // send events to observer, and then delete events not in event mapping
         SendEventsToObserver(events, it->second);
+        needSend |= it->second->HasTimeoutCondition();
+    }
+    if (needSend && !hasHandleTimeout_) {
+        SendEventToHandler();
+        hasHandleTimeout_ = true;
     }
 }
 
 void AppEventObserverMgr::HandleTimeout()
 {
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    bool needSend = false;
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+        it->second->ProcessTimeout();
+        needSend |= it->second->HasTimeoutCondition();
+    }
+    if (needSend) {
+        SendEventToHandler();
+    } else {
+        hasHandleTimeout_ = false;
+    }
+}
+
+void AppEventObserverMgr::SendEventToHandler()
+{
     if (handler_ == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to handle timeOut: handler is null");
+        HILOG_ERROR(LOG_CORE, "failed to SendEventToHandler: handler is null");
         return;
     }
     handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
-        it->second->ProcessTimeout();
-    }
 }
 
 void AppEventObserverMgr::HandleBackground()

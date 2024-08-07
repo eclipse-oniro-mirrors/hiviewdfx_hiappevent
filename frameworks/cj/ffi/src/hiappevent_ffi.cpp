@@ -55,14 +55,13 @@ int CheckCondition(TriggerCondition &cond, CTriggerCondition triggerCondition)
         ret = ERR_INVALID_COND_SIZE;
         return ret;
     }
-    constexpr int scale = 30; // step of time is 30s
-    if (triggerCondition.timeOut * scale < 0) {
+    if (triggerCondition.timeOut * HiAppEvent::TIMEOUT_STEP < 0) {
         ret = ERR_INVALID_COND_TIMEOUT;
         return ret;
     }
     cond.row = triggerCondition.row;
     cond.size = triggerCondition.size;
-    cond.timeout = triggerCondition.timeOut * scale;
+    cond.timeout = triggerCondition.timeOut * HiAppEvent::TIMEOUT_STEP;
     return ret;
 }
 

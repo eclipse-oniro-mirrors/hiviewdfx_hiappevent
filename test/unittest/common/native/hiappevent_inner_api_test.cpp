@@ -224,6 +224,8 @@ class HiAppEventInnerApiTest : public testing::Test {
 public:
     void SetUp()
     {
+        // set app uid
+        setuid(TEST_UID);
         HiAppEventConfig::GetInstance().SetStorageDir("/data/test/hiappevent/");
     }
 
@@ -281,34 +283,6 @@ int AppEventProcessorTest::ValidateUserProperty(const UserProperty& userProperty
 int AppEventProcessorTest::ValidateEvent(const AppEventInfo& event)
 {
     return (event.domain.find("test") == std::string::npos) ? -1 : 0;
-}
-
-/**
- * @tc.name: HiAppEventInnerApiTest000
- * @tc.desc: check the api AppEventProcessorMgr not app.
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest000, TestSize.Level0)
-{
-    auto processor = std::make_shared<AppEventProcessorTest>();
-    ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(TEST_PROCESSOR_NAME, processor), ERROR_NOT_APP);
-    ASSERT_EQ(AppEventProcessorMgr::UnregisterProcessor(TEST_PROCESSOR_NAME), ERROR_NOT_APP);
-
-    std::vector<int64_t> processorSeqs;
-    ASSERT_EQ(AppEventProcessorMgr::GetProcessorSeqs(TEST_PROCESSOR_NAME, processorSeqs), ERROR_NOT_APP);
-
-    int64_t processorSeq = 0;
-    ReportConfig config = {
-        .name = TEST_PROCESSOR_NAME,
-    };
-    ASSERT_EQ(AppEventProcessorMgr::SetProcessorConfig(processorSeq, config), ERROR_NOT_APP);
-    ASSERT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorSeq, config), ERROR_NOT_APP);
-
-    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), ERROR_NOT_APP);
-    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorSeq), ERROR_NOT_APP);
-
-    // set app uid
-    setuid(TEST_UID);
 }
 
 /**
@@ -458,7 +432,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest006, TestSize.Level0)
     ASSERT_EQ(processor->GetReportTimes(), 0);
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);
-    sleep(3); // 3s
+    sleep(HiAppEvent::TIMEOUT_STEP + 1); // 31s
     ASSERT_EQ(processor->GetReportTimes(), 1);
 
     CheckUnregisterObserver(TEST_PROCESSOR_NAME);
@@ -957,4 +931,34 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest023, TestSize.Level1)
     ASSERT_GT(processorId, 0);
     CheckSameConfig(processorId, expectConfig);
     ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+
+/**
+ * @tc.name: HiAppEventInnerApiTest024
+ * @tc.desc: check the api AppEventProcessorMgr not app.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest024, TestSize.Level0)
+{
+    setuid(0); // 0 means root uid
+
+    auto processor = std::make_shared<AppEventProcessorTest>();
+    ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(TEST_PROCESSOR_NAME, processor), ERROR_NOT_APP);
+    ASSERT_EQ(AppEventProcessorMgr::UnregisterProcessor(TEST_PROCESSOR_NAME), ERROR_NOT_APP);
+
+    std::vector<int64_t> processorSeqs;
+    ASSERT_EQ(AppEventProcessorMgr::GetProcessorSeqs(TEST_PROCESSOR_NAME, processorSeqs), ERROR_NOT_APP);
+
+    int64_t processorSeq = 0;
+    ReportConfig config = {
+        .name = TEST_PROCESSOR_NAME,
+    };
+    ASSERT_EQ(AppEventProcessorMgr::SetProcessorConfig(processorSeq, config), ERROR_NOT_APP);
+    ASSERT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorSeq, config), ERROR_NOT_APP);
+
+    ASSERT_EQ(AppEventProcessorMgr::AddProcessor(config), ERROR_NOT_APP);
+    ASSERT_EQ(AppEventProcessorMgr::RemoveProcessor(processorSeq), ERROR_NOT_APP);
+
+    // set app uid
+    setuid(TEST_UID);
 }
