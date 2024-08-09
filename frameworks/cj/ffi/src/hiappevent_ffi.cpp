@@ -47,10 +47,12 @@ constexpr unsigned int BIT_ALL_TYPES = 0xff;
 int CheckCondition(TriggerCondition &cond, CTriggerCondition triggerCondition)
 {
     int ret = ERR_PARAM;
+    cond.row = triggerCondition.row;
     if (cond.row < 0) {
         ret = ERR_INVALID_COND_ROW;
         return ret;
     }
+    cond.size = triggerCondition.size;
     if (cond.size < 0) {
         ret = ERR_INVALID_COND_SIZE;
         return ret;
@@ -60,8 +62,6 @@ int CheckCondition(TriggerCondition &cond, CTriggerCondition triggerCondition)
         ret = ERR_INVALID_COND_TIMEOUT;
         return ret;
     }
-    cond.row = triggerCondition.row;
-    cond.size = triggerCondition.size;
     cond.timeout = triggerCondition.timeOut * scale;
     return ret;
 }
