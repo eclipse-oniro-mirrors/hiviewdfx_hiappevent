@@ -28,7 +28,6 @@ class ModuleLoader {
 public:
     ModuleLoader() = default;
     ~ModuleLoader();
-    static ModuleLoader& GetInstance();
     int Load(const std::string& moduleName);
     int Unload(const std::string& moduleName);
     int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);

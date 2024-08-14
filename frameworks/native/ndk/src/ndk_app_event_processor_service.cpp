@@ -21,7 +21,6 @@
 #include "hilog/log.h"
 #include "hiappevent_base.h"
 #include "hiappevent_verify.h"
-#include "module_loader.h"
 #include "ndk_app_event_processor.h"
 
 #undef LOG_DOMAIN
@@ -187,7 +186,7 @@ int64_t AddProcessor(struct HiAppEvent_Processor* processor)
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, reportConfig is invalid", config.name.c_str());
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
-    if (HiAppEvent::ModuleLoader::GetInstance().Load(config.name) != 0) {
+    if (AppEventObserverMgr::GetInstance().Load(config.name) != 0) {
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, name not found", config.name.c_str());
         return ErrorCode::ERROR_UNKNOWN;
     }

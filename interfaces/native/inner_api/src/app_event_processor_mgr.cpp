@@ -17,7 +17,6 @@
 #include "app_event_store.h"
 #include "app_event_observer_mgr.h"
 #include "hiappevent_verify.h"
-#include "module_loader.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -31,7 +30,7 @@ int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
     if (int ret = VerifyReportConfig(realConfig); ret != 0) {
         return ret;
     }
-    if (int ret = ModuleLoader::GetInstance().Load(realConfig.name); ret != 0) {
+    if (int ret = AppEventObserverMgr::GetInstance().Load(realConfig.name); ret != 0) {
         return ret;
     }
     return AppEventObserverMgr::GetInstance().RegisterObserver(realConfig.name, realConfig);
@@ -50,7 +49,7 @@ int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared
     if (!IsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return ModuleLoader::GetInstance().RegisterProcessor(name, processor);
+    return AppEventObserverMgr::GetInstance().RegisterProcessor(name, processor);
 }
 
 int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
@@ -61,7 +60,7 @@ int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
     if (int ret = AppEventObserverMgr::GetInstance().UnregisterObserver(name); ret < 0) {
         return ret;
     }
-    return ModuleLoader::GetInstance().UnregisterProcessor(name);
+    return AppEventObserverMgr::GetInstance().UnregisterProcessor(name);
 }
 
 int AppEventProcessorMgr::SetProcessorConfig(int64_t processorSeq, const ReportConfig& config)
