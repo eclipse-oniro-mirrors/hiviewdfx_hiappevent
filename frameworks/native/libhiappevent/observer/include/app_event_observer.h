@@ -25,6 +25,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
+constexpr int TIMEOUT_STEP = 30; // step of time is 30s
+
 struct AppEventFilter {
     /* Filtering events by event domain */
     std::string domain;
@@ -58,6 +60,7 @@ public:
     void ProcessStartup();
     void ProcessBackground();
     bool HasOsDomain();
+    bool HasTimeoutCondition();
 
     std::string GetName();
     int64_t GetSeq();

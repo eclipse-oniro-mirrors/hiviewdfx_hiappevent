@@ -236,7 +236,7 @@ void AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPac
 
 void AppEventObserver::ProcessTimeout()
 {
-    ++currCond_.timeout;
+    currCond_.timeout += TIMEOUT_STEP;
     if (!MeetTimeoutCondition()) {
         return;
     }
@@ -247,6 +247,11 @@ void AppEventObserver::ProcessTimeout()
 bool AppEventObserver::MeetTimeoutCondition()
 {
     return MeetNumberCondition(currCond_.timeout, reportConfig_.triggerCond.timeout) && currCond_.row > 0;
+}
+
+bool AppEventObserver::HasTimeoutCondition()
+{
+    return reportConfig_.triggerCond.timeout > 0 && currCond_.row > 0;
 }
 
 void AppEventObserver::ProcessStartup()
