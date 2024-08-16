@@ -44,6 +44,7 @@ public:
                                                 void (*callbackOnTriggerRef)(int, int, int64_t),
                                                 void (*callbackOnReceiveRef)(char*, CArrRetAppEventGroup));
     static void removeWatcher(const std::string& name);
+    static int Load(const std::string& moduleName);
 };
 } // HiAppEvent
 } // CJSystemapi

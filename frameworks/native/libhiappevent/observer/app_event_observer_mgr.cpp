@@ -21,7 +21,6 @@
 #include "application_context.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
-#include "module_loader.h"
 #include "os_event_listener.h"
 
 #undef LOG_DOMAIN
@@ -127,6 +126,7 @@ AppEventObserverMgr::AppEventObserverMgr()
 {
     CreateEventHandler();
     RegisterAppStateCallback();
+    moduleLoader_ = std::make_unique<ModuleLoader>();
 }
 
 void AppEventObserverMgr::CreateEventHandler()
@@ -199,7 +199,7 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
         return -1;
     }
 
-    auto observer = HiAppEvent::ModuleLoader::GetInstance().CreateProcessorProxy(observerName);
+    auto observer = moduleLoader_->CreateProcessorProxy(observerName);
     if (observer == nullptr) {
         HILOG_WARN(LOG_CORE, "observer is null");
         return -1;
@@ -246,6 +246,21 @@ int AppEventObserverMgr::UnregisterObserver(const std::string& observerName)
         }
     }
     return ret;
+}
+
+int AppEventObserverMgr::Load(const std::string& moduleName)
+{
+    return moduleLoader_->Load(moduleName);
+}
+
+int AppEventObserverMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
+{
+    return moduleLoader_->RegisterProcessor(name, processor);
+}
+
+int AppEventObserverMgr::UnregisterProcessor(const std::string& name)
+{
+    return moduleLoader_->UnregisterProcessor(name);
 }
 
 int64_t AppEventObserverMgr::InitObserver(std::shared_ptr<AppEventObserver> observer)
