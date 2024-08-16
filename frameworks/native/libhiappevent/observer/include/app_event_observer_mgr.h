@@ -20,7 +20,9 @@
 #include <unordered_map>
 
 #include "app_event_observer.h"
+#include "app_event_processor.h"
 #include "ffrt.h"
+#include "module_loader.h"
 #include "nocopyable.h"
 
 namespace OHOS {
@@ -32,6 +34,8 @@ class AppStateCallback;
 }
 using HiAppEvent::AppEventObserver;
 using HiAppEvent::AppStateCallback;
+using HiAppEvent::AppEventProcessor;
+using HiAppEvent::ModuleLoader;
 using HiAppEvent::ReportConfig;
 
 class AppEventObserverMgr : public NoCopyable {
@@ -44,6 +48,9 @@ public:
     int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config = {});
     int UnregisterObserver(int64_t observerSeq);
     int UnregisterObserver(const std::string& observerName);
+    int Load(const std::string& moduleName);
+    int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
+    int UnregisterProcessor(const std::string& name);
     void HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
     void HandleTimeout();
     void HandleBackground();
@@ -63,6 +70,7 @@ private:
     void UnregisterOsEventListener();
 
 private:
+    std::unique_ptr<ModuleLoader> moduleLoader_; // moduleLoader_ must declared before observers_, or lead to crash
     std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;

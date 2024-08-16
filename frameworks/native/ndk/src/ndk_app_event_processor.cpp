@@ -20,7 +20,6 @@
 #include "app_event_observer_mgr.h"
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
-#include "module_loader.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07

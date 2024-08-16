@@ -25,7 +25,6 @@
 #include "hiappevent_impl.h"
 #include "hiappevent_verify.h"
 #include "log.h"
-#include "module_loader.h"
 #include "error.h"
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::CJSystemapi::HiAppEvent;
@@ -47,10 +46,12 @@ constexpr unsigned int BIT_ALL_TYPES = 0xff;
 int CheckCondition(TriggerCondition &cond, CTriggerCondition triggerCondition)
 {
     int ret = ERR_PARAM;
+    cond.row = triggerCondition.row;
     if (cond.row < 0) {
         ret = ERR_INVALID_COND_ROW;
         return ret;
     }
+    cond.size = triggerCondition.size;
     if (cond.size < 0) {
         ret = ERR_INVALID_COND_SIZE;
         return ret;
@@ -59,8 +60,6 @@ int CheckCondition(TriggerCondition &cond, CTriggerCondition triggerCondition)
         ret = ERR_INVALID_COND_TIMEOUT;
         return ret;
     }
-    cond.row = triggerCondition.row;
-    cond.size = triggerCondition.size;
     cond.timeout = triggerCondition.timeOut * HiAppEvent::TIMEOUT_STEP;
     return ret;
 }
@@ -216,7 +215,7 @@ RetDataBool FfiOHOSHiAppEventAddProcessor(CProcessor processor)
         ret.data = false;
         return ret;
     }
-    if (HiAppEvent::ModuleLoader::GetInstance().Load(conf.name) != 0) {
+    if (HiAppEventImpl::Load(conf.name) != 0) {
         LOGE("failed to add processor=%{public}s, name no found", conf.name.c_str());
         return {ERR_CODE_PARAM_FORMAT, true};
     }
@@ -318,7 +317,7 @@ int64_t FfiOHOSHiAppEventConstructor(char* cWatcherName)
     }
     return nativeHolder->GetID();
 }
- 
+
 int FfiOHOSHiAppEventSetSize(int64_t id, int size)
 {
     auto nativeAppEventPackageHolder = OHOS::FFI::FFIData::GetData<AppEventPackageHolderImpl>(id);
@@ -333,7 +332,7 @@ int FfiOHOSHiAppEventSetSize(int64_t id, int size)
     }
     return ret;
 }
- 
+
 ReTakeNext FfiOHOSHiAppEventTakeNext(int64_t id)
 {
     auto nativeAppEventPackageHolder = OHOS::FFI::FFIData::GetData<AppEventPackageHolderImpl>(id);
