@@ -78,6 +78,7 @@ private:
     std::shared_ptr<OsEventListener> listener_;
     ffrt::mutex listenerMutex_;
     bool hasHandleTimeout_ = false;
+    ffrt::mutex handlerMutex_;
 
 private:
     static ffrt::mutex instanceMutex_;
