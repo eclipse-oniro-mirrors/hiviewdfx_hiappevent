@@ -159,6 +159,12 @@ AppEventObserverMgr::~AppEventObserverMgr()
 
 void AppEventObserverMgr::DestroyEventHandler()
 {
+    if (handler_ != nullptr) {
+        HILOG_INFO(LOG_CORE, "start to TaskCancelAndWait");
+        // stop and wait task
+        handler_->TaskCancelAndWait();
+    }
+    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
     handler_ = nullptr;
 }
 
@@ -325,6 +331,7 @@ void AppEventObserverMgr::HandleTimeout()
 
 void AppEventObserverMgr::SendEventToHandler()
 {
+    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
     if (handler_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to SendEventToHandler: handler is null");
         return;
