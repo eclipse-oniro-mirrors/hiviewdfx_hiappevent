@@ -53,21 +53,21 @@ UserInfo::UserInfo() : userIdVersion_(0), userPropertyVersion_(0)
 
 int UserInfo::SetUserId(const std::string& name, const std::string& value)
 {
-    HILOG_DEBUG(LOG_CORE, "start to set userId, name=%{public}s.", name.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to set userId.");
 
     std::string out;
     if (AppEventStore::GetInstance().QueryUserId(name, out) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to insert user id, name=%{public}s.", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to insert user id.");
         return -1;
     }
     if (out.empty()) {
         if (AppEventStore::GetInstance().InsertUserId(name, value) == DB_FAILED) {
-            HILOG_WARN(LOG_CORE, "failed to insert user id, name=%{public}s.", name.c_str());
+            HILOG_WARN(LOG_CORE, "failed to insert user id.");
             return -1;
         }
     } else {
         if (AppEventStore::GetInstance().UpdateUserId(name, value) == DB_FAILED) {
-            HILOG_WARN(LOG_CORE, "failed to update user id, name=%{public}s.", name.c_str());
+            HILOG_WARN(LOG_CORE, "failed to update user id.");
             return -1;
         }
     }
@@ -80,11 +80,11 @@ int UserInfo::SetUserId(const std::string& name, const std::string& value)
 
 int UserInfo::GetUserId(const std::string& name, std::string& out)
 {
-    HILOG_DEBUG(LOG_CORE, "start to get userId, name=%{public}s.", name.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to get userId.");
 
     std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (userIds_.find(name) == userIds_.end()) {
-        HILOG_INFO(LOG_CORE, "no userid, name=%{public}s.", name.c_str());
+        HILOG_INFO(LOG_CORE, "no userid.");
         return 0;
     }
     out = userIds_.at(name);
@@ -94,10 +94,10 @@ int UserInfo::GetUserId(const std::string& name, std::string& out)
 
 int UserInfo::RemoveUserId(const std::string& name)
 {
-    HILOG_DEBUG(LOG_CORE, "start to remove userId, name=%{public}s.", name.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to remove userId.");
 
     if (AppEventStore::GetInstance().DeleteUserId(name) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to remove userid, name=%{public}s.", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to remove userid.");
         return -1;
     }
     std::lock_guard<std::mutex> lockGuard(g_mutex);
@@ -111,21 +111,21 @@ int UserInfo::RemoveUserId(const std::string& name)
 
 int UserInfo::SetUserProperty(const std::string& name, const std::string& value)
 {
-    HILOG_DEBUG(LOG_CORE, "start to set userProperty, name=%{public}s.", name.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to set userProperty.");
 
     std::string out;
     if (AppEventStore::GetInstance().QueryUserProperty(name, out) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to insert user property, name=%{public}s.", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to query user property.");
         return -1;
     }
     if (out.empty()) {
         if (AppEventStore::GetInstance().InsertUserProperty(name, value) == DB_FAILED) {
-            HILOG_WARN(LOG_CORE, "failed to insert user property, name=%{public}s.", name.c_str());
+            HILOG_WARN(LOG_CORE, "failed to insert user property.");
             return -1;
         }
     } else {
         if (AppEventStore::GetInstance().UpdateUserProperty(name, value) == DB_FAILED) {
-            HILOG_WARN(LOG_CORE, "failed to update user property, name=%{public}s.", name.c_str());
+            HILOG_WARN(LOG_CORE, "failed to update user property.");
             return -1;
         }
     }
@@ -138,11 +138,11 @@ int UserInfo::SetUserProperty(const std::string& name, const std::string& value)
 
 int UserInfo::GetUserProperty(const std::string& name, std::string& out)
 {
-    HILOG_DEBUG(LOG_CORE, "start to get userProperty, name=%{public}s.", name.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to get userProperty.");
 
     std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (userProperties_.find(name) == userProperties_.end()) {
-        HILOG_INFO(LOG_CORE, "no user property, name=%{public}s.", name.c_str());
+        HILOG_INFO(LOG_CORE, "no user property.");
         return 0;
     }
     out = userProperties_.at(name);
@@ -152,10 +152,10 @@ int UserInfo::GetUserProperty(const std::string& name, std::string& out)
 
 int UserInfo::RemoveUserProperty(const std::string& name)
 {
-    HILOG_DEBUG(LOG_CORE, "start to remove userProperty, name=%{public}s.", name.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to remove userProperty.");
 
     if (AppEventStore::GetInstance().DeleteUserProperty(name) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to remove user property, name=%{public}s.", name.c_str());
+        HILOG_WARN(LOG_CORE, "failed to remove user property.");
         return -1;
     }
     std::lock_guard<std::mutex> lockGuard(g_mutex);

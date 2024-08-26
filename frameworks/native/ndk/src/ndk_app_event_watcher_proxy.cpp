@@ -64,6 +64,10 @@ int NdkAppEventWatcherProxy::AddWatcher()
 
 int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake onTake)
 {
+    if (onTake == nullptr) {
+        HILOG_WARN(LOG_CORE, "onTake is nullptr");
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
     if (watcher_->GetSeq() == 0) {
         HILOG_WARN(LOG_CORE, "failed to query events, the observer has not been added");
         return ErrorCode::ERROR_WATCHER_NOT_ADDED;

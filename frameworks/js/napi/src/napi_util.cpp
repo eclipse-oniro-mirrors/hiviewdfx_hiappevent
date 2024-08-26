@@ -276,7 +276,7 @@ napi_value GetProperty(const napi_env env, const napi_value object, const std::s
     }
     napi_value value = nullptr;
     if (napi_get_named_property(env, object, name.c_str(), &value) != napi_ok) {
-        HILOG_ERROR(LOG_CORE, "failed to get property=%{public}s from object", name.c_str());
+        HILOG_ERROR(LOG_CORE, "failed to get property from object");
         return nullptr;
     }
     return value;

@@ -282,7 +282,7 @@ const std::unordered_map<AppEventParamType, GetParamValueFunc> GET_PARAM_VALUE_F
 std::string GetParamValueStr(const AppEventParam& param)
 {
     if (GET_PARAM_VALUE_FUNCS.find(param.value.type) == GET_PARAM_VALUE_FUNCS.end()) {
-        HILOG_WARN(LOG_CORE, "Invalid param value, name=%{public}s", param.name.c_str());
+        HILOG_WARN(LOG_CORE, "Invalid param value");
         return "";
     }
     return GET_PARAM_VALUE_FUNCS.at(param.value.type)(param.value);
