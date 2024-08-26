@@ -123,7 +123,7 @@ bool OsEventListener::InitDir(const std::string& dirPath)
         HILOG_ERROR(LOG_CORE, "failed to create dir=%{public}s", dirPath.c_str());
         return false;
     }
-    if (OHOS::StorageDaemon::AclSetAccess(dirPath, "g:1201:rwx") != 0) {
+    if (OHOS::StorageDaemon::AclSetAccess(dirPath, "u:1201:rwx") != 0) {
         HILOG_ERROR(LOG_CORE, "failed to set acl access dir=%{public}s", dirPath.c_str());
         return false;
     }
