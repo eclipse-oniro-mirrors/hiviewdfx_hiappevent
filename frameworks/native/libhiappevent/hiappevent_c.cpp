@@ -39,7 +39,7 @@ constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 template<typename T>
 void AddArrayParam(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const T* arr, int len)
 {
-    std::vector<T> params(arr, (len > MAX_SIZE_OF_LIST_PARAM) ? (arr + MAX_SIZE_OF_LIST_PARAM) : (arr + len));
+    std::vector<T> params(arr, (len > MAX_SIZE_OF_LIST_PARAM) ? (arr + MAX_SIZE_OF_LIST_PARAM + 1) : (arr + len));
     appEventPack->AddParam(name, params);
 }
 
