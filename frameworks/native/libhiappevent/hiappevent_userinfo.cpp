@@ -57,7 +57,7 @@ int UserInfo::SetUserId(const std::string& name, const std::string& value)
 
     std::string out;
     if (AppEventStore::GetInstance().QueryUserId(name, out) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to insert user id.");
+        HILOG_WARN(LOG_CORE, "failed to query user id.");
         return -1;
     }
     if (out.empty()) {
