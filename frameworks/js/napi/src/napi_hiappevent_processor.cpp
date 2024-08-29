@@ -294,7 +294,7 @@ int GenConfigCustomConfigsProp(const napi_env env, const napi_value config, cons
     for (const auto& localKey : keys) {
         std::string value;
         if (!GenConfigStrProp(env, napiObject, localKey, value) || !IsValidCustomConfig(localKey, value)) {
-            HILOG_WARN(LOG_CORE, "invalid key name=%{public}s", localKey.c_str());
+            HILOG_WARN(LOG_CORE, "invalid key");
             return ERR_CODE_PARAM_INVALID;
         }
         customConfigs.insert(std::pair<std::string, std::string>(localKey, value));
