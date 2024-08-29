@@ -84,7 +84,7 @@ bool HiAppEventConfig::SetConfigurationItem(std::string name, std::string value)
 {
     // trans uppercase to underscore and lowercase
     name = TransUpperToUnderscoreAndLower(name);
-    HILOG_DEBUG(LOG_CORE, "start to configure, name=%{public}s, value=%{public}s.", name.c_str(), value.c_str());
+    HILOG_DEBUG(LOG_CORE, "start to configure.");
 
     if (name == "") {
         HILOG_ERROR(LOG_CORE, "item name can not be empty.");
