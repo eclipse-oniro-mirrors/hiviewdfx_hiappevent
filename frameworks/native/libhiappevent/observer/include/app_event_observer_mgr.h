@@ -79,9 +79,6 @@ private:
     ffrt::mutex listenerMutex_;
     bool hasHandleTimeout_ = false;
     ffrt::mutex handlerMutex_;
-
-private:
-    static ffrt::mutex instanceMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
