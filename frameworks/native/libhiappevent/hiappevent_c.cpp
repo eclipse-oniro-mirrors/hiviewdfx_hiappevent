@@ -204,7 +204,7 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
     if (res >= 0) {
         ffrt::submit([appEventPack]() {
             WriteEvent(appEventPack);
-            }, {}, {}, ffrt::task_attr().name("appevent_write_event"));
+            }, {}, {}, ffrt::task_attr().name("app_inner_event"));
     }
     return res;
 }

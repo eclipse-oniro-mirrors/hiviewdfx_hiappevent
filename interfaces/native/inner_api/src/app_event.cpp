@@ -87,7 +87,7 @@ int Write(const Event& event)
         auto appEventPack = event.eventPack_;
         ffrt::submit([appEventPack]() {
             WriteEvent(appEventPack);
-            }, {}, {}, ffrt::task_attr().name("appevent_write_event"));
+            }, {}, {}, ffrt::task_attr().name("app_event"));
     }
     return ret;
 }
