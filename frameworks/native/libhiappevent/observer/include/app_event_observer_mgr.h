@@ -67,9 +67,6 @@ private:
     ffrt::mutex observerMutex_;
     std::shared_ptr<OsEventListener> listener_;
     ffrt::mutex listenerMutex_;
-
-private:
-    static ffrt::mutex instanceMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

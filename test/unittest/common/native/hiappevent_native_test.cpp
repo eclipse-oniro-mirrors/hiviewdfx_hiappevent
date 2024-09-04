@@ -660,6 +660,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest020, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest021, TestSize.Level0)
 {
     constexpr uint32_t takeNum = 10;
+    sleep(1); // wait 1s for WriteEvent complete
     ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(nullptr, takeNum, OnTake), ErrorCode::ERROR_INVALID_WATCHER);
     ASSERT_EQ(OH_HiAppEvent_TakeWatcherData(g_onTriggerWatcher, takeNum, OnTake), 0);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 
+#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
@@ -201,7 +202,9 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
     AddParamList(appEventPack, list);
     int res = VerifyAppEvent(appEventPack);
     if (res >= 0) {
-        WriteEvent(appEventPack);
+        ffrt::submit([appEventPack]() {
+            WriteEvent(appEventPack);
+            }, {}, {}, ffrt::task_attr().name("app_inner_event"));
     }
     return res;
 }
