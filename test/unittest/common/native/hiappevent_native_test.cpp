@@ -519,6 +519,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest013, TestSize.Level0)
     OH_HiAppEvent_DestroyParamList(list);
     ASSERT_EQ(res,  ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
+    sleep(1); // wait 1s for WriteEvent complete
     std::string filePath = TEST_STORAGE_PATH + GetStorageFilePath();
     ASSERT_EQ(access(filePath.c_str(), F_OK), 0);
 }
