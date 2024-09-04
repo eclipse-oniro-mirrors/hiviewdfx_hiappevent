@@ -340,12 +340,12 @@ void AppEventObserverMgr::SendEventToHandler()
 void AppEventObserverMgr::HandleBackground()
 {
     HILOG_INFO(LOG_CORE, "start to handle background");
-    ffrt::submit([&] {
+    ffrt::submit([this] {
         std::lock_guard<ffrt::mutex> lock(observerMutex_);
         for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
             it->second->ProcessBackground();
         }
-        }, {}, {}, ffrt::task_attr().name("appevent_handle_background"));
+        }, {}, {}, ffrt::task_attr().name("app_background"));
 }
 
 void AppEventObserverMgr::HandleClearUp()
