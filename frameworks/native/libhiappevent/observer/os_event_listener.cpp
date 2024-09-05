@@ -56,7 +56,6 @@ OsEventListener::OsEventListener()
 OsEventListener::~OsEventListener()
 {
     HILOG_INFO(LOG_CORE, "~OsEventListener");
-    inotifyStopFlag_ = true;
     inotifyThread_ = nullptr;
     if (inotifyFd_ != -1) {
         (void)inotify_rm_watch(inotifyFd_, inotifyWd_);
@@ -113,6 +112,7 @@ bool OsEventListener::StartListening()
 
 bool OsEventListener::RemoveOsEventDir()
 {
+    inotifyStopFlag_ = true;
     HILOG_INFO(LOG_CORE, "rm dir");
     return FileUtil::ForceRemoveDirectory(osEventPath_) && FileUtil::ForceRemoveDirectory(OS_LOG_PATH);
 }
@@ -170,6 +170,9 @@ bool OsEventListener::RegisterDirListener(const std::string& dirPath)
 
 void OsEventListener::HandleDirEvent()
 {
+    if (pthread_setname_np(pthread_self(), "OS_AppEvent_Ls") != 0) {
+        HILOG_WARN(LOG_CORE, "Failed to set threadName, errno=%{public}d", errno);
+    }
     while (!inotifyStopFlag_) {
         char buffer[BUF_SIZE] = {0};
         char* offset = buffer;
