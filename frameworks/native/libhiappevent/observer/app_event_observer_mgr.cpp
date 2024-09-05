@@ -114,11 +114,9 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
     return observerSeq;
 }
 }
-ffrt::mutex AppEventObserverMgr::instanceMutex_;
 
 AppEventObserverMgr& AppEventObserverMgr::GetInstance()
 {
-    std::lock_guard<ffrt::mutex> lock(instanceMutex_);
     static AppEventObserverMgr instance;
     return instance;
 }
@@ -304,10 +302,12 @@ void AppEventObserverMgr::HandleTimeout()
 void AppEventObserverMgr::HandleBackground()
 {
     HILOG_INFO(LOG_CORE, "start to handle background");
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
-        it->second->ProcessBackground();
-    }
+    ffrt::submit([this] {
+        std::lock_guard<ffrt::mutex> lock(observerMutex_);
+        for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+            it->second->ProcessBackground();
+        }
+        }, {}, {}, ffrt::task_attr().name("app_background"));
 }
 
 void AppEventObserverMgr::HandleClearUp()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 #include "app_event.h"
 
+#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_verify.h"
 #include "hiappevent_write.h"
@@ -83,7 +84,10 @@ int Write(const Event& event)
     }
     int ret = VerifyAppEvent(event.eventPack_);
     if (ret >= 0) {
-        WriteEvent(event.eventPack_);
+        auto appEventPack = event.eventPack_;
+        ffrt::submit([appEventPack]() {
+            WriteEvent(appEventPack);
+            }, {}, {}, ffrt::task_attr().name("app_event"));
     }
     return ret;
 }
