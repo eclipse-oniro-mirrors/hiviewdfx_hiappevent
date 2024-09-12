@@ -18,6 +18,7 @@ config("hiappevent_innerapi_config") {
 }
 
 ohos_shared_library("hiappevent_innerapi") {
+  branch_protector_ret = "pac_ret"
   public_configs = [ ":hiappevent_innerapi_config" ]
 
   sources = [
