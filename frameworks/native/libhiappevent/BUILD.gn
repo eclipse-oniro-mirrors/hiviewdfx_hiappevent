@@ -25,6 +25,7 @@ config("libhiappevent_source_config") {
 }
 
 ohos_shared_library("libhiappevent_base") {
+  branch_protector_ret = "pac_ret"
   public_configs = [
     ":libhiappevent_source_config",
     "cache:hiappevent_cache_config",
