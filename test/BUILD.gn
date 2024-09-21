@@ -89,20 +89,6 @@ ohos_unittest("HiAppEventWatcherTest") {
   ]
 }
 
-ohos_unittest("HiAppEventReadTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-
-  sources = [ "unittest/common/native/hiappevent_read_test.cpp" ]
-
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
-    "//third_party/googletest:gtest_main",
-  ]
-}
-
 ohos_unittest("HiAppEventInnerApiTest") {
   module_out_path = native_module_output_path
 
@@ -167,7 +153,6 @@ group("unittest") {
     ":HiAppEventCacheTest",
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
-    ":HiAppEventReadTest",
     ":HiAppEventUserInfoTest",
     ":HiAppEventWatcherTest",
     "unittest/common/napi:unittest",
