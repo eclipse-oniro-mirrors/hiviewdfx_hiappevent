@@ -20,7 +20,10 @@
 #include <unordered_map>
 
 #include "app_event_observer.h"
+#include "app_event_processor.h"
 #include "ffrt.h"
+#include "module_loader.h"
+#include "nocopyable.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -31,18 +34,23 @@ class AppStateCallback;
 }
 using HiAppEvent::AppEventObserver;
 using HiAppEvent::AppStateCallback;
+using HiAppEvent::AppEventProcessor;
+using HiAppEvent::ModuleLoader;
 using HiAppEvent::ReportConfig;
 
-class AppEventObserverMgr {
+class AppEventObserverMgr : public NoCopyable {
 public:
-    AppEventObserverMgr();
-    ~AppEventObserverMgr();
     static AppEventObserverMgr& GetInstance();
 
+    void CreateEventHandler();
+    void DestroyEventHandler();
     int64_t RegisterObserver(std::shared_ptr<AppEventObserver> observer);
     int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config = {});
     int UnregisterObserver(int64_t observerSeq);
     int UnregisterObserver(const std::string& observerName);
+    int Load(const std::string& moduleName);
+    int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
+    int UnregisterProcessor(const std::string& name);
     void HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
     void HandleTimeout();
     void HandleBackground();
@@ -52,8 +60,9 @@ public:
     int GetReportConfig(int64_t observerSeq, ReportConfig& config);
 
 private:
-    void CreateEventHandler();
-    void DestroyEventHandler();
+    AppEventObserverMgr();
+    ~AppEventObserverMgr();
+    void SendEventToHandler();
     void RegisterAppStateCallback();
     void UnregisterAppStateCallback();
     int64_t InitObserver(std::shared_ptr<AppEventObserver> observer);
@@ -61,12 +70,15 @@ private:
     void UnregisterOsEventListener();
 
 private:
+    std::unique_ptr<ModuleLoader> moduleLoader_; // moduleLoader_ must declared before observers_, or lead to crash
     std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
     ffrt::mutex observerMutex_;
     std::shared_ptr<OsEventListener> listener_;
     ffrt::mutex listenerMutex_;
+    bool hasHandleTimeout_ = false;
+    ffrt::mutex handlerMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

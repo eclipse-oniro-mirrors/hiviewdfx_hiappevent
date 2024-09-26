@@ -21,7 +21,6 @@
 #include "application_context.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
-#include "module_loader.h"
 #include "os_event_listener.h"
 
 #undef LOG_DOMAIN
@@ -35,7 +34,7 @@ namespace HiviewDFX {
 using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 namespace {
-constexpr int TIMEOUT_INTERVAL = 1000; // 1s
+constexpr int TIMEOUT_INTERVAL = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
@@ -125,6 +124,7 @@ AppEventObserverMgr::AppEventObserverMgr()
 {
     CreateEventHandler();
     RegisterAppStateCallback();
+    moduleLoader_ = std::make_unique<ModuleLoader>();
 }
 
 void AppEventObserverMgr::CreateEventHandler()
@@ -135,7 +135,6 @@ void AppEventObserverMgr::CreateEventHandler()
         return;
     }
     handler_ = std::make_shared<AppEventHandler>(runner);
-    handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
 }
 
 void AppEventObserverMgr::RegisterAppStateCallback()
@@ -158,7 +157,13 @@ AppEventObserverMgr::~AppEventObserverMgr()
 
 void AppEventObserverMgr::DestroyEventHandler()
 {
-    handler_= nullptr;
+    if (handler_ != nullptr) {
+        HILOG_INFO(LOG_CORE, "start to TaskCancelAndWait");
+        // stop and wait task
+        handler_->TaskCancelAndWait();
+    }
+    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
+    handler_ = nullptr;
 }
 
 void AppEventObserverMgr::UnregisterAppStateCallback()
@@ -197,7 +202,7 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
         return -1;
     }
 
-    auto observer = HiAppEvent::ModuleLoader::GetInstance().CreateProcessorProxy(observerName);
+    auto observer = moduleLoader_->CreateProcessorProxy(observerName);
     if (observer == nullptr) {
         HILOG_WARN(LOG_CORE, "observer is null");
         return -1;
@@ -246,6 +251,21 @@ int AppEventObserverMgr::UnregisterObserver(const std::string& observerName)
     return ret;
 }
 
+int AppEventObserverMgr::Load(const std::string& moduleName)
+{
+    return moduleLoader_->Load(moduleName);
+}
+
+int AppEventObserverMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
+{
+    return moduleLoader_->RegisterProcessor(name, processor);
+}
+
+int AppEventObserverMgr::UnregisterProcessor(const std::string& name)
+{
+    return moduleLoader_->UnregisterProcessor(name);
+}
+
 int64_t AppEventObserverMgr::InitObserver(std::shared_ptr<AppEventObserver> observer)
 {
     std::string observerName = observer->GetName();
@@ -280,23 +300,41 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         StoreEventMappingToDb(events, it->second);
     }
+    bool needSend = false;
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         // send events to observer, and then delete events not in event mapping
         SendEventsToObserver(events, it->second);
+        needSend |= it->second->HasTimeoutCondition();
+    }
+    if (needSend && !hasHandleTimeout_) {
+        SendEventToHandler();
+        hasHandleTimeout_ = true;
     }
 }
 
 void AppEventObserverMgr::HandleTimeout()
 {
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    bool needSend = false;
+    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+        it->second->ProcessTimeout();
+        needSend |= it->second->HasTimeoutCondition();
+    }
+    if (needSend) {
+        SendEventToHandler();
+    } else {
+        hasHandleTimeout_ = false;
+    }
+}
+
+void AppEventObserverMgr::SendEventToHandler()
+{
+    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
     if (handler_ == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to handle timeOut: handler is null");
+        HILOG_ERROR(LOG_CORE, "failed to SendEventToHandler: handler is null");
         return;
     }
     handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
-        it->second->ProcessTimeout();
-    }
 }
 
 void AppEventObserverMgr::HandleBackground()

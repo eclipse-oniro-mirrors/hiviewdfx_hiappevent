@@ -42,31 +42,13 @@ public:
 
 void HiAppEventAppEventTest::SetUp()
 {
+    // set app uid
+    setuid(TEST_UID);
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
 }
 
 void HiAppEventAppEventTest::TearDown()
 {}
-}
-
-/**
- * @tc.name: HiAppEventAppEventTest000
- * @tc.desc: Test the writing of not app.
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest000, TestSize.Level1)
-{
-    std::cout << "HiAppEventAppEventTest000 start" << std::endl;
-
-    Event event(TEST_DOMAIN, TEST_NAME, FAULT);
-    int ret = Write(event);
-    ASSERT_EQ(ret, ERROR_NOT_APP);
-
-    setuid(TEST_UID);
-    ret = Write(event);
-    ASSERT_EQ(ret, HIAPPEVENT_VERIFY_SUCCESSFUL);
-
-    std::cout << "HiAppEventAppEventTest000 end" << std::endl;
 }
 
 /**
@@ -332,4 +314,25 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest009, TestSize.Level1)
     ASSERT_EQ(Write(event1), ERROR_DUPLICATE_PARAM);
 
     std::cout << "HiAppEventAppEventTest009 end" << std::endl;
+}
+
+/**
+ * @tc.name: HiAppEventAppEventTest010
+ * @tc.desc: Test the writing of not app.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest010, TestSize.Level1)
+{
+    std::cout << "HiAppEventAppEventTest010 start" << std::endl;
+
+    setuid(0); // 0 means root uid
+    Event event(TEST_DOMAIN, TEST_NAME, FAULT);
+    int ret = Write(event);
+    ASSERT_EQ(ret, ERROR_NOT_APP);
+
+    setuid(TEST_UID);
+    ret = Write(event);
+    ASSERT_EQ(ret, HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    std::cout << "HiAppEventAppEventTest010 end" << std::endl;
 }
