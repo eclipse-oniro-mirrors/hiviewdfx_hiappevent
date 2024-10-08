@@ -236,7 +236,7 @@ void AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPac
 
 void AppEventObserver::ProcessTimeout()
 {
-    ++currCond_.timeout;
+    currCond_.timeout += TIMEOUT_STEP;
     if (!MeetTimeoutCondition()) {
         return;
     }
@@ -247,6 +247,11 @@ void AppEventObserver::ProcessTimeout()
 bool AppEventObserver::MeetTimeoutCondition()
 {
     return MeetNumberCondition(currCond_.timeout, reportConfig_.triggerCond.timeout) && currCond_.row > 0;
+}
+
+bool AppEventObserver::HasTimeoutCondition()
+{
+    return reportConfig_.triggerCond.timeout > 0 && currCond_.row > 0;
 }
 
 void AppEventObserver::ProcessStartup()
@@ -341,20 +346,17 @@ bool AppEventObserver::HasOsDomain()
     if (filters_.empty()) {
         return false;
     }
-    for (const auto& filter : filters_) {
-        if (filter.domain == DOMAIN_OS) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(filters_.begin(), filters_.end(), [](const auto& filter) {
+        return filter.domain == DOMAIN_OS;
+    });
 }
 
 uint64_t AppEventObserver::GetOsEventsMask()
 {
     uint64_t mask = 0;
-    for (const auto& filter : filters_) {
+    std::for_each(filters_.begin(), filters_.end(), [&mask](const auto& filter) {
         mask |= filter.GetOsEventsMask();
-    }
+    });
     return mask;
 }
 } // namespace HiAppEvent

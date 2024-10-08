@@ -27,7 +27,6 @@
 #include "hiappevent_base.h"
 #include "hiappevent_read.h"
 #include "hilog/log.h"
-#include "module_loader.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07

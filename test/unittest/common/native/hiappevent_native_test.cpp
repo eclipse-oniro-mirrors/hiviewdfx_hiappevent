@@ -81,6 +81,8 @@ std::string GetStorageFilePath()
 
 void HiAppEventNativeTest::SetUpTestCase()
 {
+    // set app uid
+    setuid(TEST_UID);
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_STORAGE_PATH);
 }
 
@@ -704,6 +706,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
 {
+    setuid(0); // 0 means root uid
     ASSERT_EQ(CreateProcessor(TEST_PROCESSOR_NAME), nullptr);
     ASSERT_EQ(SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
     ASSERT_EQ(SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_NOT_APP);

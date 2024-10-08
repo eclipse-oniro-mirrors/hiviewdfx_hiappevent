@@ -29,7 +29,6 @@
 #include "hiappevent_verify.h"
 #include "hiappevent_write.h"
 #include "log.h"
-#include "module_loader.h"
 #include "time_util.h"
 
 using namespace OHOS::HiviewDFX;
@@ -240,6 +239,11 @@ std::tuple<int, int64_t> HiAppEventImpl::addWatcher(const std::string& name,
 void HiAppEventImpl::removeWatcher(const std::string& name)
 {
     AppEventObserverMgr::GetInstance().UnregisterObserver(name);
+}
+
+int HiAppEventImpl::Load(const std::string& moduleName)
+{
+    return AppEventObserverMgr::GetInstance().Load(moduleName);
 }
 } // HiAppEvent
 } // CJSystemapi

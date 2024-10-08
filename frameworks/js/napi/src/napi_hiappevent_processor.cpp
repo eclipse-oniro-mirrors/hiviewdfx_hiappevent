@@ -23,7 +23,6 @@
 #include "hiappevent_base.h"
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
-#include "module_loader.h"
 #include "napi_error.h"
 #include "napi_util.h"
 
@@ -410,7 +409,7 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
         out = NapiUtil::CreateInt64(env, -1);
         return false;
     }
-    if (HiAppEvent::ModuleLoader::GetInstance().Load(name) != 0) {
+    if (AppEventObserverMgr::GetInstance().Load(name) != 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, name no found", name.c_str());
         out = NapiUtil::CreateInt64(env, -1);
         return true;
