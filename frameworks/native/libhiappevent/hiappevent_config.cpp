@@ -25,7 +25,6 @@
 #include "context.h"
 #include "ffrt.h"
 #include "hiappevent_base.h"
-#include "hiappevent_read.h"
 #include "hilog/log.h"
 
 #undef LOG_DOMAIN
@@ -178,7 +177,6 @@ void HiAppEventConfig::SetMaxStorageSize(uint64_t size)
 void HiAppEventConfig::SetStorageDir(const std::string& dir)
 {
     this->storageDir = dir;
-    LogAssistant::Instance().UpdateHiAppEventLogDir(dir);
 }
 
 bool HiAppEventConfig::GetDisable()

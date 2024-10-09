@@ -25,7 +25,6 @@
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
-#include "hiappevent_read.h"
 #include "hilog/log.h"
 #include "time_util.h"
 
@@ -53,7 +52,6 @@ std::string GetStorageFileName()
 
 bool WriteEventToFile(const std::string& filePath, const std::string& event)
 {
-    LogAssistant::Instance().RealTimeAppLogUpdate(event);
     return FileUtil::SaveStringToFile(filePath, event);
 }
 }

@@ -24,7 +24,6 @@
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_impl.h"
-#include "hiappevent_read.h"
 #include "hiappevent_userinfo.h"
 #include "hiappevent_verify.h"
 #include "hiappevent_write.h"
@@ -81,7 +80,6 @@ void CheckStorageSpace(const std::string& dir)
 
 bool WriteEventToFile(const std::string& filePath, const std::string& event)
 {
-    LogAssistant::Instance().RealTimeAppLogUpdate(event);
     return FileUtil::SaveStringToFile(filePath, event);
 }
 

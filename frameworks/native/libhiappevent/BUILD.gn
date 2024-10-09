@@ -37,7 +37,6 @@ ohos_shared_library("libhiappevent_base") {
     "hiappevent_c.cpp",
     "hiappevent_clean.cpp",
     "hiappevent_config.cpp",
-    "hiappevent_read.cpp",
     "hiappevent_userinfo.cpp",
     "hiappevent_verify.cpp",
     "hiappevent_write.cpp",
