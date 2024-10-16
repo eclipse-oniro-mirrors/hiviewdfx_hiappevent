@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,7 +32,8 @@ public:
     bool StartListening();
     bool RemoveOsEventDir();
     void GetEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
-    bool UpdateListenedEvents(uint64_t eventsMask);
+    bool AddListenedEvents(uint64_t eventsMask);
+    bool SetListenedEvents(uint64_t eventsMask);
 
 private:
     void Init();
