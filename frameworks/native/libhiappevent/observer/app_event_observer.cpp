@@ -341,16 +341,6 @@ int64_t AppEventObserver::GenerateHashCode()
         : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
 }
 
-bool AppEventObserver::HasOsDomain()
-{
-    if (filters_.empty()) {
-        return false;
-    }
-    return std::any_of(filters_.begin(), filters_.end(), [](const auto& filter) {
-        return filter.domain == DOMAIN_OS;
-    });
-}
-
 uint64_t AppEventObserver::GetOsEventsMask()
 {
     uint64_t mask = 0;

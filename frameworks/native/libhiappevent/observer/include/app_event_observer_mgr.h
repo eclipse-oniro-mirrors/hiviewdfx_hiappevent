@@ -65,7 +65,6 @@ private:
     void SendEventToHandler();
     void RegisterAppStateCallback();
     void UnregisterAppStateCallback();
-    int64_t InitObserver(std::shared_ptr<AppEventObserver> observer);
     bool InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag);
     void UnregisterOsEventListener();
 
@@ -76,7 +75,6 @@ private:
     std::shared_ptr<AppStateCallback> appStateCallback_;
     ffrt::mutex observerMutex_;
     std::shared_ptr<OsEventListener> listener_;
-    ffrt::mutex listenerMutex_;
     bool hasHandleTimeout_ = false;
     ffrt::mutex handlerMutex_;
 };

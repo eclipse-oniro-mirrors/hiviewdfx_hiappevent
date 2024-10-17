@@ -46,6 +46,15 @@ const std::string RUNNING_ID_PROPERTY = "app_running_unique_id";
 const std::string OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
 const std::string XATTR_NAME = "user.appevent";
 const std::string KEY_HIAPPEVENT_ENABLE = "hiviewdfx.hiappevent.enable";
+
+bool UpdateListenedEvents(const std::string& dir, uint64_t eventsMask)
+{
+    if (!FileUtil::SetDirXattr(dir, XATTR_NAME, std::to_string(eventsMask))) {
+        HILOG_ERROR(LOG_CORE, "failed to set xattr dir=%{public}s, value=%{public}" PRIu64, dir.c_str(), eventsMask);
+        return false;
+    }
+    return true;
+}
 }
 
 OsEventListener::OsEventListener()
@@ -130,17 +139,18 @@ bool OsEventListener::InitDir(const std::string& dirPath)
     return true;
 }
 
-bool OsEventListener::UpdateListenedEvents(uint64_t eventsMask)
+bool OsEventListener::AddListenedEvents(uint64_t eventsMask)
 {
     osEventsMask_ |= eventsMask;
-    if (!FileUtil::SetDirXattr(osEventPath_, XATTR_NAME, std::to_string(osEventsMask_))) {
-        HILOG_ERROR(LOG_CORE, "failed to set xattr dir=%{public}s, value=%{public}" PRIu64
-            ", eventsMask=%{public}" PRIu64, osEventPath_.c_str(), osEventsMask_, eventsMask);
-        return false;
-    }
-    HILOG_INFO(LOG_CORE, "set xattr dir=%{public}s, value=%{public}" PRIu64 ", eventsMask=%{public}" PRIu64,
-        osEventPath_.c_str(), osEventsMask_, eventsMask);
-    return true;
+    HILOG_INFO(LOG_CORE, "add mask=%{public}" PRIu64 ", eventsMask=%{public}" PRIu64, eventsMask, osEventsMask_);
+    return UpdateListenedEvents(osEventPath_, osEventsMask_);
+}
+
+bool OsEventListener::SetListenedEvents(uint64_t eventsMask)
+{
+    osEventsMask_ = eventsMask;
+    HILOG_INFO(LOG_CORE, "set eventsMask=%{public}" PRIu64, osEventsMask_);
+    return UpdateListenedEvents(osEventPath_, osEventsMask_);
 }
 
 bool OsEventListener::RegisterDirListener(const std::string& dirPath)
