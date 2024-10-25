@@ -56,6 +56,10 @@ void StoreEventMappingToDb(const std::vector<std::shared_ptr<AppEventPack>>& eve
     for (const auto& event : events) {
         if (observer->VerifyEvent(event)) {
             int64_t observerSeq = observer->GetSeq();
+            if (observerSeq == 0) {
+                HILOG_INFO(LOG_CORE, "observer=%{public}s seq not set", observer->GetName().c_str());
+                continue;
+            }
             if (AppEventStore::GetInstance().InsertEventMapping(event->GetSeq(), observerSeq) < 0) {
                 HILOG_ERROR(LOG_CORE, "failed to add mapping record to db, seq=%{public}" PRId64, observerSeq);
             }
@@ -82,8 +86,7 @@ void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& even
     }
 }
 
-int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
-    const std::string& name, int64_t hashCode)
+int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer, const std::string& name, int64_t hashCode)
 {
     int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name, hashCode);
     if (observerSeq <= 0) {
@@ -108,12 +111,13 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
                 triggerCond.size += static_cast<int>(event->GetEventStr().size());
             }
             observer->SetCurrCondition(triggerCond);
+            observer->ProcessStartup();
         }
     }
     return observerSeq;
 }
 
-int64_t InitObserver(std::shared_ptr<AppEventObserver> observer, bool& isExist)
+int64_t InitWatcher(std::shared_ptr<AppEventObserver> observer, bool& isExist)
 {
     std::string observerName = observer->GetName();
     int64_t observerHashCode = observer->GenerateHashCode();
@@ -121,7 +125,7 @@ int64_t InitObserver(std::shared_ptr<AppEventObserver> observer, bool& isExist)
     if (observerSeq <= 0) {
         observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
         if (observerSeq <= 0) {
-            HILOG_ERROR(LOG_CORE, "failed to insert observer=%{public}s to db", observerName.c_str());
+            HILOG_ERROR(LOG_CORE, "failed to insert watcher=%{public}s to db", observerName.c_str());
             return -1;
         }
     } else {
@@ -129,6 +133,40 @@ int64_t InitObserver(std::shared_ptr<AppEventObserver> observer, bool& isExist)
     }
     observer->SetSeq(observerSeq);
     return observerSeq;
+}
+
+void InitProcessor(std::shared_ptr<AppEventObserver> observer, int64_t observerHashCode)
+{
+    ffrt::submit([observer, observerHashCode]() {
+        std::string observerName = observer->GetName();
+        int64_t seq = InitObserverFromDb(observer, observerName, observerHashCode);
+        if (seq > 0) {
+            HILOG_INFO(LOG_CORE, "processor=%{public}s has inserted", observerName.c_str());
+            return;
+        }
+        seq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
+        if (seq <= 0) {
+            HILOG_ERROR(LOG_CORE, "failed to insert processor, name=%{public}s to db", observerName.c_str());
+            return;
+        }
+        HILOG_INFO(LOG_CORE, "processor=%{public}s insert success", observerName.c_str());
+        observer->SetSeq(seq);
+        }, {}, {}, ffrt::task_attr().name("insert_observer").qos(ffrt::qos_user_initiated));
+}
+
+bool HandleEventsByMap(std::vector<std::shared_ptr<AppEventPack>>& events,
+    std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>>& observers)
+{
+    for (auto it = observers.cbegin(); it != observers.cend(); ++it) {
+        StoreEventMappingToDb(events, it->second);
+    }
+    bool needSend = false;
+    for (auto it = observers.cbegin(); it != observers.cend(); ++it) {
+        // send events to observer, and then delete events not in event mapping
+        SendEventsToObserver(events, it->second);
+        needSend |= it->second->HasTimeoutCondition();
+    }
+    return needSend;
 }
 }
 
@@ -203,7 +241,7 @@ void AppEventObserverMgr::UnregisterAppStateCallback()
 int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> observer)
 {
     bool isExist = false;
-    int64_t observerSeq = InitObserver(observer, isExist);
+    int64_t observerSeq = InitWatcher(observer, isExist);
     if (observerSeq <= 0) {
         return observerSeq;
     }
@@ -212,7 +250,7 @@ int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> 
     if (!InitObserverFromListener(observer, isExist)) {
         return -1;
     }
-    observers_[observerSeq] = observer;
+    watchers_[observerSeq] = observer;
     HILOG_INFO(LOG_CORE, "register observer=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
 }
@@ -230,42 +268,49 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
         return -1;
     }
     observer->SetReportConfig(config);
-
-    int64_t observerSeq = RegisterObserver(observer);
-    if (observerSeq <= 0) {
+    int64_t observerHashCode = observer->GenerateHashCode();
+    InitProcessor(observer, observerHashCode);
+    if (observerHashCode == 0) {
         return -1;
     }
-    observer->ProcessStartup();
-    return observerSeq;
+    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    processors_[observerHashCode] = observer;
+    return observerHashCode;
 }
 
-int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq)
+int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq, ObserverType type)
 {
+    bool isWatcher = (type == ObserverType::WATCHER);
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    if (observers_.find(observerSeq) == observers_.cend()) {
+    if ((isWatcher && watchers_.find(observerSeq) == watchers_.cend()) ||
+        (!isWatcher && processors_.find(observerSeq) == processors_.cend())) {
         HILOG_WARN(LOG_CORE, "observer seq=%{public}" PRId64 " is not exist", observerSeq);
         return 0;
     }
-    if (int ret = AppEventStore::GetInstance().DeleteObserver(observerSeq); ret < 0) {
+    if (int ret = AppEventStore::GetInstance().DeleteObserver(observerSeq, type); ret < 0) {
         HILOG_ERROR(LOG_CORE, "failed to unregister observer seq=%{public}" PRId64, observerSeq);
         return ret;
     }
-    observers_.erase(observerSeq);
-    UnregisterOsEventListener();
+    if (isWatcher) {
+        watchers_.erase(observerSeq);
+        UnregisterOsEventListener();
+    } else {
+        processors_.erase(observerSeq);
+    }
     HILOG_INFO(LOG_CORE, "unregister observer seq=%{public}" PRId64 " successfully", observerSeq);
     return 0;
 }
 
-int AppEventObserverMgr::UnregisterObserver(const std::string& observerName)
+int AppEventObserverMgr::UnregisterObserver(const std::string& observerName, ObserverType type)
 {
     std::vector<int64_t> deleteSeqs;
-    if (int ret = AppEventStore::GetInstance().QueryObserverSeqs(observerName, deleteSeqs); ret < 0) {
+    if (int ret = AppEventStore::GetInstance().QueryObserverSeqs(observerName, deleteSeqs, type); ret < 0) {
         HILOG_ERROR(LOG_CORE, "failed to query observer=%{public}s seqs", observerName.c_str());
         return ret;
     }
     int ret = 0;
     for (auto deleteSeq : deleteSeqs) {
-        if (int tempRet = UnregisterObserver(deleteSeq); tempRet < 0) {
+        if (int tempRet = UnregisterObserver(deleteSeq, type); tempRet < 0) {
             HILOG_ERROR(LOG_CORE, "failed to unregister observer seq=%{public}" PRId64, deleteSeq);
             ret = tempRet;
         }
@@ -291,20 +336,13 @@ int AppEventObserverMgr::UnregisterProcessor(const std::string& name)
 void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    if (observers_.empty() || events.empty()) {
+    if ((watchers_.empty() && processors_.empty()) || events.empty()) {
         return;
     }
     HILOG_DEBUG(LOG_CORE, "start to handle events size=%{public}zu", events.size());
     StoreEventsToDb(events);
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
-        StoreEventMappingToDb(events, it->second);
-    }
-    bool needSend = false;
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
-        // send events to observer, and then delete events not in event mapping
-        SendEventsToObserver(events, it->second);
-        needSend |= it->second->HasTimeoutCondition();
-    }
+    bool needSend = HandleEventsByMap(events, watchers_);
+    needSend |= HandleEventsByMap(events, processors_);
     if (needSend && !hasHandleTimeout_) {
         SendEventToHandler();
         hasHandleTimeout_ = true;
@@ -315,7 +353,11 @@ void AppEventObserverMgr::HandleTimeout()
 {
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
     bool needSend = false;
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+    for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
+        it->second->ProcessTimeout();
+        needSend |= it->second->HasTimeoutCondition();
+    }
+    for (auto it = processors_.cbegin(); it != processors_.cend(); ++it) {
         it->second->ProcessTimeout();
         needSend |= it->second->HasTimeoutCondition();
     }
@@ -341,7 +383,10 @@ void AppEventObserverMgr::HandleBackground()
     HILOG_INFO(LOG_CORE, "start to handle background");
     ffrt::submit([this] {
         std::lock_guard<ffrt::mutex> lock(observerMutex_);
-        for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+        for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
+            it->second->ProcessBackground();
+        }
+        for (auto it = processors_.cbegin(); it != processors_.cend(); ++it) {
             it->second->ProcessBackground();
         }
         }, {}, {}, ffrt::task_attr().name("app_background"));
@@ -351,7 +396,10 @@ void AppEventObserverMgr::HandleClearUp()
 {
     HILOG_INFO(LOG_CORE, "start to handle clear up");
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
+    for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
+        it->second->ResetCurrCondition();
+    }
+    for (auto it = processors_.cbegin(); it != processors_.cend(); ++it) {
         it->second->ResetCurrCondition();
     }
 }
@@ -359,22 +407,22 @@ void AppEventObserverMgr::HandleClearUp()
 int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig& config)
 {
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    if (observers_.find(observerSeq) == observers_.cend()) {
+    if (processors_.find(observerSeq) == processors_.cend()) {
         HILOG_WARN(LOG_CORE, "failed to set config, seq=%{public}" PRId64, observerSeq);
         return -1;
     }
-    observers_[observerSeq]->SetReportConfig(config);
+    processors_[observerSeq]->SetReportConfig(config);
     return 0;
 }
 
 int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& config)
 {
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
-    if (observers_.find(observerSeq) == observers_.cend()) {
+    if (processors_.find(observerSeq) == processors_.cend()) {
         HILOG_WARN(LOG_CORE, "failed to get config, seq=%{public}" PRId64, observerSeq);
         return -1;
     }
-    config = observers_[observerSeq]->GetReportConfig();
+    config = processors_[observerSeq]->GetReportConfig();
     return 0;
 }
 
@@ -408,7 +456,7 @@ void AppEventObserverMgr::UnregisterOsEventListener()
         return;
     }
     uint64_t mask = 0;
-    for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+    for (auto it = watchers_.begin(); it != watchers_.end(); ++it) {
         mask |= it->second->GetOsEventsMask();
     }
     if (mask > 0) {

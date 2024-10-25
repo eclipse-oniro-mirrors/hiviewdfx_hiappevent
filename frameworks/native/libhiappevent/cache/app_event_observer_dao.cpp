@@ -95,10 +95,15 @@ int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashC
     return DB_FAILED;
 }
 
-int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
+int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type)
 {
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
     predicates.EqualTo(Observers::FIELD_NAME, observer);
+    if (type == ObserverType::WATCHER) {
+        predicates.EqualTo(Observers::FIELD_HASH, 0);
+    } else {
+        predicates.NotEqualTo(Observers::FIELD_HASH, 0);
+    }
     auto resultSet = dbStore_->Query(predicates, {Observers::FIELD_SEQ});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table, observer=%{public}s", observer.c_str());
@@ -129,11 +134,15 @@ int AppEventObserverDao::Delete(const std::string& observer)
     return deleteRows;
 }
 
-int AppEventObserverDao::Delete(int64_t observerSeq)
+int AppEventObserverDao::Delete(int64_t observerSeq, ObserverType type)
 {
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(Observers::TABLE);
-    predicates.EqualTo(Observers::FIELD_SEQ, observerSeq);
+    if (type == ObserverType::WATCHER) {
+        predicates.EqualTo(Observers::FIELD_SEQ, observerSeq);
+    } else {
+        predicates.EqualTo(Observers::FIELD_HASH, observerSeq);
+    }
     if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
         HILOG_ERROR(LOG_CORE, "failed to delete records, observer seq=%{public}" PRId64, observerSeq);
         return DB_FAILED;

@@ -41,7 +41,7 @@ int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
     if (!IsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return AppEventObserverMgr::GetInstance().UnregisterObserver(processorId);
+    return AppEventObserverMgr::GetInstance().UnregisterObserver(processorId, ObserverType::PROCESSOR);
 }
 
 int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
@@ -57,7 +57,7 @@ int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
     if (!IsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    if (int ret = AppEventObserverMgr::GetInstance().UnregisterObserver(name); ret < 0) {
+    if (int ret = AppEventObserverMgr::GetInstance().UnregisterObserver(name, ObserverType::PROCESSOR); ret < 0) {
         return ret;
     }
     return AppEventObserverMgr::GetInstance().UnregisterProcessor(name);
@@ -85,7 +85,7 @@ int AppEventProcessorMgr::GetProcessorSeqs(const std::string& name, std::vector<
         return ErrorCode::ERROR_NOT_APP;
     }
     processorSeqs.clear(); // prevent repeated invoking scenarios
-    return AppEventStore::GetInstance().QueryObserverSeqs(name, processorSeqs);
+    return AppEventStore::GetInstance().QueryObserverSeqs(name, processorSeqs, ObserverType::PROCESSOR);
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

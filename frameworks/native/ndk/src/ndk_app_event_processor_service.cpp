@@ -217,7 +217,7 @@ int RemoveProcessor(int64_t processorId)
         HILOG_DEBUG(LOG_CORE, "Failed to remove processor id=%{public}" PRId64, processorId);
         return ErrorCode::ERROR_PROCESSOR_NOT_ADDED;
     }
-    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
+    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId, ObserverType::PROCESSOR) != 0) {
         HILOG_DEBUG(LOG_CORE, "Failed to remove processor id=%{public}" PRId64, processorId);
         return ErrorCode::ERROR_UNKNOWN;
     }
