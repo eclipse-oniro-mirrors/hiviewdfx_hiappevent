@@ -79,7 +79,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest001, TestSize.Level0)
     ASSERT_EQ(events[0]->GetType(), TEST_EVENT_TYPE);
 
     std::vector<int64_t> observerSeqs;
-    result = AppEventStore::GetInstance().QueryObserverSeqs(TEST_OBSERVER_NAME, observerSeqs);
+    result = AppEventStore::GetInstance().QueryObserverSeqs(TEST_OBSERVER_NAME, observerSeqs, ObserverType::WATCHER);
     ASSERT_EQ(result, 0);
     ASSERT_GT(observerSeqs.size(), 0);
     ASSERT_EQ(observerSeqs[0], observerSeq);
@@ -151,10 +151,10 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest003, TestSize.Level0)
     auto mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
     ASSERT_GT(mappingSeq, 0);
 
-    result = AppEventStore::GetInstance().DeleteObserver(observerSeq);
+    result = AppEventStore::GetInstance().DeleteObserver(observerSeq, ObserverType::WATCHER);
     ASSERT_EQ(result, 1); // 1 recored
     std::vector<int64_t> observerSeqs;
-    result = AppEventStore::GetInstance().QueryObserverSeqs(TEST_OBSERVER_NAME, observerSeqs);
+    result = AppEventStore::GetInstance().QueryObserverSeqs(TEST_OBSERVER_NAME, observerSeqs, ObserverType::WATCHER);
     ASSERT_EQ(result, 0);
     ASSERT_EQ(observerSeqs.size(), 0);
 
@@ -196,12 +196,12 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest004, TestSize.Level1)
     result = AppEventStore::GetInstance().QueryEvents(events, observerSeq);
     ASSERT_EQ(result, 0);
     std::vector<int64_t> observerSeqs;
-    result = AppEventStore::GetInstance().QueryObserverSeqs(TEST_OBSERVER_NAME, observerSeqs);
+    result = AppEventStore::GetInstance().QueryObserverSeqs(TEST_OBSERVER_NAME, observerSeqs, ObserverType::WATCHER);
     ASSERT_EQ(result, 0);
     result = AppEventStore::GetInstance().TakeEvents(events, observerSeq);
     ASSERT_EQ(result, 0);
 
-    result = AppEventStore::GetInstance().DeleteObserver(observerSeq);
+    result = AppEventStore::GetInstance().DeleteObserver(observerSeq, ObserverType::WATCHER);
     ASSERT_EQ(result, 1); // 1 recored
     result = AppEventStore::GetInstance().DeleteEventMapping(observerSeq, {eventSeq});
     ASSERT_EQ(result, 0); // 0 recored

@@ -447,16 +447,16 @@ int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t has
     return appEventObserverDao_->QuerySeq(observer, hashCode);
 }
 
-int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
+int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type)
 {
     std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->QuerySeqs(observer, observerSeqs);
+    return appEventObserverDao_->QuerySeqs(observer, observerSeqs, type);
 }
 
-int AppEventStore::DeleteObserver(int64_t observerSeq)
+int AppEventStore::DeleteObserver(int64_t observerSeq, ObserverType type)
 {
     std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
@@ -465,7 +465,7 @@ int AppEventStore::DeleteObserver(int64_t observerSeq)
     if (int ret = appEventMappingDao_->Delete(observerSeq, {}); ret < 0) {
         return ret;
     }
-    return appEventObserverDao_->Delete(observerSeq);
+    return appEventObserverDao_->Delete(observerSeq, type);
 }
 
 int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)

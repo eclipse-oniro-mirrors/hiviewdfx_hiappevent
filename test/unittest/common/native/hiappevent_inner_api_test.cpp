@@ -54,7 +54,7 @@ void CheckRegisterObserver(const std::string& observer,
     std::shared_ptr<AppEventProcessor> processor, int64_t& processorSeq)
 {
     ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(observer, processor), 0);
-    processorSeq = AppEventObserverMgr::GetInstance().RegisterObserver(observer);
+    processorSeq = AppEventObserverMgr::GetInstance().RegisterObserver(observer, {.name = observer});
     ASSERT_GT(processorSeq, 0);
 }
 
@@ -78,7 +78,6 @@ void CheckGetEmptyConfig(int64_t processorSeq)
 {
     ReportConfig config;
     ASSERT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorSeq, config), 0);
-    ASSERT_TRUE(config.name.empty());
     ASSERT_FALSE(config.debugMode);
     ASSERT_TRUE(config.routeInfo.empty());
     ASSERT_TRUE(config.appId.empty());
@@ -303,6 +302,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest001, TestSize.Level0)
     auto processor = std::make_shared<AppEventProcessorTest>();
     int64_t processorSeq = 0;
     CheckRegisterObserver(TEST_PROCESSOR_NAME, processor, processorSeq);
+    sleep(1);
     CheckGetSeqs(TEST_PROCESSOR_NAME, {processorSeq});
     CheckGetEmptyConfig(processorSeq);
     CheckSetConfig(processorSeq);
@@ -454,6 +454,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest007, TestSize.Level0)
     auto processor = std::make_shared<AppEventProcessorTest>();
     int64_t processorSeq = 0;
     CheckRegisterObserver(TEST_PROCESSOR_NAME, processor, processorSeq);
+    sleep(1); // wait 1s for insert db success
     CheckSetOnBackgroundConfig(processorSeq);
 
     ASSERT_EQ(processor->GetReportTimes(), 0);
@@ -489,7 +490,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest008, TestSize.Level0)
         .eventConfigs = {{TEST_EVENT_DOMAIN, TEST_EVENT_NAME}},
     };
     CheckRegisterObserverWithConfig(TEST_PROCESSOR_NAME, processor, config, processorSeq1);
-
+    sleep(1); // wait 1s for insert db success
     ASSERT_EQ(processor->GetReportTimes(), 0);
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);

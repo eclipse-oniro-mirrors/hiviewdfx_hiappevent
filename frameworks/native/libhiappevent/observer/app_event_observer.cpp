@@ -336,9 +336,9 @@ int64_t AppEventObserver::GenerateHashCode()
         // default hash code for watcher
         return 0;
     }
-    return (reportConfig_.configId > 0)
-        ? static_cast<int64_t>(reportConfig_.configId)
-        : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
+    int64_t hashCode = static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
+    // std::hash returns uint64_t type, should remove sign bit to make AddProcessor returns positive integer.
+    return (reportConfig_.configId > 0) ? static_cast<int64_t>(reportConfig_.configId) : (hashCode & INT64_MAX);
 }
 
 uint64_t AppEventObserver::GetOsEventsMask()
