@@ -25,7 +25,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 
-class OsEventListener {
+class OsEventListener : public std::enable_shared_from_this<OsEventListener> {
 public:
     OsEventListener();
     ~OsEventListener();
