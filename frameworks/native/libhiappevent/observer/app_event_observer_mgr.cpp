@@ -112,6 +112,24 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
     }
     return observerSeq;
 }
+
+int64_t InitObserver(std::shared_ptr<AppEventObserver> observer, bool& isExist)
+{
+    std::string observerName = observer->GetName();
+    int64_t observerHashCode = observer->GenerateHashCode();
+    int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
+    if (observerSeq <= 0) {
+        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
+        if (observerSeq <= 0) {
+            HILOG_ERROR(LOG_CORE, "failed to insert observer=%{public}s to db", observerName.c_str());
+            return -1;
+        }
+    } else {
+        isExist = true;
+    }
+    observer->SetSeq(observerSeq);
+    return observerSeq;
+}
 }
 
 AppEventObserverMgr& AppEventObserverMgr::GetInstance()
@@ -184,12 +202,16 @@ void AppEventObserverMgr::UnregisterAppStateCallback()
 
 int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> observer)
 {
-    int64_t observerSeq = InitObserver(observer);
+    bool isExist = false;
+    int64_t observerSeq = InitObserver(observer, isExist);
     if (observerSeq <= 0) {
         return observerSeq;
     }
 
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    if (!InitObserverFromListener(observer, isExist)) {
+        return -1;
+    }
     observers_[observerSeq] = observer;
     HILOG_INFO(LOG_CORE, "register observer=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
@@ -264,29 +286,6 @@ int AppEventObserverMgr::RegisterProcessor(const std::string& name, std::shared_
 int AppEventObserverMgr::UnregisterProcessor(const std::string& name)
 {
     return moduleLoader_->UnregisterProcessor(name);
-}
-
-int64_t AppEventObserverMgr::InitObserver(std::shared_ptr<AppEventObserver> observer)
-{
-    std::string observerName = observer->GetName();
-    int64_t observerHashCode = observer->GenerateHashCode();
-    int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
-    bool sendFlag = false;
-    if (observerSeq <= 0) {
-        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
-        if (observerSeq <= 0) {
-            HILOG_ERROR(LOG_CORE, "failed to insert observer=%{public}s to db", observerName.c_str());
-            return -1;
-        }
-    } else {
-        sendFlag = true;
-    }
-    observer->SetSeq(observerSeq);
-
-    if (!InitObserverFromListener(observer, sendFlag)) {
-        return -1;
-    }
-    return observerSeq;
 }
 
 void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
@@ -379,23 +378,22 @@ int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& conf
     return 0;
 }
 
-bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag)
+bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool isExist)
 {
     uint64_t mask = observer->GetOsEventsMask();
     if (mask == 0) {
         return true;
     }
-    std::lock_guard<ffrt::mutex> lock(listenerMutex_);
     if (listener_ == nullptr) {
         listener_ = std::make_shared<OsEventListener>();
         if (!listener_->StartListening()) {
             return false;
         }
     }
-    if (!listener_->UpdateListenedEvents(mask)) {
+    if (!listener_->AddListenedEvents(mask)) {
         return false;
     }
-    if (sendFlag) {
+    if (isExist) {
         std::vector<std::shared_ptr<AppEventPack>> events;
         listener_->GetEvents(events);
         StoreEventMappingToDb(events, observer);
@@ -406,16 +404,19 @@ bool AppEventObserverMgr::InitObserverFromListener(std::shared_ptr<AppEventObser
 
 void AppEventObserverMgr::UnregisterOsEventListener()
 {
+    if (listener_ == nullptr) {
+        return;
+    }
+    uint64_t mask = 0;
     for (auto it = observers_.begin(); it != observers_.end(); ++it) {
-        if (it->second->HasOsDomain()) {
-            return;
-        }
+        mask |= it->second->GetOsEventsMask();
     }
-    std::lock_guard<ffrt::mutex> lock(listenerMutex_);
-    if (listener_ != nullptr) {
-        listener_->RemoveOsEventDir();
-        listener_ = nullptr;
+    if (mask > 0) {
+        listener_->SetListenedEvents(mask);
+        return;
     }
+    listener_->RemoveOsEventDir();
+    listener_ = nullptr;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
