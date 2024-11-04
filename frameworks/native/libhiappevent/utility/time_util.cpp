@@ -39,7 +39,7 @@ std::string GetDate()
     }
     char dateChs[9] = { 0 }; // 9 means 8(19700101) + 1('\0')
     struct tm localTm;
-    if (localtime_r(&nowTime, &localTm) == nullptr) {
+    if (localtime_noenv_r(&nowTime, &localTm) == nullptr) {
         return DEFAULT_DATE;
     }
     if (strftime(dateChs, sizeof(dateChs), "%Y%m%d", &localTm) == 0) {
@@ -56,7 +56,7 @@ std::string GetTimeZone()
     }
     time_t sysSec = tv.tv_sec;
     struct tm tmLocal;
-    if (localtime_r(&sysSec, &tmLocal) == nullptr) {
+    if (localtime_noenv_r(&sysSec, &tmLocal) == nullptr) {
         return "";
     }
     constexpr size_t buffSize = 6; // for '+0800\0'
