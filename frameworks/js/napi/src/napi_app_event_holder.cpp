@@ -114,13 +114,16 @@ napi_value NapiAppEventHolder::NapiSetRow(napi_env env, napi_callback_info info)
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size", "number"));
         return nullptr;
     }
-    if (int num = NapiUtil::GetInt32(env, params[0]); num > 0) {
-        NapiAppEventHolder* holder = nullptr;
-        napi_unwrap(env, thisVar, (void**)&holder);
-        holder->SetRow(num);
-    } else {
+    int num = NapiUtil::GetInt32(env, params[0]);
+    if (num <= 0) {
         NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid size value.");
+        return NapiUtil::CreateUndefined(env);
     }
+    NapiAppEventHolder* holder = nullptr;
+    if (napi_unwrap(env, thisVar, (void**)&holder) != napi_ok || holder == nullptr) {
+        return nullptr;
+    }
+    holder->SetRow(num);
     return NapiUtil::CreateUndefined(env);
 }
 
@@ -138,13 +141,16 @@ napi_value NapiAppEventHolder::NapiSetSize(napi_env env, napi_callback_info info
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size", "number"));
         return nullptr;
     }
-    if (int num = NapiUtil::GetInt32(env, params[0]); num >= 0) {
-        NapiAppEventHolder* holder = nullptr;
-        napi_unwrap(env, thisVar, (void**)&holder);
-        holder->SetSize(num);
-    } else {
+    int num = NapiUtil::GetInt32(env, params[0]);
+    if (num < 0) {
         NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid size value.");
+        return NapiUtil::CreateUndefined(env);
     }
+    NapiAppEventHolder* holder = nullptr;
+    if (napi_unwrap(env, thisVar, (void**)&holder) != napi_ok || holder == nullptr) {
+        return nullptr;
+    }
+    holder->SetSize(num);
     return NapiUtil::CreateUndefined(env);
 }
 
@@ -153,7 +159,9 @@ napi_value NapiAppEventHolder::NapiTakeNext(napi_env env, napi_callback_info inf
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiAppEventHolder* holder = nullptr;
-    napi_unwrap(env, thisVar, (void**)&holder);
+    if (napi_unwrap(env, thisVar, (void**)&holder) != napi_ok || holder == nullptr) {
+        return NapiUtil::CreateNull(env);
+    }
     auto package = holder->TakeNext();
     if (package == nullptr) {
         return NapiUtil::CreateNull(env);
