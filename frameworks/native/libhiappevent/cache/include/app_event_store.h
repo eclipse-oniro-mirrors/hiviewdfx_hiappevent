@@ -71,7 +71,7 @@ public:
     bool DeleteData(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
-    AppEventStore();
+    AppEventStore() = default;
     ~AppEventStore();
     bool InitDbStoreDir();
 
