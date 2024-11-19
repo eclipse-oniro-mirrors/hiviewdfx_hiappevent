@@ -133,11 +133,6 @@ int AppEventStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersi
     return NativeRdb::E_OK;
 }
 
-AppEventStore::AppEventStore()
-{
-    (void)InitDbStore();
-}
-
 AppEventStore::~AppEventStore()
 {
     dbStore_ = nullptr;
