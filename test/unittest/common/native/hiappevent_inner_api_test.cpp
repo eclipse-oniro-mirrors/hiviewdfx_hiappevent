@@ -19,8 +19,10 @@
 
 #include "app_event_processor_mgr.h"
 #include "app_event_observer_mgr.h"
+#include "application_context.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
+#include "hiappevent_test_common.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -221,13 +223,24 @@ void CheckOnReport(
 
 class HiAppEventInnerApiTest : public testing::Test {
 public:
-    void SetUp()
+    static void SetUpTestCase()
     {
         // set app uid
         setuid(TEST_UID);
         HiAppEventConfig::GetInstance().SetStorageDir("/data/test/hiappevent/");
+        // set context bundle name
+        auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
+        if (context != nullptr) {
+            auto contextImpl = std::make_shared<TestContextImpl>("ohos.hiappevent.innerapi.test");
+            context->AttachContextImpl(contextImpl);
+            std::cout << "set bundle name." << std::endl;
+            return;
+        }
+        std::cout << "context is null." << std::endl;
     }
 
+    static void TearDownTestCase() {}
+    void SetUp() {}
     void TearDown() {}
 };
 

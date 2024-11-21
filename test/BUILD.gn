@@ -43,6 +43,8 @@ ohos_unittest("HiAppEventNativeTest") {
     "$native_hiappevent_path/ndk:hiappevent_ndk",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "ability_runtime:app_context" ]
 }
 
 ohos_unittest("HiAppEventCacheTest") {
@@ -105,6 +107,7 @@ ohos_unittest("HiAppEventInnerApiTest") {
   resource_config_file = "resource/ohos_test.xml"
 
   external_deps = [
+    "ability_runtime:app_context",
     "ffrt:libffrt",
     "hiappevent:hiappevent_innerapi",
   ]
@@ -143,7 +146,10 @@ ohos_unittest("HiAppEventAppEventTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hiappevent:hiappevent_innerapi" ]
+  external_deps = [
+    "ability_runtime:app_context",
+    "hiappevent:hiappevent_innerapi",
+  ]
 }
 
 group("unittest") {
