@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <unordered_set>
 
+#include "application_context.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
 #include "hilog/log.h"
@@ -577,7 +578,18 @@ int VerifyReportConfig(ReportConfig& config)
 
 bool IsApp()
 {
-    return getuid() >= MIN_APP_UID;
+    if (getuid() < MIN_APP_UID) {
+        return false;
+    }
+    // use startArkChildProcess create a child process has no ApplicationContext
+    // bundle name is empty means no context
+    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
+        OHOS::AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr || context->GetBundleName().empty()) {
+        HILOG_ERROR(LOG_CORE, "context is null.");
+        return false;
+    }
+    return true;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

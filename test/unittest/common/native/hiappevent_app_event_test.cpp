@@ -17,8 +17,10 @@
 #include <gtest/gtest.h>
 
 #include "app_event.h"
+#include "application_context.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
+#include "hiappevent_test_common.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -36,19 +38,27 @@ constexpr int32_t TEST_UID = 200000 * 100;
 
 class HiAppEventAppEventTest : public testing::Test {
 public:
-    void SetUp();
-    void TearDown();
+    static void SetUpTestCase();
+    static void TearDownTestCase() {}
+    void SetUp() {}
+    void TearDown() {}
 };
 
-void HiAppEventAppEventTest::SetUp()
+void HiAppEventAppEventTest::SetUpTestCase()
 {
     // set app uid
     setuid(TEST_UID);
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
+    // set context bundle name
+    auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
+    if (context != nullptr) {
+        auto contextImpl = std::make_shared<TestContextImpl>("ohos.hiappevent.test");
+        context->AttachContextImpl(contextImpl);
+        std::cout << "set bundle name." << std::endl;
+        return;
+    }
+    std::cout << "context is null." << std::endl;
 }
-
-void HiAppEventAppEventTest::TearDown()
-{}
 }
 
 /**

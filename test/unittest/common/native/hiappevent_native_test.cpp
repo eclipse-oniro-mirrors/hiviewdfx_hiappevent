@@ -19,9 +19,11 @@
 #include <string>
 #include <vector>
 
+#include "application_context.h"
 #include "hiappevent/hiappevent.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
+#include "hiappevent_test_common.h"
 #include "hiappevent_userinfo.h"
 #include "ndk_app_event_processor_service.h"
 #include "time_util.h"
@@ -84,6 +86,15 @@ void HiAppEventNativeTest::SetUpTestCase()
     // set app uid
     setuid(TEST_UID);
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_STORAGE_PATH);
+    // set context bundle name
+    auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
+    if (context != nullptr) {
+        auto contextImpl = std::make_shared<TestContextImpl>("ohos.hiappevent.native.test");
+        context->AttachContextImpl(contextImpl);
+        std::cout << "set bundle name." << std::endl;
+        return;
+    }
+    std::cout << "context is null." << std::endl;
 }
 
 /**
