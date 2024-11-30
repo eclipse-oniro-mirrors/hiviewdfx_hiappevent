@@ -54,7 +54,8 @@
               "header_files": [
                   "app_event.h",
                   "app_event_processor.h",
-                  "app_event_processor_mgr.h"
+                  "app_event_processor_mgr.h",
+                  "base_type.h"
               ]
           }
         }
