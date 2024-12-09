@@ -18,6 +18,7 @@
 
 #include "app_event.h"
 #include "app_event_store.h"
+#include "event_json_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_common.h"
 #include "hilog/log.h"
@@ -34,6 +35,9 @@ namespace HiAppEvent {
 namespace {
 constexpr int MAX_SIZE_ON_EVENTS = 100;
 constexpr uint64_t BIT_MASK = 1;
+const std::string DOMAIN_PROPERTY = "domain";
+const std::string NAMES_PROPERTY = "names";
+const std::string TYPES_PROPERTY = "types";
 struct OsEventPosInfo {
     std::string name;
     EventType type;
@@ -124,6 +128,19 @@ uint64_t AppEventFilter::GetOsEventsMask() const
         }
     }
     return mask;
+}
+
+Json::Value AppEventFilter::ToJsonValue() const
+{
+    Json::Value filterJson;
+    filterJson[DOMAIN_PROPERTY] = domain;
+    Json::Value namesJson(Json::arrayValue);
+    for (const auto& name : names) {
+        namesJson.append(name);
+    }
+    filterJson[NAMES_PROPERTY] = namesJson;
+    filterJson[TYPES_PROPERTY] = types;
+    return filterJson;
 }
 
 bool EventConfig::IsValidEvent(std::shared_ptr<AppEventPack> event) const
@@ -348,6 +365,46 @@ uint64_t AppEventObserver::GetOsEventsMask()
         mask |= filter.GetOsEventsMask();
     });
     return mask;
+}
+
+std::string AppEventObserver::GetFiltersStr()
+{
+    if (!reportConfig_.name.empty()) {
+        // default hash code for processor
+        return "";
+    }
+    Json::Value filtersJson(Json::arrayValue);
+    std::for_each(filters_.begin(), filters_.end(), [&filtersJson](const auto& filter) {
+        filtersJson.append(filter.ToJsonValue());
+    });
+    return Json::FastWriter().write(filtersJson);
+}
+
+void AppEventObserver::SetFilters(const std::string& jsonStr)
+{
+    filters_.clear();
+    if (jsonStr.empty()) {
+        return;
+    }
+    Json::Value filtersJson;
+    Json::Reader reader(Json::Features::strictMode());
+    if (!reader.parse(jsonStr, filtersJson)) {
+        HILOG_ERROR(LOG_CORE, "parse filters failed, please check the style of json");
+        return;
+    }
+    if (!filtersJson.isArray() || filtersJson.empty()) {
+        HILOG_WARN(LOG_CORE, "filters is empty");
+        return;
+    }
+    for (Json::ArrayIndex i = 0; i < filtersJson.size(); ++i) {
+        if (filtersJson[i].isObject()) {
+            std::string domain = EventJsonUtil::ParseString(filtersJson[i], DOMAIN_PROPERTY);
+            std::unordered_set<std::string> names;
+            EventJsonUtil::ParseStrings(filtersJson[i], NAMES_PROPERTY, names);
+            uint32_t types = EventJsonUtil::ParseUInt32(filtersJson[i], TYPES_PROPERTY);
+            filters_.emplace_back(AppEventFilter(domain, names, types));
+        }
+    }
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

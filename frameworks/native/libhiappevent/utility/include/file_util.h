@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,6 +39,7 @@ bool SaveStringToFile(const std::string& file, const std::string& content, bool 
 std::string GetFilePathByDir(const std::string& dir, const std::string& fileName);
 bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& lines);
 bool SetDirXattr(const std::string& dir, const std::string& name, const std::string& value);
+bool GetDirXattr(const std::string& dir, const std::string& name, std::string& value);
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

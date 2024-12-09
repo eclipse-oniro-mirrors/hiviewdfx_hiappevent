@@ -56,7 +56,6 @@ public:
     void HandleTimeout();
     void HandleBackground();
     void HandleClearUp();
-
     int SetReportConfig(int64_t observerSeq, const ReportConfig& config);
     int GetReportConfig(int64_t observerSeq, ReportConfig& config);
 
@@ -68,6 +67,7 @@ private:
     void UnregisterAppStateCallback();
     bool InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag);
     void UnregisterOsEventListener();
+    void InitWatchers();
 
 private:
     std::unique_ptr<ModuleLoader> moduleLoader_; // moduleLoader_ must declared before observers_, or lead to crash

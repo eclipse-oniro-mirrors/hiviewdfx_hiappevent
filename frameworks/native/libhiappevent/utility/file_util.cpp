@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,6 +28,7 @@ namespace FileUtil {
 namespace {
 const char PATH_DELIMITER = '/';
 constexpr mode_t FILE_PERM_600 = S_IRUSR | S_IWUSR;
+constexpr uint32_t BUF_SIZE_256 = 256;
 }
 bool IsFileExists(const std::string& file)
 {
@@ -223,6 +224,16 @@ bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& li
 bool SetDirXattr(const std::string& dir, const std::string& name, const std::string& value)
 {
     return setxattr(dir.c_str(), name.c_str(), value.c_str(), strlen(value.c_str()), 0) == 0;
+}
+
+bool GetDirXattr(const std::string& dir, const std::string& name, std::string& value)
+{
+    char buf[BUF_SIZE_256] = {0};
+    if (getxattr(dir.c_str(), name.c_str(), buf, sizeof(buf) - 1) == -1) {
+        return false;
+    }
+    value = buf;
+    return true;
 }
 } // namespace FileUtil
 } // namespace HiviewDFX

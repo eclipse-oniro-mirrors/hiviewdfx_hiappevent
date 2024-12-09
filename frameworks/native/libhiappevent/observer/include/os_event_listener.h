@@ -19,8 +19,6 @@
 #include <thread>
 #include <vector>
 
-#include "json/json.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
