@@ -48,7 +48,17 @@ const std::string TABLE = "observers";
 const std::string FIELD_SEQ = "seq";
 const std::string FIELD_NAME = "name";
 const std::string FIELD_HASH = "hash";
+const std::string FIELD_FILTERS = "filters";
 } // namespace Observers
+
+struct Observer {
+    Observer(int64_t seq, const std::string& name, const std::string& filters)
+        : seq(seq), name(name), filters(filters) {}
+    ~Observer() {}
+    int64_t seq = 0;
+    std::string name;
+    std::string filters;
+};
 
 namespace AppEventMapping {
 const std::string TABLE = "event_observer_mapping";

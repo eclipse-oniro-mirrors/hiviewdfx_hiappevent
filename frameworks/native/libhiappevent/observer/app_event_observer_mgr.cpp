@@ -88,11 +88,16 @@ void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& even
 
 int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer, const std::string& name, int64_t hashCode)
 {
-    int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name, hashCode);
+    std::string filters;
+    int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name, hashCode, filters);
     if (observerSeq <= 0) {
         HILOG_INFO(LOG_CORE, "the observer does not exist in database, name=%{public}s, hash=%{public}" PRId64,
             name.c_str(), hashCode);
         return -1;
+    }
+    std::string newFilters = observer->GetFiltersStr();
+    if (filters != newFilters && AppEventStore::GetInstance().UpdateObserver(observerSeq, newFilters) <= 0) {
+        HILOG_ERROR(LOG_CORE, "failed to update observer=%{public}s to db", name.c_str());
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
     if (AppEventStore::GetInstance().QueryEvents(events, observerSeq, MAX_SIZE_OF_INIT) < 0) {
@@ -123,7 +128,8 @@ int64_t InitWatcher(std::shared_ptr<AppEventObserver> observer, bool& isExist)
     int64_t observerHashCode = observer->GenerateHashCode();
     int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
     if (observerSeq <= 0) {
-        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
+        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode,
+            observer->GetFiltersStr());
         if (observerSeq <= 0) {
             HILOG_ERROR(LOG_CORE, "failed to insert watcher=%{public}s to db", observerName.c_str());
             return -1;
@@ -144,7 +150,7 @@ void InitProcessor(std::shared_ptr<AppEventObserver> observer, int64_t observerH
             HILOG_INFO(LOG_CORE, "processor=%{public}s has inserted", observerName.c_str());
             return;
         }
-        seq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode);
+        seq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode, observer->GetFiltersStr());
         if (seq <= 0) {
             HILOG_ERROR(LOG_CORE, "failed to insert processor, name=%{public}s to db", observerName.c_str());
             return;
@@ -238,8 +244,29 @@ void AppEventObserverMgr::UnregisterAppStateCallback()
     HILOG_INFO(LOG_CORE, "succ to unregister application state callback");
 }
 
+void AppEventObserverMgr::InitWatchers()
+{
+    static std::once_flag onceFlag;
+    std::call_once(onceFlag, [&]() {
+        std::vector<AppEventCacheCommon::Observer> observers;
+        if (AppEventStore::GetInstance().QueryWatchers(observers) != 0) {
+            HILOG_WARN(LOG_CORE, "failed to query observers from db");
+            return;
+        }
+        std::lock_guard<ffrt::mutex> lock(observerMutex_);
+        for (const auto& observer : observers) {
+            auto observerPtr = std::make_shared<AppEventObserver>(observer.name);
+            observerPtr->SetSeq(observer.seq);
+            observerPtr->SetFilters(observer.filters);
+            watchers_[observer.seq] = observerPtr;
+        }
+        HILOG_INFO(LOG_CORE, "init watchers");
+    });
+}
+
 int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> observer)
 {
+    InitWatchers();
     bool isExist = false;
     int64_t observerSeq = InitWatcher(observer, isExist);
     if (observerSeq <= 0) {
@@ -335,6 +362,7 @@ int AppEventObserverMgr::UnregisterProcessor(const std::string& name)
 
 void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
+    InitWatchers();
     std::lock_guard<ffrt::mutex> lock(observerMutex_);
     if ((watchers_.empty() && processors_.empty()) || events.empty()) {
         return;

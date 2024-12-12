@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -65,7 +65,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest001, TestSize.Level0)
 
     int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(CreateAppEventPack());
     ASSERT_GT(eventSeq, 0);
-    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME);
+    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME, 0, "");
     ASSERT_GT(observerSeq, 0);
     int64_t mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
     ASSERT_GT(mappingSeq, 0);
@@ -106,7 +106,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest002, TestSize.Level0)
 
     auto eventSeq = AppEventStore::GetInstance().InsertEvent(CreateAppEventPack());
     ASSERT_GT(eventSeq, 0);
-    auto observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME);
+    auto observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME, 0, "");
     ASSERT_GT(observerSeq, 0);
     auto mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
     ASSERT_GT(mappingSeq, 0);
@@ -146,7 +146,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest003, TestSize.Level0)
 
     auto eventSeq = AppEventStore::GetInstance().InsertEvent(CreateAppEventPack());
     ASSERT_GT(eventSeq, 0);
-    auto observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME);
+    auto observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME, 0, "");
     ASSERT_GT(observerSeq, 0);
     auto mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
     ASSERT_GT(mappingSeq, 0);
@@ -187,7 +187,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest004, TestSize.Level1)
 
     int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(CreateAppEventPack());
     ASSERT_GT(eventSeq, 0);
-    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME);
+    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME, 0, "");
     ASSERT_GT(observerSeq, 0);
     int64_t mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
     ASSERT_GT(mappingSeq, 0);
@@ -256,7 +256,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest006, TestSize.Level0)
     event->SetRunningId(TEST_RUNNING_ID);
     int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
     ASSERT_GT(eventSeq, 0);
-    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME);
+    int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(TEST_OBSERVER_NAME, 0, "");
     ASSERT_GT(observerSeq, 0);
     int64_t mappingSeq = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
     ASSERT_GT(mappingSeq, 0);

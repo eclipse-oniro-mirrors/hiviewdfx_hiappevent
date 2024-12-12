@@ -21,6 +21,7 @@
 #include "app_event_observer_mgr.h"
 #include "app_event_store.h"
 #include "application_context.h"
+#include "event_json_util.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
@@ -55,6 +56,17 @@ bool UpdateListenedEvents(const std::string& dir, uint64_t eventsMask)
     }
     return true;
 }
+
+uint64_t GetMaskFromDirXattr(const std::string& path)
+{
+    std::string value;
+    if (!FileUtil::GetDirXattr(path, XATTR_NAME, value)) {
+        HILOG_ERROR(LOG_CORE, "failed to get xattr.");
+        return 0;
+    }
+    HILOG_INFO(LOG_CORE, "getxattr success value=%{public}s.", value.c_str());
+    return static_cast<uint64_t>(std::strtoull(value.c_str(), nullptr, 0));
+}
 }
 
 OsEventListener::OsEventListener()
@@ -86,7 +98,13 @@ void OsEventListener::Init()
         return;
     }
     osEventPath_ = context->GetCacheDir() + APP_EVENT_DIR;
+    if (!FileUtil::IsFileExists(osEventPath_)) {
+        return;
+    }
+    // get subscribed events from dir xattr
+    osEventsMask_ = GetMaskFromDirXattr(osEventPath_);
 
+    // read os events from dir files
     std::vector<std::string> files;
     FileUtil::GetDirFiles(osEventPath_, files);
     GetEventsFromFiles(files, historyEvents_);
@@ -192,7 +210,7 @@ void OsEventListener::HandleDirEvent()
             HILOG_ERROR(LOG_CORE, "Invalid inotify fd=%{public}d", inotifyFd_);
             break;
         }
-        int len = read(inotifyFd_, buffer, BUF_SIZE);
+        int len = read(inotifyFd_, buffer, sizeof(buffer) - 1);
         if (len <= 0) {
             HILOG_ERROR(LOG_CORE, "failed to read event");
             continue;
@@ -249,15 +267,9 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
         return nullptr;
     }
     auto appEventPack = std::make_shared<AppEventPack>();
-    if (eventJson.isMember(DOMAIN_PROPERTY) && eventJson[DOMAIN_PROPERTY].isString()) {
-        appEventPack->SetDomain(eventJson[DOMAIN_PROPERTY].asString());
-    }
-    if (eventJson.isMember(NAME_PROPERTY) && eventJson[NAME_PROPERTY].isString()) {
-        appEventPack->SetName(eventJson[NAME_PROPERTY].asString());
-    }
-    if (eventJson.isMember(EVENT_TYPE_PROPERTY) && eventJson[EVENT_TYPE_PROPERTY].isInt()) {
-        appEventPack->SetType(eventJson[EVENT_TYPE_PROPERTY].asInt());
-    }
+    appEventPack->SetDomain(EventJsonUtil::ParseString(eventJson, DOMAIN_PROPERTY));
+    appEventPack->SetName(EventJsonUtil::ParseString(eventJson, NAME_PROPERTY));
+    appEventPack->SetType(EventJsonUtil::ParseInt(eventJson, EVENT_TYPE_PROPERTY));
     if (eventJson.isMember(PARAM_PROPERTY) && eventJson[PARAM_PROPERTY].isObject()) {
         Json::Value paramsJson = eventJson[PARAM_PROPERTY];
         if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
