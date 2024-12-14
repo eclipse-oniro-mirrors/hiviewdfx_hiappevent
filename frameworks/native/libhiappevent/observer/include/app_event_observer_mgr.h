@@ -56,6 +56,7 @@ public:
     void HandleTimeout();
     void HandleBackground();
     void HandleClearUp();
+    void SendRefreshFreeSizeEvent();
 
     int SetReportConfig(int64_t observerSeq, const ReportConfig& config);
     int GetReportConfig(int64_t observerSeq, ReportConfig& config);

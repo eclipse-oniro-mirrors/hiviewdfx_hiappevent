@@ -15,6 +15,7 @@
 #include "hiappevent_config.h"
 
 #include <algorithm>
+#include <cinttypes>
 #include <mutex>
 #include <regex>
 #include <sstream>
@@ -26,6 +27,9 @@
 #include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
+#include "iservice_registry.h"
+#include "storage_manager_proxy.h"
+#include "system_ability_definition.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -45,6 +49,7 @@ constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
 constexpr uint64_t STORAGE_UNIT_TB = STORAGE_UNIT_GB * 1024;
 constexpr int DECIMAL_UNIT = 10;
+constexpr int64_t FREE_SIZE_LIMIT = STORAGE_UNIT_MB * 300;
 
 ffrt::mutex g_mutex;
 
@@ -69,6 +74,21 @@ std::string TransUpperToUnderscoreAndLower(const std::string& str)
     }
 
     return ss.str();
+}
+
+sptr<OHOS::StorageManager::IStorageManager> GetStorageMgr()
+{
+    auto systemAbilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (systemAbilityManager == nullptr) {
+        HILOG_INFO(LOG_CORE, "systemAbilityManager is null.");
+        return nullptr;
+    }
+    sptr<IRemoteObject> storageMgrSa = systemAbilityManager->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    if (storageMgrSa == nullptr) {
+        HILOG_INFO(LOG_CORE, "storageMgrSa is null.");
+        return nullptr;
+    }
+    return iface_cast<OHOS::StorageManager::IStorageManager>(storageMgrSa);
 }
 }
 
@@ -229,6 +249,28 @@ std::string HiAppEventConfig::GetRunningId()
         HILOG_ERROR(LOG_CORE, "The running id from context is empty.");
     }
     return this->runningId;
+}
+
+bool HiAppEventConfig::IsFreeSizeOverLimit()
+{
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
+    if (this->freeSize_ < 0) {
+        auto storageMgr = GetStorageMgr();
+        if (storageMgr == nullptr || (storageMgr->GetFreeSize(this->freeSize_) != 0)) {
+            HILOG_INFO(LOG_CORE, "Failed to get free size.");
+            return true;
+        }
+    }
+    return this->freeSize_ < FREE_SIZE_LIMIT;
+}
+
+void HiAppEventConfig::RefreshFreeSize()
+{
+    std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
+    auto storageMgr = GetStorageMgr();
+    if (storageMgr == nullptr || (storageMgr->GetFreeSize(this->freeSize_) != 0)) {
+        HILOG_INFO(LOG_CORE, "Failed to refresh free size.");
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

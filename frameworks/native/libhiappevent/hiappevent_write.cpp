@@ -62,6 +62,10 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
         HILOG_WARN(LOG_CORE, "the HiAppEvent function is disabled.");
         return;
     }
+    if (HiAppEventConfig::GetInstance().IsFreeSizeOverLimit()) {
+        HILOG_WARN(LOG_CORE, "Write:free size over limit.");
+        return;
+    }
     if (appEventPack == nullptr) {
         HILOG_ERROR(LOG_CORE, "appEventPack is null.");
         return;
@@ -96,6 +100,10 @@ int SetEventParam(std::shared_ptr<AppEventPack> appEventPack)
 {
     if (appEventPack == nullptr) {
         HILOG_ERROR(LOG_CORE, "appEventPack is null.");
+        return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+    }
+    if (HiAppEventConfig::GetInstance().IsFreeSizeOverLimit()) {
+        HILOG_WARN(LOG_CORE, "free size over limit.");
         return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
     }
     int res = AppEventStore::GetInstance().InsertCustomEventParams(appEventPack);

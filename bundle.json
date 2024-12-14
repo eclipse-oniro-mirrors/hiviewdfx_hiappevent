@@ -33,6 +33,7 @@
         "ipc",
         "napi",
         "relational_store",
+        "samgr",
         "storage_service",
         "jsoncpp"
       ]
