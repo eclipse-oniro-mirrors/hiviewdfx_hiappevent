@@ -58,7 +58,10 @@ ohos_shared_library("libhiappevent_base") {
     "ffrt:libffrt",
     "hilog:libhilog",
     "hitrace:libhitracechain",
+    "ipc:ipc_core",
     "relational_store:native_rdb",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
   ]
 
   public_external_deps = [ "jsoncpp:jsoncpp" ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace AppEventType {
 const uint32_t WATCHER_TIMEOUT = 0;
+constexpr uint32_t REFRESH_FREE_SIZE = 1;
 }
 
 class AppEventHandler : public AppExecFwk::EventHandler {

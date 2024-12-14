@@ -35,6 +35,8 @@ using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 namespace {
 constexpr int TIMEOUT_INTERVAL = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
+constexpr int ONE_MINUTE = 60 * 1000;
+constexpr int REFRESH_FREE_SIZE_INTERVAL = 10 * ONE_MINUTE; // 10 minutes
 constexpr int MAX_SIZE_OF_INIT = 100;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
@@ -179,6 +181,7 @@ AppEventObserverMgr& AppEventObserverMgr::GetInstance()
 AppEventObserverMgr::AppEventObserverMgr()
 {
     CreateEventHandler();
+    SendRefreshFreeSizeEvent();
     RegisterAppStateCallback();
     moduleLoader_ = std::make_unique<ModuleLoader>();
 }
@@ -376,6 +379,16 @@ void AppEventObserverMgr::SendEventToHandler()
         return;
     }
     handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
+}
+
+void AppEventObserverMgr::SendRefreshFreeSizeEvent()
+{
+    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
+    if (handler_ == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to SendRefreshFreeSizeEvent: handler is null");
+        return;
+    }
+    handler_->SendEvent(AppEventType::REFRESH_FREE_SIZE, 0, REFRESH_FREE_SIZE_INTERVAL);
 }
 
 void AppEventObserverMgr::HandleBackground()

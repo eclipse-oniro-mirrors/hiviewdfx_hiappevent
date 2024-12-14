@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 #include "app_event_handler.h"
 
 #include "app_event_observer_mgr.h"
+#include "hiappevent_config.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
@@ -41,6 +42,9 @@ void AppEventHandler::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
 {
     if (event->GetInnerEventId() == AppEventType::WATCHER_TIMEOUT) {
         AppEventObserverMgr::GetInstance().HandleTimeout();
+    } else if (event->GetInnerEventId() == AppEventType::REFRESH_FREE_SIZE) {
+        HiAppEventConfig::GetInstance().RefreshFreeSize();
+        AppEventObserverMgr::GetInstance().SendRefreshFreeSizeEvent();
     } else {
         HILOG_WARN(LOG_CORE, "invalid event id=%{public}u", event->GetInnerEventId());
     }
