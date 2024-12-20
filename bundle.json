@@ -29,6 +29,7 @@
         "ffrt",
         "hitrace",
         "hilog",
+        "hicollie",
         "init",
         "ipc",
         "napi",

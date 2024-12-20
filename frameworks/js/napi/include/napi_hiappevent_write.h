@@ -15,6 +15,8 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H
 #define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_WRITE_H
 
+#include <map>
+
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
@@ -44,8 +46,27 @@ struct HiAppEventAsyncContext {
     ~HiAppEventAsyncContext() {}
 };
 
+struct HiAppEventConfigAsyncContext {
+    napi_async_work asyncWork;
+    napi_deferred deferred;
+    std::map<std::string, std::string> eventConfigMap;
+    std::string name;
+    int result;
+
+    HiAppEventConfigAsyncContext()
+    {
+        this->asyncWork = nullptr;
+        this->deferred = nullptr;
+        this->eventConfigMap.clear();
+        this->name = "";
+        this->result = 0;
+    }
+    ~HiAppEventConfigAsyncContext() {}
+};
+
 void Write(const napi_env env, HiAppEventAsyncContext* asyncContext);
 void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext);
+void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncContext);
 } // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX
 } // namespace OHOS
