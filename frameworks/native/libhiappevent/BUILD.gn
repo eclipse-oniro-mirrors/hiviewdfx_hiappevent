@@ -57,6 +57,7 @@ ohos_shared_library("libhiappevent_base") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "ffrt:libffrt",
+    "hicollie:libhicollie",
     "hilog:libhilog",
     "hitrace:libhitracechain",
     "relational_store:native_rdb",

@@ -36,6 +36,7 @@ using namespace OHOS::HiviewDFX;
 
 namespace {
 constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
+constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
 
 template<typename T>
 void AddArrayParam(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const T* arr, int len)
@@ -212,4 +213,69 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
 void ClearData()
 {
     HiAppEventClean::ClearData(HiAppEventConfig::GetInstance().GetStorageDir());
+}
+
+HiAppEvent_Config* HiAppEventCreateConfig()
+{
+    auto ndkConfigMapPtr = new (std::nothrow) std::map<std::string, std::string>;
+    if (ndkConfigMapPtr == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to new HiAppEvent_Config.");
+    }
+    return reinterpret_cast<HiAppEvent_Config *>(ndkConfigMapPtr);
+}
+
+int HiAppEventSetConfigItem(HiAppEvent_Config* config, const char* itemName, const char* itemValue)
+{
+    if (config == nullptr) {
+        HILOG_ERROR(LOG_CORE, "Failed to Set Config Item, the event config is null.");
+        return ErrorCode::ERROR_EVENT_CONFIG_IS_NULL;
+    }
+
+    if (itemName == nullptr || std::strlen(itemName) > MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE) {
+        HILOG_ERROR(LOG_CORE, "Failed to Set Config Item, the itemName is nullptr or length is more than %{public}zu.",
+            MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE);
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+
+    std::string itemNameStr = itemName;
+    std::string itemValueStr = "";
+    if (itemValue != nullptr) {
+        if (std::strlen(itemValue) > MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE) {
+            HILOG_ERROR(LOG_CORE, "Failed to Set Config Item, the itemValue length is more than %{public}zu.",
+                MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE);
+            return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+        }
+        itemValueStr = itemValue;
+    }
+    auto ndkConfigMapPtr = reinterpret_cast<std::map<std::string, std::string> *>(config);
+    (*ndkConfigMapPtr)[itemNameStr] = itemValueStr;
+    return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+}
+
+int HiAppEventSetEventConfig(const char* name, HiAppEvent_Config* config)
+{
+    if (config == nullptr) {
+        HILOG_ERROR(LOG_CORE, "Failed to set event config, the event config is null.");
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+    if (name == nullptr || std::strlen(name) > MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE) {
+        HILOG_ERROR(LOG_CORE, "Failed to set event config, the name is nullptr or length more than %{public}zu.",
+            MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE);
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+
+    auto configMap = reinterpret_cast<std::map<std::string, std::string> *>(config);
+    int res = SetEventConfig(name, *configMap);
+    if (res != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+    return res;
+}
+
+void HiAppEventDestroyConfig(HiAppEvent_Config* config)
+{
+    if (config != nullptr) {
+        delete reinterpret_cast<std::map<std::string, std::string> *>(config);
+        config = nullptr;
+    }
 }

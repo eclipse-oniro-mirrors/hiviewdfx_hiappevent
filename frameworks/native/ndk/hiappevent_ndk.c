@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -402,4 +402,24 @@ void OH_HiAppEvent_DestoryProcessor(struct HiAppEvent_Processor* processor)
 int OH_HiAppEvent_RemoveProcessor(int64_t processorId)
 {
     return RemoveProcessor(processorId);
+}
+
+HiAppEvent_Config* OH_HiAppEvent_CreateConfig(void)
+{
+    return HiAppEventCreateConfig();
+}
+
+int OH_HiAppEvent_SetConfigItem(HiAppEvent_Config* config, const char* itemName, const char* itemValue)
+{
+    return HiAppEventSetConfigItem(config, itemName, itemValue);
+}
+
+int OH_HiAppEvent_SetEventConfig(const char* name, HiAppEvent_Config* config)
+{
+    return HiAppEventSetEventConfig(name, config);
+}
+
+void OH_HiAppEvent_DestroyConfig(HiAppEvent_Config* config)
+{
+    HiAppEventDestroyConfig(config);
 }
