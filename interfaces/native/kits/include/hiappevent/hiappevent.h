@@ -88,6 +88,30 @@ extern "C" {
 #endif
 
 /**
+ * @brief Defines error code
+ *
+ * @since 16
+ */
+typedef enum {
+    /** @error The operation is successful. */
+    HIAPPEVENT_SUCCESS = 0,
+    /** @error Invalid param value length */
+    HIAPPEVENT_INVALID_PARAM_VALUE_LENGTH = 4,
+    /** @error Processor is null */
+    HIAPPEVENT_PROCESSOR_IS_NULL = -7,
+    /** @error Processor not found */
+    HIAPPEVENT_PROCESSOR_NOT_FOUND = -8,
+    /** @error Invalid param value */
+    HIAPPEVENT_INVALID_PARAM_VALUE = -9,
+    /** @error event config is null */
+    HIAPPEVENT_EVENT_CONFIG_IS_NULL = -10,
+    /** @error Operate failed */
+    HIAPPEVENT_OPERATE_FAILED = -100,
+    /** @error Invalid uid */
+    HIAPPEVENT_INVALID_UID = -200
+} HiAppEvent_ErrorCode;
+
+/**
  * @brief Event types.
  *
  * You are advised to select event types based on their respective usage scenarios.
@@ -163,6 +187,13 @@ typedef struct ParamListNode* ParamList;
  * @version 1.0
  */
 typedef struct HiAppEvent_Watcher HiAppEvent_Watcher;
+
+/**
+ * @brief The HiAppEvent_Processor structure is designed for event report.
+ *
+ * @since 16
+ */
+typedef struct HiAppEvent_Processor HiAppEvent_Processor;
 
 /**
  * @brief The OH_HiAppEvent_OnReceive function acts as the callback function for the HiAppEvent_Watcher. It is called
@@ -585,14 +616,161 @@ int OH_HiAppEvent_RemoveWatcher(HiAppEvent_Watcher* watcher);
 void OH_HiAppEvent_ClearData();
 
 /**
- * @brief The HiAppEvent_Processor structure is designed to process events, allowing it to be invoked when the event
- * occurs.
+ * @brief Create a HiAppEvent_Processor handler pointer to set the property.
  *
- * @syscap SystemCapability.HiviewDFX.HiAppEvent
- * @since 12
- * @version 1.0
+ * @param name The name of the processor.
+ * @return Returns a pointer to the HiAppEvent_Processor instance.
+ * @since 16
  */
-typedef struct HiAppEvent_Processor HiAppEvent_Processor;
+HiAppEvent_Processor* OH_HiAppEvent_CreateProcessor(const char* name);
+
+/**
+ * @brief The interface to set route for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param appId The appid of the processor.
+ * @param routeInfo The server location information.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_PROCESSOR_IS_NULL} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE_LENGTH} Invalid param value length.
+ * @since 16
+ */
+int OH_HiAppEvent_SetReportRoute(HiAppEvent_Processor* processor, const char* appId, const char* routeInfo);
+
+/**
+ * @brief The interface to set policy for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param periodReport The time interval to report.
+ * @param batchReport The threthold to report.
+ * @param onStartReport The strategy to report.
+ * @param onBackgroundReport The strategy to report.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_PROCESSOR_IS_NULL} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ * @since 16
+ */
+int OH_HiAppEvent_SetReportPolicy(HiAppEvent_Processor* processor, int periodReport, int batchReport,
+    bool onStartReport, bool onBackgroundReport);
+
+/**
+ * @brief The interface to set report event for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param domain The event domain to report.
+ * @param name The event name to report.
+ * @param isRealTime The strategy to report.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_PROCESSOR_IS_NULL} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ * @since 16
+ */
+int OH_HiAppEvent_SetReportEvent(HiAppEvent_Processor* processor, const char* domain, const char* name,
+    bool isRealTime);
+
+/**
+ * @brief The interface to set config for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param key The custom key of processor.
+ * @param value The custom value of processor.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_PROCESSOR_IS_NULL} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE_LENGTH} Invalid param value length.
+ * @since 16
+ */
+int OH_HiAppEvent_SetCustomConfig(HiAppEvent_Processor* processor, const char* key, const char* value);
+
+/**
+ * @brief The interface to set configId for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param configId The configId of processor.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_INVALID_PROCESSOR} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ * @since 16
+ */
+int OH_HiAppEvent_SetConfigId(HiAppEvent_Processor* processor, int configId);
+
+/**
+ * @brief The interface to set user info for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param userIdNames The userIdNames of processor.
+ * @param size The size of userIdNames array.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_INVALID_PROCESSOR} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE_LENGTH} Invalid param value length.
+ * @since 16
+ */
+int OH_HiAppEvent_SetReportUserId(HiAppEvent_Processor* processor, const char* const * userIdNames, int size);
+
+/**
+ * @brief The interface to set user property for processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @param userPropertyNames The userPropertyNames of processor.
+ * @param size The size of userPropertyNames array.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_INVALID_PROCESSOR} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE_LENGTH} Invalid param value length.
+ * @since 16
+ */
+int OH_HiAppEvent_SetReportUserProperty(HiAppEvent_Processor* processor, const char* const * userPropertyNames,
+    int size);
+
+/**
+ * @brief The interface to add processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @return process id if set is successful.
+ *         {@link HIAPPEVENT_INVALID_PROCESSOR} The processor is nullptr.
+ *         {@link HIAPPEVENT_INVALID_PARAM_VALUE} Invalid Param value.
+ *         {@link HIAPPEVENT_OPERATE_FAILED} Name not found or register processor error.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ * @since 16
+ */
+int64_t OH_HiAppEvent_AddProcessor(HiAppEvent_Processor* processor);
+
+/**
+ * @brief The interface to destroy processor.
+ *
+ * @param processor The pointer to the HiAppEvent_Processor instance.
+ * @since 16
+ */
+void OH_HiAppEvent_DestoryProcessor(HiAppEvent_Processor* processor);
+
+/**
+ * @brief The interface to remove processor.
+ *
+ * @param processorId The id of the processor.
+ * @return set result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_PROCESSOR_NOT_FOUND} Processor not add.
+ *         {@link HIAPPEVENT_OPERATE_FAILED} The operation is failed.
+ *         {@link HIAPPEVENT_INVALID_UID} Invalid uid.
+ * @since 16
+ */
+int OH_HiAppEvent_RemoveProcessor(int64_t processorId);
 #ifdef __cplusplus
 }
 #endif
