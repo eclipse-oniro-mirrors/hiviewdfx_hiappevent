@@ -16,6 +16,7 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H
 #include <memory>
+#include <map>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -23,6 +24,7 @@ class AppEventPack;
 
 void WriteEvent(std::shared_ptr<AppEventPack> appEventPack);
 int SetEventParam(std::shared_ptr<AppEventPack> appEventPack);
+int SetEventConfig(const std::string& name, const std::map<std::string, std::string>& eventConfig);
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_HIAPPEVENT_WRITE_H

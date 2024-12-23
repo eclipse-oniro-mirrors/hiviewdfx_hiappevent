@@ -797,3 +797,153 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest026, TestSize.Level0)
     DestoryProcessor(processor);
     ASSERT_EQ(RemoveProcessor(seq), 0);
 }
+
+/**
+ * @tc.name: HiAppEventNDKTest027
+ * @tc.desc: check the interface of SetEventItem.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest027, TestSize.Level0)
+{
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(nullptr, "testName", "testValue"), ErrorCode::ERROR_EVENT_CONFIG_IS_NULL);
+
+    int maxStrLen = 1024;
+    std::string longStr(maxStrLen, 'a');
+    std::string longInvalidStr(maxStrLen + 1, 'a');
+    HiAppEvent_Config* configDemo = OH_HiAppEvent_CreateConfig();
+    
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "", "testValue"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, longStr.c_str(), "testValue"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, nullptr, "testValue"), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, longInvalidStr.c_str(), "testValue"),
+              ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "testName", ""), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "testName", longStr.c_str()),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "testName", nullptr), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "testName", longInvalidStr.c_str()),
+              ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    
+    OH_HiAppEvent_DestroyConfig(configDemo);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest028
+ * @tc.desc: check the interface of SetEventConfig when name is invalid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest028, TestSize.Level0)
+{
+    HiAppEvent_Config* configDemo = OH_HiAppEvent_CreateConfig();
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "0"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig(nullptr, configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("testName", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    int maxStrLen = 1024;
+    std::string longInvalidStr(maxStrLen + 1, 'a');
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig(longInvalidStr.c_str(), configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    OH_HiAppEvent_DestroyConfig(configDemo);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest029
+ * @tc.desc: check the interface of SetEventConfig for MAIN_THREAD_JANK when the log type is not customizable.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest029, TestSize.Level0)
+{
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    HiAppEvent_Config* configDemo = OH_HiAppEvent_CreateConfig();
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "-1"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "abc"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", ""), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", nullptr), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "100"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "0"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "2"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    OH_HiAppEvent_DestroyConfig(configDemo);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest030
+ * @tc.desc: check the interface of SetEventConfig for MAIN_THREAD_JANK when the log type is customizable.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest030, TestSize.Level0)
+{
+    HiAppEvent_Config* configDemo = OH_HiAppEvent_CreateConfig();
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "1"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "ignore_startup_interval", "10"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "100"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "report_times_per_app", "3"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_count", "21"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    OH_HiAppEvent_DestroyConfig(configDemo);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest031
+ * @tc.desc: check the interface of SetEventConfig for MAIN_THREAD_JANK when event params value is invalid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest031, TestSize.Level0)
+{
+    HiAppEvent_Config* configDemo = OH_HiAppEvent_CreateConfig();
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "1"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_count", "21"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "ignore_startup_interval", "10"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "report_times_per_app", "3"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "50"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);  // sample_interval range is [50, 1000]
+
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "-1"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "49"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "aa"),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    
+    std::string maxValue = "92233720368547758079223372036854775807";
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", maxValue.c_str()),
+              ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    OH_HiAppEvent_DestroyConfig(configDemo);
+}

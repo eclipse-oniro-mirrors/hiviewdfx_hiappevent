@@ -170,6 +170,25 @@ describe('HiAppEventJsTest', function () {
         writeV9Test(eventInfo, expectErr, done, hasCatch);
     }
 
+    function setEventConfigV9Test(name, configInfo, expectErr, done) {
+        hiAppEventV9.setEventConfig(name, configInfo).then((data) => {
+            expect(data).assertEqual(0);
+            done();
+        }).catch((err) => {
+            assertErrorEqual(err, expectErr);
+            done();
+        });
+    }
+
+    function setEventConfigV9TestCatch(name, configInfo, expectErr, done) {
+        try {
+            setEventConfigV9Test(name, configInfo, expectErr, done);
+        } catch (err) {
+            assertErrorEqual(err, expectErr);
+            done();
+        }
+    }
+
     /**
      * @tc.number HiAppEventJsTest001_1
      * @tc.name: HiAppEventJsTest001_1
@@ -1850,5 +1869,193 @@ describe('HiAppEventJsTest', function () {
             console.info('HiAppEventWatcherTest016 end');
             done();
         }, 1000);
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest001
+     * @tc.name: HiAppEventSetEventConfigTest001
+     * @tc.desc: Test the SetEventConfig interface.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest001', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest001 start');
+        let configInfo1 = {  // default, collect stack and trace
+            "log_type": "0",
+        };
+        let configInfo2 = {  // collect stack
+            "log_type": "1",
+            "ignore_startup_interval": "10",
+            "sample_interval": "100",
+            "sample_count": "21",
+            "report_times_per_app": "3"
+        };
+        let configInfo3 = {  // collect trace
+            "log_type": "2",
+        };
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo1, null, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo2, null, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo3, null, done);
+        console.info('HiAppEventSetEventConfigTest001 end');
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest002
+     * @tc.name: HiAppEventSetEventConfigTest002
+     * @tc.desc: Test the SetEventConfig interface with invalid name.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest002', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest002 start');
+        let configInfo = {
+            "log_type": "0",
+        };
+        let expectErr1 = createError2("name", "string");
+        setEventConfigV9TestCatch(0, configInfo, expectErr1, done);
+        setEventConfigV9TestCatch(true, configInfo, expectErr1, done);
+
+        let expectErr2 = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("", configInfo, expectErr2, done);
+        setEventConfigV9Test(null, configInfo, expectErr2, done);
+        setEventConfigV9Test("INVALID_NAME", configInfo, expectErr2, done);
+        console.info('HiAppEventSetEventConfigTest002 end');
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest003
+     * @tc.name: HiAppEventSetEventConfigTest003
+     * @tc.desc: Test the SetEventConfig interface with invalid config type.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest003', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest003 start');
+        let expectErr = createError2("value", "object");
+        setEventConfigV9TestCatch("MAIN_THREAD_JANK", 0, expectErr, done);
+        setEventConfigV9TestCatch("MAIN_THREAD_JANK", "", expectErr, done);
+        setEventConfigV9TestCatch("MAIN_THREAD_JANK", true, expectErr, done);
+        setEventConfigV9TestCatch("MAIN_THREAD_JANK", null, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest003 end');
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest004
+     * @tc.name: HiAppEventSetEventConfigTest004
+     * @tc.desc: Test the SetEventConfig interface when the config is empty.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest004', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest004 start');
+        let configInfo = {};
+        try {
+            setEventConfigV9Test("MAIN_THREAD_JANK", configInfo, null, done);
+        } catch (err) {
+            expect(err.message == "Cannot read property then of undefined").assertTrue();
+            done();
+        }
+        console.info('HiAppEventSetEventConfigTest004 end');
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest005
+     * @tc.name: HiAppEventSetEventConfigTest005
+     * @tc.desc: Error code 401 is returned when the config log_type is invalid.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest005', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest005 start');
+        let configInfo1 = {
+            "log_type": "-1",
+        };
+        let configInfo2 = {
+            "log_type": "abc",
+        };
+        let configInfo3 = {
+            "log_type": "",
+        };
+        let configInfo4 = {
+            "log_type": null,
+        };
+        let expectErr = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo1, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo2, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo3, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo4, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest005 end');
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest006
+     * @tc.name: HiAppEventSetEventConfigTest006
+     * @tc.desc: Error code 401 is returned when the config log_type=1, but item number is not 5.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest006', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest006 start');
+        let configInfo = {
+            "log_type": "1",
+            "sample_interval": "100",
+            "sample_count": "21",
+        };
+        let expectErr = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest006 end');
+    });
+
+    /**
+     * @tc.number HiAppEventSetEventConfigTest007
+     * @tc.name: HiAppEventSetEventConfigTest007
+     * @tc.desc: Error code 401 is returned when the value param item value is invalid.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+    */
+    it('HiAppEventSetEventConfigTest007', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest007 start');
+        let configInfo1 = {
+            "log_type": "1",
+            "ignore_startup_interval": "10",
+            "sample_interval": "-1",
+            "sample_count": "21",
+            "report_times_per_app": "3"
+        };
+        let configInfo2 = {
+            "log_type": "1",
+            "ignore_startup_interval": "10",
+            "sample_interval": "49",
+            "sample_count": "21",
+            "report_times_per_app": "3"
+        };
+        let configInfo3 = {
+            "log_type": "1",
+            "ignore_startup_interval": "10",
+            "sample_interval": "50",
+            "sample_count": "21",
+            "report_times_per_app": "3"
+        };
+        let configInfo4 = {
+            "log_type": "1",
+            "ignore_startup_interval": "10",
+            "sample_interval": "92233720368547758079223372036854775807",
+            "sample_count": "21",
+            "report_times_per_app": "3"
+        };
+        let configInfo5 = {
+            "log_type": "1",
+            "ignore_startup_interval": "10",
+            "sample_interval": "aa",
+            "sample_count": "21",
+            "report_times_per_app": "3"
+        };
+        let expectErr = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo1, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo2, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo3, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo4, expectErr, done);
+        setEventConfigV9Test("MAIN_THREAD_JANK", configInfo5, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest007 end');
     });
 });
