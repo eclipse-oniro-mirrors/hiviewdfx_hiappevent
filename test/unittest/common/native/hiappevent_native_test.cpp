@@ -896,7 +896,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest030, TestSize.Level0)
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "1"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "ignore_startup_interval", "10"),
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "ignore_startup_time", "10"),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "100"),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
@@ -919,7 +919,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest031, TestSize.Level0)
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "log_type", "1"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_count", "21"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
-    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "ignore_startup_interval", "10"),
+    ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "ignore_startup_time", "10"),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "report_times_per_app", "3"),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);

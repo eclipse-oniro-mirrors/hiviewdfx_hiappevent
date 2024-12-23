@@ -1885,7 +1885,7 @@ describe('HiAppEventJsTest', function () {
         };
         let configInfo2 = {  // collect stack
             "log_type": "1",
-            "ignore_startup_interval": "10",
+            "ignore_startup_time": "10",
             "sample_interval": "100",
             "sample_count": "21",
             "report_times_per_app": "3"
@@ -2017,35 +2017,35 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventSetEventConfigTest007 start');
         let configInfo1 = {
             "log_type": "1",
-            "ignore_startup_interval": "10",
+            "ignore_startup_time": "10",
             "sample_interval": "-1",
             "sample_count": "21",
             "report_times_per_app": "3"
         };
         let configInfo2 = {
             "log_type": "1",
-            "ignore_startup_interval": "10",
+            "ignore_startup_time": "10",
             "sample_interval": "49",
             "sample_count": "21",
             "report_times_per_app": "3"
         };
         let configInfo3 = {
             "log_type": "1",
-            "ignore_startup_interval": "10",
+            "ignore_startup_time": "10",
             "sample_interval": "50",
             "sample_count": "21",
             "report_times_per_app": "3"
         };
         let configInfo4 = {
             "log_type": "1",
-            "ignore_startup_interval": "10",
+            "ignore_startup_time": "10",
             "sample_interval": "92233720368547758079223372036854775807",
             "sample_count": "21",
             "report_times_per_app": "3"
         };
         let configInfo5 = {
             "log_type": "1",
-            "ignore_startup_interval": "10",
+            "ignore_startup_time": "10",
             "sample_interval": "aa",
             "sample_count": "21",
             "report_times_per_app": "3"
