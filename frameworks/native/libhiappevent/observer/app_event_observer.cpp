@@ -50,6 +50,7 @@ const std::vector<OsEventPosInfo> OS_EVENT_POS_INFOS = {
     { EVENT_ADDRESS_SANITIZER, FAULT, 7 },
     { EVENT_MAIN_THREAD_JANK, FAULT, 8 },
     { EVENT_APP_START, BEHAVIOR, 9 },
+    { EVENT_APP_HICOLLIE, FAULT, 10 },
 };
 
 bool MeetNumberCondition(int currNum, int maxNum)

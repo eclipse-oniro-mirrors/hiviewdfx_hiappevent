@@ -31,6 +31,7 @@ const std::string EVENT_RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
 const std::string EVENT_ADDRESS_SANITIZER = "ADDRESS_SANITIZER";
 const std::string EVENT_MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 const std::string EVENT_APP_START = "APP_START";
+const std::string EVENT_APP_HICOLLIE = "APP_HICOLLIE";
 } // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS
