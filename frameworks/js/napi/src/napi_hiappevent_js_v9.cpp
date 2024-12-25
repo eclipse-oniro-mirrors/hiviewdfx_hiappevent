@@ -202,7 +202,7 @@ static napi_value GetUserProperty(napi_env env, napi_callback_info info)
 
 static napi_value ClearData(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = TimeUtil::GetMilliseconds();
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
     HiAppEventClean::ClearData(NapiHiAppEventConfig::GetStorageDir());
     AppEventStat::WriteApiEndEventAsync("clearData", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
     return NapiUtil::CreateUndefined(env);
@@ -210,7 +210,7 @@ static napi_value ClearData(napi_env env, napi_callback_info info)
 
 static napi_value AddWatcher(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = TimeUtil::GetMilliseconds();
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addWatcher is 1
         AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
@@ -222,7 +222,7 @@ static napi_value AddWatcher(napi_env env, napi_callback_info info)
 
 static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = TimeUtil::GetMilliseconds();
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeWatcher is 1
         AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);

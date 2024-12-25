@@ -23,6 +23,8 @@ namespace TimeUtil {
 uint64_t GetMilliseconds();
 std::string GetDate();
 std::string GetTimeZone();
+int64_t GetMilliSecondsTimestamp(clockid_t clockId);
+int64_t GetElapsedMilliSecondsSinceBoot();
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

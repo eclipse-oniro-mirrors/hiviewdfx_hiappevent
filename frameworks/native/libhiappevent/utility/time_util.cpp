@@ -66,6 +66,22 @@ std::string GetTimeZone()
     }
     return std::string(buff);
 }
+
+int64_t GetMilliSecondsTimestamp(clockid_t clockId)
+{
+    struct timespec times {};
+    if (clock_gettime(clockId, &times) == -1) {
+        return -1;
+    }
+    constexpr int64_t secondToMillisecond = 1 * 1000;
+    constexpr int64_t nanosecondToMillisecond = 1 * 1000 * 1000;
+    return times.tv_sec * secondToMillisecond + times.tv_nsec / nanosecondToMillisecond;
+}
+
+int64_t GetElapsedMilliSecondsSinceBoot()
+{
+    return GetMilliSecondsTimestamp(CLOCK_BOOTTIME);
+}
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

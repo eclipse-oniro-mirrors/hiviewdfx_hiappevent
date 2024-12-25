@@ -42,8 +42,14 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
     appEventPack->AddParam("trans_id", "transId_" + std::to_string(RandomNum()));
     appEventPack->AddParam("api_name", apiName);
     appEventPack->AddParam("sdk_name", "PerformanceAnalysisKit");
-    appEventPack->AddParam("begin_time", static_cast<int64_t>(beginTime));
-    appEventPack->AddParam("end_time", static_cast<int64_t>(TimeUtil::GetMilliseconds()));
+    int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
+    int64_t realEndTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
+    int64_t realBeginTime = realEndTime - costTime;
+    if (realBeginTime < 0 || realEndTime < 0) {
+        return;
+    }
+    appEventPack->AddParam("begin_time", realBeginTime);
+    appEventPack->AddParam("end_time", realEndTime);
     appEventPack->AddParam("result", result);
     appEventPack->AddParam("error_code", errCode);
     ffrt::submit([appEventPack]() {
