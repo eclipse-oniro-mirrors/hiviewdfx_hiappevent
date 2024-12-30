@@ -785,7 +785,7 @@ int OH_HiAppEvent_RemoveProcessor(int64_t processorId);
  * @return Returns a pointer to the HiAppEvent_Config instance.
  * @since 16
  */
-HiAppEvent_Config* OH_HiAppEvent_CreateConfig();
+HiAppEvent_Config* OH_HiAppEvent_CreateConfig(void);
 
 /**
  * @brief Destroy the specified HiAppEvent_Config handle resource.
