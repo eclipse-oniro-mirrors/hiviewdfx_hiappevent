@@ -76,7 +76,7 @@ ParamEntry* CreateParamEntry(const char* name, ParamValue* value)
     return entry;
 }
 
-ParamList OH_HiAppEvent_CreateParamList()
+ParamList OH_HiAppEvent_CreateParamList(void)
 {
     ParamList list = NEW(ParamListNode);
     if (list != NULL) {
@@ -404,7 +404,7 @@ int OH_HiAppEvent_RemoveProcessor(int64_t processorId)
     return RemoveProcessor(processorId);
 }
 
-HiAppEvent_Config* OH_HiAppEvent_CreateConfig()
+HiAppEvent_Config* OH_HiAppEvent_CreateConfig(void)
 {
     return HiAppEventCreateConfig();
 }
