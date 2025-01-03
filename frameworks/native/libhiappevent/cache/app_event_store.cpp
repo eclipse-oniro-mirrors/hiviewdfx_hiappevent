@@ -529,7 +529,7 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
     int deleteRows = 0;
     // delete custom_event_params if running_id not in events, and running_id isn't current runningId
     std::string whereClause = "(" + CustomEventParams::TABLE + "." + CustomEventParams::FIELD_RUNNING_ID
-        + " NOT EXISTS (SELECT " + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + ")) AND "
+        + " NOT IN (SELECT " + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + ")) AND "
         + CustomEventParams::FIELD_RUNNING_ID + " != ?";
     if (dbStore_->Delete(deleteRows, CustomEventParams::TABLE, whereClause, std::vector<std::string>{curRunningId})
         != NativeRdb::E_OK) {
@@ -547,7 +547,7 @@ int AppEventStore::DeleteUnusedEventMapping()
     }
     int deleteRows = 0;
     // delete event_observer_mapping if event_seq not in events
-    std::string whereClause = AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " NOT EXISTS (SELECT "
+    std::string whereClause = AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " NOT IN (SELECT "
         + Events::FIELD_SEQ + " FROM " + Events::TABLE + ")";
     if (dbStore_->Delete(deleteRows, AppEventMapping::TABLE, whereClause) != NativeRdb::E_OK) {
         return DB_FAILED;
