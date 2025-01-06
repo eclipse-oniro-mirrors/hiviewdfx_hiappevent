@@ -396,7 +396,12 @@ int64_t OH_HiAppEvent_AddProcessor(struct HiAppEvent_Processor* processor)
 
 void OH_HiAppEvent_DestoryProcessor(struct HiAppEvent_Processor* processor)
 {
-    DestoryProcessor(processor);
+    DestroyProcessor(processor);
+}
+
+void OH_HiAppEvent_DestroyProcessor(struct HiAppEvent_Processor* processor)
+{
+    DestroyProcessor(processor);
 }
 
 int OH_HiAppEvent_RemoveProcessor(int64_t processorId)

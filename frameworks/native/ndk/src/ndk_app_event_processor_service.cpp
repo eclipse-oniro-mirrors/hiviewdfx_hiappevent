@@ -198,7 +198,7 @@ int64_t AddProcessor(struct HiAppEvent_Processor* processor)
     return processorId;
 }
 
-void DestoryProcessor(struct HiAppEvent_Processor* processor)
+void DestroyProcessor(struct HiAppEvent_Processor* processor)
 {
     if (!IsApp()) {
         return;
