@@ -727,7 +727,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
     ASSERT_EQ(SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
     ASSERT_EQ(SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
     ASSERT_EQ(AddProcessor(nullptr), ErrorCode::ERROR_NOT_APP);
-    DestoryProcessor(nullptr);
+    DestroyProcessor(nullptr);
     ASSERT_EQ(RemoveProcessor(0), ErrorCode::ERROR_NOT_APP);
 
     // set app uid
@@ -742,7 +742,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
     ASSERT_EQ(SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
     ASSERT_EQ(SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
     ASSERT_EQ(AddProcessor(nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
-    DestoryProcessor(nullptr);
+    DestroyProcessor(nullptr);
     ASSERT_EQ(RemoveProcessor(0), ErrorCode::ERROR_PROCESSOR_NOT_ADDED);
 }
 
@@ -770,7 +770,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest025, TestSize.Level0)
     ASSERT_EQ(SetReportUserProperty(processor, userStrs, 0), 0);
     int64_t seq = AddProcessor(processor);
     ASSERT_GT(seq, 0);
-    DestoryProcessor(processor);
+    DestroyProcessor(processor);
     ASSERT_EQ(RemoveProcessor(seq), 0);
 }
 
@@ -794,7 +794,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest026, TestSize.Level0)
     ASSERT_EQ(SetReportUserProperty(processor, userProperties, 1), 0);
     int64_t seq = AddProcessor(processor);
     ASSERT_GT(seq, 0);
-    DestoryProcessor(processor);
+    DestroyProcessor(processor);
     ASSERT_EQ(RemoveProcessor(seq), 0);
 }
 
@@ -811,7 +811,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest027, TestSize.Level0)
     std::string longStr(maxStrLen, 'a');
     std::string longInvalidStr(maxStrLen + 1, 'a');
     HiAppEvent_Config* configDemo = OH_HiAppEvent_CreateConfig();
-    
+
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "", "testValue"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, longStr.c_str(), "testValue"),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
@@ -825,7 +825,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest027, TestSize.Level0)
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "testName", nullptr), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "testName", longInvalidStr.c_str()),
               ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    
+
     OH_HiAppEvent_DestroyConfig(configDemo);
 }
 
@@ -939,7 +939,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest031, TestSize.Level0)
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", "aa"),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    
+
     std::string maxValue = "92233720368547758079223372036854775807";
     ASSERT_EQ(OH_HiAppEvent_SetConfigItem(configDemo, "sample_interval", maxValue.c_str()),
               ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);

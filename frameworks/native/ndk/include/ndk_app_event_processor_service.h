@@ -34,7 +34,7 @@ int SetConfigId(struct HiAppEvent_Processor* processor, int configId);
 int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * userIdNames, int size);
 int SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* const * userPropertyNames, int size);
 int64_t AddProcessor(struct HiAppEvent_Processor* processor);
-void DestoryProcessor(struct HiAppEvent_Processor* processor);
+void DestroyProcessor(struct HiAppEvent_Processor* processor);
 int RemoveProcessor(int64_t processorId);
 #ifdef __cplusplus
 }
