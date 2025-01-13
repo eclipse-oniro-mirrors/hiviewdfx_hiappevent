@@ -69,6 +69,7 @@ private:
     void UnregisterAppStateCallback();
     bool InitObserverFromListener(std::shared_ptr<AppEventObserver> observer, bool sendFlag);
     void UnregisterOsEventListener();
+    void InitWatchers();
 
 private:
     std::unique_ptr<ModuleLoader> moduleLoader_; // moduleLoader_ must declared before observers_, or lead to crash

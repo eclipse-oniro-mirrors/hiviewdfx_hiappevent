@@ -114,6 +114,15 @@ void UpToDbVersion2(NativeRdb::RdbStore& rdbStore)
         HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 1 to 2, ret=%{public}d", ret);
     }
 }
+
+void UpToDbVersion3(NativeRdb::RdbStore& rdbStore)
+{
+    std::string sql = "ALTER TABLE " + Observers::TABLE + " ADD COLUMN "
+        + Observers::FIELD_FILTERS + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
+    if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 2 to 3, ret=%{public}d", ret);
+    }
+}
 }
 
 int AppEventStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
@@ -128,6 +137,9 @@ int AppEventStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersi
     for (int i = oldVersion; i < newVersion; ++i) {
         if (i == 1) { // upgrade db version from 1 to 2
             UpToDbVersion2(rdbStore);
+        }
+        if (i == 2) { // upgrade db version from 2 to 3
+            UpToDbVersion3(rdbStore);
         }
     }
     return NativeRdb::E_OK;
@@ -153,7 +165,7 @@ int AppEventStore::InitDbStore()
     int ret = NativeRdb::E_OK;
     NativeRdb::RdbStoreConfig config(dirPath_ + DATABASE_NAME);
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
-    const int dbVersion = 2; // 2 means new db version
+    const int dbVersion = 3; // 3 means new db version
     AppEventStoreCallback callback;
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, dbVersion, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
@@ -211,13 +223,13 @@ int64_t AppEventStore::InsertEvent(std::shared_ptr<AppEventPack> event)
     return appEventDao_->Insert(event);
 }
 
-int64_t AppEventStore::InsertObserver(const std::string& observer, int64_t hashCode)
+int64_t AppEventStore::InsertObserver(const std::string& observer, int64_t hashCode, const std::string& filters)
 {
     std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->Insert(observer, hashCode);
+    return appEventObserverDao_->Insert(observer, hashCode, filters);
 }
 
 int64_t AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
@@ -309,6 +321,15 @@ int64_t AppEventStore::UpdateUserProperty(const std::string& name, const std::st
         return DB_FAILED;
     }
     return userPropertyDao_->Update(name, value);
+}
+
+int64_t AppEventStore::UpdateObserver(int64_t seq, const std::string& filters)
+{
+    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+    return appEventObserverDao_->Update(seq, filters);
 }
 
 int AppEventStore::DeleteUserId(const std::string& name)
@@ -439,7 +460,17 @@ int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t has
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->QuerySeq(observer, hashCode);
+    std::string filters;
+    return appEventObserverDao_->QuerySeq(observer, hashCode, filters);
+}
+
+int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t hashCode, std::string& filters)
+{
+    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+    return appEventObserverDao_->QuerySeq(observer, hashCode, filters);
 }
 
 int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type)
@@ -449,6 +480,15 @@ int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<in
         return DB_FAILED;
     }
     return appEventObserverDao_->QuerySeqs(observer, observerSeqs, type);
+}
+
+int AppEventStore::QueryWatchers(std::vector<Observer>& observers)
+{
+    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+    return appEventObserverDao_->QueryWatchers(observers);
 }
 
 int AppEventStore::DeleteObserver(int64_t observerSeq, ObserverType type)
