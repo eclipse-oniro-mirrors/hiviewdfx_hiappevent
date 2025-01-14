@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base_type.h"
+#include "json/json.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -46,13 +47,14 @@ struct AppEventFilter {
     bool IsValidEvent(std::shared_ptr<AppEventPack> event) const;
     bool IsValidEvent(const std::string& eventDomain, const std::string& eventName, int eventType) const;
     uint64_t GetOsEventsMask() const;
+    Json::Value ToJsonValue() const;
 };
 
 class AppEventObserver {
 public:
     AppEventObserver(const std::string& name) : name_(name) {}
     virtual ~AppEventObserver() = default;
-    virtual void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) = 0;
+    virtual void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) {}
     virtual bool VerifyEvent(std::shared_ptr<AppEventPack> event);
     virtual bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event);
     void ProcessEvent(std::shared_ptr<AppEventPack> event);
@@ -76,6 +78,8 @@ public:
 
     // used to match os events.
     uint64_t GetOsEventsMask();
+    void SetFilters(const std::string& jsonFiltersStr);
+    std::string GetFiltersStr();
 
 protected:
     virtual void OnTrigger(const TriggerCondition& triggerCond);

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "app_event_cache_common.h"
 #include "hiappevent_base.h"
 #include "rdb_store.h"
 
@@ -29,9 +30,11 @@ class AppEventObserverDao {
 public:
     AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
     ~AppEventObserverDao() = default;
-    int64_t Insert(const std::string& observer, int64_t hashCode);
-    int64_t QuerySeq(const std::string& observer, int64_t hashCode);
+    int64_t Insert(const std::string& observer, int64_t hashCode, const std::string& filters);
+    int64_t Update(int64_t seq, const std::string& filters);
+    int64_t QuerySeq(const std::string& observer, int64_t hashCode, std::string& filters);
     int QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type);
+    int QueryWatchers(std::vector<AppEventCacheCommon::Observer>& observers);
     int Delete(const std::string& observer);
     int Delete(int64_t observerSeq, ObserverType type);
 
