@@ -53,67 +53,6 @@ void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_
         }
         }, {}, {}, ffrt::task_attr().name("appevent_del_map"));
 }
-
-void OnTriggerWork(uv_work_t* work, int status)
-{
-    auto context = static_cast<OnTriggerContext*>(work->data);
-    napi_handle_scope scope = nullptr;
-    napi_open_handle_scope(context->env, &scope);
-    if (scope == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to open handle scope");
-        SafeDeleteWork(work);
-        return;
-    }
-    napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onTrigger);
-    if (callback == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
-        SafeDeleteWork(work);
-        napi_close_handle_scope(context->env, scope);
-        return;
-    }
-    napi_value argv[CALLBACK_PARAM_NUM] = {
-        NapiUtil::CreateInt32(context->env, context->row),
-        NapiUtil::CreateInt32(context->env, context->size),
-        NapiUtil::GetReferenceValue(context->env, context->holder)
-    };
-    napi_value ret = nullptr;
-    if (napi_call_function(context->env, nullptr, callback, CALLBACK_PARAM_NUM, argv, &ret) != napi_ok) {
-        HILOG_ERROR(LOG_CORE, "failed to call onTrigger function");
-    }
-    napi_close_handle_scope(context->env, scope);
-    SafeDeleteWork(work);
-}
-
-void OnReceiveWork(uv_work_t* work, int status)
-{
-    auto context = static_cast<OnReceiveContext*>(work->data);
-    napi_handle_scope scope = nullptr;
-    napi_open_handle_scope(context->env, &scope);
-    if (scope == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to open handle scope");
-        SafeDeleteWork(work);
-        return;
-    }
-    napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onReceive);
-    if (callback == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
-        SafeDeleteWork(work);
-        napi_close_handle_scope(context->env, scope);
-        return;
-    }
-    napi_value argv[RECEIVE_PARAM_NUM] = {
-        NapiUtil::CreateString(context->env, context->domain),
-        NapiUtil::CreateEventGroups(context->env, context->events)
-    };
-    napi_value ret = nullptr;
-    if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
-        DeleteEventMappingAsync(context->observerSeq, context->events);
-    } else {
-        HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
-    }
-    napi_close_handle_scope(context->env, scope);
-    SafeDeleteWork(work);
-}
 }
 OnTriggerContext::~OnTriggerContext()
 {
@@ -164,32 +103,14 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
         delete context_;
         return;
     }
-    uv_loop_t* loop = nullptr;
-    if (napi_get_uv_event_loop(env, &loop) != napi_ok || loop == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to get loop.");
+    auto task = [contextData = context_] () {
+        HILOG_DEBUG(LOG_CORE, "start to destroy WatcherContext object");
+        delete contextData;
+    };
+    if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
         delete context_;
-        return;
     }
-    uv_work_t* work = new(std::nothrow) uv_work_t();
-    if (work == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to get work.");
-        delete context_;
-        return;
-    }
-    work->data = static_cast<void*>(context_);
-    uv_queue_work_with_qos(
-        loop,
-        work,
-        [] (uv_work_t* work) {
-            HILOG_DEBUG(LOG_CORE, "enter uv work callback.");
-        },
-        [] (uv_work_t* work, int status) {
-            WatcherContext* context = static_cast<WatcherContext*>(work->data);
-            HILOG_DEBUG(LOG_CORE, "start to destroy WatcherContext object");
-            delete context;
-            SafeDeleteWork(work);
-        },
-        uv_qos_default);
 }
 
 void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder)
@@ -219,19 +140,34 @@ void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
     }
     context_->triggerContext->row = triggerCond.row;
     context_->triggerContext->size = triggerCond.size;
-
-    uv_loop_t* loop = nullptr;
-    if (napi_get_uv_event_loop(context_->triggerContext->env, &loop) != napi_ok || loop == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to get loop.");
-        return;
+    auto onTriggerWork = [triggerContext = context_->triggerContext] () {
+        auto context = static_cast<OnTriggerContext*>(triggerContext);
+        napi_handle_scope scope = nullptr;
+        napi_open_handle_scope(context->env, &scope);
+        if (scope == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to open handle scope");
+            return;
+        }
+        napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onTrigger);
+        if (callback == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
+            napi_close_handle_scope(context->env, scope);
+            return;
+        }
+        napi_value argv[CALLBACK_PARAM_NUM] = {
+            NapiUtil::CreateInt32(context->env, context->row),
+            NapiUtil::CreateInt32(context->env, context->size),
+            NapiUtil::GetReferenceValue(context->env, context->holder)
+        };
+        napi_value ret = nullptr;
+        if (napi_call_function(context->env, nullptr, callback, CALLBACK_PARAM_NUM, argv, &ret) != napi_ok) {
+            HILOG_ERROR(LOG_CORE, "failed to call onTrigger function");
+        }
+        napi_close_handle_scope(context->env, scope);
+    };
+    if (napi_send_event(context_->triggerContext->env, onTriggerWork, napi_eprio_high) != napi_status::napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
     }
-    uv_work_t* work = new(std::nothrow) uv_work_t();
-    if (work == nullptr) {
-        return;
-    }
-    work->data = static_cast<void*>(context_->triggerContext);
-    uv_queue_work_with_qos(loop, work, [] (uv_work_t* work) { HILOG_DEBUG(LOG_CORE, "enter uv work callback."); },
-        OnTriggerWork, uv_qos_default);
 }
 
 void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value triggerFunc)
@@ -282,19 +218,35 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
     context_->receiveContext->domain = events[0]->GetDomain();
     context_->receiveContext->events = events;
     context_->receiveContext->observerSeq = GetSeq();
-
-    uv_loop_t* loop = nullptr;
-    if (napi_get_uv_event_loop(context_->receiveContext->env, &loop) != napi_ok || loop == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to get loop.");
-        return;
+    auto onReceiveWork = [receiveContext = context_->receiveContext] () {
+        auto context = static_cast<OnReceiveContext*>(receiveContext);
+        napi_handle_scope scope = nullptr;
+        napi_open_handle_scope(context->env, &scope);
+        if (scope == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to open handle scope");
+            return;
+        }
+        napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onReceive);
+        if (callback == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
+            napi_close_handle_scope(context->env, scope);
+            return;
+        }
+        napi_value argv[RECEIVE_PARAM_NUM] = {
+            NapiUtil::CreateString(context->env, context->domain),
+            NapiUtil::CreateEventGroups(context->env, context->events)
+        };
+        napi_value ret = nullptr;
+        if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
+            DeleteEventMappingAsync(context->observerSeq, context->events);
+        } else {
+            HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
+        }
+        napi_close_handle_scope(context->env, scope);
+    };
+    if (napi_send_event(context_->receiveContext->env, onReceiveWork, napi_eprio_high) != napi_status::napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
     }
-    uv_work_t* work = new(std::nothrow) uv_work_t();
-    if (work == nullptr) {
-        return;
-    }
-    work->data = static_cast<void*>(context_->receiveContext);
-    uv_queue_work_with_qos(loop, work, [] (uv_work_t* work) { HILOG_DEBUG(LOG_CORE, "enter uv work callback."); },
-        OnReceiveWork, uv_qos_default);
 }
 
 bool NapiAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
