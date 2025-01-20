@@ -21,7 +21,6 @@
 
 #include "app_event_observer.h"
 #include "app_event_processor.h"
-#include "ffrt.h"
 #include "module_loader.h"
 #include "nocopyable.h"
 
@@ -73,10 +72,10 @@ private:
     std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
-    ffrt::mutex observerMutex_;
+    std::mutex observerMutex_;
     std::shared_ptr<OsEventListener> listener_;
     bool hasHandleTimeout_ = false;
-    ffrt::mutex handlerMutex_;
+    std::mutex handlerMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
