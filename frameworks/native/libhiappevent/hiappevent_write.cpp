@@ -20,7 +20,6 @@
 
 #include "app_event_store.h"
 #include "app_event_observer_mgr.h"
-#include "ffrt.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
@@ -39,7 +38,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr int DB_FAILED = -1;
-ffrt::mutex g_mutex;
+std::mutex g_mutex;
 
 std::string GetStorageDirPath()
 {
@@ -77,7 +76,7 @@ void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)
     HILOG_DEBUG(LOG_CORE, "WriteEvent domain=%{public}s, name=%{public}s.",
         appEventPack->GetDomain().c_str(), appEventPack->GetName().c_str());
     {
-        std::lock_guard<ffrt::mutex> lockGuard(g_mutex);
+        std::lock_guard<std::mutex> lockGuard(g_mutex);
         if (!FileUtil::IsFileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {
             HILOG_ERROR(LOG_CORE, "failed to create hiappevent dir, errno=%{public}d.", errno);
             return;

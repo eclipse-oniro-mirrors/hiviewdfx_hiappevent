@@ -194,7 +194,7 @@ bool AppEventStore::InitDbStoreDir()
 
 int AppEventStore::DestroyDbStore()
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr) {
         return DB_SUCC;
     }
@@ -209,7 +209,7 @@ int AppEventStore::DestroyDbStore()
 
 int64_t AppEventStore::InsertEvent(std::shared_ptr<AppEventPack> event)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -218,7 +218,7 @@ int64_t AppEventStore::InsertEvent(std::shared_ptr<AppEventPack> event)
 
 int64_t AppEventStore::InsertObserver(const std::string& observer, int64_t hashCode)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -227,7 +227,7 @@ int64_t AppEventStore::InsertObserver(const std::string& observer, int64_t hashC
 
 int64_t AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -236,7 +236,7 @@ int64_t AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
 
 int64_t AppEventStore::InsertUserId(const std::string& name, const std::string& value)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -245,7 +245,7 @@ int64_t AppEventStore::InsertUserId(const std::string& name, const std::string& 
 
 int64_t AppEventStore::InsertUserProperty(const std::string& name, const std::string& value)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -259,7 +259,7 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
     if (newParams.empty()) {
         return DB_SUCC;
     }
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -300,7 +300,7 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
 
 int64_t AppEventStore::UpdateUserId(const std::string& name, const std::string& value)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -309,7 +309,7 @@ int64_t AppEventStore::UpdateUserId(const std::string& name, const std::string& 
 
 int64_t AppEventStore::UpdateUserProperty(const std::string& name, const std::string& value)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -318,7 +318,7 @@ int64_t AppEventStore::UpdateUserProperty(const std::string& name, const std::st
 
 int AppEventStore::DeleteUserId(const std::string& name)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -327,7 +327,7 @@ int AppEventStore::DeleteUserId(const std::string& name)
 
 int AppEventStore::DeleteUserProperty(const std::string& name)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -336,7 +336,7 @@ int AppEventStore::DeleteUserProperty(const std::string& name)
 
 int AppEventStore::QueryUserIds(std::unordered_map<std::string, std::string>& out)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -345,7 +345,7 @@ int AppEventStore::QueryUserIds(std::unordered_map<std::string, std::string>& ou
 
 int AppEventStore::QueryUserId(const std::string& name, std::string& out)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -354,7 +354,7 @@ int AppEventStore::QueryUserId(const std::string& name, std::string& out)
 
 int AppEventStore::QueryUserProperties(std::unordered_map<std::string, std::string>& out)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -363,7 +363,7 @@ int AppEventStore::QueryUserProperties(std::unordered_map<std::string, std::stri
 
 int AppEventStore::QueryUserProperty(const std::string& name, std::string& out)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -380,7 +380,7 @@ int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events
         return DB_SUCC;
     }
     // delete the events mapping of the observer
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     std::vector<int64_t> eventSeqs;
     for (const auto &event : events) {
         eventSeqs.emplace_back(event->GetSeq());
@@ -394,7 +394,7 @@ int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events
 
 int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t size)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -427,7 +427,7 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
 
 int AppEventStore::QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> event)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -440,7 +440,7 @@ int AppEventStore::QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> 
 
 int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t hashCode)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -449,7 +449,7 @@ int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t has
 
 int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -458,7 +458,7 @@ int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<in
 
 int AppEventStore::DeleteObserver(int64_t observerSeq)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -470,7 +470,7 @@ int AppEventStore::DeleteObserver(int64_t observerSeq)
 
 int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -479,7 +479,7 @@ int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int
 
 int AppEventStore::DeleteEvent(int64_t eventSeq)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -488,7 +488,7 @@ int AppEventStore::DeleteEvent(int64_t eventSeq)
 
 int AppEventStore::DeleteCustomEventParams()
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -500,7 +500,7 @@ int AppEventStore::DeleteEvent(const std::vector<int64_t>& eventSeqs)
     if (eventSeqs.empty()) {
         return DB_SUCC;
     }
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -527,7 +527,7 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
     if (curRunningId.empty()) {
         return DB_SUCC;
     }
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -546,7 +546,7 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
 
 int AppEventStore::DeleteUnusedEventMapping()
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
@@ -563,7 +563,7 @@ int AppEventStore::DeleteUnusedEventMapping()
 
 int AppEventStore::DeleteHistoryEvent(int reservedNum, int reservedNumOs)
 {
-    std::lock_guard<ffrt::mutex> lockGuard(dbMutex_);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }

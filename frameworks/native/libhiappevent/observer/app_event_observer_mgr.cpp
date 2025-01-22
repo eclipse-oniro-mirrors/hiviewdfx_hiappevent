@@ -19,6 +19,7 @@
 #include "app_event_processor_proxy.h"
 #include "app_event_store.h"
 #include "application_context.h"
+#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 #include "os_event_listener.h"
@@ -180,7 +181,7 @@ void AppEventObserverMgr::DestroyEventHandler()
         // stop and wait task
         handler_->TaskCancelAndWait();
     }
-    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
+    std::lock_guard<std::mutex> lock(handlerMutex_);
     handler_ = nullptr;
 }
 
@@ -208,7 +209,7 @@ int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> 
         return observerSeq;
     }
 
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     if (!InitObserverFromListener(observer, isExist)) {
         return -1;
     }
@@ -241,7 +242,7 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
 
 int AppEventObserverMgr::UnregisterObserver(int64_t observerSeq)
 {
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.find(observerSeq) == observers_.cend()) {
         HILOG_WARN(LOG_CORE, "observer seq=%{public}" PRId64 " is not exist", observerSeq);
         return 0;
@@ -290,7 +291,7 @@ int AppEventObserverMgr::UnregisterProcessor(const std::string& name)
 
 void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.empty() || events.empty()) {
         return;
     }
@@ -313,7 +314,7 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
 
 void AppEventObserverMgr::HandleTimeout()
 {
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     bool needSend = false;
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ProcessTimeout();
@@ -328,7 +329,7 @@ void AppEventObserverMgr::HandleTimeout()
 
 void AppEventObserverMgr::SendEventToHandler()
 {
-    std::lock_guard<ffrt::mutex> lock(handlerMutex_);
+    std::lock_guard<std::mutex> lock(handlerMutex_);
     if (handler_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to SendEventToHandler: handler is null");
         return;
@@ -340,7 +341,7 @@ void AppEventObserverMgr::HandleBackground()
 {
     HILOG_INFO(LOG_CORE, "start to handle background");
     ffrt::submit([this] {
-        std::lock_guard<ffrt::mutex> lock(observerMutex_);
+        std::lock_guard<std::mutex> lock(observerMutex_);
         for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
             it->second->ProcessBackground();
         }
@@ -350,7 +351,7 @@ void AppEventObserverMgr::HandleBackground()
 void AppEventObserverMgr::HandleClearUp()
 {
     HILOG_INFO(LOG_CORE, "start to handle clear up");
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
         it->second->ResetCurrCondition();
     }
@@ -358,7 +359,7 @@ void AppEventObserverMgr::HandleClearUp()
 
 int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig& config)
 {
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.find(observerSeq) == observers_.cend()) {
         HILOG_WARN(LOG_CORE, "failed to set config, seq=%{public}" PRId64, observerSeq);
         return -1;
@@ -369,7 +370,7 @@ int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig
 
 int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& config)
 {
-    std::lock_guard<ffrt::mutex> lock(observerMutex_);
+    std::lock_guard<std::mutex> lock(observerMutex_);
     if (observers_.find(observerSeq) == observers_.cend()) {
         HILOG_WARN(LOG_CORE, "failed to get config, seq=%{public}" PRId64, observerSeq);
         return -1;
