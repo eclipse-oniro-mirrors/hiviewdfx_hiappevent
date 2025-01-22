@@ -38,7 +38,6 @@ ohos_source_set("hiappevent_cache") {
 
   external_deps = [
     "c_utils:utils",
-    "ffrt:libffrt",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]
