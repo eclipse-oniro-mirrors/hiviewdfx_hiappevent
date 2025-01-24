@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,12 +20,10 @@
 #include <vector>
 
 #include "app_event_cache_common.h"
-#include "hiappevent_base.h"
 #include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-
 class AppEventObserverDao {
 public:
     AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
@@ -33,10 +31,10 @@ public:
     int64_t Insert(const std::string& observer, int64_t hashCode, const std::string& filters);
     int64_t Update(int64_t seq, const std::string& filters);
     int64_t QuerySeq(const std::string& observer, int64_t hashCode, std::string& filters);
-    int QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type);
+    int QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
     int QueryWatchers(std::vector<AppEventCacheCommon::Observer>& observers);
     int Delete(const std::string& observer);
-    int Delete(int64_t observerSeq, ObserverType type);
+    int Delete(int64_t observerSeq);
 
 private:
     int Create();

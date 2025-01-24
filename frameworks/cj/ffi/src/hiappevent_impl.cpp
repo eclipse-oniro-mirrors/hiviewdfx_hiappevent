@@ -143,7 +143,7 @@ int HiAppEventImpl::RemoveProcessor(int64_t processorId)
         LOGE("failed to remove processor id=%{public}" PRIi64 "", processorId);
         return SUCCESS_CODE;
     }
-    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId, ObserverType::PROCESSOR) != 0) {
+    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
         LOGE("failed to remove processor id=%{public}" PRIi64"", processorId);
         return ERR_CODE_PARAM_INVALID;
     }
@@ -236,7 +236,7 @@ std::tuple<int, int64_t> HiAppEventImpl::addWatcher(const std::string& name,
 
 void HiAppEventImpl::removeWatcher(const std::string& name)
 {
-    AppEventObserverMgr::GetInstance().UnregisterObserver(name, ObserverType::WATCHER);
+    AppEventObserverMgr::GetInstance().UnregisterObserver(name);
 }
 
 int HiAppEventImpl::Load(const std::string& moduleName)

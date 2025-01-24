@@ -58,11 +58,6 @@ const int ERROR_NOT_APP = -200;
  */
 const unsigned int HIAPPEVENT_DOMAIN = 0xD002D07;
 
-enum ObserverType {
-    WATCHER = 0,
-    PROCESSOR = 1
-};
-
 enum AppEventParamType {
     EMPTY = 0,
     BOOL = 1,

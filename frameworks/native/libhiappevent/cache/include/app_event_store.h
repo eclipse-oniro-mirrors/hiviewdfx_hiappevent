@@ -53,14 +53,14 @@ public:
     int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t eventSize = 0);
     int64_t QueryObserverSeq(const std::string& observer, int64_t hashCode = 0);
     int64_t QueryObserverSeq(const std::string& observer, int64_t hashCode, std::string& filters);
-    int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type);
+    int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
     int QueryWatchers(std::vector<AppEventCacheCommon::Observer>& observers);
     int QueryUserIds(std::unordered_map<std::string, std::string>& out);
     int QueryUserId(const std::string& name, std::string& out);
     int QueryUserProperties(std::unordered_map<std::string, std::string>& out);
     int QueryUserProperty(const std::string& name, std::string& out);
     int QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> event);
-    int DeleteObserver(int64_t observerSeq, ObserverType type);
+    int DeleteObserver(int64_t observerSeq);
     int DeleteEventMapping(int64_t observerSeq = 0, const std::vector<int64_t>& eventSeqs = {});
     int DeleteUserId(const std::string& name = "");
     int DeleteUserProperty(const std::string& name = "");
@@ -73,7 +73,7 @@ public:
     bool DeleteData(int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 
 private:
-    AppEventStore() = default;
+    AppEventStore();
     ~AppEventStore();
     bool InitDbStoreDir();
 

@@ -21,7 +21,6 @@
 
 #include "app_event_observer.h"
 #include "app_event_processor.h"
-#include "hiappevent_base.h"
 #include "module_loader.h"
 #include "nocopyable.h"
 
@@ -45,9 +44,9 @@ public:
     void CreateEventHandler();
     void DestroyEventHandler();
     int64_t RegisterObserver(std::shared_ptr<AppEventObserver> observer);
-    int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config);
-    int UnregisterObserver(int64_t observerSeq, ObserverType type);
-    int UnregisterObserver(const std::string& observerName, ObserverType type);
+    int64_t RegisterObserver(const std::string& observerName, const ReportConfig& config = {});
+    int UnregisterObserver(int64_t observerSeq);
+    int UnregisterObserver(const std::string& observerName);
     int Load(const std::string& moduleName);
     int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
     int UnregisterProcessor(const std::string& name);
@@ -72,8 +71,7 @@ private:
 
 private:
     std::unique_ptr<ModuleLoader> moduleLoader_; // moduleLoader_ must declared before observers_, or lead to crash
-    std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> watchers_;
-    std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> processors_;
+    std::unordered_map<int64_t, std::shared_ptr<AppEventObserver>> observers_;
     std::shared_ptr<AppEventHandler> handler_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
     std::mutex observerMutex_;
