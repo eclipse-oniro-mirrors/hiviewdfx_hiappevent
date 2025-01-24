@@ -208,11 +208,11 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest001, TestSize.Level3)
     ASSERT_EQ(watcher4->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher5->GetTriggerTimes(), 1);
 
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher1->GetName(), ObserverType::WATCHER);
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher2->GetName(), ObserverType::WATCHER);
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher3->GetName(), ObserverType::WATCHER);
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher4->GetName(), ObserverType::WATCHER);
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher5->GetName(), ObserverType::WATCHER);
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher1->GetName());
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher2->GetName());
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher3->GetName());
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher4->GetName());
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher5->GetName());
     std::cout << "HiAppEventWatcherTest001 end" << std::endl;
 }
 
@@ -238,7 +238,7 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest002, TestSize.Level3)
     AppEventObserverMgr::GetInstance().HandleEvents(events);
     ASSERT_EQ(watcher->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher->GetName(), ObserverType::WATCHER);
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher->GetName());
     std::cout << "HiAppEventWatcherTest002 end" << std::endl;
 }
 
@@ -267,8 +267,8 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest003, TestSize.Level3)
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
 
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher1->GetName(), ObserverType::WATCHER);
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher2->GetName(), ObserverType::WATCHER);
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher1->GetName());
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher2->GetName());
     std::cout << "HiAppEventWatcherTest003 end" << std::endl;
 }
 
@@ -293,6 +293,6 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest004, TestSize.Level3)
     AppEventObserverMgr::GetInstance().HandleEvents(events);
     ASSERT_EQ(watcher->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher->GetName(), ObserverType::WATCHER);
+    AppEventObserverMgr::GetInstance().UnregisterObserver(watcher->GetName());
     std::cout << "HiAppEventWatcherTest004 end" << std::endl;
 }

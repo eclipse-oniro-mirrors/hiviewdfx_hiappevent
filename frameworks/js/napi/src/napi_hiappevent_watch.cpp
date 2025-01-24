@@ -348,7 +348,7 @@ napi_value RemoveWatcher(const napi_env env, const napi_value watcher, uint64_t 
         AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::FAILED, errCode);
         return NapiUtil::CreateUndefined(env);
     }
-    (void)AppEventObserverMgr::GetInstance().UnregisterObserver(GetName(env, watcher), ObserverType::WATCHER);
+    (void)AppEventObserverMgr::GetInstance().UnregisterObserver(GetName(env, watcher));
     AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
     return NapiUtil::CreateUndefined(env);
 }

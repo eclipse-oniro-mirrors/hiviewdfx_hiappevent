@@ -768,7 +768,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest025, TestSize.Level0)
     ASSERT_EQ(SetReportUserId(processor, userStrs, 0), 0);
     ASSERT_EQ(SetReportUserProperty(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
     ASSERT_EQ(SetReportUserProperty(processor, userStrs, 0), 0);
-    int64_t seq = AddProcessor(processor);
+    int seq = AddProcessor(processor);
     ASSERT_GT(seq, 0);
     DestroyProcessor(processor);
     ASSERT_EQ(RemoveProcessor(seq), 0);
@@ -792,7 +792,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest026, TestSize.Level0)
     ASSERT_EQ(SetReportUserId(processor, userIds, 1), 0);
     const char* userProperties[] = {"test_property"};
     ASSERT_EQ(SetReportUserProperty(processor, userProperties, 1), 0);
-    int64_t seq = AddProcessor(processor);
+    int seq = AddProcessor(processor);
     ASSERT_GT(seq, 0);
     DestroyProcessor(processor);
     ASSERT_EQ(RemoveProcessor(seq), 0);

@@ -436,7 +436,7 @@ bool RemoveProcessor(const napi_env env, const napi_value id)
         HILOG_ERROR(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return true;
     }
-    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId, ObserverType::PROCESSOR) != 0) {
+    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
         HILOG_WARN(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return false;
     }

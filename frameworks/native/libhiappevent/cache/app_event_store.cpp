@@ -145,6 +145,11 @@ int AppEventStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersi
     return NativeRdb::E_OK;
 }
 
+AppEventStore::AppEventStore()
+{
+    (void)InitDbStore();
+}
+
 AppEventStore::~AppEventStore()
 {
     dbStore_ = nullptr;
@@ -473,13 +478,13 @@ int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t has
     return appEventObserverDao_->QuerySeq(observer, hashCode, filters);
 }
 
-int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs, ObserverType type)
+int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->QuerySeqs(observer, observerSeqs, type);
+    return appEventObserverDao_->QuerySeqs(observer, observerSeqs);
 }
 
 int AppEventStore::QueryWatchers(std::vector<Observer>& observers)
@@ -491,7 +496,7 @@ int AppEventStore::QueryWatchers(std::vector<Observer>& observers)
     return appEventObserverDao_->QueryWatchers(observers);
 }
 
-int AppEventStore::DeleteObserver(int64_t observerSeq, ObserverType type)
+int AppEventStore::DeleteObserver(int64_t observerSeq)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
@@ -500,7 +505,7 @@ int AppEventStore::DeleteObserver(int64_t observerSeq, ObserverType type)
     if (int ret = appEventMappingDao_->Delete(observerSeq, {}); ret < 0) {
         return ret;
     }
-    return appEventObserverDao_->Delete(observerSeq, type);
+    return appEventObserverDao_->Delete(observerSeq);
 }
 
 int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)

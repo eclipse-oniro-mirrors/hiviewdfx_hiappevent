@@ -91,7 +91,7 @@ int NdkAppEventWatcherProxy::RemoveWatcher()
 {
     int64_t watcherSeq = watcher_->GetSeq();
     if (watcherSeq > 0) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(watcherSeq, ObserverType::WATCHER);
+        AppEventObserverMgr::GetInstance().UnregisterObserver(watcherSeq);
         watcher_->SetSeq(0);
         return 0;
     }
