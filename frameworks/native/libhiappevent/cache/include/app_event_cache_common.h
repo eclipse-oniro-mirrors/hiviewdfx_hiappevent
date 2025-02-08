@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,12 +17,13 @@
 
 #include <string>
 
+#include "hiappevent_base.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace AppEventCacheCommon {
 constexpr int DB_SUCC = 0;
 constexpr int DB_FAILED = -1;
-const unsigned int HIAPPEVENT_DOMAIN = 0xD002D07;
 
 namespace Events {
 const std::string TABLE = "events";
@@ -54,9 +55,12 @@ const std::string FIELD_FILTERS = "filters";
 struct Observer {
     Observer(int64_t seq, const std::string& name, const std::string& filters)
         : seq(seq), name(name), filters(filters) {}
+    Observer(const std::string& name, int64_t hashCode, const std::string& filters = "")
+        : name(name), hashCode(hashCode), filters(filters) {}
     ~Observer() {}
     int64_t seq = 0;
     std::string name;
+    int64_t hashCode = 0;
     std::string filters;
 };
 
@@ -91,6 +95,15 @@ const std::string FIELD_PARAM_KEY = "param_key";
 const std::string FIELD_PARAM_VALUE = "param_value";
 const std::string FIELD_PARAM_TYPE = "param_type";
 } // namespace CustomEventParams
+
+struct CustomEvent {
+    CustomEvent(const std::string& runningId, const std::string& domain, const std::string& name)
+        : runningId(runningId), domain(domain), name(name) {}
+    std::string runningId;
+    std::string domain;
+    std::string name;
+    std::vector<CustomEventParam> params;
+};
 } // namespace AppEventCacheCommon
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,16 +29,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace AppEventDao {
 using namespace AppEventCacheCommon;
-
-AppEventDao::AppEventDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
-{
-    if (Create() != DB_SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", Events::TABLE.c_str());
-    }
-}
-
-int AppEventDao::Create()
+int Create(NativeRdb::RdbStore& dbStore)
 {
     /**
      * table: events
@@ -70,13 +63,10 @@ int AppEventDao::Create()
         {Events::FIELD_RUNNING_ID, SqlUtil::SQL_TEXT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(Events::TABLE, fields);
-    if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return DB_SUCC;
+    return dbStore.ExecuteSql(sql);
 }
 
-int64_t AppEventDao::Insert(std::shared_ptr<AppEventPack> event)
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::shared_ptr<AppEventPack> event, int64_t& seq)
 {
     NativeRdb::ValuesBucket bucket;
     bucket.PutString(Events::FIELD_DOMAIN, event->GetDomain());
@@ -92,31 +82,26 @@ int64_t AppEventDao::Insert(std::shared_ptr<AppEventPack> event)
     bucket.PutInt(Events::FIELD_TRACE_FLAG, event->GetTraceFlag());
     bucket.PutString(Events::FIELD_PARAMS, event->GetParamStr());
     bucket.PutString(Events::FIELD_RUNNING_ID, event->GetRunningId());
-    int64_t seq = 0;
-    if (dbStore_->Insert(seq, Events::TABLE, bucket) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return seq;
+    return dbStore->Insert(seq, Events::TABLE, bucket);
 }
 
-int AppEventDao::Delete(int64_t eventSeq)
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t eventSeq)
 {
     NativeRdb::AbsRdbPredicates predicates(Events::TABLE);
     if (eventSeq > 0) {
         predicates.EqualTo(Events::FIELD_SEQ, eventSeq);
     }
     int deleteRows = 0;
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records, eventSeq=%{public}" PRId64, deleteRows, eventSeq);
-    return deleteRows;
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, eventSeq=%{public}" PRId64 ", ret=%{public}d",
+        deleteRows, eventSeq, ret);
+    return ret;
 }
 
-int AppEventDao::Delete(const std::vector<int64_t>& eventSeqs)
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::vector<int64_t>& eventSeqs)
 {
     if (eventSeqs.empty()) {
-        return DB_SUCC;
+        return NativeRdb::E_OK;
     }
     NativeRdb::AbsRdbPredicates predicates(Events::TABLE);
     std::vector<std::string> eventSeqStrs(eventSeqs.size());
@@ -126,11 +111,10 @@ int AppEventDao::Delete(const std::vector<int64_t>& eventSeqs)
     predicates.In(Events::FIELD_SEQ, eventSeqStrs);
 
     int deleteRows = 0;
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records", deleteRows);
-    return deleteRows;
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, ret=%{public}d", deleteRows, ret);
+    return ret;
 }
+} // namespace AppEventDao
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,19 +41,19 @@ public:
     int InitDbStore();
     int DestroyDbStore();
     int64_t InsertEvent(std::shared_ptr<AppEventPack> event);
-    int64_t InsertObserver(const std::string& observer, int64_t hashCode, const std::string& filters);
-    int64_t InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
-    int64_t InsertUserId(const std::string& name, const std::string& value);
-    int64_t InsertUserProperty(const std::string& name, const std::string& value);
-    int64_t InsertCustomEventParams(std::shared_ptr<AppEventPack> event);
-    int64_t UpdateUserId(const std::string& name, const std::string& value);
-    int64_t UpdateUserProperty(const std::string& name, const std::string& value);
-    int64_t UpdateObserver(int64_t seq, const std::string& filters);
+    int64_t InsertObserver(const AppEventCacheCommon::Observer& observer);
+    int InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
+    int InsertUserId(const std::string& name, const std::string& value);
+    int InsertUserProperty(const std::string& name, const std::string& value);
+    int InsertCustomEventParams(std::shared_ptr<AppEventPack> event);
+    int UpdateUserId(const std::string& name, const std::string& value);
+    int UpdateUserProperty(const std::string& name, const std::string& value);
+    int UpdateObserver(int64_t seq, const std::string& filters);
     int TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t eventSize = 0);
     int QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t eventSize = 0);
-    int64_t QueryObserverSeq(const std::string& observer, int64_t hashCode = 0);
-    int64_t QueryObserverSeq(const std::string& observer, int64_t hashCode, std::string& filters);
-    int QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
+    int64_t QueryObserverSeq(const std::string& name, int64_t hashCode = 0);
+    int64_t QueryObserverSeqAndFilters(const std::string& name, int64_t hashCode, std::string& filters);
+    int QueryObserverSeqs(const std::string& name, std::vector<int64_t>& observerSeqs);
     int QueryWatchers(std::vector<AppEventCacheCommon::Observer>& observers);
     int QueryUserIds(std::unordered_map<std::string, std::string>& out);
     int QueryUserId(const std::string& name, std::string& out);
@@ -76,15 +76,10 @@ private:
     AppEventStore();
     ~AppEventStore();
     bool InitDbStoreDir();
+    void CheckAndRepairDbStore(int errCode);
 
 private:
     std::shared_ptr<NativeRdb::RdbStore> dbStore_;
-    std::shared_ptr<AppEventDao> appEventDao_;
-    std::shared_ptr<AppEventObserverDao> appEventObserverDao_;
-    std::shared_ptr<AppEventMappingDao> appEventMappingDao_;
-    std::shared_ptr<UserIdDao> userIdDao_;
-    std::shared_ptr<UserPropertyDao> userPropertyDao_;
-    std::shared_ptr<CustomEventParamDao> customEventParamDao_;
     std::string dirPath_;
     std::mutex dbMutex_;
 };

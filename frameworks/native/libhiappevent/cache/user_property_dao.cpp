@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,22 +29,12 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace UserPropertyDao {
 using namespace AppEventCacheCommon;
 using namespace AppEventCacheCommon::UserProperties;
 
-UserPropertyDao::UserPropertyDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
+int Create(NativeRdb::RdbStore& dbStore)
 {
-    if (Create() != DB_SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", TABLE.c_str());
-    }
-}
-
-int UserPropertyDao::Create()
-{
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     /**
      * table: user_properties
      *
@@ -59,31 +49,22 @@ int UserPropertyDao::Create()
         {FIELD_VALUE, SqlUtil::SQL_TEXT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(TABLE, fields);
-    if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return DB_SUCC;
+    return dbStore.ExecuteSql(sql);
 }
 
-int64_t UserPropertyDao::Insert(const std::string& name, const std::string& value)
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name, const std::string& value)
 {
     NativeRdb::ValuesBucket bucket;
     bucket.PutString(FIELD_NAME, name);
     bucket.PutString(FIELD_VALUE, value);
     int64_t seq = 0;
-    if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "insert user property, name=%{public}s", name.c_str());
-    return seq;
+    int ret = dbStore->Insert(seq, TABLE, bucket);
+    HILOG_INFO(LOG_CORE, "insert user property, name=%{public}s, ret=%{public}d", name.c_str(), ret);
+    return ret;
 }
 
-int64_t UserPropertyDao::Update(const std::string& name, const std::string& value)
+int Update(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name, const std::string& value)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     NativeRdb::ValuesBucket bucket;
     bucket.PutString(FIELD_NAME, name);
     bucket.PutString(FIELD_VALUE, value);
@@ -91,81 +72,70 @@ int64_t UserPropertyDao::Update(const std::string& name, const std::string& valu
     int changedRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     predicates.EqualTo(FIELD_NAME, name);
-    if (dbStore_->Update(changedRows, bucket, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "update %{public}d user property, name=%{public}s", changedRows, name.c_str());
-    return changedRows;
+    int ret = dbStore->Update(changedRows, bucket, predicates);
+    HILOG_INFO(LOG_CORE, "update %{public}d user property, name=%{public}s, ret=%{public}d",
+        changedRows, name.c_str(), ret);
+    return ret;
 }
 
-int UserPropertyDao::Delete(const std::string& name)
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     if (!name.empty()) {
         predicates.EqualTo(FIELD_NAME, name);
     }
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d user property, name=%{public}s", deleteRows, name.c_str());
-    return deleteRows;
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d user property, name=%{public}s, ret=%{public}d",
+        deleteRows, name.c_str(), ret);
+    return ret;
 }
 
-int UserPropertyDao::Query(const std::string& name, std::string& out)
+int Query(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name, std::string& out)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     predicates.EqualTo(FIELD_NAME, name);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_VALUE});
+    auto resultSet = dbStore->Query(predicates, {FIELD_VALUE});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table, name=%{public}s", name.c_str());
-        return DB_FAILED;
+        return NativeRdb::E_ERROR;
     }
-    if (resultSet->GoToNextRow() == NativeRdb::E_OK) {
-        if (resultSet->GetString(0, out) != NativeRdb::E_OK) {
-            HILOG_ERROR(LOG_CORE, "failed to get value from resultSet, name=%{public}s", name.c_str());
-            resultSet->Close();
-            return DB_FAILED;
-        }
+    int ret = resultSet->GoToNextRow();
+    if (ret == NativeRdb::E_OK && resultSet->GetString(0, out) != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get value from resultSet, name=%{public}s", name.c_str());
+        resultSet->Close();
+        return NativeRdb::E_ERROR;
     }
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
 
-int UserPropertyDao::QueryAll(std::unordered_map<std::string, std::string>& out)
+int QueryAll(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::unordered_map<std::string, std::string>& out)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
-
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_NAME, FIELD_VALUE});
+    auto resultSet = dbStore->Query(predicates, {FIELD_NAME, FIELD_VALUE});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table");
-        return DB_FAILED;
+        return NativeRdb::E_ERROR;
     }
 
     out.clear();
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         std::string name;
         std::string value;
         if (resultSet->GetString(0, name) != NativeRdb::E_OK || resultSet->GetString(1, value) != NativeRdb::E_OK) {
             HILOG_ERROR(LOG_CORE, "failed to get data from resultSet");
+            ret = resultSet->GoToNextRow();
             continue;
         }
         out[name] = value;
+        ret = resultSet->GoToNextRow();
     }
 
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
+} // namespace UserPropertyDao
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,22 +23,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
-class AppEventStore;
-
-class AppEventDao {
-public:
-    AppEventDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
-    ~AppEventDao() = default;
-    int64_t Insert(std::shared_ptr<AppEventPack> event);
-    int Delete(int64_t eventSeq);
-    int Delete(const std::vector<int64_t>& eventSeqs);
-
-private:
-    int Create();
-
-private:
-    std::shared_ptr<NativeRdb::RdbStore> dbStore_;
-};
+namespace AppEventDao {
+int Create(NativeRdb::RdbStore& dbStore);
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::shared_ptr<AppEventPack> event, int64_t& seq);
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t eventSeq);
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::vector<int64_t>& eventSeqs);
+} // namespace AppEventDao
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_DAO_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -106,28 +106,48 @@ std::shared_ptr<AppEventPack> GetEventFromResultSet(std::shared_ptr<NativeRdb::A
     return event;
 }
 
-void UpToDbVersion2(NativeRdb::RdbStore& rdbStore)
+int UpToDbVersion2(NativeRdb::RdbStore& rdbStore)
 {
     std::string sql = "ALTER TABLE " + Events::TABLE + " ADD COLUMN "
         + Events::FIELD_RUNNING_ID + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
-    if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
-        HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 1 to 2, ret=%{public}d", ret);
-    }
+    return rdbStore.ExecuteSql(sql);
 }
 
-void UpToDbVersion3(NativeRdb::RdbStore& rdbStore)
+int UpToDbVersion3(NativeRdb::RdbStore& rdbStore)
 {
     std::string sql = "ALTER TABLE " + Observers::TABLE + " ADD COLUMN "
         + Observers::FIELD_FILTERS + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
-    if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
-        HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 2 to 3, ret=%{public}d", ret);
-    }
+    return rdbStore.ExecuteSql(sql);
 }
 }
 
 int AppEventStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
 {
     HILOG_DEBUG(LOG_CORE, "OnCreate start to create db");
+    if (int ret = AppEventDao::Create(rdbStore); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to create table events, ret=%{public}d", ret);
+        return ret;
+    }
+    if (int ret = AppEventObserverDao::Create(rdbStore); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to create table observers, ret=%{public}d", ret);
+        return ret;
+    }
+    if (int ret = AppEventMappingDao::Create(rdbStore); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to create table event_observer_mapping, ret=%{public}d", ret);
+        return ret;
+    }
+    if (int ret = UserIdDao::Create(rdbStore); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to create table user_ids, ret=%{public}d", ret);
+        return ret;
+    }
+    if (int ret = UserPropertyDao::Create(rdbStore); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to create table user_properties, ret=%{public}d", ret);
+        return ret;
+    }
+    if (int ret = CustomEventParamDao::Create(rdbStore); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to create table custom_event_params, ret=%{public}d", ret);
+        return ret;
+    }
     return NativeRdb::E_OK;
 }
 
@@ -135,11 +155,21 @@ int AppEventStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersi
 {
     HILOG_DEBUG(LOG_CORE, "OnUpgrade, oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
     for (int i = oldVersion; i < newVersion; ++i) {
-        if (i == 1) { // upgrade db version from 1 to 2
-            UpToDbVersion2(rdbStore);
-        }
-        if (i == 2) { // upgrade db version from 2 to 3
-            UpToDbVersion3(rdbStore);
+        switch (i) {
+            case 1: // upgrade db version from 1 to 2
+                if (int ret = UpToDbVersion2(rdbStore); ret != NativeRdb::E_OK) {
+                    HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 1 to 2, ret=%{public}d", ret);
+                    return ret;
+                }
+                break;
+            case 2: // upgrade db version from 2 to 3
+                if (int ret = UpToDbVersion3(rdbStore); ret != NativeRdb::E_OK) {
+                    HILOG_ERROR(LOG_CORE, "failed to upgrade db version from 2 to 3, ret=%{public}d", ret);
+                    return ret;
+                }
+                break;
+            default:
+                break;
         }
     }
     return NativeRdb::E_OK;
@@ -175,16 +205,11 @@ int AppEventStore::InitDbStore()
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, dbVersion, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to create db store, ret=%{public}d", ret);
+        CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }
 
     dbStore_ = dbStore;
-    appEventDao_ = std::make_shared<AppEventDao>(dbStore_);
-    appEventObserverDao_ = std::make_shared<AppEventObserverDao>(dbStore_);
-    appEventMappingDao_ = std::make_shared<AppEventMappingDao>(dbStore_);
-    userIdDao_ = std::make_shared<UserIdDao>(dbStore_);
-    userPropertyDao_ = std::make_shared<UserPropertyDao>(dbStore_);
-    customEventParamDao_ = std::make_shared<CustomEventParamDao>(dbStore_);
     HILOG_INFO(LOG_CORE, "create db store successfully");
     return DB_SUCC;
 }
@@ -202,6 +227,20 @@ bool AppEventStore::InitDbStoreDir()
         return false;
     }
     return true;
+}
+
+void AppEventStore::CheckAndRepairDbStore(int errCode)
+{
+    if (errCode != NativeRdb::E_SQLITE_CORRUPT) {
+        return;
+    }
+    dbStore_ = nullptr;
+    if (int ret = NativeRdb::RdbHelper::DeleteRdbStore(dirPath_ + DATABASE_NAME); ret != NativeRdb::E_OK) {
+        HILOG_ERROR(LOG_CORE, "errCode=%{public}d failed to delete db file, ret=%{public}d", errCode, ret);
+        return;
+    }
+    HILOG_INFO(LOG_CORE, "errCode=%{public}d delete db file successfully", errCode);
+    return;
 }
 
 int AppEventStore::DestroyDbStore()
@@ -225,46 +264,68 @@ int64_t AppEventStore::InsertEvent(std::shared_ptr<AppEventPack> event)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventDao_->Insert(event);
+    int64_t seq = 0;
+    if (int ret = AppEventDao::Insert(dbStore_, event, seq); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return seq;
 }
 
-int64_t AppEventStore::InsertObserver(const std::string& observer, int64_t hashCode, const std::string& filters)
+int64_t AppEventStore::InsertObserver(const Observer& observer)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->Insert(observer, hashCode, filters);
+    int64_t seq = 0;
+    if (int ret = AppEventObserverDao::Insert(dbStore_, observer, seq); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return seq;
 }
 
-int64_t AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
+int AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventMappingDao_->Insert(eventSeq, observerSeq);
+    if (int ret = AppEventMappingDao::Insert(dbStore_, eventSeq, observerSeq); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
-int64_t AppEventStore::InsertUserId(const std::string& name, const std::string& value)
+int AppEventStore::InsertUserId(const std::string& name, const std::string& value)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userIdDao_->Insert(name, value);
+    if (int ret = UserIdDao::Insert(dbStore_, name, value); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
-int64_t AppEventStore::InsertUserProperty(const std::string& name, const std::string& value)
+int AppEventStore::InsertUserProperty(const std::string& name, const std::string& value)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userPropertyDao_->Insert(name, value);
+    if (int ret = UserPropertyDao::Insert(dbStore_, name, value); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
-int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> event)
+int AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> event)
 {
     std::vector<CustomEventParam> newParams;
     event->GetCustomParams(newParams);
@@ -278,7 +339,8 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
 
     dbStore_->BeginTransaction();
     std::unordered_set<std::string> oldParamkeys;
-    customEventParamDao_->QueryParamkeys(oldParamkeys, event->GetRunningId(), event->GetDomain(), event->GetName());
+    CustomEvent customEvent(event->GetRunningId(), event->GetDomain(), event->GetName());
+    CustomEventParamDao::QueryParamkeys(dbStore_, oldParamkeys, customEvent);
     // check params num of same (runningid, domain, name)
     size_t totalNum = oldParamkeys.size();
     for (const auto& param : newParams) {
@@ -290,51 +352,68 @@ int64_t AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> eve
         dbStore_->RollBack();
         return ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM;
     }
-    std::vector<NativeRdb::ValuesBucket> buckets;
+    std::vector<CustomEventParam> insertParams;
+    std::vector<CustomEventParam> updateParams;
     for (const auto& param : newParams) {
         if (oldParamkeys.find(param.key) == oldParamkeys.end()) {
-            if (customEventParamDao_->Insert(param, event->GetRunningId(), event->GetDomain(), event->GetName())
-                == DB_FAILED) {
-                dbStore_->RollBack();
-                return DB_FAILED;
-            }
+            insertParams.emplace_back(param);
         } else {
-            if (customEventParamDao_->Update(param, event->GetRunningId(), event->GetDomain(), event->GetName())
-                == DB_FAILED) {
-                dbStore_->RollBack();
-                return DB_FAILED;
-            }
+            updateParams.emplace_back(param);
         }
+    }
+    customEvent.params = insertParams;
+    if (int ret = CustomEventParamDao::BatchInsert(dbStore_, customEvent); ret != NativeRdb::E_OK) {
+        dbStore_->RollBack();
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    customEvent.params = updateParams;
+    if (int ret = CustomEventParamDao::Updates(dbStore_, customEvent); ret != NativeRdb::E_OK) {
+        dbStore_->RollBack();
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
     }
     dbStore_->Commit();
     return DB_SUCC;
 }
 
-int64_t AppEventStore::UpdateUserId(const std::string& name, const std::string& value)
+int AppEventStore::UpdateUserId(const std::string& name, const std::string& value)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userIdDao_->Update(name, value);
+    if (int ret = UserIdDao::Update(dbStore_, name, value); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
-int64_t AppEventStore::UpdateUserProperty(const std::string& name, const std::string& value)
+int AppEventStore::UpdateUserProperty(const std::string& name, const std::string& value)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userPropertyDao_->Update(name, value);
+    if (int ret = UserPropertyDao::Update(dbStore_, name, value); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
-int64_t AppEventStore::UpdateObserver(int64_t seq, const std::string& filters)
+int AppEventStore::UpdateObserver(int64_t seq, const std::string& filters)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->Update(seq, filters);
+    if (int ret = AppEventObserverDao::Update(dbStore_, seq, filters); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteUserId(const std::string& name)
@@ -343,7 +422,11 @@ int AppEventStore::DeleteUserId(const std::string& name)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userIdDao_->Delete(name);
+    if (int ret = UserIdDao::Delete(dbStore_, name); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteUserProperty(const std::string& name)
@@ -352,7 +435,11 @@ int AppEventStore::DeleteUserProperty(const std::string& name)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userPropertyDao_->Delete(name);
+    if (int ret = UserPropertyDao::Delete(dbStore_, name); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::QueryUserIds(std::unordered_map<std::string, std::string>& out)
@@ -361,7 +448,11 @@ int AppEventStore::QueryUserIds(std::unordered_map<std::string, std::string>& ou
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userIdDao_->QueryAll(out);
+    if (int ret = UserIdDao::QueryAll(dbStore_, out); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::QueryUserId(const std::string& name, std::string& out)
@@ -370,7 +461,11 @@ int AppEventStore::QueryUserId(const std::string& name, std::string& out)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userIdDao_->Query(name, out);
+    if (int ret = UserIdDao::Query(dbStore_, name, out); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::QueryUserProperties(std::unordered_map<std::string, std::string>& out)
@@ -379,7 +474,11 @@ int AppEventStore::QueryUserProperties(std::unordered_map<std::string, std::stri
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userPropertyDao_->QueryAll(out);
+    if (int ret = UserPropertyDao::QueryAll(dbStore_, out); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::QueryUserProperty(const std::string& name, std::string& out)
@@ -388,7 +487,11 @@ int AppEventStore::QueryUserProperty(const std::string& name, std::string& out)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return userPropertyDao_->Query(name, out);
+    if (int ret = UserPropertyDao::Query(dbStore_, name, out); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events, int64_t observerSeq, uint32_t size)
@@ -401,13 +504,18 @@ int AppEventStore::TakeEvents(std::vector<std::shared_ptr<AppEventPack>>& events
         return DB_SUCC;
     }
     // delete the events mapping of the observer
-    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     std::vector<int64_t> eventSeqs;
     for (const auto &event : events) {
         eventSeqs.emplace_back(event->GetSeq());
     }
-    if (appEventMappingDao_->Delete(observerSeq, eventSeqs) < 0) {
-        HILOG_WARN(LOG_CORE, "failed to delete the events mapping data, observer=%{public}" PRId64, observerSeq);
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
+        return DB_FAILED;
+    }
+    if (int ret = AppEventMappingDao::Delete(dbStore_, observerSeq, eventSeqs); ret != NativeRdb::E_OK) {
+        HILOG_WARN(LOG_CORE, "failed to delete the events mapping data ret=%{public}d, observer=%{public}" PRId64,
+            ret, observerSeq);
+        CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }
     return DB_SUCC;
@@ -433,16 +541,23 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
         HILOG_WARN(LOG_CORE, "result set is null, observer=%{public}" PRId64, observerSeq);
         return DB_FAILED;
     }
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         auto event = GetEventFromResultSet(resultSet);
         // query custom event params, and add to AppEventPack
         std::unordered_map<std::string, std::string> params;
-        customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain());
-        customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain(), event->GetName());
+        CustomEventParamDao::Query(dbStore_, params, CustomEvent(event->GetRunningId(), event->GetDomain(), ""));
+        CustomEventParamDao::Query(dbStore_, params,
+            CustomEvent(event->GetRunningId(), event->GetDomain(), event->GetName()));
         event->AddCustomParams(params);
         events.emplace_back(event);
+        ret = resultSet->GoToNextRow();
     }
     resultSet->Close();
+    if (ret == NativeRdb::E_SQLITE_CORRUPT) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
     return DB_SUCC;
 }
 
@@ -453,38 +568,45 @@ int AppEventStore::QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> 
         return DB_FAILED;
     }
     std::unordered_map<std::string, std::string> params;
-    customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain());
-    customEventParamDao_->Query(params, event->GetRunningId(), event->GetDomain(), event->GetName());
+    CustomEventParamDao::Query(dbStore_, params, CustomEvent(event->GetRunningId(), event->GetDomain(), ""));
+    CustomEventParamDao::Query(dbStore_, params,
+        CustomEvent(event->GetRunningId(), event->GetDomain(), event->GetName()));
     event->AddCustomParams(params);
     return DB_SUCC;
 }
 
-int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t hashCode)
+int64_t AppEventStore::QueryObserverSeq(const std::string& name, int64_t hashCode)
 {
-    std::lock_guard<std::mutex> lockGuard(dbMutex_);
-    if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
-        return DB_FAILED;
-    }
     std::string filters;
-    return appEventObserverDao_->QuerySeq(observer, hashCode, filters);
+    return QueryObserverSeqAndFilters(name, hashCode, filters);
 }
 
-int64_t AppEventStore::QueryObserverSeq(const std::string& observer, int64_t hashCode, std::string& filters)
+int64_t AppEventStore::QueryObserverSeqAndFilters(const std::string& name, int64_t hashCode, std::string& filters)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->QuerySeq(observer, hashCode, filters);
+    int64_t seq = 0;
+    if (int ret = AppEventObserverDao::QuerySeqAndFilters(dbStore_, Observer(name, hashCode),
+        seq, filters); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return seq;
 }
 
-int AppEventStore::QueryObserverSeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
+int AppEventStore::QueryObserverSeqs(const std::string& name, std::vector<int64_t>& observerSeqs)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->QuerySeqs(observer, observerSeqs);
+    if (int ret = AppEventObserverDao::QuerySeqs(dbStore_, name, observerSeqs); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::QueryWatchers(std::vector<Observer>& observers)
@@ -493,7 +615,11 @@ int AppEventStore::QueryWatchers(std::vector<Observer>& observers)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventObserverDao_->QueryWatchers(observers);
+    if (int ret = AppEventObserverDao::QueryWatchers(dbStore_, observers); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteObserver(int64_t observerSeq)
@@ -502,10 +628,15 @@ int AppEventStore::DeleteObserver(int64_t observerSeq)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    if (int ret = appEventMappingDao_->Delete(observerSeq, {}); ret < 0) {
-        return ret;
+    if (int ret = AppEventMappingDao::Delete(dbStore_, observerSeq, {}); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
     }
-    return appEventObserverDao_->Delete(observerSeq);
+    if (int ret = AppEventObserverDao::Delete(dbStore_, observerSeq); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
@@ -514,7 +645,11 @@ int AppEventStore::DeleteEventMapping(int64_t observerSeq, const std::vector<int
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventMappingDao_->Delete(observerSeq, eventSeqs);
+    if (int ret = AppEventMappingDao::Delete(dbStore_, observerSeq, eventSeqs); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteEvent(int64_t eventSeq)
@@ -523,7 +658,11 @@ int AppEventStore::DeleteEvent(int64_t eventSeq)
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return appEventDao_->Delete(eventSeq);
+    if (int ret = AppEventDao::Delete(dbStore_, eventSeq); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteCustomEventParams()
@@ -532,7 +671,11 @@ int AppEventStore::DeleteCustomEventParams()
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    return customEventParamDao_->Delete();
+    if (int ret = CustomEventParamDao::Delete(dbStore_); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteEvent(const std::vector<int64_t>& eventSeqs)
@@ -546,20 +689,22 @@ int AppEventStore::DeleteEvent(const std::vector<int64_t>& eventSeqs)
     }
     std::unordered_set<int64_t> existEventSeqs;
     // query seqs in event_observer_mapping
-    if (appEventMappingDao_->QueryExistEvent(eventSeqs, existEventSeqs) == DB_FAILED) {
+    if (int ret = AppEventMappingDao::QueryExistEvent(dbStore_, eventSeqs, existEventSeqs); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }
     // delete events if seqs not in event_observer_mapping
-    if (existEventSeqs.empty()) {
-        return appEventDao_->Delete(eventSeqs);
-    }
     std::vector<int64_t> delEventSeqs;
     for (const auto& seq : eventSeqs) {
         if (existEventSeqs.find(seq) == existEventSeqs.end()) {
             delEventSeqs.emplace_back(seq);
         }
     }
-    return appEventDao_->Delete(delEventSeqs);
+    if (int ret = AppEventDao::Delete(dbStore_, delEventSeqs); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
+        return DB_FAILED;
+    }
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId)
@@ -576,12 +721,13 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
     std::string whereClause = "(" + CustomEventParams::TABLE + "." + CustomEventParams::FIELD_RUNNING_ID
         + " NOT IN (SELECT " + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + ")) AND "
         + CustomEventParams::FIELD_RUNNING_ID + " != ?";
-    if (dbStore_->Delete(deleteRows, CustomEventParams::TABLE, whereClause, std::vector<std::string>{curRunningId})
-        != NativeRdb::E_OK) {
+    if (int ret = dbStore_->Delete(deleteRows, CustomEventParams::TABLE, whereClause,
+        std::vector<std::string>{curRunningId}); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }
     HILOG_INFO(LOG_CORE, "delete %{public}d params unused", deleteRows);
-    return deleteRows;
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteUnusedEventMapping()
@@ -594,11 +740,12 @@ int AppEventStore::DeleteUnusedEventMapping()
     // delete event_observer_mapping if event_seq not in events
     std::string whereClause = AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " NOT IN (SELECT "
         + Events::FIELD_SEQ + " FROM " + Events::TABLE + ")";
-    if (dbStore_->Delete(deleteRows, AppEventMapping::TABLE, whereClause) != NativeRdb::E_OK) {
+    if (int ret = dbStore_->Delete(deleteRows, AppEventMapping::TABLE, whereClause); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }
     HILOG_INFO(LOG_CORE, "delete %{public}d event map unused", deleteRows);
-    return deleteRows;
+    return DB_SUCC;
 }
 
 int AppEventStore::DeleteHistoryEvent(int reservedNum, int reservedNumOs)
@@ -617,11 +764,12 @@ int AppEventStore::DeleteHistoryEvent(int reservedNum, int reservedNumOs)
         + " WHERE " + Events::FIELD_DOMAIN + " != ? ORDER BY "+ Events::FIELD_SEQ + " DESC LIMIT 0,?) AND "
         + Events::FIELD_SEQ + " NOT IN (SELECT " + Events::FIELD_SEQ + " FROM " + Events::TABLE
         + " WHERE " + Events::FIELD_DOMAIN + " = ? ORDER BY " + Events::FIELD_SEQ + " DESC LIMIT 0,?)";
-    if (dbStore_->Delete(deleteRows, Events::TABLE, whereClause, whereArgs) != NativeRdb::E_OK) {
+    if (int ret = dbStore_->Delete(deleteRows, Events::TABLE, whereClause, whereArgs); ret != NativeRdb::E_OK) {
+        CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }
     HILOG_INFO(LOG_CORE, "delete %{public}d events over limit", deleteRows);
-    return deleteRows;
+    return DB_SUCC;
 }
 
 bool AppEventStore::DeleteData(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
