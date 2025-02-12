@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -79,12 +79,12 @@ sptr<OHOS::StorageManager::IStorageManager> GetStorageMgr()
 {
     auto systemAbilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
-        HILOG_INFO(LOG_CORE, "systemAbilityManager is null.");
+        HILOG_WARN(LOG_CORE, "systemAbilityManager is null.");
         return nullptr;
     }
     sptr<IRemoteObject> storageMgrSa = systemAbilityManager->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     if (storageMgrSa == nullptr) {
-        HILOG_INFO(LOG_CORE, "storageMgrSa is null.");
+        HILOG_WARN(LOG_CORE, "storageMgrSa is null.");
         return nullptr;
     }
     return iface_cast<OHOS::StorageManager::IStorageManager>(storageMgrSa);
@@ -184,37 +184,37 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
 void HiAppEventConfig::SetDisable(bool disable)
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    this->disable = disable;
+    disable_ = disable;
 }
 
 void HiAppEventConfig::SetMaxStorageSize(uint64_t size)
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    this->maxStorageSize = size;
+    maxStorageSize_ = size;
 }
 
 void HiAppEventConfig::SetStorageDir(const std::string& dir)
 {
-    this->storageDir = dir;
+    storageDir_ = dir;
 }
 
 bool HiAppEventConfig::GetDisable()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    return this->disable;
+    return disable_;
 }
 
 uint64_t HiAppEventConfig::GetMaxStorageSize()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    return this->maxStorageSize;
+    return maxStorageSize_;
 }
 
 std::string HiAppEventConfig::GetStorageDir()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    if (!this->storageDir.empty()) {
-        return this->storageDir;
+    if (!storageDir_.empty()) {
+        return storageDir_;
     }
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
@@ -228,14 +228,14 @@ std::string HiAppEventConfig::GetStorageDir()
     }
     std::string dir = context->GetFilesDir() + APP_EVENT_DIR;
     SetStorageDir(dir);
-    return this->storageDir;
+    return storageDir_;
 }
 
 std::string HiAppEventConfig::GetRunningId()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    if (!this->runningId.empty()) {
-        return this->runningId;
+    if (!runningId_.empty()) {
+        return runningId_;
     }
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
@@ -243,33 +243,41 @@ std::string HiAppEventConfig::GetRunningId()
         HILOG_ERROR(LOG_CORE, "Context is null.");
         return "";
     }
-    this->runningId = context->GetAppRunningUniqueId();
-    if (this->runningId.empty()) {
+    runningId_ = context->GetAppRunningUniqueId();
+    if (runningId_.empty()) {
         HILOG_ERROR(LOG_CORE, "The running id from context is empty.");
     }
-    return this->runningId;
+    return runningId_;
 }
 
 bool HiAppEventConfig::IsFreeSizeOverLimit()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    if (this->freeSize_ < 0) {
+    if (!isInitFreeSize_) {
+        isInitFreeSize_ = true;
         auto storageMgr = GetStorageMgr();
-        if (storageMgr == nullptr || (storageMgr->GetFreeSize(this->freeSize_) != 0)) {
-            HILOG_INFO(LOG_CORE, "Failed to get free size.");
-            return true;
+        int64_t freeSize = -1;
+        if (storageMgr == nullptr || storageMgr->GetFreeSize(freeSize) != 0) {
+            HILOG_WARN(LOG_CORE, "Failed to get free size.");
+            return false;
         }
+        HILOG_INFO(LOG_CORE, "get free size=%{public}" PRId64, freeSize);
+        freeSize_ = freeSize;
     }
-    return this->freeSize_ < FREE_SIZE_LIMIT;
+    return freeSize_ >= 0 && freeSize_ < FREE_SIZE_LIMIT;
 }
 
 void HiAppEventConfig::RefreshFreeSize()
 {
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
     auto storageMgr = GetStorageMgr();
-    if (storageMgr == nullptr || (storageMgr->GetFreeSize(this->freeSize_) != 0)) {
-        HILOG_INFO(LOG_CORE, "Failed to refresh free size.");
+    int64_t freeSize = -1;
+    if (storageMgr == nullptr || storageMgr->GetFreeSize(freeSize) != 0) {
+        HILOG_WARN(LOG_CORE, "Failed to refresh free size.");
+        return;
     }
+    HILOG_INFO(LOG_CORE, "refresh free size=%{public}" PRId64, freeSize);
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
+    freeSize_ = freeSize;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
