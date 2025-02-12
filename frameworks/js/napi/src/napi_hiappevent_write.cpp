@@ -134,6 +134,33 @@ void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext)
         (void*)asyncContext, &asyncContext->asyncWork);
     napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
 }
+
+void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncContext)
+{
+    napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventSetEventConfig");
+    napi_create_async_work(env, nullptr, resource,
+        [](napi_env env, void* data) {
+            HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
+            asyncContext->result = HiviewDFX::SetEventConfig(asyncContext->name, asyncContext->eventConfigMap);
+        },
+        [](napi_env env, napi_status status, void* data) {
+            HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
+            napi_value result = nullptr;
+            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
+                if (asyncContext->result == 0) {
+                    result = NapiUtil::CreateInt32(env, asyncContext->result);
+                    napi_resolve_deferred(env, asyncContext->deferred, result);
+                } else {
+                    result = NapiUtil::CreateError(env, NapiError::ERR_PARAM, "Invalid param value for event config.");
+                    napi_reject_deferred(env, asyncContext->deferred, result);
+                }
+            }
+            napi_delete_async_work(env, asyncContext->asyncWork);
+            delete asyncContext;
+        },
+        (void*)asyncContext, &asyncContext->asyncWork);
+    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
+}
 } // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX
 } // namespace OHOS
