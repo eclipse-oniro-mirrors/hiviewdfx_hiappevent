@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +17,11 @@
 
 #include <string>
 
+#include "nocopyable.h"
+
 namespace OHOS {
 namespace HiviewDFX {
-class HiAppEventConfig {
+class HiAppEventConfig : public NoCopyable {
 public:
     static HiAppEventConfig& GetInstance();
     void SetStorageDir(const std::string& dir);
@@ -42,11 +44,12 @@ private:
     void SetMaxStorageSize(uint64_t size);
 
 private:
-    bool disable = false;
+    bool disable_ = false;
     int64_t freeSize_ = -1;
-    uint64_t maxStorageSize = 10 * 1024 * 1024; // max storage size is 10M, 10 * 1024 * 1024 Byte
-    std::string storageDir = "";
-    std::string runningId = "";
+    bool isInitFreeSize_ = false;
+    uint64_t maxStorageSize_ = 10 * 1024 * 1024; // max storage size is 10M, 10 * 1024 * 1024 Byte
+    std::string storageDir_ = "";
+    std::string runningId_ = "";
 };
 } // namespace HiviewDFX
 } // namespace OHOS
