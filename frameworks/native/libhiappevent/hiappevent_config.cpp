@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cinttypes>
+#include <cstdlib>
 #include <mutex>
 #include <regex>
 #include <sstream>
@@ -145,15 +146,15 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
         return false;
     }
 
-    auto len = value.length();
-    std::string::size_type numEndIndex = 0;
-    uint64_t numValue = std::stoull(value, &numEndIndex, DECIMAL_UNIT);
-    if (numEndIndex == len) {
+    char* numEndIndex = nullptr;
+    uint64_t numValue = std::strtoull(value.c_str(), &numEndIndex, DECIMAL_UNIT);
+    if (*numEndIndex == '\0') {
         SetMaxStorageSize(numValue);
         return true;
     }
 
-    uint32_t unitLen = (numEndIndex == (len - 1)) ? 1 : 2; // 1 2, means the length of the storage unit
+    uint32_t unitLen = std::strlen(numEndIndex);
+    auto len = value.length();
     char unitChr = value[len - unitLen];
     uint64_t maxStoSize = 0;
     switch (unitChr) {
