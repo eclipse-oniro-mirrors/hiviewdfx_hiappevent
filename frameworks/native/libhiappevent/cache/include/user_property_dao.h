@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,24 +23,14 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventStore;
-
-class UserPropertyDao {
-public:
-    UserPropertyDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
-    ~UserPropertyDao() = default;
-    int64_t Insert(const std::string& name, const std::string& value);
-    int64_t Update(const std::string& name, const std::string& value);
-    int Delete(const std::string& name);
-    int Query(const std::string& name, std::string& out);
-    int QueryAll(std::unordered_map<std::string, std::string>& out);
-
-private:
-    int Create();
-
-private:
-    std::shared_ptr<NativeRdb::RdbStore> dbStore_;
-};
+namespace UserPropertyDao {
+int Create(NativeRdb::RdbStore& dbStore);
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name, const std::string& value);
+int Update(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name, const std::string& value);
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name);
+int Query(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name, std::string& out);
+int QueryAll(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::unordered_map<std::string, std::string>& out);
+} // namespace UserPropertyDao
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_USER_PROPERTY_DAO_H

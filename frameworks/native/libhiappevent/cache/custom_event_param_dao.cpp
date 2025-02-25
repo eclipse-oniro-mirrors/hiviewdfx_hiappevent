@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,21 +29,11 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace CustomEventParamDao {
 using namespace AppEventCacheCommon;
 using namespace AppEventCacheCommon::CustomEventParams;
-
-CustomEventParamDao::CustomEventParamDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
+int Create(NativeRdb::RdbStore& dbStore)
 {
-    if (Create() != DB_SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", TABLE.c_str());
-    }
-}
-
-int CustomEventParamDao::Create()
-{
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
     /**
      * table: custom_event_params
      *
@@ -62,125 +52,112 @@ int CustomEventParamDao::Create()
         {FIELD_PARAM_TYPE, SqlUtil::SQL_INT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(TABLE, fields);
-    if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return DB_SUCC;
+    return dbStore.ExecuteSql(sql);
 }
 
-int64_t CustomEventParamDao::Insert(const CustomEventParam& param,
-    const std::string& runningId, const std::string& domain, const std::string& name)
+int BatchInsert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const CustomEvent& customEvent)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
+    std::vector<NativeRdb::ValuesBucket> buckets;
+    for (const auto& param : customEvent.params) {
+        NativeRdb::ValuesBucket bucket;
+        bucket.PutString(FIELD_RUNNING_ID, customEvent.runningId);
+        bucket.PutString(FIELD_DOMAIN, customEvent.domain);
+        bucket.PutString(FIELD_NAME, customEvent.name);
+        bucket.PutString(FIELD_PARAM_KEY, param.key);
+        bucket.PutString(FIELD_PARAM_VALUE, param.value);
+        bucket.PutInt(FIELD_PARAM_TYPE, param.type);
+        buckets.emplace_back(bucket);
     }
-    NativeRdb::ValuesBucket bucket;
-    bucket.PutString(FIELD_RUNNING_ID, runningId);
-    bucket.PutString(FIELD_DOMAIN, domain);
-    bucket.PutString(FIELD_NAME, name);
-    bucket.PutString(FIELD_PARAM_KEY, param.key);
-    bucket.PutString(FIELD_PARAM_VALUE, param.value);
-    bucket.PutInt(FIELD_PARAM_TYPE, param.type);
-    int64_t seq = 0;
-    if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return seq;
+    int64_t insertRows = 0;
+    return dbStore->BatchInsert(insertRows, TABLE, buckets);
 }
 
-int64_t CustomEventParamDao::Update(const CustomEventParam& param,
-    const std::string& runningId, const std::string& domain, const std::string& name)
+int Updates(std::shared_ptr<NativeRdb::RdbStore> dbStore, const CustomEvent& customEvent)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
+    for (const auto& param : customEvent.params) {
+        NativeRdb::ValuesBucket bucket;
+        bucket.PutString(FIELD_PARAM_VALUE, param.value);
+        bucket.PutInt(FIELD_PARAM_TYPE, param.type);
 
-    NativeRdb::ValuesBucket bucket;
-    bucket.PutString(FIELD_PARAM_VALUE, param.value);
-    bucket.PutInt(FIELD_PARAM_TYPE, param.type);
-
-    int changedRows = 0;
-    NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_RUNNING_ID, runningId);
-    predicates.EqualTo(FIELD_DOMAIN, domain);
-    predicates.EqualTo(FIELD_NAME, name);
-    predicates.EqualTo(FIELD_PARAM_KEY, param.key);
-    if (dbStore_->Update(changedRows, bucket, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
+        int changedRows = 0;
+        NativeRdb::AbsRdbPredicates predicates(TABLE);
+        predicates.EqualTo(FIELD_RUNNING_ID, customEvent.runningId);
+        predicates.EqualTo(FIELD_DOMAIN, customEvent.domain);
+        predicates.EqualTo(FIELD_NAME, customEvent.name);
+        predicates.EqualTo(FIELD_PARAM_KEY, param.key);
+        if (int ret = dbStore->Update(changedRows, bucket, predicates); ret != NativeRdb::E_OK) {
+            return ret;
+        }
     }
-    return changedRows;
+    return NativeRdb::E_OK;
 }
 
-int CustomEventParamDao::Delete()
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     int deleteRows = 0;
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records", deleteRows);
-    return deleteRows;
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, ret=%{public}d", deleteRows, ret);
+    return ret;
 }
 
-int CustomEventParamDao::QueryParamkeys(std::unordered_set<std::string>& out,
-    const std::string& runningId, const std::string& domain, const std::string& name)
+int QueryParamkeys(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::unordered_set<std::string>& out,
+    const CustomEvent& customEvent)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_RUNNING_ID, runningId);
-    predicates.EqualTo(FIELD_DOMAIN, domain);
-    predicates.EqualTo(FIELD_NAME, name);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_PARAM_KEY});
+    predicates.EqualTo(FIELD_RUNNING_ID, customEvent.runningId);
+    predicates.EqualTo(FIELD_DOMAIN, customEvent.domain);
+    predicates.EqualTo(FIELD_NAME, customEvent.name);
+    auto resultSet = dbStore->Query(predicates, {FIELD_PARAM_KEY});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table");
-        return DB_FAILED;
+        return NativeRdb::E_ERROR;
     }
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         std::string paramKey;
         if (resultSet->GetString(0, paramKey) != NativeRdb::E_OK) {
             HILOG_ERROR(LOG_CORE, "failed to get value, runningId=%{public}s, domain=%{public}s, name=%{public}s",
-                runningId.c_str(), domain.c_str(), name.c_str());
+                customEvent.runningId.c_str(), customEvent.domain.c_str(), customEvent.name.c_str());
+            ret = resultSet->GoToNextRow();
             continue;
         }
         out.insert(paramKey);
+        ret = resultSet->GoToNextRow();
     }
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
 
-int CustomEventParamDao::Query(std::unordered_map<std::string, std::string>& params,
-    const std::string& runningId, const std::string& domain, const std::string& name)
+int Query(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::unordered_map<std::string, std::string>& params,
+    const CustomEvent& customEvent)
 {
-    if (dbStore_ == nullptr) {
-        return DB_FAILED;
-    }
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_RUNNING_ID, runningId);
-    predicates.EqualTo(FIELD_DOMAIN, domain);
-    predicates.EqualTo(FIELD_NAME, name);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_PARAM_KEY, FIELD_PARAM_VALUE});
+    predicates.EqualTo(FIELD_RUNNING_ID, customEvent.runningId);
+    predicates.EqualTo(FIELD_DOMAIN, customEvent.domain);
+    predicates.EqualTo(FIELD_NAME, customEvent.name);
+    auto resultSet = dbStore->Query(predicates, {FIELD_PARAM_KEY, FIELD_PARAM_VALUE});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table");
-        return DB_FAILED;
+        return NativeRdb::E_ERROR;
     }
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         std::string paramKey;
         std::string paramValue;
         if (resultSet->GetString(0, paramKey) != NativeRdb::E_OK
             || resultSet->GetString(1, paramValue) != NativeRdb::E_OK) {
             HILOG_ERROR(LOG_CORE, "failed to get value, runningId=%{public}s, domain=%{public}s, name=%{public}s",
-                runningId.c_str(), domain.c_str(), name.c_str());
+                customEvent.runningId.c_str(), customEvent.domain.c_str(), customEvent.name.c_str());
+            ret = resultSet->GoToNextRow();
             continue;
         }
         params[paramKey] = paramValue;
+        ret = resultSet->GoToNextRow();
     }
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
+} // namespace CustomEventParamDao
 } // namespace HiviewDFX
 } // namespace OHOS

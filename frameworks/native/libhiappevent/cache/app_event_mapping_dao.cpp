@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,16 +31,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace AppEventMappingDao {
 using namespace AppEventCacheCommon;
 using namespace AppEventCacheCommon::AppEventMapping;
-AppEventMappingDao::AppEventMappingDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
-{
-    if (Create() != DB_SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", TABLE.c_str());
-    }
-}
-
-int AppEventMappingDao::Create()
+int Create(NativeRdb::RdbStore& dbStore)
 {
     /**
      * table: event_observer_mapping
@@ -56,25 +50,19 @@ int AppEventMappingDao::Create()
         {FIELD_OBSERVER_SEQ, SqlUtil::SQL_INT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(TABLE, fields);
-    if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return DB_SUCC;
+    return dbStore.ExecuteSql(sql);
 }
 
-int64_t AppEventMappingDao::Insert(int64_t eventSeq, int64_t observerSeq)
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t eventSeq, int64_t observerSeq)
 {
     NativeRdb::ValuesBucket bucket;
     bucket.PutLong(FIELD_EVENT_SEQ, eventSeq);
     bucket.PutLong(FIELD_OBSERVER_SEQ, observerSeq);
     int64_t seq = 0;
-    if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return seq;
+    return dbStore->Insert(seq, TABLE, bucket);
 }
 
-int AppEventMappingDao::Delete(int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t observerSeq, const std::vector<int64_t>& eventSeqs)
 {
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     if (observerSeq > 0) {
@@ -89,18 +77,17 @@ int AppEventMappingDao::Delete(int64_t observerSeq, const std::vector<int64_t>& 
     }
 
     int deleteRows = 0;
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
-    return deleteRows;
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64 ", ret=%{public}d",
+        deleteRows, observerSeq, ret);
+    return ret;
 }
 
-int AppEventMappingDao::QueryExistEvent(const std::vector<int64_t>& eventSeqs,
+int QueryExistEvent(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::vector<int64_t>& eventSeqs,
     std::unordered_set<int64_t>& existEventSeqs)
 {
     if (eventSeqs.empty()) {
-        return DB_SUCC;
+        return NativeRdb::E_OK;
     }
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     std::vector<std::string> eventSeqStrs(eventSeqs.size());
@@ -109,22 +96,25 @@ int AppEventMappingDao::QueryExistEvent(const std::vector<int64_t>& eventSeqs,
     });
     predicates.In(FIELD_EVENT_SEQ, eventSeqStrs);
 
-    auto resultSet = dbStore_->Query(predicates, {FIELD_EVENT_SEQ});
+    auto resultSet = dbStore->Query(predicates, {FIELD_EVENT_SEQ});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table, event size=%{public}zu", eventSeqs.size());
-        return DB_FAILED;
+        return NativeRdb::E_ERROR;
     }
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         int64_t existEventSeq = 0;
         if (resultSet->GetLong(0, existEventSeq) != NativeRdb::E_OK) {
             HILOG_ERROR(LOG_CORE, "failed to get event seq value from resultSet");
             resultSet->Close();
-            return DB_FAILED;
+            return NativeRdb::E_ERROR;
         }
         existEventSeqs.insert(existEventSeq);
+        ret = resultSet->GoToNextRow();
     }
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
+} // namespace AppEventMappingDao
 } // namespace HiviewDFX
 } // namespace OHOS

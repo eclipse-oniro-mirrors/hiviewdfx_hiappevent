@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -89,14 +89,14 @@ int64_t InitObserverFromDb(std::shared_ptr<AppEventObserver> observer,
     const std::string& name, int64_t hashCode)
 {
     std::string filters;
-    int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name, hashCode, filters);
+    int64_t observerSeq = AppEventStore::GetInstance().QueryObserverSeqAndFilters(name, hashCode, filters);
     if (observerSeq <= 0) {
         HILOG_INFO(LOG_CORE, "the observer does not exist in database, name=%{public}s, hash=%{public}" PRId64,
             name.c_str(), hashCode);
         return -1;
     }
     std::string newFilters = observer->GetFiltersStr();
-    if (filters != newFilters && AppEventStore::GetInstance().UpdateObserver(observerSeq, newFilters) <= 0) {
+    if (filters != newFilters && AppEventStore::GetInstance().UpdateObserver(observerSeq, newFilters) < 0) {
         HILOG_ERROR(LOG_CORE, "failed to update observer=%{public}s to db", name.c_str());
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
@@ -127,8 +127,8 @@ int64_t InitObserver(std::shared_ptr<AppEventObserver> observer, bool& isExist)
     int64_t observerHashCode = observer->GenerateHashCode();
     int64_t observerSeq = InitObserverFromDb(observer, observerName, observerHashCode);
     if (observerSeq <= 0) {
-        observerSeq = AppEventStore::GetInstance().InsertObserver(observerName, observerHashCode,
-            observer->GetFiltersStr());
+        observerSeq = AppEventStore::GetInstance().InsertObserver(AppEventCacheCommon::Observer(observerName,
+            observerHashCode, observer->GetFiltersStr()));
         if (observerSeq <= 0) {
             HILOG_ERROR(LOG_CORE, "failed to insert observer=%{public}s to db", observerName.c_str());
             return -1;

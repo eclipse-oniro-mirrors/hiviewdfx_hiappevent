@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,17 +27,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace AppEventObserverDao {
 using namespace AppEventCacheCommon;
 using namespace AppEventCacheCommon::Observers;
-
-AppEventObserverDao::AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> dbStore) : dbStore_(dbStore)
-{
-    if (Create() != DB_SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to create table=%{public}s", TABLE.c_str());
-    }
-}
-
-int AppEventObserverDao::Create()
+int Create(NativeRdb::RdbStore& dbStore)
 {
     /**
      * table: observers
@@ -54,26 +47,19 @@ int AppEventObserverDao::Create()
         {FIELD_FILTERS, SqlUtil::SQL_TEXT_TYPE},
     };
     std::string sql = SqlUtil::CreateTable(TABLE, fields);
-    if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return DB_SUCC;
+    return dbStore.ExecuteSql(sql);
 }
 
-int64_t AppEventObserverDao::Insert(const std::string& observer, int64_t hashCode, const std::string& filters)
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const Observer& observer, int64_t& seq)
 {
     NativeRdb::ValuesBucket bucket;
-    bucket.PutString(FIELD_NAME, observer);
-    bucket.PutLong(FIELD_HASH, hashCode);
-    bucket.PutString(FIELD_FILTERS, filters);
-    int64_t seq = 0;
-    if (dbStore_->Insert(seq, TABLE, bucket) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    return seq;
+    bucket.PutString(FIELD_NAME, observer.name);
+    bucket.PutLong(FIELD_HASH, observer.hashCode);
+    bucket.PutString(FIELD_FILTERS, observer.filters);
+    return dbStore->Insert(seq, TABLE, bucket);
 }
 
-int64_t AppEventObserverDao::Update(int64_t seq, const std::string& filters)
+int Update(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t seq, const std::string& filters)
 {
     NativeRdb::ValuesBucket bucket;
     bucket.PutString(FIELD_FILTERS, filters);
@@ -81,95 +67,94 @@ int64_t AppEventObserverDao::Update(int64_t seq, const std::string& filters)
     int changedRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     predicates.EqualTo(FIELD_SEQ, seq);
-    if (dbStore_->Update(changedRows, bucket, predicates) != NativeRdb::E_OK) {
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "succ to update observer seq=%{public}" PRId64 ", filters=%{public}s", seq, filters.c_str());
-    return changedRows;
+    int ret = dbStore->Update(changedRows, bucket, predicates);
+    HILOG_INFO(LOG_CORE, "update %{public}d observer seq=%{public}" PRId64 ", filters=%{public}s, ret=%{public}d",
+        changedRows, seq, filters.c_str(), ret);
+    return ret;
 }
 
-int64_t AppEventObserverDao::QuerySeq(const std::string& observer, int64_t hashCode, std::string& filters)
+int QuerySeqAndFilters(std::shared_ptr<NativeRdb::RdbStore> dbStore, const Observer& observer,
+    int64_t& seq, std::string& filters)
 {
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_NAME, observer);
-    predicates.EqualTo(FIELD_HASH, hashCode);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_SEQ, FIELD_FILTERS});
+    predicates.EqualTo(FIELD_NAME, observer.name);
+    predicates.EqualTo(FIELD_HASH, observer.hashCode);
+    auto resultSet = dbStore->Query(predicates, {FIELD_SEQ, FIELD_FILTERS});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query table, observer name=%{public}s, hash code=%{public}" PRId64,
-            observer.c_str(), hashCode);
-        return DB_FAILED;
+            observer.name.c_str(), observer.hashCode);
+        return NativeRdb::E_ERROR;
     }
 
     // the hash code is unique, so get only the first
-    int64_t observerSeq = 0;
-    if (resultSet->GoToNextRow() == NativeRdb::E_OK && resultSet->GetLong(0, observerSeq) == NativeRdb::E_OK
+    int ret = resultSet->GoToNextRow();
+    if (ret == NativeRdb::E_OK && resultSet->GetLong(0, seq) == NativeRdb::E_OK
         && resultSet->GetString(1, filters) == NativeRdb::E_OK) {
         HILOG_INFO(LOG_CORE, "succ to query observer seq=%{public}" PRId64 ", name=%{public}s, hash=%{public}" PRId64,
-            observerSeq, observer.c_str(), hashCode);
-        resultSet->Close();
-        return observerSeq;
+            seq, observer.name.c_str(), observer.hashCode);
     }
     resultSet->Close();
-    return DB_FAILED;
+    return ret;
 }
 
-int AppEventObserverDao::QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs)
+int QuerySeqs(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name,
+    std::vector<int64_t>& observerSeqs)
 {
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_NAME, observer);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_SEQ});
+    predicates.EqualTo(FIELD_NAME, name);
+    auto resultSet = dbStore->Query(predicates, {FIELD_SEQ});
     if (resultSet == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to query table, observer=%{public}s", observer.c_str());
-        return DB_FAILED;
+        HILOG_ERROR(LOG_CORE, "failed to query table, observer=%{public}s", name.c_str());
+        return NativeRdb::E_ERROR;
     }
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         int64_t observerSeq = 0;
         if (resultSet->GetLong(0, observerSeq) != NativeRdb::E_OK) {
-            HILOG_ERROR(LOG_CORE, "failed to get seq value from resultSet, observer=%{public}s", observer.c_str());
+            HILOG_ERROR(LOG_CORE, "failed to get seq value from resultSet, observer=%{public}s", name.c_str());
+            ret = resultSet->GoToNextRow();
             continue;
         }
         observerSeqs.emplace_back(observerSeq);
+        ret = resultSet->GoToNextRow();
     }
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
 
-int AppEventObserverDao::Delete(const std::string& observer)
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name)
 {
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_NAME, observer);
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        HILOG_ERROR(LOG_CORE, "failed to delete records, observer=%{public}s", observer.c_str());
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records, observer=%{public}s", deleteRows, observer.c_str());
-    return deleteRows;
+    predicates.EqualTo(FIELD_NAME, name);
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, observer=%{public}s, ret=%{public}d",
+        deleteRows, name.c_str(), ret);
+    return ret;
 }
 
-int AppEventObserverDao::Delete(int64_t observerSeq)
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t observerSeq)
 {
     int deleteRows = 0;
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     predicates.EqualTo(FIELD_SEQ, observerSeq);
-    if (dbStore_->Delete(deleteRows, predicates) != NativeRdb::E_OK) {
-        HILOG_ERROR(LOG_CORE, "failed to delete records, observer seq=%{public}" PRId64, observerSeq);
-        return DB_FAILED;
-    }
-    HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64, deleteRows, observerSeq);
-    return deleteRows;
+    int ret = dbStore->Delete(deleteRows, predicates);
+    HILOG_INFO(LOG_CORE, "delete %{public}d records, observerSeq=%{public}" PRId64 ", ret=%{public}d",
+        deleteRows, observerSeq, ret);
+    return ret;
 }
 
-int AppEventObserverDao::QueryWatchers(std::vector<Observer>& observers)
+int QueryWatchers(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::vector<Observer>& observers)
 {
     NativeRdb::AbsRdbPredicates predicates(TABLE);
-    predicates.EqualTo(FIELD_HASH, 0);
-    auto resultSet = dbStore_->Query(predicates, {FIELD_SEQ, FIELD_NAME, FIELD_FILTERS});
+    predicates.EqualTo(FIELD_HASH, 0); // hash = 0 means watcher
+    auto resultSet = dbStore->Query(predicates, {FIELD_SEQ, FIELD_NAME, FIELD_FILTERS});
     if (resultSet == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to query watcher from observers");
-        return DB_FAILED;
+        return NativeRdb::E_ERROR;
     }
-    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+    int ret = resultSet->GoToNextRow();
+    while (ret == NativeRdb::E_OK) {
         int64_t seq = 0;
         std::string name;
         std::string filters;
@@ -177,12 +162,15 @@ int AppEventObserverDao::QueryWatchers(std::vector<Observer>& observers)
             || resultSet->GetString(1, name) != NativeRdb::E_OK // 1 means index of name
             || resultSet->GetString(2, filters) != NativeRdb::E_OK) { // 2 means index of filters
             HILOG_ERROR(LOG_CORE, "failed to get value from resultSet");
+            ret = resultSet->GoToNextRow();
             continue;
         }
         observers.emplace_back(Observer(seq, name, filters));
+        ret = resultSet->GoToNextRow();
     }
     resultSet->Close();
-    return DB_SUCC;
+    return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
+} // namespace AppEventObserverDao
 } // namespace HiviewDFX
 } // namespace OHOS

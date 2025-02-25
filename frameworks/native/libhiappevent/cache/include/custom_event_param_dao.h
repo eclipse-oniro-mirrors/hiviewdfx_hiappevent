@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,31 +19,22 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "app_event_cache_common.h"
 #include "hiappevent_base.h"
 #include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class CustomEventParamDao {
-public:
-    CustomEventParamDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
-    ~CustomEventParamDao() = default;
-    int64_t Insert(const CustomEventParam& param,
-        const std::string& runningId, const std::string& domain, const std::string& name);
-    int64_t Update(const CustomEventParam& param,
-        const std::string& runningId, const std::string& domain, const std::string& name);
-    int Delete();
-    int Query(std::unordered_map<std::string, std::string>& params,
-        const std::string& runningId, const std::string& domain, const std::string& name = "");
-    int QueryParamkeys(std::unordered_set<std::string>& out,
-        const std::string& runningId, const std::string& domain, const std::string& name);
-
-private:
-    int Create();
-
-private:
-    std::shared_ptr<NativeRdb::RdbStore> dbStore_;
-};
+namespace CustomEventParamDao {
+int Create(NativeRdb::RdbStore& dbStore);
+int BatchInsert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const AppEventCacheCommon::CustomEvent& customEvent);
+int Updates(std::shared_ptr<NativeRdb::RdbStore> dbStore, const AppEventCacheCommon::CustomEvent& customEvent);
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore);
+int Query(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::unordered_map<std::string, std::string>& params,
+    const AppEventCacheCommon::CustomEvent& customEvent);
+int QueryParamkeys(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::unordered_set<std::string>& out,
+    const AppEventCacheCommon::CustomEvent& customEvent);
+} // namespace CustomEventParamDao
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_CUSTOM_EVENT_PARAM_DAO_H

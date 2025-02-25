@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,24 +24,18 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class AppEventObserverDao {
-public:
-    AppEventObserverDao(std::shared_ptr<NativeRdb::RdbStore> dbStore);
-    ~AppEventObserverDao() = default;
-    int64_t Insert(const std::string& observer, int64_t hashCode, const std::string& filters);
-    int64_t Update(int64_t seq, const std::string& filters);
-    int64_t QuerySeq(const std::string& observer, int64_t hashCode, std::string& filters);
-    int QuerySeqs(const std::string& observer, std::vector<int64_t>& observerSeqs);
-    int QueryWatchers(std::vector<AppEventCacheCommon::Observer>& observers);
-    int Delete(const std::string& observer);
-    int Delete(int64_t observerSeq);
-
-private:
-    int Create();
-
-private:
-    std::shared_ptr<NativeRdb::RdbStore> dbStore_;
-};
+namespace AppEventObserverDao {
+int Create(NativeRdb::RdbStore& dbStore);
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const AppEventCacheCommon::Observer& observer, int64_t& seq);
+int Update(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t seq, const std::string& filters);
+int QuerySeqAndFilters(std::shared_ptr<NativeRdb::RdbStore> dbStore, const AppEventCacheCommon::Observer& observer,
+    int64_t& seq, std::string& filters);
+int QuerySeqs(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name,
+    std::vector<int64_t>& observerSeqs);
+int QueryWatchers(std::shared_ptr<NativeRdb::RdbStore> dbStore, std::vector<AppEventCacheCommon::Observer>& observers);
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string& name);
+int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t observerSeq);
+} // namespace AppEventObserverDao
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_OBSERVER_DAO_H
