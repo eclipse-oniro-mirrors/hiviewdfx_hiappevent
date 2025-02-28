@@ -16,12 +16,16 @@
 #include "hiappevent_cache_test.h"
 
 #include "app_event_cache_common.h"
+#include "app_event_db_cleaner.h"
+#include "app_event_log_cleaner.h"
+#include "app_event_stat.h"
 #include "app_event_store.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_write.h"
+#include "time_util.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -295,4 +299,78 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest006, TestSize.Level0)
 
     result = AppEventStore::GetInstance().DestroyDbStore();;
     ASSERT_EQ(result, 0);
+}
+
+/**
+ * @tc.name: HiAppEventCleanTest001
+ * @tc.desc: test the DB cleaner operation.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest001, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. init the db and insert event to the table.
+     * @tc.steps: step2. clear event db.
+     */
+    int result = AppEventStore::GetInstance().InitDbStore();
+    EXPECT_EQ(result, 0);
+    int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(CreateAppEventPack());
+    EXPECT_GT(eventSeq, 0);
+
+    AppEventDbCleaner dbCleaner(TEST_DIR);
+    uint64_t curSize = dbCleaner.GetFilesSize();
+    EXPECT_GT(curSize, 0);
+    uint64_t clearResult = dbCleaner.ClearSpace(curSize, curSize);
+    EXPECT_EQ(clearResult, curSize);
+    uint64_t clearHistoryResult = dbCleaner.ClearSpace(curSize, 0);
+    EXPECT_EQ(clearHistoryResult, 0);
+
+    result = AppEventStore::GetInstance().DestroyDbStore();
+    EXPECT_EQ(result, 0);
+}
+
+/**
+ * @tc.name: HiAppEventCleanTest002
+ * @tc.desc: test the log cleaner operation.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest002, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. create a example log.
+     * @tc.steps: step2. clear log space.
+     */
+    std::string filePath = TEST_DIR + "test.txt";
+    bool makeFileResult = FileUtil::CreateFile(filePath, S_IRUSR | S_IWUSR);
+    EXPECT_TRUE(makeFileResult);
+    bool writeFileResult = FileUtil::SaveStringToFile(filePath, filePath, false);
+    EXPECT_TRUE(writeFileResult);
+
+    AppEventLogCleaner logCleaner(TEST_DIR);
+    uint64_t curSize = logCleaner.GetFilesSize();
+    EXPECT_GT(curSize, 0);
+    uint64_t clearResult = logCleaner.ClearSpace(curSize, curSize);
+    EXPECT_EQ(clearResult, curSize);
+    uint64_t clearHistoryResult = logCleaner.ClearSpace(curSize, 0);
+    EXPECT_EQ(clearHistoryResult, 0);
+
+    bool removeResult = FileUtil::RemoveFile(filePath);
+    EXPECT_TRUE(removeResult);
+}
+
+/**
+ * @tc.name: HiAppEventStat001
+ * @tc.desc: test the WriteApiEndEventAsync func of app event stat.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
+{
+    std::string apiName = "testApi";
+    uint64_t beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
+    AppEventStat::WriteApiEndEventAsync(apiName, beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    AppEventStat::WriteApiEndEventAsync(apiName, -beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    EXPECT_GT(beginTime, 0);
 }

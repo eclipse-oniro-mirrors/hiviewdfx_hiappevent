@@ -25,7 +25,6 @@ const std::string SQL_INT_TYPE = "INTEGER";
 
 std::string CreateTable(const std::string& table,
     const std::vector<std::pair<std::string, std::string>>& fields);
-std::string DropTable(const std::string& table);
 } // namespace SqlUtil
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -23,6 +23,7 @@ config("hiappevent_config_test") {
   include_dirs = [
     ".",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
+    "$native_hiappevent_path/libhiappevent/cleaner/include",
     "$native_hiappevent_path/libhiappevent/include",
     "$native_hiappevent_path/libhiappevent/observer/include",
     "$native_hiappevent_path/ndk/include",
@@ -41,10 +42,12 @@ ohos_unittest("HiAppEventNativeTest") {
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
     "$native_hiappevent_path/ndk:hiappevent_ndk",
-    "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "ability_runtime:app_context" ]
+  external_deps = [
+    "ability_runtime:app_context",
+    "googletest:gtest_main",
+  ]
 }
 
 ohos_unittest("HiAppEventCacheTest") {
@@ -59,10 +62,10 @@ ohos_unittest("HiAppEventCacheTest") {
     "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
     "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
     "$native_hiappevent_path/ndk:hiappevent_ndk",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]
@@ -79,11 +82,11 @@ ohos_unittest("HiAppEventWatcherTest") {
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
     "$native_hiappevent_path/libhiappevent/observer:hiappevent_observer",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "eventhandler:libeventhandler",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]
@@ -99,13 +102,13 @@ ohos_unittest("HiAppEventInnerApiTest") {
   deps = [
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "processor:test_processor",
-    "//third_party/googletest:gtest_main",
   ]
 
   resource_config_file = "resource/ohos_test.xml"
 
   external_deps = [
     "ability_runtime:app_context",
+    "googletest:gtest_main",
     "hiappevent:hiappevent_innerapi",
   ]
 }
@@ -120,11 +123,11 @@ ohos_unittest("HiAppEventUserInfoTest") {
   deps = [
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "eventhandler:libeventhandler",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]
@@ -137,15 +140,40 @@ ohos_unittest("HiAppEventAppEventTest") {
 
   sources = [ "unittest/common/native/hiappevent_app_event_test.cpp" ]
 
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "ability_runtime:app_context",
+    "googletest:gtest_main",
     "hiappevent:hiappevent_innerapi",
   ]
+}
+
+ohos_unittest("HiAppEventUtilityTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_utility_test.cpp" ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
+  ]
+
+  external_deps = [ "googletest:gtest_main" ]
+}
+
+ohos_unittest("HiAppEventVerifyTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_verify_test.cpp" ]
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [ "googletest:gtest_main" ]
 }
 
 group("unittest") {
@@ -156,6 +184,8 @@ group("unittest") {
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
     ":HiAppEventUserInfoTest",
+    ":HiAppEventUtilityTest",
+    ":HiAppEventVerifyTest",
     ":HiAppEventWatcherTest",
     "unittest/common/napi:unittest",
   ]

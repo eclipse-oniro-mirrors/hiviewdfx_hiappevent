@@ -27,12 +27,6 @@ std::string CreateTable(const std::string& table, const std::vector<std::pair<st
     sql += ")";
     return sql;
 }
-
-std::string DropTable(const std::string& table)
-{
-    std::string sql = "DROP TABLE IF EXISTS " + table;
-    return sql;
-}
 } // namespace SqlUtil
 } // namespace HiviewDFX
 } // namespace OHOS
