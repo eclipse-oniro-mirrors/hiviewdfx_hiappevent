@@ -99,6 +99,8 @@ void AppEventWatcherImpl::InitTrigger(void (*callbackRef)(int, int, int64_t))
     if (context_->triggerContext == nullptr) {
         context_->triggerContext = new(std::nothrow) OnTriggerContext();
         if (context_->triggerContext == nullptr) {
+            delete context_;
+            context_ = nullptr;
             LOGE("InitTrigger is failed, context_->triggerContext is null");
             return;
         }
@@ -118,6 +120,8 @@ void AppEventWatcherImpl::InitHolder(AppEventPackageHolderImpl* holder)
     if (context_->triggerContext == nullptr) {
         context_->triggerContext = new(std::nothrow) OnTriggerContext();
         if (context_->triggerContext == nullptr) {
+            delete context_;
+            context_ = nullptr;
             LOGE("InitHolder is failed, context_->triggerContext is null");
             return;
         }
@@ -137,6 +141,8 @@ void AppEventWatcherImpl::InitReceiver(void (*callbackRef)(char*, CArrRetAppEven
     if (context_->receiveContext == nullptr) {
         context_->receiveContext = new(std::nothrow) OnReceiveContext();
         if (context_->receiveContext == nullptr) {
+            delete context_;
+            context_ = nullptr;
             LOGE("context_->receiveContext is null");
             return;
         }
