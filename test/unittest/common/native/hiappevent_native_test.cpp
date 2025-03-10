@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -946,4 +946,90 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest031, TestSize.Level0)
     ASSERT_EQ(OH_HiAppEvent_SetEventConfig("MAIN_THREAD_JANK", configDemo), ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
     OH_HiAppEvent_DestroyConfig(configDemo);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest032
+ * @tc.desc: check the AddIntParam function when the input value is nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest032, TestSize.Level0)
+{
+    ParamList list = OH_HiAppEvent_CreateParamList();
+
+    int8_t num1 = 1;
+    ParamList listRes = OH_HiAppEvent_AddInt8Param(nullptr, nullptr, num1);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt8ArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt8ArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    int16_t num2 = 1;
+    listRes = OH_HiAppEvent_AddInt16Param(nullptr, nullptr, num2);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt16ArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt16ArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    int32_t num3 = 1;
+    listRes = OH_HiAppEvent_AddInt32Param(nullptr, nullptr, num3);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt32ArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt32ArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    int64_t num4 = 1;
+    listRes = OH_HiAppEvent_AddInt64Param(nullptr, nullptr, num4);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt64ArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddInt64ArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    OH_HiAppEvent_DestroyParamList(list);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest033
+ * @tc.desc: check the Add except int Param function when the input value is nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest033, TestSize.Level0)
+{
+    ParamList list = OH_HiAppEvent_CreateParamList();
+    ParamList listRes = OH_HiAppEvent_AddBoolParam(nullptr, nullptr, true);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddBoolArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddBoolArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    float num1 = 456.1234;
+    listRes = OH_HiAppEvent_AddFloatParam(nullptr, nullptr, num1);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddFloatArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddFloatArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    double num2 = 456.1234;
+    listRes = OH_HiAppEvent_AddDoubleParam(nullptr, nullptr, num2);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddDoubleArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddDoubleArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    char str1[] = "hello";
+    listRes = OH_HiAppEvent_AddStringParam(nullptr, nullptr, str1);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddStringArrayParam(nullptr, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, nullptr);
+    listRes = OH_HiAppEvent_AddStringArrayParam(list, nullptr, nullptr, 0);
+    EXPECT_EQ(listRes, list);
+
+    OH_HiAppEvent_DestroyParamList(list);
 }
