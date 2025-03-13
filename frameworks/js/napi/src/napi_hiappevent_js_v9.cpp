@@ -124,6 +124,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     if (asyncContext->callback == nullptr && napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
         HILOG_ERROR(LOG_CORE, "callback is null, failed to create promise.");
+        delete asyncContext;
         return nullptr;
     }
 
@@ -254,6 +255,7 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to create promise.");
+        delete asyncContext;
         return nullptr;
     }
 
