@@ -22,6 +22,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 
+void SubmitWritingTask(std::shared_ptr<AppEventPack> appEventPack, const std::string& taskName);
 void WriteEvent(std::shared_ptr<AppEventPack> appEventPack);
 int SetEventParam(std::shared_ptr<AppEventPack> appEventPack);
 int SetEventConfig(const std::string& name, const std::map<std::string, std::string>& eventConfig);
