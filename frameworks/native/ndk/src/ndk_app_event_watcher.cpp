@@ -16,9 +16,9 @@
 #include "ndk_app_event_watcher.h"
 
 #include "app_event_store.h"
-#include "ffrt.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
+#include "hiappevent_ffrt.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -97,7 +97,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
         appEventIndex++;
     }
     int64_t observerSeq = GetSeq();
-    ffrt::submit([observerSeq, eventSeqs]() {
+    HiAppEvent::Submit([observerSeq, eventSeqs]() {
         if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
             HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
                 observerSeq, eventSeqs.size());
