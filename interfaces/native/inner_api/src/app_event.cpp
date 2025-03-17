@@ -14,7 +14,6 @@
  */
 #include "app_event.h"
 
-#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_verify.h"
 #include "hiappevent_write.h"
@@ -85,9 +84,7 @@ int Write(const Event& event)
     int ret = VerifyAppEvent(event.eventPack_);
     if (ret >= 0) {
         auto appEventPack = event.eventPack_;
-        ffrt::submit([appEventPack]() {
-            WriteEvent(appEventPack);
-            }, {}, {}, ffrt::task_attr().name("app_event"));
+        SubmitWritingTask(appEventPack, "app_event");
     }
     return ret;
 }

@@ -17,8 +17,8 @@
 #include <algorithm>
 
 #include "app_event_store.h"
-#include "ffrt.h"
 #include "hiappevent_base.h"
+#include "hiappevent_ffrt.h"
 #include "hiappevent_userinfo.h"
 #include "hilog/log.h"
 
@@ -59,7 +59,7 @@ void AppEventProcessorProxy::OnEvents(const std::vector<std::shared_ptr<AppEvent
 
     // async
     auto proxyPtr = shared_from_this();
-    ffrt::submit([proxyPtr, observerSeq, userIds, userProperties, events]() {
+    Submit([proxyPtr, observerSeq, userIds, userProperties, events]() {
         std::vector<AppEventInfo> eventInfos;
         std::vector<int64_t> eventSeqs;
         for (const auto& event : events) {
