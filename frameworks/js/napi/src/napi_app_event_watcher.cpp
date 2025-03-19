@@ -15,8 +15,8 @@
 #include "napi_app_event_watcher.h"
 
 #include "app_event_store.h"
-#include "ffrt.h"
 #include "hiappevent_base.h"
+#include "hiappevent_ffrt.h"
 #include "hilog/log.h"
 #include "napi_util.h"
 #include "uv.h"
@@ -46,7 +46,7 @@ void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_
     for (const auto& event : events) {
         eventSeqs.emplace_back(event->GetSeq());
     }
-    ffrt::submit([observerSeq, eventSeqs]() {
+    HiAppEvent::Submit([observerSeq, eventSeqs]() {
         if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
             HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
                 observerSeq, eventSeqs.size());
