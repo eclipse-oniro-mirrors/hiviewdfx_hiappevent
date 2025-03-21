@@ -60,6 +60,13 @@
                   "base_type.h"
               ]
           }
+        },
+        {
+          "name": "//base/hiviewdfx/hiappevent/frameworks/cj/ffi:cj_hiappevent_ffi",
+          "header": {
+              "header_base": "//base/hiviewdfx/hiappevent/frameworks/cj/ffi/include",
+              "header_files": []
+          }
         }
       ],
       "test": [ "//base/hiviewdfx/hiappevent/test:unittest" ]
