@@ -44,6 +44,7 @@ ohos_shared_library("hiappevent_v9") {
   sources = [
     "./src/napi_app_event_holder.cpp",
     "./src/napi_app_event_watcher.cpp",
+    "./src/napi_env_watcher_manager.cpp",
     "./src/napi_hiappevent_builder.cpp",
     "./src/napi_hiappevent_config.cpp",
     "./src/napi_hiappevent_init.cpp",

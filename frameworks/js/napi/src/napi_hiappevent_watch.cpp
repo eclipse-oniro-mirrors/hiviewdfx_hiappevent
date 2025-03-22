@@ -24,6 +24,7 @@
 #include "hilog/log.h"
 #include "napi_app_event_holder.h"
 #include "napi_app_event_watcher.h"
+#include "napi_env_watcher_manager.h"
 #include "napi_error.h"
 #include "napi_util.h"
 
@@ -323,6 +324,7 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher, uint64_t beg
         AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_OK);
         return NapiUtil::CreateNull(env);
     }
+    EnvWatcherManager::GetInstance().AddEnvWatcherRecord(env, watcherPtr.get());
 
     // 5. create holder and add holder to the watcher
     constexpr size_t holderParamNum = 2;

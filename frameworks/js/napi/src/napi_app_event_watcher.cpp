@@ -18,6 +18,7 @@
 #include "hiappevent_base.h"
 #include "hiappevent_ffrt.h"
 #include "hilog/log.h"
+#include "napi_env_watcher_manager.h"
 #include "napi_util.h"
 #include "uv.h"
 
@@ -32,13 +33,6 @@ namespace HiviewDFX {
 namespace {
 constexpr size_t CALLBACK_PARAM_NUM = 3;
 constexpr size_t RECEIVE_PARAM_NUM = 2;
-
-void SafeDeleteWork(uv_work_t* work)
-{
-    if (work != nullptr) {
-        delete work;
-    }
-}
 
 void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
@@ -91,6 +85,7 @@ NapiAppEventWatcher::NapiAppEventWatcher(
 NapiAppEventWatcher::~NapiAppEventWatcher()
 {
     HILOG_DEBUG(LOG_CORE, "start to destroy NapiAppEventWatcher object");
+    EnvWatcherManager::GetInstance().RemoveEnvWatcherRecord(this);
     if (context_ == nullptr) {
         return;
     }
@@ -111,6 +106,12 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
         HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
         delete context_;
     }
+}
+
+void NapiAppEventWatcher::DeleteWatcherContext()
+{
+    delete context_;
+    context_ = nullptr;
 }
 
 void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder)
