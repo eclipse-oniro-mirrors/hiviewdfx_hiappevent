@@ -27,6 +27,8 @@
 #include "hiappevent_userinfo.h"
 #include "ndk_app_event_processor_service.h"
 #include "time_util.h"
+#include "processor/test_processor.h"
+#include "app_event_processor_mgr.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -88,13 +90,16 @@ void HiAppEventNativeTest::SetUpTestCase()
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_STORAGE_PATH);
     // set context bundle name
     auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
-    if (context != nullptr) {
-        auto contextImpl = std::make_shared<TestContextImpl>("ohos.hiappevent.native.test");
-        context->AttachContextImpl(contextImpl);
-        std::cout << "set bundle name." << std::endl;
+    if (context == nullptr) {
+        std::cout << "context is null." << std::endl;
         return;
     }
-    std::cout << "context is null." << std::endl;
+    auto contextImpl = std::make_shared<TestContextImpl>("ohos.hiappevent.native.test");
+    context->AttachContextImpl(contextImpl);
+    std::cout << "set bundle name." << std::endl;
+    auto processor = std::make_shared<HiAppEvent::TestProcessor>();
+    int ret = HiAppEvent::AppEventProcessorMgr::RegisterProcessor("test_processor", processor);
+    std::cout << "register observer ret = " << ret << std::endl;
 }
 
 /**

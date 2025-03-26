@@ -42,11 +42,15 @@ ohos_unittest("HiAppEventNativeTest") {
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
     "$native_hiappevent_path/ndk:hiappevent_ndk",
+    "processor:test_processor",
   ]
+
+  resource_config_file = "resource/ohos_test.xml"
 
   external_deps = [
     "ability_runtime:app_context",
     "googletest:gtest_main",
+    "hiappevent:hiappevent_innerapi",
   ]
 }
 
@@ -99,12 +103,7 @@ ohos_unittest("HiAppEventInnerApiTest") {
 
   sources = [ "unittest/common/native/hiappevent_inner_api_test.cpp" ]
 
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "processor:test_processor",
-  ]
-
-  resource_config_file = "resource/ohos_test.xml"
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "ability_runtime:app_context",
