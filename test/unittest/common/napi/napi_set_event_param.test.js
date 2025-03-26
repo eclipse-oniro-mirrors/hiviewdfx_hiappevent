@@ -177,7 +177,8 @@ describe('HiAppEventJsTest', function () {
         setEventParamTestCatch(TEST_PARAMS, null, expectErr, done);
         setEventParamTestCatch(TEST_PARAMS, undefined, expectErr, done);
 
-        expectErr = createError(11101001, "Invalid event domain.");
+        expectErr = createError(11101001, "Invalid event domain. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
         setEventParamTest(TEST_PARAMS, "xxx***", expectErr, done);
         setEventParamTest(TEST_PARAMS, "123_domain", expectErr, done);
         setEventParamTest(TEST_PARAMS, "", expectErr, done);
@@ -200,7 +201,8 @@ describe('HiAppEventJsTest', function () {
         setEventParamTestWithNameTestCatch(TEST_PARAMS, TEST_DOMAIN, null, expectErr, done);
         setEventParamTestWithNameTestCatch(TEST_PARAMS, TEST_DOMAIN, undefined, expectErr, done);
 
-        expectErr = createError(11101002, "Invalid event name.");
+        expectErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
         setEventParamTestWithNameTest(TEST_PARAMS, TEST_DOMAIN, "xxx***", expectErr, done);
         setEventParamTestWithNameTest(TEST_PARAMS, TEST_DOMAIN, "123_name", expectErr, done);
         setEventParamTestWithNameTest(TEST_PARAMS, TEST_DOMAIN, "a".repeat(MAX_LENGTH_OF_EVENT_NAME + 1), expectErr, done);
