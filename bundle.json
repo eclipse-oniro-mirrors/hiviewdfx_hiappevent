@@ -30,6 +30,7 @@
         "hitrace",
         "hilog",
         "hicollie",
+        "hisysevent",
         "init",
         "ipc",
         "napi",
