@@ -209,6 +209,7 @@ public:
     std::string GetParamStr() const;
     std::string GetRunningId() const;
     void GetCustomParams(std::vector<CustomEventParam>& customParams) const;
+    std::string GetParamApiStr();
 
     void SetSeq(int64_t seq);
     void SetDomain(const std::string& domain);
@@ -255,6 +256,7 @@ private:
     std::string runningId_;
     std::list<AppEventParam> baseParams_;
     std::string paramStr_;
+    std::string paramApiStr_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

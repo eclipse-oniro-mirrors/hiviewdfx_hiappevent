@@ -24,6 +24,7 @@
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
+#include "hiappevent_ffrt.h"
 #include "hilog/log.h"
 #include "time_util.h"
 #include "xcollie/watchdog.h"
@@ -40,6 +41,9 @@ namespace {
 constexpr int DB_FAILED = -1;
 const std::string  MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 std::mutex g_mutex;
+constexpr int SUBMIT_FAILED_NUM = 50;
+static int g_submitFailedCnt = 0;
+static std::mutex g_submitFailedCntMutex;
 
 std::string GetStorageDirPath()
 {
@@ -55,6 +59,22 @@ bool WriteEventToFile(const std::string& filePath, const std::string& event)
 {
     return FileUtil::SaveStringToFile(filePath, event);
 }
+}
+
+void SubmitWritingTask(std::shared_ptr<AppEventPack> appEventPack, const std::string& taskName)
+{
+    auto ret = HiAppEvent::Submit([appEventPack]() {
+        WriteEvent(appEventPack);
+        }, {}, {}, ffrt::task_attr().name(taskName.c_str()));
+    if (ret != ffrt_success) {
+        std::lock_guard<std::mutex> lockGuard(g_submitFailedCntMutex);
+        ++g_submitFailedCnt;
+        if (g_submitFailedCnt >= SUBMIT_FAILED_NUM) {
+            HILOG_ERROR(LOG_CORE, "failed to submit %{public}s %{public}s, ret=%{public}d",
+                taskName.c_str(), appEventPack->GetParamApiStr().c_str(), ret);
+            g_submitFailedCnt = 0;
+        }
+    }
 }
 
 void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)

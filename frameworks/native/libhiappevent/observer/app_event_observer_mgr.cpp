@@ -19,8 +19,8 @@
 #include "app_event_processor_proxy.h"
 #include "app_event_store.h"
 #include "application_context.h"
-#include "ffrt.h"
 #include "hiappevent_base.h"
+#include "hiappevent_ffrt.h"
 #include "hilog/log.h"
 #include "os_event_listener.h"
 
@@ -35,9 +35,9 @@ namespace HiviewDFX {
 using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 namespace {
-constexpr int TIMEOUT_INTERVAL = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
 constexpr int ONE_MINUTE = 60 * 1000;
 constexpr int REFRESH_FREE_SIZE_INTERVAL = 10 * ONE_MINUTE; // 10 minutes
+constexpr int TIMEOUT_INTERVAL_MICRO = HiAppEvent::TIMEOUT_STEP * 1000 * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
@@ -360,12 +360,10 @@ void AppEventObserverMgr::HandleTimeout()
 
 void AppEventObserverMgr::SendEventToHandler()
 {
-    std::lock_guard<std::mutex> lock(handlerMutex_);
-    if (handler_ == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to SendEventToHandler: handler is null");
-        return;
-    }
-    handler_->SendEvent(AppEventType::WATCHER_TIMEOUT, 0, TIMEOUT_INTERVAL);
+    HiAppEvent::Submit([this] {
+        ffrt::this_task::sleep_for(std::chrono::microseconds(TIMEOUT_INTERVAL_MICRO));
+        HandleTimeout();
+        }, {}, {}, ffrt::task_attr().name("appevent_timeout"));
 }
 
 void AppEventObserverMgr::SendRefreshFreeSizeEvent()
@@ -381,7 +379,7 @@ void AppEventObserverMgr::SendRefreshFreeSizeEvent()
 void AppEventObserverMgr::HandleBackground()
 {
     HILOG_INFO(LOG_CORE, "start to handle background");
-    ffrt::submit([this] {
+    HiAppEvent::Submit([this] {
         std::lock_guard<std::mutex> lock(observerMutex_);
         for (auto it = observers_.cbegin(); it != observers_.cend(); ++it) {
             it->second->ProcessBackground();
