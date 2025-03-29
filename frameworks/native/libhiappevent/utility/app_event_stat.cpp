@@ -16,8 +16,8 @@
 
 #include <random>
 
-#include "ffrt.h"
 #include "hiappevent_base.h"
+#include "hiappevent_ffrt.h"
 #include "hiappevent_write.h"
 #include "time_util.h"
 
@@ -46,7 +46,7 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
     appEventPack->AddParam("end_time", static_cast<int64_t>(TimeUtil::GetMilliseconds()));
     appEventPack->AddParam("result", result);
     appEventPack->AddParam("error_code", errCode);
-    ffrt::submit([appEventPack]() {
+    HiAppEvent::Submit([appEventPack]() {
         WriteEvent(appEventPack);
         }, {}, {}, ffrt::task_attr().name("appevent_api_end"));
 }

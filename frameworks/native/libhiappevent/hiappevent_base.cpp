@@ -651,6 +651,25 @@ void AppEventPack::GetCustomParams(std::vector<CustomEventParam>& customParams) 
     }
 }
 
+std::string AppEventPack::GetParamApiStr()
+{
+    if (!paramApiStr_.empty()) {
+        return paramApiStr_;
+    }
+    if (baseParams_.empty()) {
+        return "";
+    }
+    for (const auto& param : baseParams_) {
+        if (param.name == "sdk_name") {
+            paramApiStr_.append(", sdk_name=").append(GetParamValueStr(param));
+        }
+        if (param.name == "api_name") {
+            paramApiStr_.append(", api_name=").append(GetParamValueStr(param));
+        }
+    }
+    return paramApiStr_;
+}
+
 int64_t AppEventPack::GetSeq() const
 {
     return seq_;

@@ -18,7 +18,6 @@
 #include <memory>
 #include <vector>
 
-#include "ffrt.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
@@ -203,9 +202,7 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
     AddParamList(appEventPack, list);
     int res = VerifyAppEvent(appEventPack);
     if (res >= 0) {
-        ffrt::submit([appEventPack]() {
-            WriteEvent(appEventPack);
-            }, {}, {}, ffrt::task_attr().name("app_inner_event"));
+        SubmitWritingTask(appEventPack, "app_c_event");
     }
     return res;
 }
