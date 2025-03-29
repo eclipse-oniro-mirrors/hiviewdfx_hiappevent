@@ -43,6 +43,18 @@ void ParseStrings(const Json::Value& root, const std::string& key, std::unordere
         }
     }
 }
+
+bool GetJsonObjectFromJsonString(Json::Value& eventJson, const std::string& paramString)
+{
+    Json::Reader reader(Json::Features::strictMode());
+    if (!reader.parse(paramString, eventJson)) {
+        return false;
+    }
+    if (!eventJson.isObject()) {
+        return false;
+    }
+    return true;
+}
 } // namespace EventJsonUtil
 } // namespace HiviewDFX
 } // namespace OHOS

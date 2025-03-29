@@ -16,6 +16,7 @@
 #include "ndk_app_event_watcher_proxy.h"
 
 #include "app_event_observer_mgr.h"
+#include "app_event_util.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
 #include "app_event_store.h"
@@ -83,6 +84,7 @@ int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake
         eventStrs[t] = events[t]->GetEventStr();
         retEvents[t] = eventStrs[t].c_str();
     }
+    AppEventUtil::ReportAppEventReceive(events, watcher_->GetName(), "takeNext");
     onTake(retEvents.data(), static_cast<int32_t>(eventStrs.size()));
     return 0;
 }
