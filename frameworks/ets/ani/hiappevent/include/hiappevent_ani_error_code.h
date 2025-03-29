@@ -21,10 +21,9 @@ namespace HiviewDFX {
 constexpr int32_t ERR_CODE_SUCC = 0;
 constexpr int32_t ERR_CODE_PARAM_FORMAT = -1;
 constexpr int32_t ERR_CODE_PARAM_INVALID = -2;
-constexpr int32_t ERR_PARAM = -11;
 constexpr int32_t ERROR_INVALID_PARAM_NAME = 1;
 
-constexpr int32_t ERR_CODE_PARAMETER_ERROR = 401;
+constexpr int32_t ERR_PARAM = 401;
 constexpr int32_t ERR_INVALID_NAME = 11101002;
 constexpr int32_t ERR_INVALID_DOMAIN = 11101001;
 constexpr int32_t ERR_DISABLE = 11100001;

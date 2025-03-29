@@ -39,6 +39,7 @@ const std::string CUSTOM_CONFIG = "customConfigs";
 
 constexpr char CLASS_NAME_APPEVENT[] = "L@ohos/hiviewdfx/hiAppEvent/hiAppEvent;";
 constexpr char CLASS_NAME_RESULTS[] = "L@ohos/hiviewdfx/hiAppEvent/ResultsInner;";
+constexpr char CLASS_NAME_BUSINESSERROR[] = "L@ohos/base/BusinessError;";
 constexpr char CLASS_NAME_INT[] = "Lstd/core/Int;";
 constexpr char CLASS_NAME_BOOLEAN[] = "Lstd/core/Boolean;";
 constexpr char CLASS_NAME_DOUBLE[] = "Lstd/core/Double;";

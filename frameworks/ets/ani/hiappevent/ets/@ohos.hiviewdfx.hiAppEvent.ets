@@ -19,7 +19,7 @@ class AppEventInfoInner implements hiAppEvent.AppEventInfo {
     domain: string = "";
     name: string = "";
     eventType: hiAppEvent.EventType = hiAppEvent.EventType.FAULT;
-    params: Record<string, number | string | boolean | number[] | string[] | boolean[]> = {};
+    params: Record<string, number | string | boolean | (number | string | boolean)[]> = {};
 }
 
 class AppEventReportConfigInner implements hiAppEvent.AppEventReportConfig {
@@ -67,7 +67,7 @@ export default namespace hiAppEvent {
         domain: string;
         name: string;
         eventType: EventType;
-        params: Record<string, number | string | boolean | number[] | string[] | boolean[]>;
+        params: Record<string, number | string | boolean | (number | string | boolean)[]>;
     }
 
     native function writeSync(info: AppEventInfo): Results;
@@ -101,25 +101,25 @@ export default namespace hiAppEvent {
     }
 
     export interface AppEventReportConfig {
-        domain?: string
-        name?: string
-        isRealTime?: boolean
+        domain?: string;
+        name?: string;
+        isRealTime?: boolean;
     }
 
     export interface Processor {
-        name: string
-        debugMode?: boolean
-        routeInfo?: string
-        appId?: string
-        onStartReport?: boolean
-        onBackgroundReport?: boolean
-        periodReport?: int
-        batchReport?: int
-        userIds?: string[]
-        userProperties?: string[]
-        eventConfigs?: AppEventReportConfig[]
-        configId?: int
-        customConfigs?: Record<string, string>
+        name: string;
+        debugMode?: boolean;
+        routeInfo?: string;
+        appId?: string;
+        onStartReport?: boolean;
+        onBackgroundReport?: boolean;
+        periodReport?: int;
+        batchReport?: int;
+        userIds?: string[];
+        userProperties?: string[];
+        eventConfigs?: AppEventReportConfig[];
+        configId?: int;
+        customConfigs?: Record<string, string>;
     }
 
     export native function addProcessor(processor: Processor): number;
