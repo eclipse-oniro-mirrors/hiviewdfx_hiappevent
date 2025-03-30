@@ -44,8 +44,7 @@ enum AniArgsType {
 
 class HiAppEventAniHelper {
 public:
-    ani_boolean AddProcessor(ani_env *env, ani_object processor, int64_t &out);
-    int32_t TransConfig(ani_env *env, ani_object processor, HiAppEvent::ReportConfig &out);
+    bool AddProcessor(ani_env *env, ani_object processor, int64_t &out);
     bool GetPropertyDomain(ani_object info, ani_env *env, std::string &domain);
     bool GetPropertyName(ani_object info, ani_env *env, std::string &name);
     bool GeteventTypeValue(ani_object info, ani_env *env, int32_t &enumValue);
