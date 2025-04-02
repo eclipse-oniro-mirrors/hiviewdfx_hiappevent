@@ -52,6 +52,7 @@ public:
         const std::vector<AppEventFilter>& filters,
         TriggerCondition cond);
     ~NapiAppEventWatcher();
+    void DeleteWatcherContext();
     void InitTrigger(const napi_env env, const napi_value trigger);
     void InitHolder(const napi_env env, const napi_value holder);
     void InitReceiver(const napi_env env, const napi_value receiver);
@@ -63,6 +64,7 @@ protected:
 
 private:
     WatcherContext* context_;
+    std::mutex mutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
