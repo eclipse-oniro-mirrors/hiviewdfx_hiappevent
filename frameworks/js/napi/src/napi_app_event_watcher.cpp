@@ -86,6 +86,7 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
 {
     HILOG_DEBUG(LOG_CORE, "start to destroy NapiAppEventWatcher object");
     EnvWatcherManager::GetInstance().RemoveEnvWatcherRecord(this);
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (context_ == nullptr) {
         return;
     }
@@ -110,12 +111,14 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
 
 void NapiAppEventWatcher::DeleteWatcherContext()
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     delete context_;
     context_ = nullptr;
 }
 
 void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (context_ == nullptr) {
         context_ = new(std::nothrow) WatcherContext();
         if (context_ == nullptr) {
@@ -135,6 +138,7 @@ void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder
 void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 {
     HILOG_DEBUG(LOG_CORE, "onTrigger start");
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (context_ == nullptr || context_->triggerContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "onTrigger context is null");
         return;
@@ -174,6 +178,7 @@ void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value triggerFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init OnTrigger");
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (context_ == nullptr) {
         context_ = new(std::nothrow) WatcherContext();
         if (context_ == nullptr) {
@@ -193,6 +198,7 @@ void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value trigg
 void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value receiveFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init onReceive");
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (context_ == nullptr) {
         context_ = new(std::nothrow) WatcherContext();
         if (context_ == nullptr) {
@@ -212,6 +218,7 @@ void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value rece
 void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     HILOG_DEBUG(LOG_CORE, "onEvents start, seq=%{public}" PRId64 ", event num=%{public}zu", GetSeq(), events.size());
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (context_ == nullptr || context_->receiveContext == nullptr || events.empty()) {
         HILOG_ERROR(LOG_CORE, "onReceive context is null or events is empty");
         return;
@@ -252,6 +259,7 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
 
 bool NapiAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return (context_ != nullptr && context_->receiveContext != nullptr);
 }
 } // namespace HiviewDFX

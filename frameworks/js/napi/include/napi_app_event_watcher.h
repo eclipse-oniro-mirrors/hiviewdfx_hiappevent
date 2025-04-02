@@ -64,6 +64,7 @@ protected:
 
 private:
     WatcherContext* context_;
+    std::mutex mutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
