@@ -37,7 +37,7 @@ constexpr int32_t INVALID_OUT = -1;
 
 typedef struct ConfigProp {
     std::string key;
-    int32_t (*func)(ani_env*, ani_object, const std::string&, ReportConfig&);
+    int32_t(*func)(ani_env*, ani_object, const std::string&, ReportConfig&);
 } ConfigProp;
 
 const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
@@ -251,7 +251,7 @@ static int32_t GetOnBackgroundValue(ani_env *env, ani_object processor, const st
     return ERR_CODE_SUCC;
 }
 
-const ConfigProp CONFIG_PROPS[] = {
+static const ConfigProp CONFIG_PROPS[] = {
     {
         .key = PROCESSOR_NAME,
         .func = GetNameRefValue
@@ -306,7 +306,7 @@ const ConfigProp CONFIG_PROPS[] = {
     }
 };
 
-int32_t TransConfig(ani_env *env, ani_object processor, ReportConfig& out)
+static int32_t TransConfig(ani_env *env, ani_object processor, ReportConfig& out)
 {
     for (auto prop : CONFIG_PROPS) {
         int32_t ret = (prop.func)(env, processor, prop.key, out);
