@@ -15,6 +15,7 @@
 #include "napi_app_event_watcher.h"
 
 #include "app_event_store.h"
+#include "app_event_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_ffrt.h"
 #include "hilog/log.h"
@@ -226,7 +227,8 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
     context_->receiveContext->domain = events[0]->GetDomain();
     context_->receiveContext->events = events;
     context_->receiveContext->observerSeq = GetSeq();
-    auto onReceiveWork = [receiveContext = context_->receiveContext] () {
+    std::string watcherName = GetName();
+    auto onReceiveWork = [receiveContext = context_->receiveContext, watcherName] () {
         auto context = static_cast<OnReceiveContext*>(receiveContext);
         napi_handle_scope scope = nullptr;
         napi_open_handle_scope(context->env, &scope);
@@ -246,6 +248,7 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
         };
         napi_value ret = nullptr;
         if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
+            AppEventUtil::ReportAppEventReceive(context->events, watcherName, "onReceive");
             DeleteEventMappingAsync(context->observerSeq, context->events);
         } else {
             HILOG_ERROR(LOG_CORE, "failed to call onReceive function");

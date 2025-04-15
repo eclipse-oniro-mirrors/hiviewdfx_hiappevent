@@ -33,6 +33,7 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   sources = [
+    "app_event_util.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
     "hiappevent_clean.cpp",
@@ -58,7 +59,9 @@ ohos_shared_library("libhiappevent_base") {
     "ffrt:libffrt",
     "hicollie:libhicollie",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "hitrace:libhitracechain",
+    "init:libbegetutil",
     "ipc:ipc_core",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
