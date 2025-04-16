@@ -222,16 +222,60 @@ void CovertArrObjStr(CParameters &retValue, const Json::Value& jsonValue)
     retValue.value = retArrValue;
 }
 
+bool CheckArrBool(const Json::Value& jsonValue)
+{
+    size_t nBool = 0;
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isBool()) {
+            nBool++;
+        }
+    }
+    return nBool == jsonValue.size();
+}
+
+bool CheckArrInt(const Json::Value& jsonValue)
+{
+    size_t nInt = 0;
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isInt()) {
+            nInt++;
+        }
+    }
+    return nInt == jsonValue.size();
+}
+
+bool CheckArrDouble(const Json::Value& jsonValue)
+{
+    size_t nDouble = 0;
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isDouble()) {
+            nDouble++;
+        }
+    }
+    return nDouble == jsonValue.size();
+}
+
+bool CheckArrString(const Json::Value& jsonValue)
+{
+    size_t nString = 0;
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isString()) {
+            nString++;
+        }
+    }
+    return nString == jsonValue.size();
+}
+
 void CreatArr(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = jsonValue.size();
-    if (jsonValue[static_cast<int>(0)].isBool()) {
+    if (CheckArrBool(jsonValue)) {
         ConvertArrBool(retValue, jsonValue);
-    } else if (jsonValue[static_cast<int>(0)].isInt()) {
+    } else if (CheckArrInt(jsonValue)) {
         ConvertArrInt(retValue, jsonValue);
-    } else if (jsonValue[static_cast<int>(0)].isDouble()) {
+    } else if (CheckArrDouble(jsonValue)) {
         CovertArrDouble(retValue, jsonValue);
-    } else if (jsonValue[static_cast<int>(0)].isString()) {
+    } else if (CheckArrString(jsonValue)) {
         CovertArrString(retValue, jsonValue);
     } else {
         CovertArrObjStr(retValue, jsonValue);
