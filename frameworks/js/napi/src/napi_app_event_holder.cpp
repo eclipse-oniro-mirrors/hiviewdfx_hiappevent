@@ -116,7 +116,8 @@ napi_value NapiAppEventHolder::NapiSetRow(napi_env env, napi_callback_info info)
     }
     int num = NapiUtil::GetInt32(env, params[0]);
     if (num <= 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid size value.");
+        std::string curErrMsg = "Invalid size value. Possible caused by the size value is less than or equal to zero.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, curErrMsg);
         return NapiUtil::CreateUndefined(env);
     }
     NapiAppEventHolder* holder = nullptr;
@@ -143,7 +144,8 @@ napi_value NapiAppEventHolder::NapiSetSize(napi_env env, napi_callback_info info
     }
     int num = NapiUtil::GetInt32(env, params[0]);
     if (num < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, "Invalid size value.");
+        std::string curErrMsg = "Invalid size value. Possible caused by the size value is less than zero.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_SIZE, curErrMsg);
         return NapiUtil::CreateUndefined(env);
     }
     NapiAppEventHolder* holder = nullptr;

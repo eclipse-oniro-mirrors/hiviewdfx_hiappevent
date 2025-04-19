@@ -314,7 +314,8 @@ describe('HiAppEventJsTest', function () {
             "":"empty",
             "aa_":"underscore"
         };
-        let expectErr = createError(11101005, "Invalid event parameter name.");
+        let expectErr = createError(11101005, "Invalid event parameter name. Possible causes: 1. Contain invalid " +
+            "characters; 2. Length is invalid.");
         writeParamsV9Test(params, expectErr, done);
 
         const MAX_LENGTH_OF_PARAM_NAME = 32;
@@ -438,7 +439,8 @@ describe('HiAppEventJsTest', function () {
         for (var i = 1; i <= 33; i++) {
             params["key" + i] = "value" + i;
         }
-        let expectErr = createError(11101003, "Invalid number of event parameters.");
+        let expectErr = createError(11101003, "Invalid number of event parameters. Possible caused by the number of " +
+            "parameters is over 32.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -541,7 +543,8 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventJsTest009_2', 0, async function (done) {
         console.info('HiAppEventJsTest009_2 start');
-        let expectErr = createError(11101002, "Invalid event name.");
+        let expectErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
         writeNameV9Test("", expectErr, done);
     });
 
@@ -554,7 +557,8 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventJsTest009_3', 0, async function (done) {
         console.info('HiAppEventJsTest009_3 start');
-        let expectErr = createError(11101002, "Invalid event name.");
+        let expectErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
         writeNameV9Test("VVtt_", expectErr, done);
     });
 
@@ -568,7 +572,8 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventJsTest009_4', 0, async function (done) {
         console.info('HiAppEventJsTest009_3 start');
         const MAX_LENGTH_OF_EVENT_NAME = 48;
-        let expectErr = createError(11101002, "Invalid event name.");
+        let expectErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
         writeNameV9Test("a".repeat(MAX_LENGTH_OF_EVENT_NAME + 1), expectErr, done);
 
         writeNameV9Test("a".repeat(MAX_LENGTH_OF_EVENT_NAME - 1) + "_", expectErr, done);
@@ -828,7 +833,8 @@ describe('HiAppEventJsTest', function () {
 
         const MAX_LEN_OF_DOMAIN = 32;
         // Error code 11101001 is returned when the event has invalid event domain.
-        let expectErr = createError(11101001, "Invalid event domain.");
+        let expectErr = createError(11101001, "Invalid event domain. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
         writeDomainV9Test("domain***", expectErr, done);
         writeDomainV9Test("123domain", expectErr, done);
         writeDomainV9Test("_domain", expectErr, done);
@@ -859,7 +865,8 @@ describe('HiAppEventJsTest', function () {
         }
         let invalidKey = 'a'.repeat(17);
         params[invalidKey] = 'value_invalid';
-        let expectErr = createError(11101003, "Invalid number of event parameters.");
+        let expectErr = createError(11101003, "Invalid number of event parameters. Possible caused by the number of " +
+            "parameters is over 32.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -879,7 +886,8 @@ describe('HiAppEventJsTest', function () {
             params["key" + i] = "value" + i;
         }
         params['a'.repeat(33)] = 'value_invalid'; // invalid param name
-        let expectErr = createError(11101003, "Invalid number of event parameters.");
+        let expectErr = createError(11101003, "Invalid number of event parameters. Possible caused by the number of " +
+            "parameters is over 32.");
         writeParamsV9Test(params, expectErr, done);
     });
 
@@ -962,7 +970,8 @@ describe('HiAppEventJsTest', function () {
             disable: true
         });
 
-        let expectErr = createError(11100001, "Function disabled.");
+        let expectErr = createError(11100001, "Function disabled. Possible caused by the param disable in " +
+            "ConfigOption is true.");
         writeNameV9Test("config_test", expectErr, done);
     });
 
@@ -1053,7 +1062,7 @@ describe('HiAppEventJsTest', function () {
         configureTest({ maxStorage: null }, expectErr)
 
         // invalid ConfigOption.maxStorage value
-        expectErr = createError(11103001, "Invalid max storage quota value.")
+        expectErr = createError(11103001, "Invalid max storage quota value. Possible caused by incorrectly formatted.")
         configureTest({ maxStorage: "**22" }, expectErr)
 
         console.info('HiAppEventConfigureTest003 end');
@@ -1159,7 +1168,8 @@ describe('HiAppEventJsTest', function () {
 
         const MAX_LEN_OF_WATCHER = 32;
         // invalid watcher name value
-        expectErr = createError(11102001, "Invalid watcher name.")
+        expectErr = createError(11102001, "Invalid watcher name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.")
         watcherNameTest("a".repeat(MAX_LEN_OF_WATCHER + 1), expectErr);
         watcherNameTest("", expectErr);
         watcherNameTest("watcher_***", expectErr);
@@ -1209,7 +1219,7 @@ describe('HiAppEventJsTest', function () {
         rowTest("str", expectErr)
 
         // invalid triggerCondition.row value
-        expectErr = createError(11102003, "Invalid row value.")
+        expectErr = createError(11102003, "Invalid row value. Possible caused by the row value is less than zero.")
         rowTest(-1, expectErr)
         rowTest(-100, expectErr)
 
@@ -1222,7 +1232,7 @@ describe('HiAppEventJsTest', function () {
         sizeTest(true, expectErr)
 
         // invalid triggerCondition.size value
-        expectErr = createError(11102004, "Invalid size value.")
+        expectErr = createError(11102004, "Invalid size value. Possible caused by the size value is less than zero.");
         sizeTest(-1, expectErr)
         sizeTest(-100, expectErr)
 
@@ -1235,7 +1245,8 @@ describe('HiAppEventJsTest', function () {
         timeoutTest({}, expectErr)
 
         // invalid triggerCondition.timeout value
-        expectErr = createError(11102005, "Invalid timeout value.")
+        expectErr = createError(11102005, "Invalid timeout value. Possible caused by the timeout value is less than " +
+            "zero.")
         timeoutTest(-1, expectErr)
         timeoutTest(-100, expectErr)
 
@@ -1286,7 +1297,8 @@ describe('HiAppEventJsTest', function () {
         domainTest(123, expectErr)
 
         // invalid appEventFilter.domain value
-        expectErr = createError(11102002, "Invalid filtering event domain.")
+        expectErr = createError(11102002, "Invalid filtering event domain. Possible causes: 1. Contain invalid " +
+            "characters; 2. Length is invalid.")
         domainTest("**xx", expectErr)
         domainTest("123test", expectErr)
         domainTest("test_", expectErr)
@@ -1635,7 +1647,7 @@ describe('HiAppEventJsTest', function () {
         holderSetSizeTest(holder, {}, expectErr);
 
         // invalid size value
-        expectErr = createError(11104001, "Invalid size value.");
+        expectErr = createError(11104001, "Invalid size value. Possible caused by the size value is less than zero.");
         holderSetSizeTest(holder, -1, expectErr);
         holderSetSizeTest(holder, -100, expectErr);
 
