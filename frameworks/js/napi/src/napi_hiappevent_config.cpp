@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -66,6 +66,34 @@ bool IsDisable()
 std::string GetStorageDir()
 {
     return HiAppEventConfig::GetInstance().GetStorageDir();
+}
+
+void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncContext)
+{
+    napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventSetEventConfig");
+    napi_create_async_work(env, nullptr, resource,
+        [](napi_env env, void* data) {
+            HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
+            asyncContext->result =
+                HiAppEventConfig::GetInstance().SetEventConfig(asyncContext->name, asyncContext->eventConfigMap);
+        },
+        [](napi_env env, napi_status status, void* data) {
+            HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
+            napi_value result = nullptr;
+            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
+                if (asyncContext->result == 0) {
+                    result = NapiUtil::CreateInt32(env, asyncContext->result);
+                    napi_resolve_deferred(env, asyncContext->deferred, result);
+                } else {
+                    result = NapiUtil::CreateError(env, NapiError::ERR_PARAM, "Invalid param value for event config.");
+                    napi_reject_deferred(env, asyncContext->deferred, result);
+                }
+            }
+            napi_delete_async_work(env, asyncContext->asyncWork);
+            delete asyncContext;
+        },
+        (void*)asyncContext, &asyncContext->asyncWork);
+    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
 }
 } // namespace NapiHiAppEventConfig
 } // namespace HiviewDFX

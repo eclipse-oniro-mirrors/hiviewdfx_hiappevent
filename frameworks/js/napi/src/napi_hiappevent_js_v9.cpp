@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -280,7 +280,7 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventConfigAsyncContext();
+    auto asyncContext = new(std::nothrow) NapiHiAppEventConfig::HiAppEventConfigAsyncContext;
     if (asyncContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
@@ -295,7 +295,7 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    NapiHiAppEventWrite::SetEventConfig(env, asyncContext);
+    NapiHiAppEventConfig::SetEventConfig(env, asyncContext);
     return promise;
 }
 

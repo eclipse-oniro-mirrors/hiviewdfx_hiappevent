@@ -16,6 +16,7 @@
 #define HI_APP_EVENT_CONFIG_H
 
 #include <string>
+#include <map>
 
 #include "nocopyable.h"
 
@@ -32,6 +33,7 @@ public:
     std::string GetRunningId();
     bool IsFreeSizeOverLimit();
     void RefreshFreeSize();
+    int SetEventConfig(const std::string& name, const std::map<std::string, std::string>& eventConfig);
 
 private:
     HiAppEventConfig() {}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,15 +15,26 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_CONFIG_H
 #define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_CONFIG_H
 
+#include <map>
+
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventConfig {
+struct HiAppEventConfigAsyncContext {
+    napi_async_work asyncWork {nullptr};
+    napi_deferred deferred {nullptr};
+    std::map<std::string, std::string> eventConfigMap;
+    std::string name;
+    int result {0};
+};
+
 bool Configure(const napi_env env, const napi_value configObj, bool isThrow = false);
 bool IsDisable();
 std::string GetStorageDir();
+void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncContext);
 } // namespace NapiHiAppEventConfig
 } // namespace HiviewDFX
 } // namespace OHOS
