@@ -22,6 +22,7 @@
 #include <sstream>
 #include <string>
 
+#include "app_crash_config.h"
 #include "app_event_observer_mgr.h"
 #include "application_context.h"
 #include "context.h"
@@ -30,6 +31,7 @@
 #include "iservice_registry.h"
 #include "storage_manager_proxy.h"
 #include "system_ability_definition.h"
+#include "xcollie/watchdog.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -40,10 +42,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const std::string DISABLE = "disable";
-const std::string MAX_STORAGE = "max_storage";
-const std::string DEFAULT_STORAGE_DIR = "";
-const std::string APP_EVENT_DIR = "/hiappevent/";
+constexpr const char* const DISABLE = "disable";
+constexpr const char* const MAX_STORAGE = "max_storage";
+constexpr const char* const APP_EVENT_DIR = "/hiappevent/";
+constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+constexpr const char* const APP_CRASH = "APP_CRASH";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
@@ -221,11 +224,11 @@ std::string HiAppEventConfig::GetStorageDir()
         OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
         HILOG_ERROR(LOG_CORE, "Context is null.");
-        return DEFAULT_STORAGE_DIR;
+        return "";
     }
     if (context->GetFilesDir().empty()) {
         HILOG_ERROR(LOG_CORE, "The files dir obtained from context is empty.");
-        return DEFAULT_STORAGE_DIR;
+        return "";
     }
     std::string dir = context->GetFilesDir() + APP_EVENT_DIR;
     SetStorageDir(dir);
@@ -279,6 +282,17 @@ void HiAppEventConfig::RefreshFreeSize()
     HILOG_INFO(LOG_CORE, "refresh free size=%{public}" PRId64, freeSize);
     std::lock_guard<std::mutex> lockGuard(g_mutex);
     freeSize_ = freeSize;
+}
+
+int HiAppEventConfig::SetEventConfig(const std::string& name, const std::map<std::string, std::string> &configMap)
+{
+    if (name == MAIN_THREAD_JANK) {
+        return Watchdog::GetInstance().SetEventConfig(configMap);
+    } else if (name == APP_CRASH) {
+        return SetCrashEventConfig(configMap);
+    }
+    HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s", name.c_str());
+    return ErrorCode::ERROR_INVALID_PARAM_VALUE;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
