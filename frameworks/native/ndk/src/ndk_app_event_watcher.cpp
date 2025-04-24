@@ -16,6 +16,7 @@
 #include "ndk_app_event_watcher.h"
 
 #include "app_event_store.h"
+#include "app_event_util.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
 #include "hiappevent_ffrt.h"
@@ -103,6 +104,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
                 observerSeq, eventSeqs.size());
         }
         }, {}, {}, ffrt::task_attr().name("appevent_del_map"));
+    AppEventUtil::ReportAppEventReceive(events, GetName(), "onReceive");
     std::string domain = events[0]->GetDomain();
     onReceive_(domain.c_str(), appEventGroup.data(), static_cast<uint32_t>(eventMap.size()));
 }
