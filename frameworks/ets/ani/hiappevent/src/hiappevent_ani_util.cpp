@@ -208,12 +208,12 @@ void HiAppEventAniUtil::GetStringsToSet(ani_env *env, ani_ref Ref, std::unordere
         return;
     }
     ani_size length = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(Ref), &length)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
     }
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(Ref), i, &value)) {
             HILOG_ERROR(LOG_CORE, "get array element failed");
             continue;
         }
@@ -227,13 +227,13 @@ void HiAppEventAniUtil::GetIntValueToVector(ani_env *env, ani_ref Ref, std::vect
         return;
     }
     ani_size length = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(Ref), &length)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return;
     }
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(Ref), i, &value)) {
             HILOG_ERROR(LOG_CORE, "get array element failed");
             continue;
         }
@@ -395,14 +395,14 @@ AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)
     return AniArgsType::ANI_UNKNOWN;
 }
 
-AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_array_ref arrayRef)
+AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_array arrayRef)
 {
     if (env == nullptr) {
         return AniArgsType::ANI_UNKNOWN;
     }
     ani_size index = 0;
     ani_ref valueRef {};
-    if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), index, &valueRef)) {
+    if (ANI_OK != env->Array_Get(arrayRef, index, &valueRef)) {
         HILOG_ERROR(LOG_CORE, "fail to get first element in array.");
         return AniArgsType::ANI_UNKNOWN;
     }
@@ -538,16 +538,11 @@ static ani_ref CreateArray(ani_env *env, size_t length)
 
 static ani_ref CreateArray(ani_env *env, const std::string &name, ani_size length)
 {
-    ani_array_ref array {};
+    ani_array array {};
     if (env == nullptr) {
         return array;
     }
-    ani_class cls {};
-    if (ANI_OK != env->FindClass(name.c_str(), &cls)) {
-        HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", name.c_str());
-        return array;
-    }
-    if (ANI_OK != env->Array_New_Ref(cls, length, nullptr, &array)) {
+    if (ANI_OK != env->Array_New(length, nullptr, &array)) {
         HILOG_ERROR(LOG_CORE, "New %{public}s Array Ref Failed.", name.c_str());
         return array;
     }
@@ -576,7 +571,7 @@ ani_ref HiAppEventAniUtil::CreateStrings(ani_env *env, const std::vector<std::st
 {
     ani_ref arr = CreateArray(env, CLASS_NAME_STRING, strs.size());
     for (size_t i = 0; i < strs.size(); ++i) {
-        env->Array_Set_Ref(static_cast<ani_array_ref>(arr),
+        env->Array_Set(static_cast<ani_array>(arr),
             static_cast<ani_size>(i), HiAppEventAniUtil::CreateAniString(env, strs[i]));
     }
     return arr;
@@ -652,7 +647,7 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         if (jsonValue[0].isBool()) {
             ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
             for (size_t i = 0; i < jsonValue.size(); ++i) {
-                env->Array_Set_Ref(static_cast<ani_array_ref>(boolArray), static_cast<ani_size>(i),
+                env->Array_Set(static_cast<ani_array>(boolArray), static_cast<ani_size>(i),
                     CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
             }
             return boolArray;
@@ -660,7 +655,7 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         if (jsonValue[0].isDouble()) {
             ani_ref doubleArray = CreateArray(env, CLASS_NAME_DOUBLE, jsonValue.size());
             for (size_t i = 0; i < jsonValue.size(); ++i) {
-                env->Array_Set_Ref(static_cast<ani_array_ref>(doubleArray), static_cast<ani_size>(i),
+                env->Array_Set(static_cast<ani_array>(doubleArray), static_cast<ani_size>(i),
                     CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
             }
             return doubleArray;
@@ -668,7 +663,7 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         if (jsonValue[0].isString()) {
             ani_ref stringArray = CreateArray(env, CLASS_NAME_STRING, jsonValue.size());
             for (size_t i = 0; i < jsonValue.size(); ++i) {
-                env->Array_Set_Ref(static_cast<ani_array_ref>(stringArray), static_cast<ani_size>(i),
+                env->Array_Set(static_cast<ani_array>(stringArray), static_cast<ani_size>(i),
                     CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
             }
             return stringArray;

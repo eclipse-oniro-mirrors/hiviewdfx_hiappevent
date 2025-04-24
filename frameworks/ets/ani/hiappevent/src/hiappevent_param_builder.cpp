@@ -48,7 +48,7 @@ bool HiAppEventParamBuilder::AddArrayParamToAppEventPack(ani_env *env, const std
     std::shared_ptr<AppEventPack> &appEventPack)
 {
     ani_size size = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &size)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(arrayRef), &size)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return false;
     }
@@ -57,13 +57,13 @@ bool HiAppEventParamBuilder::AddArrayParamToAppEventPack(ani_env *env, const std
         return false;
     }
     ParamArray paramArray;
-    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array_ref>(arrayRef));
+    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array>(arrayRef));
     if (arrayType != AniArgsType::ANI_STRING) {
         return false;
     }
     for (ani_size i = 0; i < size; i++) {
         ani_ref valueRef {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &valueRef)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(arrayRef), i, &valueRef)) {
             HILOG_ERROR(LOG_CORE, "get %{public}zu element of array failed", i);
             return false;
         }

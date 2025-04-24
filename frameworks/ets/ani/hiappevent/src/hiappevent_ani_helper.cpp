@@ -174,14 +174,14 @@ static int32_t GetUserPropertyRefValue(ani_env *env, ani_object processor, const
 static int32_t ParseEventConfigsValue(ani_env *env, ani_ref Ref, std::vector<EventConfig> &arr)
 {
     ani_size length = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(Ref), &length)) {
         HILOG_ERROR(LOG_CORE, "failed to get length.");
         return ERR_CODE_PARAM_INVALID;
     }
     EventConfig config;
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(Ref), i, &value)) {
             HILOG_ERROR(LOG_CORE, "failed to get length");
             return ERR_CODE_PARAM_INVALID;
         }
@@ -444,7 +444,7 @@ bool HiAppEventAniHelper::AddArrayParamToAppEventPack(ani_env *env, const std::s
     std::shared_ptr<AppEventPack> &appEventPack)
 {
     ani_size size = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &size)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(arrayRef), &size)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return false;
     }
@@ -453,13 +453,13 @@ bool HiAppEventAniHelper::AddArrayParamToAppEventPack(ani_env *env, const std::s
         return true;
     }
     ParamArray paramArray;
-    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array_ref>(arrayRef));
+    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array>(arrayRef));
     if (arrayType <= AniArgsType::ANI_UNKNOWN || arrayType >= AniArgsType::ANI_UNDEFINED) {
         return false;
     }
     for (ani_size i = 0; i < size; i++) {
         ani_ref valueRef {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &valueRef)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(arrayRef), i, &valueRef)) {
             HILOG_ERROR(LOG_CORE, "get %{public}zu element of array failed", i);
             return false;
         }
@@ -688,13 +688,13 @@ static bool IsValidFilters(ani_env *env, ani_ref filtersRef, int32_t& errCode)
         return true;
     }
     ani_size length = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(filtersRef), &length)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(filtersRef), &length)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return false;
     }
     for (ani_size i = 0; i < length; i++) {
         ani_ref filterValue {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(filtersRef), i, &filterValue)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(filtersRef), i, &filterValue)) {
             HILOG_ERROR(LOG_CORE, "get array element failed");
             return false;
         }
@@ -718,13 +718,13 @@ static void GetFilters(ani_env *env, ani_object watcher, std::vector<AppEventFil
         return;
     }
     ani_size len = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(filtersRef), &len)) {
+    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(filtersRef), &len)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return;
     }
     for (ani_size i = 0; i < len; i++) {
         ani_ref value {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(filtersRef), i, &value)) {
+        if (ANI_OK != env->Array_Get(static_cast<ani_array>(filtersRef), i, &value)) {
             HILOG_ERROR(LOG_CORE, "failed to get length");
             return;
         }
