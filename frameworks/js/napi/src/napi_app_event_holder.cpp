@@ -17,6 +17,7 @@
 #include <cinttypes>
 
 #include "app_event_store.h"
+#include "app_event_util.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
@@ -166,6 +167,7 @@ napi_value NapiAppEventHolder::NapiTakeNext(napi_env env, napi_callback_info inf
     if (package == nullptr) {
         return NapiUtil::CreateNull(env);
     }
+    AppEventUtil::ReportAppEventReceive(package->events, holder->name_, "takeNext");
     napi_value packageObj = NapiUtil::CreateObject(env);
     NapiUtil::SetNamedProperty(env, packageObj, "packageId", NapiUtil::CreateInt32(env, package->packageId));
     NapiUtil::SetNamedProperty(env, packageObj, "row", NapiUtil::CreateInt32(env, package->row));

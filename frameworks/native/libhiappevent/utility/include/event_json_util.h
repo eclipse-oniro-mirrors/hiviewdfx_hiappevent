@@ -27,6 +27,7 @@ uint32_t ParseUInt32(const Json::Value& root, const std::string& key);
 int ParseInt(const Json::Value& root, const std::string& key);
 std::string ParseString(const Json::Value& root, const std::string& key);
 void ParseStrings(const Json::Value& root, const std::string& key, std::unordered_set<std::string>& strs);
+bool GetJsonObjectFromJsonString(Json::Value& eventJson, const std::string& paramString);
 } // namespace EventJsonUtil
 } // namespace HiviewDFX
 } // namespace OHOS
