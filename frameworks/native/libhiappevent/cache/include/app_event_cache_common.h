@@ -71,6 +71,12 @@ const std::string FIELD_EVENT_SEQ = "event_seq";
 const std::string FIELD_OBSERVER_SEQ = "observer_seq";
 } // namespace AppEventMapping
 
+struct EventObserverInfo {
+    EventObserverInfo(int64_t eventSeq, int64_t observerSeq) : eventSeq(eventSeq), observerSeq(observerSeq) {}
+    int64_t eventSeq = 0;
+    int64_t observerSeq = 0;
+};
+
 namespace UserIds {
 const std::string TABLE = "user_ids";
 const std::string FIELD_SEQ = "seq";

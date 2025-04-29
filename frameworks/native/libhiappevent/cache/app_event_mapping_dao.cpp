@@ -27,7 +27,7 @@
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "EvenMappingDao"
+#define LOG_TAG "EventMappingDao"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -53,13 +53,17 @@ int Create(NativeRdb::RdbStore& dbStore)
     return dbStore.ExecuteSql(sql);
 }
 
-int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t eventSeq, int64_t observerSeq)
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::vector<EventObserverInfo>& eventObservers)
 {
-    NativeRdb::ValuesBucket bucket;
-    bucket.PutLong(FIELD_EVENT_SEQ, eventSeq);
-    bucket.PutLong(FIELD_OBSERVER_SEQ, observerSeq);
-    int64_t seq = 0;
-    return dbStore->Insert(seq, TABLE, bucket);
+    std::vector<NativeRdb::ValuesBucket> buckets;
+    for (const auto& eventObserver : eventObservers) {
+        NativeRdb::ValuesBucket bucket;
+        bucket.PutLong(FIELD_EVENT_SEQ, eventObserver.eventSeq);
+        bucket.PutLong(FIELD_OBSERVER_SEQ, eventObserver.observerSeq);
+        buckets.emplace_back(bucket);
+    }
+    int64_t insertRows = 0;
+    return dbStore->BatchInsert(insertRows, TABLE, buckets);
 }
 
 int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t observerSeq, const std::vector<int64_t>& eventSeqs)

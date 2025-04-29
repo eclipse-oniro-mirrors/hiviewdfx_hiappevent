@@ -59,7 +59,7 @@ int NdkAppEventWatcherProxy::SetWatcherOnReceiver(OH_HiAppEvent_OnReceive onRece
 
 int NdkAppEventWatcherProxy::AddWatcher()
 {
-    AppEventObserverMgr::GetInstance().RegisterObserver(watcher_);
+    AppEventObserverMgr::GetInstance().AddWatcher(watcher_);
     return 0;
 }
 
@@ -93,7 +93,7 @@ int NdkAppEventWatcherProxy::RemoveWatcher()
 {
     int64_t watcherSeq = watcher_->GetSeq();
     if (watcherSeq > 0) {
-        AppEventObserverMgr::GetInstance().UnregisterObserver(watcherSeq);
+        AppEventObserverMgr::GetInstance().RemoveObserver(watcherSeq);
         watcher_->SetSeq(0);
         return 0;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,6 @@
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
-#include "hiappevent_ffrt.h"
 #include "hilog/log.h"
 #include "time_util.h"
 #include "xcollie/watchdog.h"
@@ -63,18 +62,9 @@ bool WriteEventToFile(const std::string& filePath, const std::string& event)
 
 void SubmitWritingTask(std::shared_ptr<AppEventPack> appEventPack, const std::string& taskName)
 {
-    auto ret = HiAppEvent::Submit([appEventPack]() {
+    AppEventObserverMgr::GetInstance().SubmitTaskToFFRTQueue([appEventPack]() {
         WriteEvent(appEventPack);
-        }, {}, {}, ffrt::task_attr().name(taskName.c_str()));
-    if (ret != ffrt_success) {
-        std::lock_guard<std::mutex> lockGuard(g_submitFailedCntMutex);
-        ++g_submitFailedCnt;
-        if (g_submitFailedCnt >= SUBMIT_FAILED_NUM) {
-            HILOG_ERROR(LOG_CORE, "failed to submit %{public}s %{public}s, ret=%{public}d",
-                taskName.c_str(), appEventPack->GetParamApiStr().c_str(), ret);
-            g_submitFailedCnt = 0;
-        }
-    }
+        }, taskName);
 }
 
 void WriteEvent(std::shared_ptr<AppEventPack> appEventPack)

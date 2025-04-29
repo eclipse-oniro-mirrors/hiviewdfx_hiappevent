@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,8 +48,6 @@ std::string GetModulePath(const std::string& moduleName)
     return modulePath;
 }
 }
-std::mutex ModuleLoader::moduleMutex_;
-std::mutex ModuleLoader::processorMutex_;
 
 ModuleLoader::~ModuleLoader()
 {
@@ -124,7 +122,7 @@ int ModuleLoader::UnregisterProcessor(const std::string& name)
     return 0;
 }
 
-std::shared_ptr<AppEventObserver> ModuleLoader::CreateProcessorProxy(const std::string& name)
+std::shared_ptr<AppEventProcessorProxy> ModuleLoader::CreateProcessorProxy(const std::string& name)
 {
     std::lock_guard<std::mutex> lock(processorMutex_);
     if (processors_.find(name) == processors_.end()) {

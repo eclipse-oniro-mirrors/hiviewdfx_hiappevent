@@ -72,7 +72,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest001, TestSize.Level0)
     int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(AppEventCacheCommon::Observer(TEST_OBSERVER_NAME,
         0, ""));
     ASSERT_GT(observerSeq, 0);
-    result = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    result = AppEventStore::GetInstance().InsertEventMapping({EventObserverInfo(eventSeq, observerSeq)});
     ASSERT_EQ(result, 0);
 
     std::vector<std::shared_ptr<AppEventPack>> events;
@@ -114,7 +114,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest002, TestSize.Level0)
     auto observerSeq = AppEventStore::GetInstance().InsertObserver(AppEventCacheCommon::Observer(TEST_OBSERVER_NAME,
         0, ""));
     ASSERT_GT(observerSeq, 0);
-    result = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    result = AppEventStore::GetInstance().InsertEventMapping({EventObserverInfo(eventSeq, observerSeq)});
     ASSERT_EQ(result, 0);
 
     std::vector<std::shared_ptr<AppEventPack>> events;
@@ -155,7 +155,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest003, TestSize.Level0)
     auto observerSeq = AppEventStore::GetInstance().InsertObserver(AppEventCacheCommon::Observer(TEST_OBSERVER_NAME,
         0, ""));
     ASSERT_GT(observerSeq, 0);
-    result = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    result = AppEventStore::GetInstance().InsertEventMapping({EventObserverInfo(eventSeq, observerSeq)});
     ASSERT_EQ(result, 0);
 
     result = AppEventStore::GetInstance().DeleteObserver(observerSeq);
@@ -197,7 +197,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest004, TestSize.Level1)
     int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(AppEventCacheCommon::Observer(TEST_OBSERVER_NAME,
         0, ""));
     ASSERT_GT(observerSeq, 0);
-    result = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    result = AppEventStore::GetInstance().InsertEventMapping({EventObserverInfo(eventSeq, observerSeq)});
     ASSERT_EQ(result, 0);
 
     std::vector<std::shared_ptr<AppEventPack>> events;
@@ -267,7 +267,7 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventDBTest006, TestSize.Level0)
     int64_t observerSeq = AppEventStore::GetInstance().InsertObserver(AppEventCacheCommon::Observer(TEST_OBSERVER_NAME,
         0, ""));
     ASSERT_GT(observerSeq, 0);
-    result = AppEventStore::GetInstance().InsertEventMapping(eventSeq, observerSeq);
+    result = AppEventStore::GetInstance().InsertEventMapping({EventObserverInfo(eventSeq, observerSeq)});
     ASSERT_EQ(result, 0);
     auto eventParams = CreateAppEventPack();
     eventParams->SetRunningId(TEST_RUNNING_ID);

@@ -414,7 +414,7 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
         out = NapiUtil::CreateInt64(env, -1);
         return true;
     }
-    int64_t processorId = AppEventObserverMgr::GetInstance().RegisterObserver(name, conf);
+    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
     if (processorId <= 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, register processor error", name.c_str());
         out = NapiUtil::CreateInt64(env, -1);
@@ -436,7 +436,7 @@ bool RemoveProcessor(const napi_env env, const napi_value id)
         HILOG_ERROR(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return true;
     }
-    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
+    if (AppEventObserverMgr::GetInstance().RemoveObserver(processorId) != 0) {
         HILOG_WARN(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return false;
     }

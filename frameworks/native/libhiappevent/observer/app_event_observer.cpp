@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,11 +14,7 @@
  */
 #include "app_event_observer.h"
 
-#include <sstream>
-
 #include "app_event.h"
-#include "app_event_store.h"
-#include "event_json_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_common.h"
 #include "hilog/log.h"
@@ -33,11 +29,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 namespace {
-constexpr int MAX_SIZE_ON_EVENTS = 100;
 constexpr uint64_t BIT_MASK = 1;
-const std::string DOMAIN_PROPERTY = "domain";
-const std::string NAMES_PROPERTY = "names";
-const std::string TYPES_PROPERTY = "types";
 struct OsEventPosInfo {
     std::string name;
     EventType type;
@@ -62,32 +54,11 @@ bool MeetNumberCondition(int currNum, int maxNum)
     return maxNum > 0 && currNum >= maxNum;
 }
 
-std::string GetStr(const std::unordered_set<std::string>& strSet)
+void ResetCondition(TriggerCondition& cond)
 {
-    if (strSet.empty()) {
-        return "[]";
-    }
-    std::stringstream strStream("[");
-    for (const auto& str : strSet) {
-        strStream << str << ",";
-    }
-    strStream.seekp(-1, std::ios_base::end); // -1 for delete ','
-    strStream << "]";
-    return strStream.str();
-}
-
-std::string GetStr(const std::vector<EventConfig>& eventConfigs)
-{
-    if (eventConfigs.empty()) {
-        return "[]";
-    }
-    std::stringstream strStream("[");
-    for (const auto& eventConfig : eventConfigs) {
-        strStream << eventConfig.ToString() << ",";
-    }
-    strStream.seekp(-1, std::ios_base::end); // -1 for delete ','
-    strStream << "]";
-    return strStream.str();
+    cond.row = 0;
+    cond.size = 0;
+    cond.timeout = 0;
 }
 }
 
@@ -131,62 +102,9 @@ uint64_t AppEventFilter::GetOsEventsMask() const
     return mask;
 }
 
-Json::Value AppEventFilter::ToJsonValue() const
-{
-    Json::Value filterJson;
-    filterJson[DOMAIN_PROPERTY] = domain;
-    Json::Value namesJson(Json::arrayValue);
-    for (const auto& name : names) {
-        namesJson.append(name);
-    }
-    filterJson[NAMES_PROPERTY] = namesJson;
-    filterJson[TYPES_PROPERTY] = types;
-    return filterJson;
-}
-
-bool EventConfig::IsValidEvent(std::shared_ptr<AppEventPack> event) const
-{
-    if (domain.empty() && name.empty()) {
-        return false;
-    }
-    if (!domain.empty() && (domain != event->GetDomain())) {
-        return false;
-    }
-    if (!name.empty() && (name != event->GetName())) {
-        return false;
-    }
-    return true;
-}
-
-bool EventConfig::IsRealTimeEvent(std::shared_ptr<AppEventPack> event) const
-{
-    return IsValidEvent(event) && isRealTime;
-}
-
-std::string EventConfig::ToString() const
-{
-    std::stringstream strStream;
-    strStream << "{" << domain << "," << name << "," << isRealTime << "}";
-    return strStream.str();
-}
-
-std::string TriggerCondition::ToString() const
-{
-    std::stringstream strStream;
-    strStream << "{" << row << "," << size << "," << timeout << "," << onStartup << "," << onBackground << "}";
-    return strStream.str();
-}
-
-std::string ReportConfig::ToString() const
-{
-    std::stringstream strStream;
-    strStream << "{" << name << "," << debugMode << "," << routeInfo << "," << appId << "," << triggerCond.ToString()
-        << "," << GetStr(userIdNames) << "," << GetStr(userPropertyNames) << "," << GetStr(eventConfigs) << "}";
-    return strStream.str();
-}
-
 bool AppEventObserver::VerifyEvent(std::shared_ptr<AppEventPack> event)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (filters_.empty()) {
         return true;
     }
@@ -196,216 +114,105 @@ bool AppEventObserver::VerifyEvent(std::shared_ptr<AppEventPack> event)
     return it != filters_.end();
 }
 
-bool AppEventObserver::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
-{
-    const auto& eventConfigs = reportConfig_.eventConfigs;
-    if (eventConfigs.empty()) {
-        return false;
-    }
-    auto it = std::find_if(eventConfigs.begin(), eventConfigs.end(), [event](const auto& config) {
-        return config.IsRealTimeEvent(event);
-    });
-    return it != eventConfigs.end();
-}
-
 void AppEventObserver::ProcessEvent(std::shared_ptr<AppEventPack> event)
 {
     HILOG_DEBUG(LOG_CORE, "observer=%{public}s start to process event", name_.c_str());
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
     ++currCond_.row;
     currCond_.size += static_cast<int>(event->GetEventStr().size());
-    if (MeetProcessCondition()) {
+    if (MeetNumberCondition(currCond_.row, triggerCond_.row)
+        || MeetNumberCondition(currCond_.size, triggerCond_.size)) {
         OnTrigger(currCond_);
-        ResetCurrCondition();
+        ResetCondition(currCond_);
     }
-}
-
-bool AppEventObserver::MeetProcessCondition()
-{
-    return MeetNumberCondition(currCond_.row, reportConfig_.triggerCond.row)
-        || MeetNumberCondition(currCond_.size, reportConfig_.triggerCond.size);
 }
 
 void AppEventObserver::ResetCurrCondition()
 {
-    currCond_.row = 0;
-    currCond_.size = 0;
-    currCond_.timeout = 0;
-}
-
-void AppEventObserver::OnTrigger(const TriggerCondition& triggerCond)
-{
-    std::vector<std::shared_ptr<AppEventPack>> events;
-    QueryEventsFromDb(events);
-    if (!events.empty()) {
-        OnEvents(events);
-    }
-}
-
-void AppEventObserver::QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events)
-{
-    if (AppEventStore::GetInstance().QueryEvents(events, seq_, MAX_SIZE_ON_EVENTS) != 0) {
-        HILOG_WARN(LOG_CORE, "failed to take data from observer=%{public}s, seq=%{public}" PRId64,
-            name_.c_str(), seq_);
-        return;
-    }
-    HILOG_INFO(LOG_CORE, "end to take data from observer=%{public}s, seq=%{public}" PRId64 ", size=%{public}zu",
-        name_.c_str(), seq_, events.size());
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
+    ResetCondition(currCond_);
 }
 
 void AppEventObserver::ProcessTimeout()
 {
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
     currCond_.timeout += TIMEOUT_STEP;
-    if (!MeetTimeoutCondition()) {
-        return;
+    if (MeetNumberCondition(currCond_.timeout, triggerCond_.timeout) && currCond_.row > 0) {
+        OnTrigger(currCond_);
+        ResetCondition(currCond_);
     }
-    OnTrigger(currCond_);
-    ResetCurrCondition();
-}
-
-bool AppEventObserver::MeetTimeoutCondition()
-{
-    return MeetNumberCondition(currCond_.timeout, reportConfig_.triggerCond.timeout) && currCond_.row > 0;
 }
 
 bool AppEventObserver::HasTimeoutCondition()
 {
-    return reportConfig_.triggerCond.timeout > 0 && currCond_.row > 0;
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
+    return triggerCond_.timeout > 0 && currCond_.row > 0;
 }
 
 void AppEventObserver::ProcessStartup()
 {
-    if (!MeetStartupCondition()) {
-        return;
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
+    if (triggerCond_.onStartup && currCond_.row > 0) {
+        OnTrigger(currCond_);
+        ResetCondition(currCond_);
     }
-    OnTrigger(currCond_);
-    ResetCurrCondition();
-}
-
-bool AppEventObserver::MeetStartupCondition()
-{
-    return reportConfig_.triggerCond.onStartup && currCond_.row > 0;
 }
 
 void AppEventObserver::ProcessBackground()
 {
-    if (!MeetBackgroundCondition()) {
-        return;
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
+    if (triggerCond_.onBackground && currCond_.row > 0) {
+        OnTrigger(currCond_);
+        ResetCondition(currCond_);
     }
-    OnTrigger(currCond_);
-    ResetCurrCondition();
-}
-
-bool AppEventObserver::MeetBackgroundCondition()
-{
-    return reportConfig_.triggerCond.onBackground && currCond_.row > 0;
 }
 
 std::string AppEventObserver::GetName()
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return name_;
 }
 
 int64_t AppEventObserver::GetSeq()
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return seq_;
-}
-
-ReportConfig AppEventObserver::GetReportConfig()
-{
-    return reportConfig_;
 }
 
 void AppEventObserver::SetSeq(int64_t seq)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     seq_ = seq;
 }
 
 void AppEventObserver::SetCurrCondition(const TriggerCondition& triggerCond)
 {
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
     currCond_ = triggerCond;
 }
 
-void AppEventObserver::SetReportConfig(const ReportConfig& reportConfig)
+void AppEventObserver::SetTriggerCond(const TriggerCondition& triggerCond)
 {
-    reportConfig_ = reportConfig;
-
-    filters_.clear();
-    // if event configs is empty, do not report event
-    if (reportConfig.eventConfigs.empty()) {
-        filters_.emplace_back(AppEventFilter()); // invalid filter
-        return;
-    }
-
-    for (const auto& eventConfig : reportConfig.eventConfigs) {
-        if (eventConfig.domain.empty() && eventConfig.name.empty()) {
-            continue;
-        }
-        std::unordered_set<std::string> names;
-        if (!eventConfig.name.empty()) {
-            names.emplace(eventConfig.name);
-        }
-        filters_.emplace_back(AppEventFilter(eventConfig.domain, names));
-    }
+    std::lock_guard<std::mutex> lockGuard(condMutex_);
+    triggerCond_ = triggerCond;
 }
 
-int64_t AppEventObserver::GenerateHashCode()
+std::vector<AppEventFilter> AppEventObserver::GetFilters()
 {
-    if (reportConfig_.name.empty()) {
-        // default hash code for watcher
-        return 0;
-    }
-    return (reportConfig_.configId > 0)
-        ? static_cast<int64_t>(reportConfig_.configId)
-        : static_cast<int64_t>(std::hash<std::string>{}(reportConfig_.ToString()));
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return filters_;
 }
 
-uint64_t AppEventObserver::GetOsEventsMask()
+void AppEventObserver::SetFilters(const std::vector<AppEventFilter>& filters)
 {
-    uint64_t mask = 0;
-    std::for_each(filters_.begin(), filters_.end(), [&mask](const auto& filter) {
-        mask |= filter.GetOsEventsMask();
-    });
-    return mask;
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    filters_ = filters;
 }
 
-std::string AppEventObserver::GetFiltersStr()
+void AppEventObserver::AddFilter(const AppEventFilter& filter)
 {
-    if (!reportConfig_.name.empty()) {
-        // default hash code for processor
-        return "";
-    }
-    Json::Value filtersJson(Json::arrayValue);
-    std::for_each(filters_.begin(), filters_.end(), [&filtersJson](const auto& filter) {
-        filtersJson.append(filter.ToJsonValue());
-    });
-    return Json::FastWriter().write(filtersJson);
-}
-
-void AppEventObserver::SetFilters(const std::string& jsonStr)
-{
-    filters_.clear();
-    if (jsonStr.empty()) {
-        return;
-    }
-    Json::Value filtersJson;
-    Json::Reader reader(Json::Features::strictMode());
-    if (!reader.parse(jsonStr, filtersJson)) {
-        HILOG_ERROR(LOG_CORE, "parse filters failed, please check the style of json");
-        return;
-    }
-    if (!filtersJson.isArray() || filtersJson.empty()) {
-        HILOG_WARN(LOG_CORE, "filters is empty");
-        return;
-    }
-    for (Json::ArrayIndex i = 0; i < filtersJson.size(); ++i) {
-        if (filtersJson[i].isObject()) {
-            std::string domain = EventJsonUtil::ParseString(filtersJson[i], DOMAIN_PROPERTY);
-            std::unordered_set<std::string> names;
-            EventJsonUtil::ParseStrings(filtersJson[i], NAMES_PROPERTY, names);
-            uint32_t types = EventJsonUtil::ParseUInt32(filtersJson[i], TYPES_PROPERTY);
-            filters_.emplace_back(AppEventFilter(domain, names, types));
-        }
-    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    filters_.emplace_back(filter);
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

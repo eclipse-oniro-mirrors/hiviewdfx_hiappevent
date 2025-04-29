@@ -318,7 +318,7 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher, uint64_t beg
     }
 
     // 4. add the watcher to Manager
-    int64_t observerSeq = AppEventObserverMgr::GetInstance().RegisterObserver(watcherPtr);
+    int64_t observerSeq = AppEventObserverMgr::GetInstance().AddWatcher(watcherPtr);
     if (observerSeq <= 0) {
         HILOG_ERROR(LOG_CORE, "invalid observer sequence");
         AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_OK);
@@ -350,7 +350,7 @@ napi_value RemoveWatcher(const napi_env env, const napi_value watcher, uint64_t 
         AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::FAILED, errCode);
         return NapiUtil::CreateUndefined(env);
     }
-    (void)AppEventObserverMgr::GetInstance().UnregisterObserver(GetName(env, watcher));
+    (void)AppEventObserverMgr::GetInstance().RemoveObserver(GetName(env, watcher));
     AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
     return NapiUtil::CreateUndefined(env);
 }

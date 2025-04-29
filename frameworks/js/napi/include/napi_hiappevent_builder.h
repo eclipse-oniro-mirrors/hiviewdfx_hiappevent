@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,7 +27,7 @@ class AppEventPack;
 class NapiHiAppEventBuilder {
 public:
     NapiHiAppEventBuilder() : isV9_(false), result_(0), callback_(nullptr), appEventPack_(nullptr) {}
-    ~NapiHiAppEventBuilder() {}
+    virtual ~NapiHiAppEventBuilder() {}
     int GetResult() const;
     napi_ref GetCallback() const;
     std::shared_ptr<AppEventPack> Build(const napi_env env, const napi_value params[], size_t len);

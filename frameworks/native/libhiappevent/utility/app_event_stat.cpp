@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,6 @@
 #include <random>
 
 #include "hiappevent_base.h"
-#include "hiappevent_ffrt.h"
 #include "hiappevent_write.h"
 #include "time_util.h"
 
@@ -52,9 +51,7 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
     appEventPack->AddParam("end_time", realEndTime);
     appEventPack->AddParam("result", result);
     appEventPack->AddParam("error_code", errCode);
-    HiAppEvent::Submit([appEventPack]() {
-        WriteEvent(appEventPack);
-        }, {}, {}, ffrt::task_attr().name("appevent_api_end"));
+    SubmitWritingTask(appEventPack, "appevent_api_end");
 }
 } // namespace AppEventStat
 } // namespace HiviewDFX

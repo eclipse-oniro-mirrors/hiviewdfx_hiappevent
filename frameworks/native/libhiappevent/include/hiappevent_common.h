@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,12 @@ const std::string EVENT_ADDRESS_SANITIZER = "ADDRESS_SANITIZER";
 const std::string EVENT_MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 const std::string EVENT_APP_START = "APP_START";
 const std::string EVENT_APP_HICOLLIE = "APP_HICOLLIE";
+const char DOMAIN_PROPERTY[] = "domain";
+const char NAMES_PROPERTY[] = "names";
+const char TYPES_PROPERTY[] = "types";
+const char NAME_PROPERTY[] = "name";
+const char EVENT_TYPE_PROPERTY[] = "eventType";
+const char PARAM_PROPERTY[] = "params";
 } // namespace HiAppEvent
 } // namespace HiviewDFX
 } // namespace OHOS

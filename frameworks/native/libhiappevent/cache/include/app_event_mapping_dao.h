@@ -19,13 +19,15 @@
 #include <string>
 #include <unordered_set>
 
+#include "app_event_cache_common.h"
 #include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace AppEventMappingDao {
 int Create(NativeRdb::RdbStore& dbStore);
-int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t eventSeq, int64_t observerSeq);
+int Insert(std::shared_ptr<NativeRdb::RdbStore> dbStore,
+    const std::vector<AppEventCacheCommon::EventObserverInfo>& eventObservers);
 int Delete(std::shared_ptr<NativeRdb::RdbStore> dbStore, int64_t observerSeq, const std::vector<int64_t>& eventSeqs);
 int QueryExistEvent(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::vector<int64_t>& eventSeqs,
     std::unordered_set<int64_t>& existEventSeqs);

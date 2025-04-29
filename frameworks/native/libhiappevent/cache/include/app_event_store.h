@@ -42,7 +42,7 @@ public:
     int DestroyDbStore();
     int64_t InsertEvent(std::shared_ptr<AppEventPack> event);
     int64_t InsertObserver(const AppEventCacheCommon::Observer& observer);
-    int InsertEventMapping(int64_t eventSeq, int64_t observerSeq);
+    int InsertEventMapping(const std::vector<AppEventCacheCommon::EventObserverInfo>& eventObservers);
     int InsertUserId(const std::string& name, const std::string& value);
     int InsertUserProperty(const std::string& name, const std::string& value);
     int InsertCustomEventParams(std::shared_ptr<AppEventPack> event);
