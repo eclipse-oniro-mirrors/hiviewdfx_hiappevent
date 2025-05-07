@@ -32,6 +32,16 @@ constexpr int32_t ERR_INVALID_STR_LEN = 11101004;
 constexpr int32_t ERR_INVALID_PARAM_NUM = 11101003;
 constexpr int32_t ERR_INVALID_ARR_LEN = 11101006;
 constexpr int32_t ERR_INVALID_CUSTOM_PARAM_NUM = 11101007;
+
+constexpr int32_t ERR_INVALID_MAX_STORAGE = 11103001;
+
+constexpr int32_t ERR_INVALID_WATCHER_NAME = 11102001;
+constexpr int32_t ERR_INVALID_FILTER_DOMAIN = 11102002;
+constexpr int32_t ERR_INVALID_COND_ROW = 11102003;
+constexpr int32_t ERR_INVALID_COND_SIZE = 11102004;
+constexpr int32_t ERR_INVALID_COND_TIMEOUT = 11102005;
+
+constexpr int32_t ERR_INVALID_SIZE = 11104001;
 } // namespace HiviewDFX
 } // namespace OHOS
 
