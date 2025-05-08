@@ -63,7 +63,9 @@ bool IsValidName(const napi_env env, const napi_value name, int& errCode)
         return false;
     }
     if (!IsValidWatcherName(NapiUtil::GetString(env, name))) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_WATCHER_NAME, "Invalid watcher name.");
+        std::string curErrMsg = std::string("Invalid watcher name. Possible causes: 1. Contain invalid characters;") +
+            " 2. Length is invalid.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_WATCHER_NAME, curErrMsg);
         errCode = NapiError::ERR_INVALID_WATCHER_NAME;
         return false;
     }
@@ -108,7 +110,9 @@ bool IsValidFilter(const napi_env env, const napi_value filter, int& errCode)
         return false;
     }
     if (!IsValidDomain(NapiUtil::GetString(env, domain))) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_FILTER_DOMAIN, "Invalid filtering event domain.");
+        std::string curErrMsg = std::string("Invalid filtering event domain. Possible causes: 1. Contain invalid ") +
+            "characters; 2. Length is invalid.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_FILTER_DOMAIN, curErrMsg);
         errCode = NapiError::ERR_INVALID_FILTER_DOMAIN;
         return false;
     }
@@ -216,21 +220,24 @@ TriggerCondition GetCondition(const napi_env env, const napi_value watcher)
     size_t index = 0;
     int row = GetConditionValue(env, cond, COND_PROPS[index++]);
     if (row < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_ROW, "Invalid row value.");
+        std::string rowErrMsg =  "Invalid row value. Possible caused by the row value is less than zero.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_ROW, rowErrMsg);
         return resCond;
     }
     resCond.row = row;
 
     int size = GetConditionValue(env, cond, COND_PROPS[index++]);
     if (size < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_SIZE, "Invalid size value.");
+        std::string sizeErrMsg = "Invalid size value. Possible caused by the size value is less than zero.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_SIZE, sizeErrMsg);
         return resCond;
     }
     resCond.size = size;
 
     int timeout = GetConditionValue(env, cond, COND_PROPS[index++]);
     if (timeout < 0) {
-        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_TIMEOUT, "Invalid timeout value.");
+        std::string timeErrMsg = "Invalid timeout value. Possible caused by the timeout value is less than zero.";
+        NapiUtil::ThrowError(env, NapiError::ERR_INVALID_COND_TIMEOUT, timeErrMsg);
         return resCond;
     }
     resCond.timeout = timeout * HiAppEvent::TIMEOUT_STEP;

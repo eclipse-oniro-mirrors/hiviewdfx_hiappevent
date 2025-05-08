@@ -34,22 +34,22 @@ constexpr size_t RESULT_SIZE = 2;
 napi_value BuildErrorByResult(const napi_env env, int result)
 {
     const std::map<int, std::pair<int, std::string>> errMap = {
-        { ErrorCode::ERROR_INVALID_EVENT_NAME,
-            { NapiError::ERR_INVALID_NAME, "Invalid event name." } },
-        { ErrorCode::ERROR_INVALID_EVENT_DOMAIN,
-            { NapiError::ERR_INVALID_DOMAIN, "Invalid event domain." } },
-        { ErrorCode::ERROR_HIAPPEVENT_DISABLE,
-            { NapiError::ERR_DISABLE, "Function disabled." } },
-        { ErrorCode::ERROR_INVALID_PARAM_NAME,
-            { NapiError::ERR_INVALID_KEY, "Invalid event parameter name." } },
-        { ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH,
-            { NapiError::ERR_INVALID_STR_LEN, "Invalid string length of the event parameter." } },
-        { ErrorCode::ERROR_INVALID_PARAM_NUM,
-            { NapiError::ERR_INVALID_PARAM_NUM, "Invalid number of event parameters." } },
-        { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE,
-            { NapiError::ERR_INVALID_ARR_LEN, "Invalid array length of the event parameter." } },
-        { ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM,
-            { NapiError::ERR_INVALID_CUSTOM_PARAM_NUM, "The number of parameter keys exceeds the limit." }},
+        { ErrorCode::ERROR_INVALID_EVENT_NAME, { NapiError::ERR_INVALID_NAME,
+            "Invalid event name. Possible causes: 1. Contain invalid characters; 2. Length is invalid." } },
+        { ErrorCode::ERROR_INVALID_EVENT_DOMAIN, { NapiError::ERR_INVALID_DOMAIN,
+            "Invalid event domain. Possible causes: 1. Contain invalid characters; 2. Length is invalid." } },
+        { ErrorCode::ERROR_HIAPPEVENT_DISABLE, { NapiError::ERR_DISABLE,
+            "Function disabled. Possible caused by the param disable in ConfigOption is true." } },
+        { ErrorCode::ERROR_INVALID_PARAM_NAME, { NapiError::ERR_INVALID_KEY,
+            "Invalid event parameter name. Possible causes: 1. Contain invalid characters; 2. Length is invalid." } },
+        { ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH, { NapiError::ERR_INVALID_STR_LEN,
+            "Invalid string length of the event parameter." } },
+        { ErrorCode::ERROR_INVALID_PARAM_NUM, { NapiError::ERR_INVALID_PARAM_NUM,
+            "Invalid number of event parameters. Possible caused by the number of parameters is over 32." } },
+        { ErrorCode::ERROR_INVALID_LIST_PARAM_SIZE, { NapiError::ERR_INVALID_ARR_LEN,
+            "Invalid array length of the event parameter." } },
+        { ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM, { NapiError::ERR_INVALID_CUSTOM_PARAM_NUM,
+            "The number of parameter keys exceeds the limit." }},
     };
     return errMap.find(result) == errMap.end() ? NapiUtil::CreateNull(env) :
         NapiUtil::CreateError(env, errMap.at(result).first, errMap.at(result).second);
