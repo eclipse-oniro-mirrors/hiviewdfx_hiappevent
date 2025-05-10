@@ -29,6 +29,7 @@ ohos_shared_library("hiappevent_innerapi") {
   deps = [ "../../../frameworks/native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
+    "c_utils:utils",
     "ffrt:libffrt",
     "hilog:libhilog",
     "relational_store:native_rdb",
