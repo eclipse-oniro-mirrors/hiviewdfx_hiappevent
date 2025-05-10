@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -2069,5 +2069,187 @@ describe('HiAppEventJsTest', function () {
         setEventConfigV9Test("MAIN_THREAD_JANK", configInfo4, expectErr, done);
         setEventConfigV9Test("MAIN_THREAD_JANK", configInfo5, expectErr, done);
         console.info('HiAppEventSetEventConfigTest007 end');
+    });
+    
+    /**
+     * @tc.number HiAppEventSetEventConfigTest008
+     * @tc.name: HiAppEventSetEventConfigTest008
+     * @tc.desc: Test the SetEventConfig interface for APP_CRASH.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest008', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest008 start');
+        let configInfo1 = {
+            "extend_pc_lr_printing": true,
+        };
+        let configInfo2 = {
+            "log_file_cutoff_sz_bytes": 10,
+        };
+        let configInfo3 = {
+            "simplify_vma_printing": true,
+        };
+        let configInfo4 = {
+            "extend_pc_lr_printing": true,
+            "log_file_cutoff_sz_bytes": 10,
+            "simplify_vma_printing": true,
+        };
+        setEventConfigV9Test("APP_CRASH", configInfo1, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo2, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo3, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo4, null, done);
+        console.info('HiAppEventSetEventConfigTest008 end');
+    });
+ 
+    /**
+     * @tc.number HiAppEventSetEventConfigTest009
+     * @tc.name: HiAppEventSetEventConfigTest009
+     * @tc.desc: Test the SetEventConfig interface for APP_CRASH with invalid param type.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest009', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest009 start');
+        let configInfo1 = {
+            "extend_pc_lr_printing": 10,
+        };
+        let configInfo2 = {
+            "extend_pc_lr_printing": "123abc",
+        };
+        let configInfo3 = {
+            "extend_pc_lr_printing": null,
+        };
+        let configInfo4 = {
+            "log_file_cutoff_sz_bytes": true,
+        }
+        let configInfo5 = {
+            "log_file_cutoff_sz_bytes": "123abc",
+        }
+        let configInfo6 = {
+            "log_file_cutoff_sz_bytes": null,
+        }
+        let configInfo7 = {
+            "simplify_vma_printing": 10,
+        }
+        let configInfo8 = {
+            "simplify_vma_printing": "123abc",
+        }
+        let configInfo9 = {
+            "simplify_vma_printing": null,
+        }
+        let expectErr = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("APP_CRASH", configInfo1, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo2, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo3, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo4, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo5, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo6, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo7, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo8, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo9, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest009 end');
+    });
+ 
+    /**
+     * @tc.number HiAppEventSetEventConfigTest010
+     * @tc.name: HiAppEventSetEventConfigTest010
+     * @tc.desc: Test the SetEventConfig interface for APP_CRASH with not all params are valid.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest010', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest010 start');
+        let configInfo1 = {
+            "extend_pc_lr_printing": true,
+            "log_file_cutoff_sz_bytes": 10,
+            "simplify_vma_printing": "123abc",
+        };
+        setEventConfigV9Test("APP_CRASH", configInfo1, null, done);
+        console.info('HiAppEventSetEventConfigTest010 end');
+    });
+ 
+    /**
+     * @tc.number HiAppEventSetEventConfigTest011
+     * @tc.name: HiAppEventSetEventConfigTest011
+     * @tc.desc: Test the SetEventConfig interface for APP_CRASH with all params are invalid.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest011', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest011 start');
+        let configInfo1 = {
+            "extend_pc_lr_printing": 10,
+            "log_file_cutoff_sz_bytes": true,
+            "simplify_vma_printing": 10,
+        };
+        let expectErr = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("APP_CRASH", configInfo1, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest011 end');
+    });
+ 
+    /**
+     * @tc.number HiAppEventSetEventConfigTest012
+     * @tc.name: HiAppEventSetEventConfigTest012
+     * @tc.desc: Test the SetEventConfig interface for APP_CRASH with numeric param.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest012', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest012 start');
+        let configInfo1 = {
+            "log_file_cutoff_sz_bytes": -1,
+        };
+        let configInfo2 = {
+            "log_file_cutoff_sz_bytes": 0,
+        };
+        let configInfo3 = {
+            "log_file_cutoff_sz_bytes": 5 * 1024 * 1024,
+        };
+        let configInfo4 = {
+            "log_file_cutoff_sz_bytes": 5 * 1024 * 1024 + 1,
+        };
+        let configInfo5 = {
+            "log_file_cutoff_sz_bytes": 123.456,
+        };
+        let configInfo6 = {
+            "log_file_cutoff_sz_bytes": "123",
+        };
+        let configInfo7 = {
+            "log_file_cutoff_sz_bytes": "123.456",
+        };
+        let configInfo8 = {
+            "log_file_cutoff_sz_bytes": "123.456.789",
+        };
+        let configInfo9 = {
+            "log_file_cutoff_sz_bytes": "",
+        };
+        let expectErr = createError(401, "Invalid param value for event config.");
+        setEventConfigV9Test("APP_CRASH", configInfo1, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo2, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo3, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo4, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo5, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo6, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo7, null, done);
+        setEventConfigV9Test("APP_CRASH", configInfo8, expectErr, done);
+        setEventConfigV9Test("APP_CRASH", configInfo9, expectErr, done);
+        console.info('HiAppEventSetEventConfigTest012 end');
+    });
+ 
+    /**
+     * @tc.number HiAppEventSetEventConfigTest013
+     * @tc.name: HiAppEventSetEventConfigTest013
+     * @tc.desc: Test the SetEventConfig interface for APP_CRASH with invalid param item.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventSetEventConfigTest013', 0, async function (done) {
+        console.info('HiAppEventSetEventConfigTest013 start');
+        let configInfo1 = {
+            "extend_pc_lr_printing": true,
+            "testKey": "testValue",
+        };
+        setEventConfigV9Test("APP_CRASH", configInfo1, null, done);
+        console.info('HiAppEventSetEventConfigTest013 end');
     });
 });
