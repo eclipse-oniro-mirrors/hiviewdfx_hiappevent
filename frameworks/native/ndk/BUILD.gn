@@ -34,6 +34,7 @@ ohos_shared_library("hiappevent_ndk") {
   deps = [ "$hiappevent_native_path/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
+    "c_utils:utils",
     "ffrt:libffrt",
     "hilog:libhilog",
     "relational_store:native_rdb",

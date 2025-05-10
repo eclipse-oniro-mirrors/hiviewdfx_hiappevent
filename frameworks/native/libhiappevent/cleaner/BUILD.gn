@@ -32,6 +32,7 @@ ohos_source_set("hiappevent_cleaner") {
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]

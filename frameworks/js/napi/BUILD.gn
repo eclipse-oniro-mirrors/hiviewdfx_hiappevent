@@ -28,6 +28,7 @@ ohos_shared_library("hiappevent") {
   deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
+    "c_utils:utils",
     "hilog:libhilog",
     "napi:ace_napi",
   ]
@@ -63,6 +64,7 @@ ohos_shared_library("hiappevent_v9") {
   ]
 
   external_deps = [
+    "c_utils:utils",
     "ffrt:libffrt",
     "hilog:libhilog",
     "jsoncpp:jsoncpp",
