@@ -80,7 +80,7 @@ OsEventListener::~OsEventListener()
     inotifyThread_ = nullptr;
     if (inotifyFd_ != -1) {
         (void)inotify_rm_watch(inotifyFd_, inotifyWd_);
-        close(inotifyFd_);
+        fdsan_close_with_tag(inotifyFd_, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         inotifyFd_ = -1;
     }
 }
@@ -179,10 +179,12 @@ bool OsEventListener::RegisterDirListener(const std::string& dirPath)
             HILOG_ERROR(LOG_CORE, "failed to inotify init : %s(%s).\n", strerror(errno), dirPath.c_str());
             return false;
         }
+        uint64_t ownerTag = fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN);
+        fdsan_exchange_owner_tag(inotifyFd_, 0, ownerTag);
         inotifyWd_ = inotify_add_watch(inotifyFd_, dirPath.c_str(), IN_MOVED_TO | IN_CLOSE_WRITE);
         if (inotifyWd_ < 0) {
             HILOG_ERROR(LOG_CORE, "failed to add watch entry : %s(%s).\n", strerror(errno), dirPath.c_str());
-            close(inotifyFd_);
+            fdsan_close_with_tag(inotifyFd_, ownerTag);
             inotifyFd_ = -1;
             return false;
         }
