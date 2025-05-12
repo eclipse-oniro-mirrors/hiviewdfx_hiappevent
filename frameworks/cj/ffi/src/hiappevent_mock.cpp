@@ -30,4 +30,5 @@ FFI_EXPORT int FfiOHOSHiAppEventSetSize = 0;
 FFI_EXPORT int FfiOHOSHiAppEventTakeNext = 0;
 FFI_EXPORT int FfiOHOSHiAppEventAddWatcher = 0;
 FFI_EXPORT int FfiOHOSHiAppEventRemoveWatcher = 0;
+FFI_EXPORT int FfiOHOSHiAppEventSetEventParam = 0;
 }

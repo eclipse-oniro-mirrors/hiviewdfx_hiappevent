@@ -37,6 +37,8 @@ constexpr int ERR_INVALID_COND_SIZE = 11102004;
 constexpr int ERR_INVALID_COND_TIMEOUT = 11102005;
 constexpr int ERR_INVALID_MAX_STORAGE = 11103001;
 constexpr int ERR_INVALID_SIZE = 11104001;
+constexpr int ERR_INVALID_CUSTOM_PARAM_NUM = 11101007;
+constexpr int ERR_INVALID_PARAM_VALUE_LENGTH = 11101004;
 
 int GetErrorCode(int errCode);
 } // HiAppEvent

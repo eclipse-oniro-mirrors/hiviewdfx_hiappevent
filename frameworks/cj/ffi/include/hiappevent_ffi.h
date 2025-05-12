@@ -34,6 +34,7 @@ extern "C" {
     FFI_EXPORT ReTakeNext FfiOHOSHiAppEventTakeNext(int64_t id);
     FFI_EXPORT RetDataI64 FfiOHOSHiAppEventAddWatcher(CWatcher watcher);
     FFI_EXPORT int FfiOHOSHiAppEventRemoveWatcher(CWatcher watcher);
+    FFI_EXPORT int32_t FfiOHOSHiAppEventSetEventParam(CArrParameters eventParams, char* domain, char* name);
 }
 
 #endif
