@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,7 +56,7 @@ void CheckRegisterObserver(const std::string& observer,
     std::shared_ptr<AppEventProcessor> processor, int64_t& processorSeq)
 {
     ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(observer, processor), 0);
-    processorSeq = AppEventObserverMgr::GetInstance().RegisterObserver(observer);
+    processorSeq = AppEventObserverMgr::GetInstance().AddProcessor(observer);
     ASSERT_GT(processorSeq, 0);
 }
 
@@ -67,7 +67,7 @@ void CheckRegisterObserverWithConfig(
     int64_t& processorSeq)
 {
     ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(observer, processor), 0);
-    processorSeq = AppEventObserverMgr::GetInstance().RegisterObserver(observer, config);
+    processorSeq = AppEventObserverMgr::GetInstance().AddProcessor(observer, config);
     ASSERT_GT(processorSeq, 0);
 }
 
@@ -507,10 +507,9 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest008, TestSize.Level0)
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);
 
-    int64_t processorSeq2 = AppEventObserverMgr::GetInstance().RegisterObserver(TEST_PROCESSOR_NAME, config);
+    int64_t processorSeq2 = AppEventObserverMgr::GetInstance().AddProcessor(TEST_PROCESSOR_NAME, config);
     ASSERT_EQ(processorSeq1, processorSeq2);
-    sleep(1); // 1s
-    ASSERT_EQ(processor->GetReportTimes(), 1);
+    ASSERT_EQ(processor->GetReportTimes(), 0);
 
     CheckUnregisterObserver(TEST_PROCESSOR_NAME);
 }

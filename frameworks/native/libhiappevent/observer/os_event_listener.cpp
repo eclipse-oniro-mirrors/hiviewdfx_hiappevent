@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@
 #include "event_json_util.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
+#include "hiappevent_common.h"
 #include "hilog/log.h"
 #include "parameters.h"
 #include "storage_acl.h"
@@ -39,10 +40,6 @@ namespace HiviewDFX {
 namespace {
 constexpr int BUF_SIZE = 2048;
 const std::string APP_EVENT_DIR = "/hiappevent";
-const std::string DOMAIN_PROPERTY = "domain";
-const std::string NAME_PROPERTY = "name";
-const std::string EVENT_TYPE_PROPERTY = "eventType";
-const std::string PARAM_PROPERTY = "params";
 const std::string RUNNING_ID_PROPERTY = "app_running_unique_id";
 const std::string OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
 const std::string XATTR_NAME = "user.appevent";
@@ -258,20 +255,16 @@ void OsEventListener::GetEventsFromFiles(
 std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std::string& jsonStr)
 {
     Json::Value eventJson;
-    Json::Reader reader(Json::Features::strictMode());
-    if (!reader.parse(jsonStr, eventJson)) {
+    if (!EventJsonUtil::GetJsonObjectFromJsonString(eventJson, jsonStr)) {
         HILOG_ERROR(LOG_CORE, "parse event detail info failed, please check the style of json");
         return nullptr;
     }
-    if (!eventJson.isObject()) {
-        return nullptr;
-    }
     auto appEventPack = std::make_shared<AppEventPack>();
-    appEventPack->SetDomain(EventJsonUtil::ParseString(eventJson, DOMAIN_PROPERTY));
-    appEventPack->SetName(EventJsonUtil::ParseString(eventJson, NAME_PROPERTY));
-    appEventPack->SetType(EventJsonUtil::ParseInt(eventJson, EVENT_TYPE_PROPERTY));
-    if (eventJson.isMember(PARAM_PROPERTY) && eventJson[PARAM_PROPERTY].isObject()) {
-        Json::Value paramsJson = eventJson[PARAM_PROPERTY];
+    appEventPack->SetDomain(EventJsonUtil::ParseString(eventJson, HiAppEvent::DOMAIN_PROPERTY));
+    appEventPack->SetName(EventJsonUtil::ParseString(eventJson, HiAppEvent::NAME_PROPERTY));
+    appEventPack->SetType(EventJsonUtil::ParseInt(eventJson, HiAppEvent::EVENT_TYPE_PROPERTY));
+    if (eventJson.isMember(HiAppEvent::PARAM_PROPERTY) && eventJson[HiAppEvent::PARAM_PROPERTY].isObject()) {
+        Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
         if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
             appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
             paramsJson.removeMember(RUNNING_ID_PROPERTY);

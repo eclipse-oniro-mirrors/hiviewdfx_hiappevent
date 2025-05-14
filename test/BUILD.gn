@@ -89,7 +89,7 @@ ohos_unittest("HiAppEventWatcherTest") {
   ]
 
   external_deps = [
-    "eventhandler:libeventhandler",
+    "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
@@ -107,6 +107,7 @@ ohos_unittest("HiAppEventInnerApiTest") {
 
   external_deps = [
     "ability_runtime:app_context",
+    "ffrt:libffrt",
     "googletest:gtest_main",
     "hiappevent:hiappevent_innerapi",
   ]
@@ -125,7 +126,6 @@ ohos_unittest("HiAppEventUserInfoTest") {
   ]
 
   external_deps = [
-    "eventhandler:libeventhandler",
     "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
@@ -160,7 +160,10 @@ ohos_unittest("HiAppEventUtilityTest") {
     "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
   ]
 
-  external_deps = [ "googletest:gtest_main" ]
+  external_deps = [
+    "googletest:gtest_main",
+    "jsoncpp:jsoncpp",
+  ]
 }
 
 ohos_unittest("HiAppEventVerifyTest") {

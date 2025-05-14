@@ -129,7 +129,7 @@ int HiAppEventImpl::Write(std::shared_ptr<HiviewDFX::AppEventPack> appEventPack)
 
 int64_t HiAppEventImpl::AddProcessor(const ReportConfig& conf)
 {
-    int64_t processorId = AppEventObserverMgr::GetInstance().RegisterObserver(conf.name, conf);
+    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(conf.name, conf);
     if (processorId <= 0) {
         LOGE("failed to add processor=%{public}s, register processor error", conf.name.c_str());
         return processorId;
@@ -143,7 +143,7 @@ int HiAppEventImpl::RemoveProcessor(int64_t processorId)
         LOGE("failed to remove processor id=%{public}" PRIi64 "", processorId);
         return SUCCESS_CODE;
     }
-    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
+    if (AppEventObserverMgr::GetInstance().RemoveObserver(processorId) != 0) {
         LOGE("failed to remove processor id=%{public}" PRIi64"", processorId);
         return ERR_CODE_PARAM_INVALID;
     }
@@ -221,7 +221,7 @@ std::tuple<int, int64_t> HiAppEventImpl::addWatcher(const std::string& name,
     if (callbackOnReceiveRef != (void*)-1) {
         watcherPtr->InitReceiver(callbackOnReceiveRef);
     }
-    int64_t observerSeq = AppEventObserverMgr::GetInstance().RegisterObserver(watcherPtr);
+    int64_t observerSeq = AppEventObserverMgr::GetInstance().AddWatcher(watcherPtr);
     if (observerSeq <= 0) {
         LOGE("invalid observer sequence");
         return {ERR_CODE_PARAM_INVALID, -1};
@@ -236,7 +236,7 @@ std::tuple<int, int64_t> HiAppEventImpl::addWatcher(const std::string& name,
 
 void HiAppEventImpl::removeWatcher(const std::string& name)
 {
-    AppEventObserverMgr::GetInstance().UnregisterObserver(name);
+    AppEventObserverMgr::GetInstance().RemoveObserver(name);
 }
 
 int HiAppEventImpl::Load(const std::string& moduleName)

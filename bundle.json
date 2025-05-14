@@ -25,7 +25,6 @@
         "ability_runtime",
         "bundle_framework",
         "c_utils",
-        "eventhandler",
         "ffrt",
         "hitrace",
         "hilog",

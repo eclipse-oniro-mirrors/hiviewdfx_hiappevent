@@ -33,7 +33,7 @@ int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
     if (int ret = AppEventObserverMgr::GetInstance().Load(realConfig.name); ret != 0) {
         return ret;
     }
-    return AppEventObserverMgr::GetInstance().RegisterObserver(realConfig.name, realConfig);
+    return AppEventObserverMgr::GetInstance().AddProcessor(realConfig.name, realConfig);
 }
 
 int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
@@ -41,7 +41,7 @@ int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
     if (!IsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return AppEventObserverMgr::GetInstance().UnregisterObserver(processorId);
+    return AppEventObserverMgr::GetInstance().RemoveObserver(processorId);
 }
 
 int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
@@ -57,7 +57,7 @@ int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
     if (!IsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    if (int ret = AppEventObserverMgr::GetInstance().UnregisterObserver(name); ret < 0) {
+    if (int ret = AppEventObserverMgr::GetInstance().RemoveObserver(name); ret < 0) {
         return ret;
     }
     return AppEventObserverMgr::GetInstance().UnregisterProcessor(name);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -649,25 +649,6 @@ void AppEventPack::GetCustomParams(std::vector<CustomEventParam>& customParams) 
         };
         customParams.push_back(customParam);
     }
-}
-
-std::string AppEventPack::GetParamApiStr()
-{
-    if (!paramApiStr_.empty()) {
-        return paramApiStr_;
-    }
-    if (baseParams_.empty()) {
-        return "";
-    }
-    for (const auto& param : baseParams_) {
-        if (param.name == "sdk_name") {
-            paramApiStr_.append(", sdk_name=").append(GetParamValueStr(param));
-        }
-        if (param.name == "api_name") {
-            paramApiStr_.append(", api_name=").append(GetParamValueStr(param));
-        }
-    }
-    return paramApiStr_;
 }
 
 int64_t AppEventPack::GetSeq() const

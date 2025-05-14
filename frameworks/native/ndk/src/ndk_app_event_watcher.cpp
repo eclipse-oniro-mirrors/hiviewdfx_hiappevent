@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,6 @@
 #include "app_event_util.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
-#include "hiappevent_ffrt.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -34,7 +33,7 @@ NdkAppEventWatcher::NdkAppEventWatcher(const std::string &name) : AppEventWatche
 
 void NdkAppEventWatcher::SetTriggerCondition(int row, int size, int timeOut)
 {
-    reportConfig_.triggerCond = {row, size, timeOut * HiAppEvent::TIMEOUT_STEP};
+    SetTriggerCond({row, size, timeOut * HiAppEvent::TIMEOUT_STEP});
 }
 
 int NdkAppEventWatcher::AddAppEventFilter(const char* domain, uint8_t eventTypes,
@@ -54,22 +53,25 @@ int NdkAppEventWatcher::AddAppEventFilter(const char* domain, uint8_t eventTypes
         }
         filter.names.insert(names[i]);
     }
-    filters_.emplace_back(std::move(filter));
+    AddFilter(std::move(filter));
     return 0;
 }
 
 void NdkAppEventWatcher::SetOnTrigger(OH_HiAppEvent_OnTrigger onTrigger)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     onTrigger_ = onTrigger;
 }
 
 void NdkAppEventWatcher::SetOnOnReceive(OH_HiAppEvent_OnReceive onReceive)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     onReceive_ = onReceive;
 }
 
 void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>> &events)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (events.empty() || onReceive_ == nullptr) {
         return;
     }
@@ -98,12 +100,10 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
         appEventIndex++;
     }
     int64_t observerSeq = GetSeq();
-    HiAppEvent::Submit([observerSeq, eventSeqs]() {
-        if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
-            HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
-                observerSeq, eventSeqs.size());
-        }
-        }, {}, {}, ffrt::task_attr().name("appevent_del_map"));
+    if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
+        HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
+            observerSeq, eventSeqs.size());
+    }
     AppEventUtil::ReportAppEventReceive(events, GetName(), "onReceive");
     std::string domain = events[0]->GetDomain();
     onReceive_(domain.c_str(), appEventGroup.data(), static_cast<uint32_t>(eventMap.size()));
@@ -112,6 +112,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
 void NdkAppEventWatcher::OnTrigger(const HiAppEvent::TriggerCondition &triggerCond)
 {
     HILOG_DEBUG(LOG_CORE, "onTrigger start");
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (onTrigger_ == nullptr) {
         HILOG_WARN(LOG_CORE, "onTrigger_ is nullptr");
         return;
@@ -121,6 +122,7 @@ void NdkAppEventWatcher::OnTrigger(const HiAppEvent::TriggerCondition &triggerCo
 
 bool NdkAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return onReceive_ != nullptr;
 }
 }

@@ -286,13 +286,13 @@ int64_t AppEventStore::InsertObserver(const Observer& observer)
     return seq;
 }
 
-int AppEventStore::InsertEventMapping(int64_t eventSeq, int64_t observerSeq)
+int AppEventStore::InsertEventMapping(const std::vector<EventObserverInfo>& eventObservers)
 {
     std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (dbStore_ == nullptr && InitDbStore() != DB_SUCC) {
         return DB_FAILED;
     }
-    if (int ret = AppEventMappingDao::Insert(dbStore_, eventSeq, observerSeq); ret != NativeRdb::E_OK) {
+    if (int ret = AppEventMappingDao::Insert(dbStore_, eventObservers); ret != NativeRdb::E_OK) {
         CheckAndRepairDbStore(ret);
         return DB_FAILED;
     }

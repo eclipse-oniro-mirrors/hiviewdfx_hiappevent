@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,7 +18,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "app_event_observer.h"
+#include "app_event_processor_proxy.h"
 #include "app_event_processor.h"
 
 namespace OHOS {
@@ -32,19 +32,15 @@ public:
     int Unload(const std::string& moduleName);
     int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
     int UnregisterProcessor(const std::string& name);
-    std::shared_ptr<AppEventObserver> CreateProcessorProxy(const std::string& name);
+    std::shared_ptr<AppEventProcessorProxy> CreateProcessorProxy(const std::string& name);
 
 private:
     /* <module name, module handler> */
     std::unordered_map<std::string, void*> modules_;
-
     /* <processor name, processor object> */
     std::unordered_map<std::string, std::shared_ptr<AppEventProcessor>> processors_;
-
-private:
-    static std::mutex instanceMutex_;
-    static std::mutex moduleMutex_;
-    static std::mutex processorMutex_;
+    std::mutex moduleMutex_;
+    std::mutex processorMutex_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX

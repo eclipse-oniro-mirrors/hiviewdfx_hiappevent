@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,10 +31,17 @@ public:
 
     void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) override;
     bool VerifyEvent(std::shared_ptr<AppEventPack> event) override;
+    bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event) override;
+    void OnTrigger(const TriggerCondition& triggerCond) override;
+    ReportConfig GetReportConfig();
+    void SetReportConfig(const ReportConfig& reportConfig);
+    // used to identify the processor with the same config
+    int64_t GenerateHashCode();
 
 private:
     void GetValidUserIds(std::vector<UserId>& userIds);
     void GetValidUserProperties(std::vector<UserProperty>& userProperties);
+    void QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events);
 
 private:
     std::shared_ptr<AppEventProcessor> processor_;
@@ -42,6 +49,9 @@ private:
     int64_t userPropertyVersion_;
     std::vector<UserId> userIds_;
     std::vector<UserProperty> userProperties_;
+    ReportConfig reportConfig_;
+    int64_t hashCode_ = 0;
+    std::mutex mutex_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX

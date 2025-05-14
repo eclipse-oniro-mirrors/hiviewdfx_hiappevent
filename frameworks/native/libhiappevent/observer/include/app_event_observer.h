@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,13 +15,13 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_APP_EVENT_OBSERVER_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_INCLUDE_APP_EVENT_OBSERVER_H
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "base_type.h"
-#include "json/json.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -47,16 +47,20 @@ struct AppEventFilter {
     bool IsValidEvent(std::shared_ptr<AppEventPack> event) const;
     bool IsValidEvent(const std::string& eventDomain, const std::string& eventName, int eventType) const;
     uint64_t GetOsEventsMask() const;
-    Json::Value ToJsonValue() const;
 };
 
 class AppEventObserver {
 public:
     AppEventObserver(const std::string& name) : name_(name) {}
+    AppEventObserver(
+        const std::string& name,
+        const std::vector<AppEventFilter>& filters,
+        TriggerCondition cond) : name_(name), filters_(filters), triggerCond_(cond) {}
     virtual ~AppEventObserver() = default;
     virtual void OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events) {}
     virtual bool VerifyEvent(std::shared_ptr<AppEventPack> event);
-    virtual bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event);
+    virtual bool IsRealTimeEvent(std::shared_ptr<AppEventPack> event) { return false; }
+    virtual void OnTrigger(const TriggerCondition& triggerCond) {}
     void ProcessEvent(std::shared_ptr<AppEventPack> event);
     void ProcessTimeout();
     void ProcessStartup();
@@ -65,40 +69,23 @@ public:
 
     std::string GetName();
     int64_t GetSeq();
-    ReportConfig GetReportConfig();
     void SetSeq(int64_t seq);
     void SetCurrCondition(const TriggerCondition& triggerCond);
-    void SetReportConfig(const ReportConfig& reportConfig);
-
-    // used to identify the observer with the same config
-    int64_t GenerateHashCode();
-
     // used to reset the current status when condition is met or data is cleared.
     void ResetCurrCondition();
-
-    // used to match os events.
-    uint64_t GetOsEventsMask();
-    void SetFilters(const std::string& jsonFiltersStr);
-    std::string GetFiltersStr();
-
-protected:
-    virtual void OnTrigger(const TriggerCondition& triggerCond);
-
-private:
-    void QueryEventsFromDb(std::vector<std::shared_ptr<AppEventPack>>& events);
-    bool MeetProcessCondition();
-    bool MeetTimeoutCondition();
-    bool MeetStartupCondition();
-    bool MeetBackgroundCondition();
-
-protected:
-    std::vector<AppEventFilter> filters_;
-    ReportConfig reportConfig_;
+    void SetTriggerCond(const TriggerCondition& triggerCond);
+    std::vector<AppEventFilter> GetFilters();
+    void SetFilters(const std::vector<AppEventFilter>& filters);
+    void AddFilter(const AppEventFilter& filter);
 
 private:
     std::string name_;
     int64_t seq_ = 0; // observer sequence, used to uniquely identify an observer
+    std::vector<AppEventFilter> filters_;
+    TriggerCondition triggerCond_;
     TriggerCondition currCond_;
+    std::mutex mutex_;
+    std::mutex condMutex_;
 };
 } // namespace HiAppEvent
 } // namespace HiviewDFX

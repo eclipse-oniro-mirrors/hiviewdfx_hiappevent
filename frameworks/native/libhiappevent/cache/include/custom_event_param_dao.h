@@ -20,7 +20,6 @@
 #include <unordered_set>
 
 #include "app_event_cache_common.h"
-#include "hiappevent_base.h"
 #include "rdb_store.h"
 
 namespace OHOS {

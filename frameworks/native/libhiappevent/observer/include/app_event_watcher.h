@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,14 @@ public:
         const std::vector<AppEventFilter>& filters,
         TriggerCondition cond);
     virtual ~AppEventWatcher() {}
+    // used to match os events.
+    uint64_t GetOsEventsMask();
+    void SetFiltersStr(const std::string& jsonStr);
+    std::string GetFiltersStr();
+
+private:
+    std::string filtersStr_;
+    std::mutex mutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

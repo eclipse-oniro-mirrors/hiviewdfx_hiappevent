@@ -190,7 +190,7 @@ int64_t AddProcessor(struct HiAppEvent_Processor* processor)
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, name not found", config.name.c_str());
         return ErrorCode::ERROR_UNKNOWN;
     }
-    int64_t processorId = AppEventObserverMgr::GetInstance().RegisterObserver(config.name, config);
+    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(config.name, config);
     if (processorId <= 0) {
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, register processor error", config.name.c_str());
         return ErrorCode::ERROR_UNKNOWN;
@@ -217,7 +217,7 @@ int RemoveProcessor(int64_t processorId)
         HILOG_DEBUG(LOG_CORE, "Failed to remove processor id=%{public}" PRId64, processorId);
         return ErrorCode::ERROR_PROCESSOR_NOT_ADDED;
     }
-    if (AppEventObserverMgr::GetInstance().UnregisterObserver(processorId) != 0) {
+    if (AppEventObserverMgr::GetInstance().RemoveObserver(processorId) != 0) {
         HILOG_DEBUG(LOG_CORE, "Failed to remove processor id=%{public}" PRId64, processorId);
         return ErrorCode::ERROR_UNKNOWN;
     }
