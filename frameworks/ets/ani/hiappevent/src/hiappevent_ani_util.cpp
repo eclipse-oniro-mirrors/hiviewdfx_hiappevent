@@ -24,7 +24,7 @@
 #define LOG_TAG "HIAPPEVENT_ANI_UTIL"
 
 using namespace OHOS::HiviewDFX;
-const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
+static const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
     {CLASS_NAME_INT, AniArgsType::ANI_INT},
     {CLASS_NAME_BOOLEAN, AniArgsType::ANI_BOOLEAN},
     {CLASS_NAME_DOUBLE, AniArgsType::ANI_NUMBER},
@@ -47,6 +47,9 @@ bool HiAppEventAniUtil::IsArray(ani_env *env, ani_object object)
 {
     ani_boolean IsArray = ANI_FALSE;
     ani_class cls {};
+    if (env == nullptr) {
+        return false;
+    }
     if (ANI_OK != env->FindClass(CLASS_NAME_ARRAY, &cls)) {
         return false;
     }
@@ -63,12 +66,17 @@ bool HiAppEventAniUtil::IsArray(ani_env *env, ani_object object)
 bool HiAppEventAniUtil::IsRefUndefined(ani_env *env, ani_ref ref)
 {
     ani_boolean isUndefined = ANI_FALSE;
-    env->Reference_IsUndefined(ref, &isUndefined);
+    if (env != nullptr) {
+        env->Reference_IsUndefined(ref, &isUndefined);
+    }
     return isUndefined;
 }
 
 void HiAppEventAniUtil::ParseRecord(ani_env *env, ani_ref recordRef, std::map<std::string, ani_ref>& recordResult)
 {
+    if (env == nullptr) {
+        return;
+    }
     ani_ref keys {};
     if (ANI_OK != env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef), "keys",
                                                    ":Lescompat/IterableIterator;", &keys)) {
@@ -106,6 +114,9 @@ void HiAppEventAniUtil::ParseRecord(ani_env *env, ani_ref recordRef, std::map<st
 
 std::string HiAppEventAniUtil::ParseStringValue(ani_env *env, ani_ref aniStrRef)
 {
+    if (env == nullptr) {
+        return "";
+    }
     ani_size strSize = 0;
     if (ANI_OK != env->String_GetUTF8Size(static_cast<ani_string>(aniStrRef), &strSize)) {
         HILOG_ERROR(LOG_CORE, "get ani string size failed");
@@ -126,6 +137,9 @@ std::string HiAppEventAniUtil::ParseStringValue(ani_env *env, ani_ref aniStrRef)
 int32_t HiAppEventAniUtil::ParseIntValue(ani_env *env, ani_ref elementRef)
 {
     ani_int intVal = 0;
+    if (env == nullptr) {
+        return static_cast<int32_t>(intVal);
+    }
     ani_class cls {};
     ani_method unboxedMethod {};
     if (env->FindClass(CLASS_NAME_INT, &cls)) {
@@ -145,6 +159,9 @@ int32_t HiAppEventAniUtil::ParseIntValue(ani_env *env, ani_ref elementRef)
 
 bool HiAppEventAniUtil::ParseBoolValue(ani_env *env, ani_ref elementRef)
 {
+    if (env == nullptr) {
+        return false;
+    }
     ani_class cls {};
     if (ANI_OK != env->FindClass(CLASS_NAME_BOOLEAN, &cls)) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_BOOLEAN);
@@ -166,6 +183,9 @@ bool HiAppEventAniUtil::ParseBoolValue(ani_env *env, ani_ref elementRef)
 double HiAppEventAniUtil::ParseNumberValue(ani_env *env, ani_ref elementRef)
 {
     ani_double doubleVal = 0;
+    if (env == nullptr) {
+        return static_cast<double>(doubleVal);
+    }
     ani_class cls {};
     if (ANI_OK != env->FindClass(CLASS_NAME_DOUBLE, &cls)) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_DOUBLE);
@@ -183,6 +203,10 @@ double HiAppEventAniUtil::ParseNumberValue(ani_env *env, ani_ref elementRef)
 
 void HiAppEventAniUtil::GetStringsToSet(ani_env *env, ani_ref Ref, std::unordered_set<std::string> &arr)
 {
+    ani_double doubleVal = 0;
+    if (env == nullptr) {
+        return;
+    }
     ani_size length = 0;
     if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
@@ -199,6 +223,9 @@ void HiAppEventAniUtil::GetStringsToSet(ani_env *env, ani_ref Ref, std::unordere
 
 void HiAppEventAniUtil::GetIntValueToVector(ani_env *env, ani_ref Ref, std::vector<int> &arr)
 {
+    if (env == nullptr) {
+        return;
+    }
     ani_size length = 0;
     if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
@@ -222,6 +249,9 @@ void HiAppEventAniUtil::GetIntValueToVector(ani_env *env, ani_ref Ref, std::vect
 ani_ref HiAppEventAniUtil::GetProperty(ani_env *env, ani_object object, const std::string &name)
 {
     ani_ref value = nullptr;
+    if (env == nullptr) {
+        return value;
+    }
     if (ANI_OK != env->Object_GetPropertyByName_Ref(object, name.c_str(), &value)) {
         HILOG_ERROR(LOG_CORE, "failed to get property %{public}s from object", name.c_str());
     }
@@ -230,6 +260,9 @@ ani_ref HiAppEventAniUtil::GetProperty(ani_env *env, ani_object object, const st
 
 void HiAppEventAniUtil::ThrowAniError(ani_env *env, int32_t code, const std::string &message)
 {
+    if (env == nullptr) {
+        return;
+    }
     ani_class cls {};
     if (ANI_OK != env->FindClass(CLASS_NAME_BUSINESSERROR, &cls)) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_BUSINESSERROR);
@@ -266,6 +299,10 @@ void HiAppEventAniUtil::ThrowAniError(ani_env *env, int32_t code, const std::str
 ani_object HiAppEventAniUtil::Result(ani_env *env, std::pair<int32_t, std::string> result)
 {
     ani_object results_obj {};
+    if (env == nullptr) {
+        return results_obj;
+    }
+
     ani_class cls {};
     if (ANI_OK != env->FindClass(CLASS_NAME_RESULTS, &cls)) {
         HILOG_ERROR(LOG_CORE, "failed to find class %{public}s", CLASS_NAME_RESULTS);
@@ -336,6 +373,9 @@ std::pair<int32_t, std::string> HiAppEventAniUtil::BuildErrorByResult(int32_t re
 
 AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)
 {
+    if (env == nullptr) {
+        return AniArgsType::ANI_UNKNOWN;
+    }
     if (HiAppEventAniUtil::IsRefUndefined(env, static_cast<ani_ref>(elementObj))) {
         return AniArgsType::ANI_UNDEFINED;
     }
@@ -357,6 +397,9 @@ AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)
 
 AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_array_ref arrayRef)
 {
+    if (env == nullptr) {
+        return AniArgsType::ANI_UNKNOWN;
+    }
     ani_size index = 0;
     ani_ref valueRef {};
     if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), index, &valueRef)) {
@@ -368,6 +411,9 @@ AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_array_ref arrayRef
 
 std::string HiAppEventAniUtil::ConfigOptionToString(ani_env *env, const std::string &key, ani_ref valueRef)
 {
+    if (env == nullptr) {
+        return "";
+    }
     std::string result = "";
     if (key == CONFIG_OPTION_DISABLE) {
         result = HiAppEventAniUtil::ParseBoolValue(env, valueRef) ? "true" : "false";
@@ -380,6 +426,9 @@ std::string HiAppEventAniUtil::ConfigOptionToString(ani_env *env, const std::str
 ani_ref HiAppEventAniUtil::CreateGlobalReference(ani_env *env, ani_ref func)
 {
     ani_ref objectGRef {};
+    if (env == nullptr) {
+        return objectGRef;
+    }
     if (ANI_OK != env->GlobalReference_Create(func, &objectGRef)) {
         HILOG_ERROR(LOG_CORE, "failed to create global reference");
         return objectGRef;
@@ -391,6 +440,9 @@ ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
 {
     ani_class cls {};
     ani_object obj {};
+    if (env == nullptr) {
+        return obj;
+    }
     if (ANI_OK != env->FindClass(CLASS_NAME_DOUBLE, &cls)) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_DOUBLE);
         return obj;
@@ -404,6 +456,9 @@ ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
 static ani_enum_item ToAniEnum(ani_env *env, EventTypeAni value)
 {
     ani_enum_item aniEnumItem {};
+    if (env == nullptr) {
+        return aniEnumItem;
+    }
     auto it = ANI_EVENTTYPE_INDEX_MAP.find(value);
     if (it == ANI_EVENTTYPE_INDEX_MAP.end()) {
         HILOG_ERROR(LOG_CORE, "Unsupport enum: %{public}d", value);
@@ -427,6 +482,9 @@ ani_object HiAppEventAniUtil::CreateBool(ani_env *env, bool boolValue)
 {
     ani_class cls {};
     ani_object obj {};
+    if (env == nullptr) {
+        return obj;
+    }
     if (ANI_OK != env->FindClass(CLASS_NAME_BOOLEAN, &cls)) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_BOOLEAN);
         return obj;
@@ -440,7 +498,9 @@ ani_object HiAppEventAniUtil::CreateBool(ani_env *env, bool boolValue)
 ani_string HiAppEventAniUtil::CreateAniString(ani_env *env, const std::string &str)
 {
     ani_string aniString {};
-    env->String_NewUTF8(str.c_str(), str.size(), &aniString);
+    if (env != nullptr) {
+        env->String_NewUTF8(str.c_str(), str.size(), &aniString);
+    }
     return aniString;
 }
 
@@ -448,6 +508,9 @@ static ani_ref CreateArray(ani_env *env, size_t length)
 {
     ani_class cls {};
     ani_object array {};
+    if (env == nullptr) {
+        return array;
+    }
     if (ANI_OK != env->FindClass(CLASS_NAME_ARRAY, &cls)) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_ARRAY);
         return array;
@@ -466,8 +529,11 @@ static ani_ref CreateArray(ani_env *env, size_t length)
 
 static ani_ref CreateArray(ani_env *env, const std::string &name, ani_size length)
 {
-    ani_class cls {};
     ani_array_ref array {};
+    if (env == nullptr) {
+        return array;
+    }
+    ani_class cls {};
     if (ANI_OK != env->FindClass(name.c_str(), &cls)) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", name.c_str());
         return array;
@@ -483,6 +549,9 @@ static ani_method FindArrayMethodSet(ani_env *env)
 {
     ani_class cls {};
     ani_method setMethod {};
+    if (env == nullptr) {
+        return setMethod;
+    }
     if (ANI_OK != env->FindClass(CLASS_NAME_ARRAY, &cls)) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
@@ -506,6 +575,10 @@ ani_ref HiAppEventAniUtil::CreateStrings(ani_env *env, const std::vector<std::st
 
 ani_object HiAppEventAniUtil::CreateObject(ani_env *env, const std::string &name)
 {
+    if (env == nullptr) {
+        return nullptr;
+    }
+
     ani_class cls {};
     if (ANI_OK != env->FindClass(name.c_str(), &cls)) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", name.c_str());
@@ -525,6 +598,9 @@ ani_object HiAppEventAniUtil::CreateObject(ani_env *env, const std::string &name
 
 static ani_ref CreateBaseValueByJson(ani_env *env, const Json::Value& jsonValue)
 {
+    if (env == nullptr) {
+        return nullptr;
+    }
     if (jsonValue.isBool()) {
         return HiAppEventAniUtil::CreateBool(env, jsonValue.asBool());
     }
@@ -539,6 +615,10 @@ static ani_ref CreateBaseValueByJson(ani_env *env, const Json::Value& jsonValue)
 
 static ani_method GetRecordSetMethod(ani_env *env)
 {
+    if (env == nullptr) {
+        return nullptr;
+    }
+
     ani_class cls {};
     if (ANI_OK != env->FindClass(CLASS_NAME_RECORD, &cls)) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_RECORD);
@@ -555,6 +635,10 @@ static ani_method GetRecordSetMethod(ani_env *env)
 
 static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
 {
+    if (env == nullptr) {
+        return nullptr;
+    }
+
     if (jsonValue.isArray()) {
         if (jsonValue[0].isBool()) {
             ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
@@ -601,6 +685,9 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
 
 static ani_ref CreateValueByJsonStr(ani_env *env, const std::string& jsonStr)
 {
+    if (env == nullptr) {
+        return nullptr;
+    }
     Json::Value jsonValue;
     Json::Reader reader(Json::Features::strictMode());
     if (!reader.parse(jsonStr, jsonValue)) {
@@ -612,6 +699,9 @@ static ani_ref CreateValueByJsonStr(ani_env *env, const std::string& jsonStr)
 
 static ani_object CreateEventInfo(ani_env *env, std::shared_ptr<AppEventPack> event)
 {
+    if (env == nullptr) {
+        return nullptr;
+    }
     ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_INFO);
     env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_DOMAIN.c_str(),
         HiAppEventAniUtil::CreateAniString(env, event->GetDomain()));
