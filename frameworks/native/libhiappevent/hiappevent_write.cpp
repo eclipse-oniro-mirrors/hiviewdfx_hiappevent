@@ -26,7 +26,6 @@
 #include "hiappevent_config.h"
 #include "hilog/log.h"
 #include "time_util.h"
-#include "xcollie/watchdog.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -38,7 +37,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr int DB_FAILED = -1;
-const std::string  MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 std::mutex g_mutex;
 constexpr int SUBMIT_FAILED_NUM = 50;
 static int g_submitFailedCnt = 0;
@@ -123,15 +121,6 @@ int SetEventParam(std::shared_ptr<AppEventPack> appEventPack)
         return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
     }
     return res;
-}
-
-int SetEventConfig(const std::string& name, const std::map<std::string, std::string> &configMap)
-{
-    if (name != MAIN_THREAD_JANK) {
-        HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s", name.c_str());
-        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
-    }
-    return Watchdog::GetInstance().SetEventConfig(configMap);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
