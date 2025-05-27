@@ -17,6 +17,8 @@
 
 #include "json/json.h"
 
+#include <ani_signature_builder.h>
+
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
 
@@ -24,6 +26,7 @@
 #define LOG_TAG "HIAPPEVENT_ANI_UTIL"
 
 using namespace OHOS::HiviewDFX;
+using namespace arkts::ani_signature;
 static const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
     {CLASS_NAME_INT, AniArgsType::ANI_INT},
     {CLASS_NAME_LONG, AniArgsType::ANI_LONG},
@@ -348,7 +351,7 @@ ani_object HiAppEventAniUtil::Result(ani_env *env, std::pair<int32_t, std::strin
     }
 
     ani_method codeSetter {};
-    if (env->Class_FindMethod(cls, "<set>code", nullptr, &codeSetter) != ANI_OK) {
+    if (env->Class_FindMethod(cls, Builder::BuildSetterName("code").c_str(), nullptr, &codeSetter) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get method codeSetter %{public}s failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
@@ -359,7 +362,7 @@ ani_object HiAppEventAniUtil::Result(ani_env *env, std::pair<int32_t, std::strin
     }
 
     ani_method messageSetter {};
-    if (env->Class_FindMethod(cls, "<set>message", nullptr, &messageSetter) != ANI_OK) {
+    if (env->Class_FindMethod(cls, Builder::BuildSetterName("message").c_str(), nullptr, &messageSetter) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method messageSetter %{public}s failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
