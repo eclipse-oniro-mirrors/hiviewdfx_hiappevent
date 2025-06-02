@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -130,6 +130,23 @@ int SetConfigId(struct HiAppEvent_Processor* processor, int configId)
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     return ndkProcessorPtr->SetConfigId(configId);
+}
+
+int SetConfigName(struct HiAppEvent_Processor* processor, const char* configName)
+{
+    if (!IsApp()) {
+        return ErrorCode::ERROR_NOT_APP;
+    }
+    CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
+    if (!IsValidConfigNameLength(configName)) {
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
+    }
+    if (!IsValidProcessorName(configName)) {
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
+    return ndkProcessorPtr->SetConfigName(configName) == ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL ?
+        ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL : ErrorCode::ERROR_INVALID_PARAM_VALUE;
 }
 
 int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * userIdNames, int size)

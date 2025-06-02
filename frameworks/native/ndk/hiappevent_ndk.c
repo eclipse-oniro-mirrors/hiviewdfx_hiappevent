@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -376,6 +376,11 @@ int OH_HiAppEvent_SetCustomConfig(struct HiAppEvent_Processor* processor, const 
 int OH_HiAppEvent_SetConfigId(struct HiAppEvent_Processor* processor, int configId)
 {
     return SetConfigId(processor, configId);
+}
+
+int OH_HiAppEvent_SetConfigName(struct HiAppEvent_Processor* processor, const char* configName)
+{
+    return SetConfigName(processor, configName);
 }
 
 int OH_HiAppEvent_SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * userIdNames, int size)

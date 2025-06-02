@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,16 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventProcessor {
+struct AddProcessorFromConfigAsyncContext {
+    napi_async_work asyncWork {nullptr};
+    napi_deferred deferred {nullptr};
+    std::string processorName;
+    std::string configName {"SDK_OCG"};
+    int64_t result {0};
+};
+
 bool AddProcessor(const napi_env env, const napi_value config, napi_value& out);
+void AddProcessorFromConfig(const napi_env, AddProcessorFromConfigAsyncContext* asyncContext);
 bool RemoveProcessor(const napi_env env, const napi_value id);
 } // namespace NapiHiAppEventProcessor
 } // namespace HiviewDFX

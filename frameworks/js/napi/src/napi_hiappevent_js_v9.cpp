@@ -80,6 +80,42 @@ static napi_value AddProcessor(napi_env env, napi_callback_info info)
     return id;
 }
 
+static napi_value AddProcessorFromConfig(napi_env env, napi_callback_info info)
+{
+    napi_value params[MAX_PARAM_NUM] = { 0 };
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for AddProcessorFromConfig is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("AddProcessorFromConfig"));
+        return nullptr;
+    }
+    if (!NapiUtil::IsString(env, params[0])) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("processorName", "string"));
+        return nullptr;
+    }
+    if (paramNum > 1 && !NapiUtil::IsString(env, params[1])) { // for configName
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("configName", "string"));
+        return nullptr;
+    }
+
+    auto asyncContext = new(std::nothrow) NapiHiAppEventProcessor::AddProcessorFromConfigAsyncContext;
+    if (asyncContext == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
+        return nullptr;
+    }
+    asyncContext->processorName = NapiUtil::GetString(env, params[0]);
+    asyncContext->configName = paramNum > 1 ? NapiUtil::GetString(env, params[1]) : asyncContext->configName;
+
+    napi_value promise = nullptr;
+    if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to create promise.");
+        delete asyncContext;
+        return nullptr;
+    }
+
+    NapiHiAppEventProcessor::AddProcessorFromConfig(env, asyncContext);
+    return promise;
+}
+
 static napi_value RemoveProcessor(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
@@ -305,6 +341,7 @@ static napi_value Init(napi_env env, napi_value exports)
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("addProcessor", AddProcessor),
         DECLARE_NAPI_FUNCTION("removeProcessor", RemoveProcessor),
+        DECLARE_NAPI_FUNCTION("addProcessorFromConfig", AddProcessorFromConfig),
         DECLARE_NAPI_FUNCTION("setUserId", SetUserId),
         DECLARE_NAPI_FUNCTION("getUserId", GetUserId),
         DECLARE_NAPI_FUNCTION("setUserProperty", SetUserProperty),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,6 +25,7 @@
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
+#include "processor_config_loader.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -56,6 +57,7 @@ const std::string EVENT_CONFIG_NAME = "name";
 const std::string EVENT_CONFIG_REALTIME = "isRealTime";
 const std::string CONFIG_ID = "configId";
 const std::string CUSTOM_CONFIG = "customConfigs";
+const std::string CONFIG_NAME = "configName";
 
 const std::string CONFIG_PROP_TYPE_STR = "string";
 const std::string CONFIG_PROP_TYPE_STR_ARRAY = "string array";
@@ -116,7 +118,7 @@ bool GenConfigIntProp(const napi_env env, const napi_value config, const std::st
     return true;
 }
 
-int GenConfigNameProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
+int GenProcessorNameProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     std::string name;
     if (!GenConfigStrProp(env, config, key, name, false)) {
@@ -128,6 +130,19 @@ int GenConfigNameProp(const napi_env env, const napi_value config, const std::st
         return ERR_CODE_PARAM_FORMAT;
     }
     out.name = name;
+    return ERR_CODE_SUCC;
+}
+
+int GenConfigNameProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
+{
+    std::string configName;
+    if (!GenConfigStrProp(env, config, key, configName)) {
+        return ERR_CODE_PARAM_INVALID;
+    }
+    if (!IsValidProcessorName(configName)) {
+        return ERR_CODE_PARAM_INVALID;
+    }
+    out.configName = configName;
     return ERR_CODE_SUCC;
 }
 
@@ -266,10 +281,12 @@ int GenConfigEventConfigsProp(const napi_env env, const napi_value config, const
 
 int GenConfigIdProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
-    if (!GenConfigIntProp(env, config, key, out.configId) || !IsValidConfigId(out.configId)) {
+    int configId = 0;
+    if (!GenConfigIntProp(env, config, key, configId) || !IsValidConfigId(configId)) {
         HILOG_WARN(LOG_CORE, "invalid configId");
         return ERR_CODE_PARAM_INVALID;
     }
+    out.configId = configId;
     return ERR_CODE_SUCC;
 }
 
@@ -312,7 +329,7 @@ const ConfigProp CONFIG_PROPS[] = {
     {
         .type = CONFIG_PROP_TYPE_STR,
         .key = PROCESSOR_NAME,
-        .func = GenConfigNameProp
+        .func = GenProcessorNameProp
     },
     {
         .type = CONFIG_PROP_TYPE_STR,
@@ -323,6 +340,11 @@ const ConfigProp CONFIG_PROPS[] = {
         .type = CONFIG_PROP_TYPE_STR,
         .key = APP_ID,
         .func = GenConfigAppIdProp
+    },
+    {
+        .type = CONFIG_PROP_TYPE_STR,
+        .key = CONFIG_NAME,
+        .func = GenConfigNameProp
     },
     {
         .type = CONFIG_PROP_TYPE_STR_ARRAY,
@@ -395,6 +417,37 @@ int TransConfig(const napi_env env, const napi_value config, ReportConfig& out)
     return 0;
 }
 
+int64_t AddProcessorAsync(const std::string& processorName, const std::string& configName)
+{
+    if (!IsValidProcessorName(processorName)) {
+        HILOG_ERROR(LOG_CORE, "Invalid processor name.");
+        return ERR_CODE_PARAM_INVALID;
+    }
+    if (!IsValidProcessorName(configName)) {
+        HILOG_ERROR(LOG_CORE, "Invalid configName name.");
+        return ERR_CODE_PARAM_INVALID;
+    }
+
+    if (AppEventObserverMgr::GetInstance().Load(processorName) != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, name not found", processorName.c_str());
+        return ERR_CODE_PARAM_INVALID;
+    }
+
+    HiAppEvent::ProcessorConfigLoader loader;
+    if (!loader.LoadProcessorConfig(processorName, configName)) {
+        HILOG_ERROR(LOG_CORE, "failed to load config content, configName:%{public}s", configName.c_str());
+        return ERR_CODE_PARAM_INVALID;
+    }
+
+    ReportConfig conf = loader.GetReportConfig();
+    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(processorName, conf);
+    if (processorId <= 0) {
+        HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, register processor error", processorName.c_str());
+        return ERR_CODE_PARAM_INVALID;
+    }
+    return processorId;
+}
+
 bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
 {
     ReportConfig conf;
@@ -414,6 +467,14 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
         out = NapiUtil::CreateInt64(env, -1);
         return true;
     }
+    if (!conf.configName.empty()) {
+        HiAppEvent::ProcessorConfigLoader loader;
+        if (loader.LoadProcessorConfig(conf.name, conf.configName)) {
+            conf = loader.GetReportConfig();
+        } else {
+            HILOG_WARN(LOG_CORE, "failed to load config content, configName:%{public}s", conf.configName.c_str());
+        }
+    }
     int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
     if (processorId <= 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, register processor error", name.c_str());
@@ -422,6 +483,34 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
     }
     out = NapiUtil::CreateInt64(env, processorId);
     return true;
+}
+
+void AddProcessorFromConfig(const napi_env env, AddProcessorFromConfigAsyncContext* asyncContext)
+{
+    napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventAddProcessorFromConfig");
+    napi_create_async_work(env, nullptr, resource,
+        [](napi_env env, void* data) {
+            AddProcessorFromConfigAsyncContext* asyncContext = (AddProcessorFromConfigAsyncContext*)data;
+            asyncContext->result = AddProcessorAsync(asyncContext->processorName, asyncContext->configName);
+        },
+        [](napi_env env, napi_status status, void* data) {
+            AddProcessorFromConfigAsyncContext* asyncContext = (AddProcessorFromConfigAsyncContext*)data;
+            napi_value result = nullptr;
+            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
+                if (asyncContext->result > 0) {
+                    result = NapiUtil::CreateInt64(env, asyncContext->result);
+                    napi_resolve_deferred(env, asyncContext->deferred, result);
+                } else {
+                    std::string ErrMsg = "Invalid param value for add processor from config.";
+                    result = NapiUtil::CreateError(env, NapiError::ERR_PARAM, ErrMsg);
+                    napi_reject_deferred(env, asyncContext->deferred, result);
+                }
+            }
+            napi_delete_async_work(env, asyncContext->asyncWork);
+            delete asyncContext;
+        },
+        (void*)asyncContext, &asyncContext->asyncWork);
+    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
 }
 
 bool RemoveProcessor(const napi_env env, const napi_value id)
