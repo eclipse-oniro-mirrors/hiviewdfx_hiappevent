@@ -71,6 +71,7 @@ void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
     eventMap["RESOURCE_OVERLIMIT"] = NapiUtil::CreateString(env, "RESOURCE_OVERLIMIT");
     eventMap["ADDRESS_SANITIZER"] = NapiUtil::CreateString(env, "ADDRESS_SANITIZER");
     eventMap["MAIN_THREAD_JANK"] = NapiUtil::CreateString(env, "MAIN_THREAD_JANK");
+    eventMap["APP_KILLED"] = NapiUtil::CreateString(env, "APP_KILLED");
 }
 
 void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)
