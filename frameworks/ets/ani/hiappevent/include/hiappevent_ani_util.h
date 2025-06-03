@@ -61,7 +61,7 @@ public:
     static std::pair<int32_t, std::string> BuildErrorByResult(int32_t result);
     static AniArgsType GetArgType(ani_env *env, ani_object elementObj);
     static AniArgsType GetArrayType(ani_env *env, ani_array_ref arrayRef);
-    static std::string ConfigOptionToString(ani_env *env, const std::string &key, ani_ref valueRef);
+    static std::string ConvertToString(ani_env *env, ani_ref valueRef);
     static ani_ref CreateGlobalReference(ani_env *env, ani_ref func);
     static ani_object CreateDouble(ani_env *env, int32_t num);
     static ani_object CreateBool(ani_env *env, bool boolValue);

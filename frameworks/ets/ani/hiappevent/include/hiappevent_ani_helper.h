@@ -58,6 +58,7 @@ public:
     bool RemoveProcessor(ani_env *env, ani_double id);
     ani_object AddWatcher(ani_env *env, ani_object watcher, uint64_t beginTime);
     void RemoveWatcher(ani_env *env, ani_object watcher, uint64_t beginTime);
+
 protected:
     int32_t result_ = 0;
 };
