@@ -37,6 +37,8 @@ constexpr uint8_t TYPE_ARRINT = 4;
 constexpr uint8_t TYPE_ARRFLOAT = 5;
 constexpr uint8_t TYPE_ARRSTRING = 6;
 constexpr uint8_t TYPE_ARRBOOL = 7;
+constexpr uint8_t TYPE_INT64 = 8;
+constexpr uint8_t TYPE_ARRINT64 = 9;
 
 struct OnTriggerContext {
     ~OnTriggerContext();

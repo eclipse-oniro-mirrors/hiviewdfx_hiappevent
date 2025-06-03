@@ -24,6 +24,7 @@
 #include "hiappevent_ffi.h"
 #include "hiappevent_impl.h"
 #include "hiappevent_verify.h"
+#include "hiappevent_write.h"
 #include "log.h"
 #include "error.h"
 using namespace OHOS::HiviewDFX;
@@ -40,6 +41,8 @@ const int8_t INT32_ARRAY_VALUE = 4;
 const int8_t DOUBLE_ARRAY_VALUE = 5;
 const int8_t STRING_ARRAY_VALUE = 6;
 const int8_t BOOL_ARRAY_VALUE = 7;
+const int8_t INT64_VALUE = 8;
+const int8_t INT64_ARRAY_VALUE = 9;
 constexpr int BIT_MASK = 1;
 constexpr unsigned int BIT_ALL_TYPES = 0xff;
 
@@ -138,38 +141,47 @@ void AddParams2EventPack(const CArrParameters& params, std::shared_ptr<AppEventP
         auto head = params.head + i;
         switch (head->valueType) {
             case INT32_VALUE: // int32_t
-                appEventPack_->AddParam(std::string(head->key), *(int32_t*)head->value);
+                appEventPack_->AddParam(std::string(head->key), *(static_cast<int32_t*>(head->value)));
+                break;
+            case INT64_VALUE: // int64_t
+                appEventPack_->AddParam(std::string(head->key), *(static_cast<int64_t*>(head->value)));
                 break;
             case DOUBLE_VALUE: // double
-                appEventPack_->AddParam(std::string(head->key), *(double*)head->value);
+                appEventPack_->AddParam(std::string(head->key), *(static_cast<double*>(head->value)));
                 break;
             case STRING_VALUE: // std::string
-                appEventPack_->AddParam(std::string(head->key), std::string((char*)head->value));
+                appEventPack_->AddParam(std::string(head->key), std::string(static_cast<char*>(head->value)));
                 break;
             case BOOL_VALUE: // bool
-                appEventPack_->AddParam(std::string(head->key), *(bool*)head->value);
+                appEventPack_->AddParam(std::string(head->key), *(static_cast<bool*>(head->value)));
                 break;
             case INT32_ARRAY_VALUE: { // int32_array
-                int* intArr = (int*)head->value;
-                std::vector<int> intVec(intArr, intArr + head->size);
+                int32_t* intArr = static_cast<int32_t*>(head->value);
+                std::vector<int32_t> intVec(intArr, intArr + head->size);
+                appEventPack_->AddParam(std::string(head->key), intVec);
+                break;
+            }
+            case INT64_ARRAY_VALUE: { // int64_array
+                int64_t* intArr = static_cast<int64_t*>(head->value);
+                std::vector<int64_t> intVec(intArr, intArr + head->size);
                 appEventPack_->AddParam(std::string(head->key), intVec);
                 break;
             }
             case DOUBLE_ARRAY_VALUE: { // double_array
-                double* doubleArr = (double*)head->value;
+                double* doubleArr = static_cast<double*>(head->value);
                 std::vector<double> doubleVec(doubleArr, doubleArr + head->size);
                 appEventPack_->AddParam(std::string(head->key), doubleVec);
                 break;
             }
             case STRING_ARRAY_VALUE: { // string_array
-                char** strPtr = (char**)head->value;
+                char** strPtr = static_cast<char**>(head->value);
                 std::vector<std::string> strVec;
                 CharPtrToVector(strPtr, head->size, strVec);
                 appEventPack_->AddParam(std::string(head->key), strVec);
                 break;
             }
             case BOOL_ARRAY_VALUE: { // bool_array
-                bool* boolArr = (bool*)head->value;
+                bool* boolArr = static_cast<bool*>(head->value);
                 std::vector<bool> boolVec(boolArr, boolArr + head->size);
                 appEventPack_->AddParam(std::string(head->key), boolVec);
                 break;
@@ -402,5 +414,24 @@ int FfiOHOSHiAppEventRemoveWatcher(CWatcher watcher)
     }
     HiAppEventImpl::removeWatcher(name);
     return SUCCESS_CODE;
+}
+
+int32_t FfiOHOSHiAppEventSetEventParam(CArrParameters eventParams, char* domain, char* name)
+{
+    int32_t ret = 0;
+    std::string domainStr = std::string(domain);
+    std::string nameStr = std::string(name);
+    auto appEventPack_ = std::make_shared<AppEventPack>(domainStr, nameStr);
+    AddParams2EventPack(eventParams, appEventPack_);
+    ret = VerifyCustomEventParams(appEventPack_);
+    if (ret != 0) {
+        return GetErrorCode(ret);
+    }
+    int32_t err = SetEventParam(appEventPack_);
+    if (err != 0) {
+        return GetErrorCode(err);
+    } else {
+        return 0;
+    }
 }
 }

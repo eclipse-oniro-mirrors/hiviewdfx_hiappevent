@@ -178,6 +178,20 @@ void ConvertArrInt(CParameters &retValue, const Json::Value& jsonValue)
     retValue.value = retArrValue;
 }
 
+void ConvertArrInt64(CParameters &retValue, const Json::Value& jsonValue)
+{
+    retValue.valueType = TYPE_ARRINT64;
+    int64_t* retArrValue = static_cast<int64_t*>(malloc(sizeof(int64_t) * retValue.size));
+    if (retArrValue == nullptr) {
+        LOGE("malloc is failed");
+        return;
+    }
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        retArrValue[i] = jsonValue[static_cast<int>(i)].asInt64();
+    }
+    retValue.value = retArrValue;
+}
+
 void CovertArrDouble(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRFLOAT;
@@ -244,6 +258,17 @@ bool CheckArrInt(const Json::Value& jsonValue)
     return nInt == jsonValue.size();
 }
 
+bool CheckArrInt64(const Json::Value& jsonValue)
+{
+    size_t nInt = 0;
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isInt64() && jsonValue.type() != Json::ValueType::uintValue) {
+            nInt++;
+        }
+    }
+    return nInt == jsonValue.size();
+}
+
 bool CheckArrDouble(const Json::Value& jsonValue)
 {
     size_t nDouble = 0;
@@ -277,6 +302,8 @@ void CreatArr(CParameters &retValue, const Json::Value& jsonValue)
         CovertArrDouble(retValue, jsonValue);
     } else if (CheckArrString(jsonValue)) {
         CovertArrString(retValue, jsonValue);
+    } else if (CheckArrInt64(jsonValue)) {
+        ConvertArrInt64(retValue, jsonValue);
     } else {
         CovertArrObjStr(retValue, jsonValue);
     }
@@ -286,12 +313,25 @@ void CreatElmInt(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_INT;
-    int* retInt = static_cast<int*>(malloc(sizeof(int) * retValue.size));
+    int32_t* retInt = static_cast<int32_t*>(malloc(sizeof(int32_t) * retValue.size));
     if (retInt == nullptr) {
         LOGE("malloc is failed");
         return;
     }
     retInt[0] = jsonValue.asInt();
+    retValue.value = retInt;
+}
+
+void CreatElmInt64(CParameters &retValue, const Json::Value& jsonValue)
+{
+    retValue.size = 1;
+    retValue.valueType = TYPE_INT64;
+    int64_t* retInt = static_cast<int64_t*>(malloc(sizeof(int64_t) * retValue.size));
+    if (retInt == nullptr) {
+        LOGE("malloc is failed");
+        return;
+    }
+    retInt[0] = jsonValue.asInt64();
     retValue.value = retInt;
 }
 
@@ -349,6 +389,8 @@ void CreateValueByJson(CParameters &retValue, const Json::Value& jsonValue)
         CreatElmDou(retValue, jsonValue);
     } else if (jsonValue.isString()) {
         CreatElmStr(retValue, jsonValue);
+    } else if (jsonValue.isInt64() && jsonValue.type() != Json::ValueType::uintValue) {
+        CreatElmInt64(retValue, jsonValue);
     } else {
         CreatObjStr(retValue, jsonValue);
     }
