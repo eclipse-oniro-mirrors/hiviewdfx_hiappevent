@@ -29,6 +29,7 @@ public:
     static ani_double AddProcessor(ani_env *env, ani_object processor);
     static void Configure(ani_env *env, ani_object configObj);
     static ani_object SetEventParamSync(ani_env *env, ani_object params, ani_string domain, ani_object name);
+    static ani_object SetEventConfigSync(ani_env *env, ani_string name, ani_object config);
     static void ClearData([[maybe_unused]] ani_env *env);
     static void SetUserId(ani_env *env, ani_string name, ani_string value);
     static ani_string GetUserId(ani_env *env, ani_string name);

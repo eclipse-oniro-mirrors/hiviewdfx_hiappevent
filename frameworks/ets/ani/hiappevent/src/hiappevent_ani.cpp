@@ -34,6 +34,17 @@
 #define LOG_TAG "HIAPPEVENT_ANI"
 
 using namespace OHOS::HiviewDFX;
+namespace {
+int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, std::string>& eventConfigMap)
+{
+    std::map<std::string, ani_ref> eventConfig;
+    HiAppEventAniUtil::ParseRecord(env, config, eventConfig);
+    for (const auto &configPair : eventConfig) {
+        eventConfigMap[configPair.first] = HiAppEventAniUtil::ConvertToString(env, configPair.second);
+    }
+    return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+}
+}
 
 ani_double HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
 {
@@ -133,6 +144,23 @@ ani_object HiAppEventAni::SetEventParamSync(ani_env *env, ani_object params, ani
     return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
 }
 
+ani_object HiAppEventAni::SetEventConfigSync(ani_env *env, ani_string name, ani_object config)
+{
+    std::string nameString = HiAppEventAniUtil::ParseStringValue(env, name);
+    std::map<std::string, std::string> eventConfigMap;
+    int32_t result = BuildEventConfig(env, config, eventConfigMap);
+    if (result != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL || eventConfigMap.empty()) {
+        HILOG_ERROR(LOG_CORE, "the param type is invalid or the config is empty.");
+        return HiAppEventAniUtil::Result(env, {result, "the param type is invalid or the config is empty."});
+    }
+    result = HiviewDFX::SetEventConfig(nameString, eventConfigMap);
+    if (result == 0) {
+        return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
+    } else {
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, "Invalid param value for event config."});
+    }
+}
+
 void HiAppEventAni::ClearData([[maybe_unused]] ani_env *env)
 {
     uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
@@ -210,6 +238,8 @@ static ani_status BindEventFunction(ani_env *env)
         ani_native_function {"configure", nullptr, reinterpret_cast<void *>(HiAppEventAni::Configure)},
         ani_native_function {"setEventParamSync",
             nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventParamSync)},
+        ani_native_function {"setEventConfigSync",
+            nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventConfigSync)},
         ani_native_function {"clearData", nullptr, reinterpret_cast<void *>(HiAppEventAni::ClearData)},
         ani_native_function {"setUserId", nullptr, reinterpret_cast<void *>(HiAppEventAni::SetUserId)},
         ani_native_function {"getUserId", nullptr, reinterpret_cast<void *>(HiAppEventAni::GetUserId)},

@@ -409,16 +409,25 @@ AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_array_ref arrayRef
     return GetArgType(env, static_cast<ani_object>(valueRef));
 }
 
-std::string HiAppEventAniUtil::ConfigOptionToString(ani_env *env, const std::string &key, ani_ref valueRef)
+std::string HiAppEventAniUtil::ConvertToString(ani_env *env, ani_ref valueRef)
 {
     if (env == nullptr) {
         return "";
     }
+    AniArgsType type = GetArgType(env, static_cast<ani_object>(valueRef));
     std::string result = "";
-    if (key == CONFIG_OPTION_DISABLE) {
-        result = HiAppEventAniUtil::ParseBoolValue(env, valueRef) ? "true" : "false";
-    } else if (key == CONFIG_OPTION_MAXSTORAGE) {
-        result = HiAppEventAniUtil::ParseStringValue(env, valueRef);
+    switch (type) {
+        case AniArgsType::ANI_BOOLEAN:
+            result = HiAppEventAniUtil::ParseBoolValue(env, valueRef) ? "true" : "false";
+            break;
+        case AniArgsType::ANI_NUMBER:
+            result = std::to_string(ParseNumberValue(env, valueRef));
+            break;
+        case AniArgsType::ANI_STRING:
+            result = HiAppEventAniUtil::ParseStringValue(env, valueRef);
+            break;
+        default:
+            break;
     }
     return result;
 }

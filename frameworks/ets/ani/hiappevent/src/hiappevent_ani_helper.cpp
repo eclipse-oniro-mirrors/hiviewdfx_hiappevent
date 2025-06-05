@@ -547,7 +547,7 @@ bool HiAppEventAniHelper::Configure(ani_env *env, ani_object configObj)
             continue;
         }
         if (!HiAppEventConfig::GetInstance().SetConfigurationItem(
-            key, HiAppEventAniUtil::ConfigOptionToString(env, key, valueRef))) {
+            key, HiAppEventAniUtil::ConvertToString(env, valueRef))) {
             std::string errMsg = "Invalid max storage quota value.";
             HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_MAX_STORAGE, errMsg);
             return false;

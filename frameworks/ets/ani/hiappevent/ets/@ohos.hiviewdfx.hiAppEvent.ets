@@ -191,6 +191,25 @@ export default namespace hiAppEvent {
         })
     }
 
+    native function setEventConfigSync(name: string, config: Record<string, ParamType>): Results;
+
+    export function setEventConfig(name: string, config: Record<string, ParamType>): Promise<void> {
+        return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
+            let cb = (): Results => { return setEventConfigSync(name, config); }
+            taskpool.execute(cb).then((ret: NullishType): void => {
+                let retError = new BusinessError<void>();
+                let setResults: Results = ret as Results;
+                if (setResults.code === 0) {
+                    resolve(undefined);
+                } else {
+                    retError.code = setResults.code as number;
+                    retError.message = setResults.message as string;
+                    reject(retError);
+                }
+            });
+        })
+    }
+
     export interface AppEventPackage {
         packageId: number;
         row: number;
