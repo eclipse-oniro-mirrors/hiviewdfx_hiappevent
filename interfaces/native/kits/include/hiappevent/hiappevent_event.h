@@ -153,6 +153,14 @@ extern "C" {
 #define EVENT_MAIN_THREAD_JANK "MAIN_THREAD_JANK"
 
 /**
+ * @brief app killed event.
+ *
+ * @since 20
+ * @version 1.0
+ */
+#define EVENT_APP_KILLED "APP_KILLED"
+
+/**
  * @brief OS domain.
  *
  * @since 12
