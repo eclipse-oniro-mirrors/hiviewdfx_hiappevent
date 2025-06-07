@@ -974,3 +974,34 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest024, TestSize.Level0)
     // set app uid
     setuid(TEST_UID);
 }
+
+/**
+ * @tc.name: HiAppEventInnerApiTest025
+ * @tc.desc: test ReportConfig ToString func.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest025, TestSize.Level0)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .debugMode = true,
+        .routeInfo = "test_routeInfo",
+        .appId = "test_appid",
+        .triggerCond = {
+            .row = 1,
+            .timeout = 0,
+            .onStartup = false,
+            .onBackground = false,
+        },
+        .userIdNames = {"test_id"},
+        .userPropertyNames = {"test_property"},
+        .eventConfigs = {{"test_domain", "test_name", true}, {"test_domain", "test_realtime"}},
+        .configId = 1,
+        .customConfigs = {{"str_key", "str_value"}, {"str_key1", "str_value1"}},
+        .configName = "test_configName",
+    };
+    std::string expectStr = std::string("{test_processor,1,test_routeInfo,test_appid,{1,0,0,0,0},[test_id],") +
+        "[test_property],[{test_domain,test_name,1},{test_domain,test_realtime,0}],1,[{str_key1,str_value1}," +
+        "{str_key,str_value}],test_configName}";
+    EXPECT_TRUE(config.ToString() == expectStr);
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include "app_event_observer_mgr.h"
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
+#include "processor_config_loader.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -79,6 +80,19 @@ int NdkAppEventProcessor::SetCustomConfig(const char* key, const char* value)
 int NdkAppEventProcessor::SetConfigId(int configId)
 {
     config_.configId = configId;
+    return CODE_SUCC;
+}
+
+int NdkAppEventProcessor::SetConfigName(const std::string& configName)
+{
+    config_.configName = configName;
+    HiAppEvent::ProcessorConfigLoader loader;
+    if (loader.LoadProcessorConfig(config_.name, config_.configName)) {
+        config_ = loader.GetReportConfig();
+    } else {
+        HILOG_WARN(LOG_CORE, "failed to load config content, configName:%{public}s", configName.c_str());
+        return CODE_FAILED;
+    }
     return CODE_SUCC;
 }
 

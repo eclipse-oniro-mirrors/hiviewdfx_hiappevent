@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,7 @@ int SetReportPolicy(struct HiAppEvent_Processor* processor, int periodReport, in
 int SetReportEvent(struct HiAppEvent_Processor* processor, const char* domain, const char* name, bool isRealTime);
 int SetCustomConfig(struct HiAppEvent_Processor* processor, const char* key, const char* value);
 int SetConfigId(struct HiAppEvent_Processor* processor, int configId);
+int SetConfigName(struct HiAppEvent_Processor* processor, const char* configName);
 int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * userIdNames, int size);
 int SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* const * userPropertyNames, int size);
 int64_t AddProcessor(struct HiAppEvent_Processor* processor);

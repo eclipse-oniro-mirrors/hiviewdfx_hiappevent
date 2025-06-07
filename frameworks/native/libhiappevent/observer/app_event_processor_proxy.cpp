@@ -51,13 +51,12 @@ std::string GetStr(const std::unordered_set<std::string>& strSet)
     if (strSet.empty()) {
         return "[]";
     }
-    std::stringstream strStream("[");
+    std::string resStr("[");
     for (const auto& str : strSet) {
-        strStream << str << ",";
+        resStr += str + ",";
     }
-    strStream.seekp(-1, std::ios_base::end); // -1 for delete ','
-    strStream << "]";
-    return strStream.str();
+    resStr.pop_back(); // for delete ','
+    return resStr + "]";
 }
 
 std::string GetStr(const std::vector<EventConfig>& eventConfigs)
@@ -65,13 +64,25 @@ std::string GetStr(const std::vector<EventConfig>& eventConfigs)
     if (eventConfigs.empty()) {
         return "[]";
     }
-    std::stringstream strStream("[");
+    std::string resStr("[");
     for (const auto& eventConfig : eventConfigs) {
-        strStream << eventConfig.ToString() << ",";
+        resStr += eventConfig.ToString() + ",";
     }
-    strStream.seekp(-1, std::ios_base::end); // -1 for delete ','
-    strStream << "]";
-    return strStream.str();
+    resStr.pop_back(); // for delete ','
+    return resStr + "]";
+}
+
+std::string GetStr(const std::unordered_map<std::string, std::string>& customConfigs)
+{
+    if (customConfigs.empty()) {
+        return "[]";
+    }
+    std::string resStr("[");
+    for (const auto& customConfig : customConfigs) {
+        resStr += "{" + customConfig.first + "," + customConfig.second + "}" + ",";
+    }
+    resStr.pop_back(); // for delete ','
+    return resStr +"]";
 }
 }
 
@@ -112,7 +123,8 @@ std::string ReportConfig::ToString() const
 {
     std::stringstream strStream;
     strStream << "{" << name << "," << debugMode << "," << routeInfo << "," << appId << "," << triggerCond.ToString()
-        << "," << GetStr(userIdNames) << "," << GetStr(userPropertyNames) << "," << GetStr(eventConfigs) << "}";
+        << "," << GetStr(userIdNames) << "," << GetStr(userPropertyNames) << "," << GetStr(eventConfigs) << ","
+        << configId << "," << GetStr(customConfigs) << "," << configName << "}";
     return strStream.str();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -366,6 +366,15 @@ int VerifyCustomConfigsOfReportConfig(ReportConfig& config)
     }
     return 0;
 }
+
+int VerifyConfigNameOfReportConfig(ReportConfig& config)
+{
+    if (!IsValidProcessorName(config.configName)) {
+        HILOG_WARN(LOG_CORE, "invalid configName=%{public}s", config.configName.c_str());
+        config.configName = "";
+    }
+    return 0;
+}
 }
 
 bool IsValidDomain(const std::string& eventDomain)
@@ -555,6 +564,11 @@ bool IsValidCustomConfig(const std::string& name, const std::string& value)
     return true;
 }
 
+bool IsValidConfigNameLength(const std::string& configName)
+{
+    return configName.length() > 0 && configName.length() <= MAX_LENGTH_OF_PROCESSOR_NAME;
+}
+
 int VerifyReportConfig(ReportConfig& config)
 {
     const VerifyReportConfigFunc verifyFuncs[] = {
@@ -567,6 +581,7 @@ int VerifyReportConfig(ReportConfig& config)
         VerifyEventConfigsOfReportConfig,
         VerifyConfigIdOfReportConfig,
         VerifyCustomConfigsOfReportConfig,
+        VerifyConfigNameOfReportConfig,
     };
     for (const auto verifyFunc : verifyFuncs) {
         if (verifyFunc(config) != 0) {

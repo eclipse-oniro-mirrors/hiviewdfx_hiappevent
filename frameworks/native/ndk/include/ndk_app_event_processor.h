@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,6 +33,7 @@ public:
     int SetReportEvent(const char* domain, const char* name, bool isRealTime);
     int SetCustomConfig(const char* key, const char* value);
     int SetConfigId(int configId);
+    int SetConfigName(const std::string& configName);
     int SetReportUserId(const char* const * userIdNames, int size);
     int SetReportUserProperty(const char* const * userPropertyNames, int size);
 
