@@ -34,7 +34,7 @@ ohos_source_set("hiappevent_utility") {
 
   external_deps = [
     "ffrt:libffrt",
-    "jsoncpp:jsoncpp",
+    "cJSON:cjson",
   ]
 
   part_name = "hiappevent"

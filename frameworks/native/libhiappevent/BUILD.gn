@@ -19,6 +19,7 @@ config("libhiappevent_source_config") {
   include_dirs = [
     "include",
     "load/include",
+    "utility/include",
     "../../../interfaces/native/inner_api/include",
     "../../../interfaces/native/kits/include",
   ]
@@ -64,7 +65,7 @@ ohos_shared_library("libhiappevent_base") {
     "hitrace:libhitracechain",
     "init:libbegetutil",
     "ipc:ipc_core",
-    "jsoncpp:jsoncpp",
+    "cJSON:cjson",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
