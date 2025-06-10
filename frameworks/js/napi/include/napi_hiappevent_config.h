@@ -15,19 +15,17 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_CONFIG_H
 #define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_HIAPPEVENT_CONFIG_H
 
-#include <map>
-
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+struct EventConfigPack;
 namespace NapiHiAppEventConfig {
 struct HiAppEventConfigAsyncContext {
     napi_async_work asyncWork {nullptr};
     napi_deferred deferred {nullptr};
-    std::map<std::string, std::string> eventConfigMap;
-    std::string name;
+    std::unique_ptr<EventConfigPack> eventConfigPack {nullptr};
     int result {0};
 };
 

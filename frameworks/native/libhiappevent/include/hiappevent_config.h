@@ -34,6 +34,7 @@ public:
     bool IsFreeSizeOverLimit();
     void RefreshFreeSize();
     int SetEventConfig(const std::string& name, const std::map<std::string, std::string>& eventConfig);
+    int SetCrashConfig(const std::map<uint8_t, uint32_t> &configMap);
 
 private:
     HiAppEventConfig() {}

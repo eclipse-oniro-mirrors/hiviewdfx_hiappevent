@@ -18,17 +18,41 @@
 #include <string>
 
 #include "hiappevent_config.h"
+#include "hilog/log.h"
+#include "napi_config_builder.h"
 #include "napi_error.h"
 #include "napi_util.h"
+
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
+
+#undef LOG_TAG
+#define LOG_TAG "NapiHiAppEventConfig"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventConfig {
 namespace {
+constexpr int ERROR_SET_FAILED = -1;
+constexpr const char* const APP_CRASH = "APP_CRASH";
+constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 const std::map<std::string, napi_valuetype> CONFIG_OPTION_MAP = {
     { "disable", napi_boolean },
     { "maxStorage", napi_string },
 };
+
+int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
+{
+    if (asyncContext->eventConfigPack->eventName == APP_CRASH) {
+        return HiAppEventConfig::GetInstance().SetCrashConfig(asyncContext->eventConfigPack->configUintMap);
+    } else if (asyncContext->eventConfigPack->eventName == MAIN_THREAD_JANK) {
+        return HiAppEventConfig::GetInstance().SetEventConfig(MAIN_THREAD_JANK,
+            asyncContext->eventConfigPack->configStringMap);
+    }
+    HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s",
+        asyncContext->eventConfigPack->eventName.c_str());
+    return ERROR_SET_FAILED;
+}
 }
 bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
 {
@@ -74,8 +98,8 @@ void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncConte
     napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
             HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
-            asyncContext->result =
-                HiAppEventConfig::GetInstance().SetEventConfig(asyncContext->name, asyncContext->eventConfigMap);
+            asyncContext->result = asyncContext->eventConfigPack->isValid ? SetEventConfigSync(asyncContext) :
+                ERROR_SET_FAILED;
         },
         [](napi_env env, napi_status status, void* data) {
             HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
