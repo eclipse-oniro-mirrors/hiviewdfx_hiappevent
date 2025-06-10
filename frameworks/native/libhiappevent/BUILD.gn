@@ -33,7 +33,6 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   sources = [
-    "app_crash_config.cpp",
     "app_event_util.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
