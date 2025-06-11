@@ -18,6 +18,7 @@
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "napi_app_event_holder.h"
+#include "napi_config_builder.h"
 #include "napi_error.h"
 #include "napi_hiappevent_builder.h"
 #include "napi_hiappevent_config.h"
@@ -40,30 +41,6 @@ using namespace OHOS::HiviewDFX;
 
 namespace {
 constexpr size_t MAX_PARAM_NUM = 4;
-constexpr size_t CONFIG_PARAM_NUM = 2;
-constexpr size_t INDEX_OF_NAME_CONFIG = 0;
-constexpr size_t INDEX_OF_VALUE_CONFIG = 1;
-
-int BuildEventConfig(const napi_env env, const napi_value params[], std::map<std::string, std::string> &eventConfigMap)
-{
-    if (!NapiUtil::IsString(env, params[INDEX_OF_NAME_CONFIG])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
-        return ErrorCode::ERROR_INVALID_PARAM_VALUE_TYPE;
-    }
-    if (!NapiUtil::IsObject(env, params[INDEX_OF_VALUE_CONFIG])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("value", "object"));
-        return ErrorCode::ERROR_INVALID_PARAM_VALUE_TYPE;
-    }
-
-    std::vector<std::string> configKeys;
-    NapiUtil::GetPropertyNames(env, params[INDEX_OF_VALUE_CONFIG], configKeys);
-    for (const auto &configkey : configKeys) {
-        napi_value configValue = NapiUtil::GetProperty(env, params[INDEX_OF_VALUE_CONFIG], configkey);
-        std::string configValueString = NapiUtil::ConvertToString(env, configValue);
-        eventConfigMap[configkey] = configValueString;
-    }
-    return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
-}
 }
 
 static napi_value AddProcessor(napi_env env, napi_callback_info info)
@@ -303,16 +280,10 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
-    if (paramNum < CONFIG_PARAM_NUM) {
-        HILOG_ERROR(LOG_CORE, "the number of params for setEventConfig expect %{public}zu, but got %{public}zu.",
-            CONFIG_PARAM_NUM, paramNum);
-        return nullptr;
-    }
-
-    std::map<std::string, std::string> eventConfigMap;
-    int result = BuildEventConfig(env, params, eventConfigMap);
-    if (result != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL || eventConfigMap.empty()) {
-        HILOG_ERROR(LOG_CORE, "the param type is invalid or the config is empty.");
+    NapiConfigBuilder builder;
+    auto eventConfigPack = builder.BuildEventConfig(env, params, paramNum);
+    if (eventConfigPack == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to build eventConfigPack.");
         return nullptr;
     }
 
@@ -321,8 +292,7 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
     }
-    asyncContext->eventConfigMap = eventConfigMap;
-    asyncContext->name = NapiUtil::GetString(env, params[INDEX_OF_NAME_CONFIG]);
+    asyncContext->eventConfigPack = std::move(eventConfigPack);
 
     napi_value promise = nullptr;
     if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
