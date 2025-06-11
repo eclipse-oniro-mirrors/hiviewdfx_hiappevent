@@ -34,21 +34,27 @@ const std::string TEST_USER_PROP_VALUE = "testUserProperty";
 
 class HiAppEventUserInfoTest : public testing::Test {
 public:
+    static void SetUpTestCase();
+    static void TearDownTestCase();
     void SetUp();
-    void TearDown();
+    void TearDown() {}
 };
 
-void HiAppEventUserInfoTest::SetUp()
+void HiAppEventUserInfoTest::SetUpTestCase()
 {
     HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
     (void)AppEventStore::GetInstance().InitDbStore();
-    HiAppEvent::UserInfo::GetInstance().RemoveUserId(TEST_USER_ID_NAME);
-    HiAppEvent::UserInfo::GetInstance().RemoveUserProperty(TEST_USER_PROP_NAME);
 }
 
-void HiAppEventUserInfoTest::TearDown()
+void HiAppEventUserInfoTest::TearDownTestCase()
 {
     (void)AppEventStore::GetInstance().DestroyDbStore();
+}
+
+void HiAppEventUserInfoTest::SetUp()
+{
+    HiAppEvent::UserInfo::GetInstance().RemoveUserId(TEST_USER_ID_NAME);
+    HiAppEvent::UserInfo::GetInstance().RemoveUserProperty(TEST_USER_PROP_NAME);
 }
 }
 
