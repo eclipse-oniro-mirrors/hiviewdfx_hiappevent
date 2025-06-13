@@ -22,7 +22,6 @@
 #include <sstream>
 #include <string>
 
-#include "app_crash_config.h"
 #include "app_event_observer_mgr.h"
 #include "application_context.h"
 #include "context.h"
@@ -45,8 +44,8 @@ namespace {
 constexpr const char* const DISABLE = "disable";
 constexpr const char* const MAX_STORAGE = "max_storage";
 constexpr const char* const APP_EVENT_DIR = "/hiappevent/";
-constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr const char* const APP_CRASH = "APP_CRASH";
+constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
@@ -55,6 +54,8 @@ constexpr int DECIMAL_UNIT = 10;
 constexpr int64_t FREE_SIZE_LIMIT = STORAGE_UNIT_MB * 300;
 
 std::mutex g_mutex;
+
+extern "C" int DFX_SetCrashLogConfig(uint8_t type, uint32_t value) __attribute__((weak));
 
 std::string TransUpperToUnderscoreAndLower(const std::string& str)
 {
@@ -288,11 +289,22 @@ int HiAppEventConfig::SetEventConfig(const std::string& name, const std::map<std
 {
     if (name == MAIN_THREAD_JANK) {
         return Watchdog::GetInstance().SetEventConfig(configMap);
-    } else if (name == APP_CRASH) {
-        return SetCrashEventConfig(configMap);
     }
     HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s", name.c_str());
     return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+}
+
+int HiAppEventConfig::SetCrashConfig(const std::map<uint8_t, uint32_t> &configMap)
+{
+    if (DFX_SetCrashLogConfig == nullptr) {
+        HILOG_ERROR(LOG_CORE, "set crash log config func was not found.");
+        return ErrorCode::ERROR_UNKNOWN;
+    }
+ 
+    for (const auto& [key, value] : configMap) {
+        (void)DFX_SetCrashLogConfig(key, value);
+    }
+    return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
