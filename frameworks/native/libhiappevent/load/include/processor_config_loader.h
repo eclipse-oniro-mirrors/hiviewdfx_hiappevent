@@ -25,7 +25,7 @@ namespace HiAppEvent {
 class ProcessorConfigLoader {
 public:
     bool LoadProcessorConfig(const std::string& processorName, const std::string& configName);
-    ReportConfig GetReportConfig();
+    const ReportConfig& GetReportConfig() const;
     ProcessorConfigLoader();
     ~ProcessorConfigLoader();
 

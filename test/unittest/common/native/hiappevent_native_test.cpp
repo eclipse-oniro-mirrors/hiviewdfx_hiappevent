@@ -1042,14 +1042,15 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest033, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest034
- * @tc.desc: check the interface of SetConfigName.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest034, TestSize.Level0)
 {
     auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    ASSERT_TRUE(processor != nullptr);
-    ASSERT_EQ(SetConfigName(processor, "SDK_OCG"), ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(processor != nullptr);
+    int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
+    EXPECT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
@@ -1062,14 +1063,15 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest034, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest035
- * @tc.desc: check the interface of SetConfigName with undefined configName.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName with undefined configName.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
 {
     auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    ASSERT_TRUE(processor != nullptr);
-    ASSERT_EQ(SetConfigName(processor, "undefined"), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    EXPECT_TRUE(processor != nullptr);
+    int res = OH_HiAppEvent_SetConfigName(processor, "undefined");
+    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
@@ -1080,28 +1082,30 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest036
- * @tc.desc: check the interface of SetConfigName with invalid processor.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName with invalid processor.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest036, TestSize.Level0)
 {
     auto processor = CreateProcessor("");
-    ASSERT_TRUE(processor == nullptr);
-    ASSERT_EQ(SetConfigName(processor, "SDK_OCG"), ErrorCode::ERROR_INVALID_PROCESSOR);
+    EXPECT_TRUE(processor == nullptr);
+    int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
+    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PROCESSOR);
     DestroyProcessor(processor);
 }
 
 /**
  * @tc.name: HiAppEventNDKTest037
- * @tc.desc: check the interface of SetConfigName with empty configName.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName with empty configName.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
 {
     auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    ASSERT_TRUE(processor != nullptr);
+    EXPECT_TRUE(processor != nullptr);
+    int res = OH_HiAppEvent_SetConfigName(processor, "");
+    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
 
-    ASSERT_EQ(SetConfigName(processor, ""), ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
     std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
@@ -1112,15 +1116,16 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest038
- * @tc.desc: check the interface of SetConfigName when configName has special char.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName when configName has special char.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
 {
     auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    ASSERT_TRUE(processor != nullptr);
+    EXPECT_TRUE(processor != nullptr);
+    int res = OH_HiAppEvent_SetConfigName(processor, "xxx***");
+    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    ASSERT_EQ(SetConfigName(processor, "xxx***"), ErrorCode::ERROR_INVALID_PARAM_VALUE);
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
     std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
@@ -1131,15 +1136,16 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest039
- * @tc.desc: check the interface of SetConfigName when configName beginner is num.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName when configName beginner is num.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
 {
     auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    ASSERT_TRUE(processor != nullptr);
+    EXPECT_TRUE(processor != nullptr);
+    int res = OH_HiAppEvent_SetConfigName(processor, "123_processor");
+    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    ASSERT_EQ(SetConfigName(processor, "123_processor"), ErrorCode::ERROR_INVALID_PARAM_VALUE);
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
     std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
@@ -1150,16 +1156,17 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest040
- * @tc.desc: check the interface of SetConfigName when configName length is over range.
+ * @tc.desc: check the interface of OH_HiAppEvent_SetConfigName when configName length is over range.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest040, TestSize.Level0)
 {
     auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    ASSERT_TRUE(processor != nullptr);
-
+    EXPECT_TRUE(processor != nullptr);
     std::string longInvalidName(256 + 1, 'a');
-    ASSERT_EQ(SetConfigName(processor, longInvalidName.c_str()), ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
+    int res = OH_HiAppEvent_SetConfigName(processor, longInvalidName.c_str());
+    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
+
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
     std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";

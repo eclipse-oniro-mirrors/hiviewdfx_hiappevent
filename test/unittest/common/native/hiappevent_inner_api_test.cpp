@@ -1005,3 +1005,132 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest025, TestSize.Level0)
         "{str_key,str_value}],test_configName}";
     EXPECT_TRUE(config.ToString() == expectStr);
 }
+
+/**
+ * @tc.name: HiAppEventInnerApiTest026
+ * @tc.desc: Adding a processor with valid configName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest026, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configName = "SDK_OCG",
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    EXPECT_GT(processorId, 0);
+ 
+    EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+ 
+/**
+ * @tc.name: HiAppEventInnerApiTest027
+ * @tc.desc: Adding an invalid processor with invalid configName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest027, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configName = "undefine",
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    EXPECT_GT(processorId, 0);
+ 
+    ReportConfig realConfig;
+    EXPECT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorId, realConfig), 0);
+    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],undefine}";
+    EXPECT_EQ(realConfig.ToString(), expectStr);
+ 
+    EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+ 
+/**
+ * @tc.name: HiAppEventInnerApiTest028
+ * @tc.desc: Adding an invalid processor with invalid configName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest028, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configName = "",
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    EXPECT_GT(processorId, 0);
+ 
+    ReportConfig realConfig;
+    EXPECT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorId, realConfig), 0);
+    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+    EXPECT_EQ(realConfig.ToString(), expectStr);
+ 
+    EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+ 
+/**
+ * @tc.name: HiAppEventInnerApiTest029
+ * @tc.desc: Adding an invalid processor with invalid configName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest029, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configName = "xxx***",
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    EXPECT_GT(processorId, 0);
+ 
+    ReportConfig realConfig;
+    EXPECT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorId, realConfig), 0);
+    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+    EXPECT_EQ(realConfig.ToString(), expectStr);
+ 
+    EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+ 
+/**
+ * @tc.name: HiAppEventInnerApiTest030
+ * @tc.desc: Adding an invalid processor with invalid configName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest030, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+        .configName = "123_processor",
+    };
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    EXPECT_GT(processorId, 0);
+ 
+    ReportConfig realConfig;
+    EXPECT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorId, realConfig), 0);
+    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+    EXPECT_EQ(realConfig.ToString(), expectStr);
+ 
+    EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}
+ 
+/**
+ * @tc.name: HiAppEventInnerApiTest031
+ * @tc.desc: Adding an invalid processor with invalid configName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest031, TestSize.Level1)
+{
+    constexpr size_t limitLen = 256 + 1;
+    ReportConfig config = {
+        .name = "test_processor",
+        .configName = std::string(limitLen, 'a'),
+    };
+    
+    int64_t processorId = AppEventProcessorMgr::AddProcessor(config);
+    EXPECT_GT(processorId, 0);
+ 
+    ReportConfig realConfig;
+    EXPECT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorId, realConfig), 0);
+    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+    EXPECT_EQ(realConfig.ToString(), expectStr);
+ 
+    EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
+}

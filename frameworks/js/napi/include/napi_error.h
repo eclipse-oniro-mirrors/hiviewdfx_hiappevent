@@ -46,6 +46,8 @@ constexpr int ERR_INVALID_MAX_STORAGE = 11103001;
 // business error of AppEventPackageHolder.setSize function
 constexpr int ERR_INVALID_SIZE = 11104001;
 
+// business error for incorrect parameter length or format
+constexpr int ERR_INVALID_PARAM_VALUE = 11105001;
 } // namespace NapiError
 } // namespace HiviewDFX
 } // namespace OHOS
