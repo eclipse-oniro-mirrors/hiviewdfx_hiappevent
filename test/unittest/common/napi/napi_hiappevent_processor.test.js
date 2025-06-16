@@ -54,6 +54,10 @@ describe('HiAppEventJsTest', function () {
         return { code: "401", message: message };
     }
 
+    function createError3(message) {
+        return { code: "11105001", message: message };
+    }
+
     function assertErrorEqual(actualErr, expectErr) {
         expect(actualErr.code).assertEqual(expectErr.code)
         expect(actualErr.message).assertEqual(expectErr.message)
@@ -571,8 +575,8 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventProcessorTest009_1', 0, function () {
-        let expectErr = createError2("Invalid param value for add processor from config.");
-        hiAppEvent.addProcessorFromConfig("testProcessorName").then((processorId) => {
+        let expectErr = createError3("Invalid param value for add processor from config.");
+        hiAppEvent.addProcessorFromConfig("undefined").then((processorId) => {
             expect(processorId).assertLarger(0);
             hiAppEvent.removeProcessor(processorId);
         }).catch((err) => {
@@ -588,7 +592,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventProcessorTest009_2', 0, function () {
-        let expectErr = createError2("Invalid param value for add processor from config.");
+        let expectErr = createError3("Invalid param value for add processor from config.");
         hiAppEvent.addProcessorFromConfig("").then((processorId) => {
             expect(processorId).assertLarger(0);
             hiAppEvent.removeProcessor(processorId);
@@ -647,7 +651,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventProcessorTest009_5', 0, function () {
-        let expectErr = createError2("Invalid param value for add processor from config.");
+        let expectErr = createError3("Invalid param value for add processor from config.");
         let processorName = 'a'.repeat(256 +1);
         hiAppEvent.addProcessorFromConfig(processorName).then((processorId) => {
             expect(processorId).assertLarger(0);
@@ -658,6 +662,40 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number: HiAppEventProcessorTest009_6
+     * @tc.name: HiAppEventProcessorTest
+     * @tc.desc: test addProcessorFromConfig when processorName has special char.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+        it('HiAppEventProcessorTest009_6', 0, function () {
+            let expectErr = createError3("Invalid param value for add processor from config.");
+            hiAppEvent.addProcessorFromConfig("xxx***").then((processorId) => {
+                expect(processorId).assertLarger(0);
+                hiAppEvent.removeProcessor(processorId);
+            }).catch((err) => {
+                assertErrorEqual(err, expectErr);
+            })
+        });
+
+        /**
+         * @tc.number: HiAppEventProcessorTest009_7
+         * @tc.name: HiAppEventProcessorTest
+         * @tc.desc: test addProcessorFromConfig when processorName beginner is num.
+         * @tc.type: FUNC
+         * @tc.require: issueI8U2VO
+         */
+        it('HiAppEventProcessorTest009_7', 0, function () {
+            let expectErr = createError3("Invalid param value for add processor from config.");
+            hiAppEvent.addProcessorFromConfig("123_processor").then((processorId) => {
+                expect(processorId).assertLarger(0);
+                hiAppEvent.removeProcessor(processorId);
+            }).catch((err) => {
+                assertErrorEqual(err, expectErr);
+            })
+        });
+
+    /**
      * @tc.number: HiAppEventProcessorTest010_1
      * @tc.name: HiAppEventProcessorTest
      * @tc.desc: test addProcessorFromConfig when configName is undefined.
@@ -665,8 +703,8 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventProcessorTest010_1', 0, function () {
-        let expectErr = createError2("Invalid param value for add processor from config.");
-        hiAppEvent.addProcessorFromConfig("ha_app_event", "testConfigName").then((processorId) => {
+        let expectErr = createError3("Invalid param value for add processor from config.");
+        hiAppEvent.addProcessorFromConfig("ha_app_event", "undefined").then((processorId) => {
             expect(processorId).assertLarger(0);
             hiAppEvent.removeProcessor(processorId);
         }).catch((err) => {
@@ -682,7 +720,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventProcessorTest010_2', 0, function () {
-        let expectErr = createError2("Invalid param value for add processor from config.");
+        let expectErr = createError3("Invalid param value for add processor from config.");
         hiAppEvent.addProcessorFromConfig("ha_app_event", "").then((processorId) => {
             expect(processorId).assertLarger(0);
             hiAppEvent.removeProcessor(processorId);
@@ -741,9 +779,43 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventProcessorTest010_5', 0, function () {
-        let expectErr = createError2("Invalid param value for add processor from config.");
+        let expectErr = createError3("Invalid param value for add processor from config.");
         let configName = 'a'.repeat(256 +1);
         hiAppEvent.addProcessorFromConfig("ha_app_event", configName).then((processorId) => {
+            expect(processorId).assertLarger(0);
+            hiAppEvent.removeProcessor(processorId);
+        }).catch((err) => {
+            assertErrorEqual(err, expectErr);
+        })
+    });
+
+    /**
+     * @tc.number: HiAppEventProcessorTest010_6
+     * @tc.name: HiAppEventProcessorTest
+     * @tc.desc: test addProcessorFromConfig when configName has special char.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventProcessorTest010_6', 0, function () {
+        let expectErr = createError3("Invalid param value for add processor from config.");
+        hiAppEvent.addProcessorFromConfig("ha_app_event", "xxx***").then((processorId) => {
+            expect(processorId).assertLarger(0);
+            hiAppEvent.removeProcessor(processorId);
+        }).catch((err) => {
+            assertErrorEqual(err, expectErr);
+        })
+    });
+
+    /**
+     * @tc.number: HiAppEventProcessorTest010_7
+     * @tc.name: HiAppEventProcessorTest
+     * @tc.desc: test addProcessorFromConfig when configName beginner is num.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('HiAppEventProcessorTest010_7', 0, function () {
+        let expectErr = createError3("Invalid param value for add processor from config.");
+        hiAppEvent.addProcessorFromConfig("ha_app_event", "123_processor").then((processorId) => {
             expect(processorId).assertLarger(0);
             hiAppEvent.removeProcessor(processorId);
         }).catch((err) => {

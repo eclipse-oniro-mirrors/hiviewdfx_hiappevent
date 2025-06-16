@@ -502,7 +502,7 @@ void AddProcessorFromConfig(const napi_env env, AddProcessorFromConfigAsyncConte
                     napi_resolve_deferred(env, asyncContext->deferred, result);
                 } else {
                     std::string ErrMsg = "Invalid param value for add processor from config.";
-                    result = NapiUtil::CreateError(env, NapiError::ERR_PARAM, ErrMsg);
+                    result = NapiUtil::CreateError(env, NapiError::ERR_INVALID_PARAM_VALUE, ErrMsg);
                     napi_reject_deferred(env, asyncContext->deferred, result);
                 }
             }

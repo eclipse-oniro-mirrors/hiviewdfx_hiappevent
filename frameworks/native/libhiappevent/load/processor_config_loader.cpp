@@ -62,7 +62,7 @@ struct ConfigProp {
 class ProcessorConfigLoader::Impl {
 public:
     bool LoadProcessorConfig(const std::string& processorName, const std::string& configName);
-    ReportConfig GetReportConfig();
+    const ReportConfig& GetReportConfig() const;
 
 private:
     int ParseRouteInfoProp();
@@ -79,11 +79,12 @@ private:
     int ParseCustomConfigsProp();
 
     bool ParseProcessorConfig();
-    int ParseStringProp(const std::string& key, std::string& out, std::function<bool(std::string)> validationFunc);
+    int ParseStringProp(const std::string& key, std::string& out,
+            const std::function<bool(std::string)>& validationFunc);
     int ParseBoolProp(const std::string& key, bool& out);
-    int ParseIntProp(const std::string& key, int& out, std::function<bool(int)> validationFunc);
+    int ParseIntProp(const std::string& key, int& out, const std::function<bool(int)>& validationFunc);
     int ParseUnorderedSetProp(const std::string& key, std::unordered_set<std::string>& out,
-        std::function<bool(std::string)> validationFunc);
+        const std::function<bool(std::string)>& validationFunc);
     int ParseConfigReportProp(const Json::Value& eventConfig, HiAppEvent::EventConfig& reportConf);
 
 private:
@@ -97,7 +98,7 @@ ProcessorConfigLoader::ProcessorConfigLoader()
 
 ProcessorConfigLoader::~ProcessorConfigLoader() = default;
 
-ReportConfig ProcessorConfigLoader::GetReportConfig()
+const ReportConfig& ProcessorConfigLoader::GetReportConfig() const
 {
     return impl_->GetReportConfig();
 }
@@ -108,7 +109,7 @@ bool ProcessorConfigLoader::LoadProcessorConfig(const std::string& processorName
 }
 
 int ProcessorConfigLoader::Impl::ParseStringProp(const std::string& key, std::string& out,
-    std::function<bool(std::string)> validationFunc)
+    const std::function<bool(std::string)>& validationFunc)
 {
     if (!jsonConfig_.isMember(key)) {
         out = "";
@@ -134,7 +135,8 @@ int ProcessorConfigLoader::Impl::ParseBoolProp(const std::string& key, bool& out
     return ERR_CODE_SUCC;
 }
 
-int ProcessorConfigLoader::Impl::ParseIntProp(const std::string& key, int& out, std::function<bool(int)> validationFunc)
+int ProcessorConfigLoader::Impl::ParseIntProp(const std::string& key, int& out,
+    const std::function<bool(int)>& validationFunc)
 {
     if (!jsonConfig_.isMember(key)) {
         out = 0;
@@ -148,7 +150,7 @@ int ProcessorConfigLoader::Impl::ParseIntProp(const std::string& key, int& out, 
 }
 
 int ProcessorConfigLoader::Impl::ParseUnorderedSetProp(const std::string& key, std::unordered_set<std::string>& out,
-    std::function<bool(std::string)> validationFunc)
+    const std::function<bool(std::string)>& validationFunc)
 {
     std::unordered_set<std::string> curSet;
     if (!jsonConfig_.isMember(key)) {
@@ -353,7 +355,7 @@ bool ProcessorConfigLoader::Impl::LoadProcessorConfig(const std::string& process
     return ParseProcessorConfig();
 }
 
-ReportConfig ProcessorConfigLoader::Impl::GetReportConfig()
+const ReportConfig& ProcessorConfigLoader::Impl::GetReportConfig() const
 {
     return conf_;
 }
