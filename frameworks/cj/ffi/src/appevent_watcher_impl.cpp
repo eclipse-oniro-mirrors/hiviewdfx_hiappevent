@@ -408,7 +408,7 @@ void CreateValueByJson(CParameters &retValue, const cJSON *jsonValue)
         CreatArr(retValue, jsonValue);
     } else if (EventJsonUtil::CJsonIsInt(jsonValue)) {
         CreatElmInt(retValue, jsonValue);
-    } else if (EventJsonUtil::CJsonIsBool(jsonValue)) {
+    } else if (cJSON_IsBool(jsonValue)) {
         CreatElmBool(retValue, jsonValue);
     } else if (cJSON_IsNumber(jsonValue)) {
         CreatElmDou(retValue, jsonValue);

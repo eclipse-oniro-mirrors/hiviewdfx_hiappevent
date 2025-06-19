@@ -23,7 +23,10 @@ bool CJsonIsInt(const cJSON* item)
         return false;
     }
     double value = item->valuedouble;
-    return value == static_cast<int32_t>(value);
+    if (value > static_cast<double>(INT32_MIN) && value < static_cast<double>(INT32_MAX)) {
+        return value == static_cast<int32_t>(value);
+    }
+    return false;
 }
 
 bool CJsonIsUint(const cJSON *item)
@@ -32,7 +35,10 @@ bool CJsonIsUint(const cJSON *item)
         return false;
     }
     double value = item->valuedouble;
-    return value == static_cast<uint32_t>(value);
+    if (item->valueint >= 0 && value < static_cast<double>(UINT32_MAX)) {
+        return value == static_cast<uint32_t>(value);
+    }
+    return false;
 }
 
 bool CJsonIsInt64(const cJSON *item)
@@ -41,18 +47,16 @@ bool CJsonIsInt64(const cJSON *item)
         return false;
     }
     double value = item->valuedouble;
-    return value == static_cast<int64_t>(value);
-}
-
-bool CJsonIsBool(const cJSON* item)
-{
-    return item && cJSON_IsBool(item);
+    if (value > static_cast<double>(INT64_MIN) && value < static_cast<double>(INT64_MAX)) {
+        return value == static_cast<int64_t>(value);
+    }
+    return false;
 }
 
 uint32_t ParseUInt32(const cJSON *root, const std::string& key)
 {
     cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (item && CJsonIsUint(item)) {
+    if (CJsonIsUint(item)) {
         return static_cast<uint32_t>(item->valuedouble);
     }
     return 0;
@@ -61,7 +65,7 @@ uint32_t ParseUInt32(const cJSON *root, const std::string& key)
 int ParseInt(const cJSON *root, const std::string& key)
 {
     cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (item && CJsonIsInt(item)) {
+    if (CJsonIsInt(item)) {
         return static_cast<int32_t>(item->valuedouble);
     }
     return 0;
@@ -70,7 +74,7 @@ int ParseInt(const cJSON *root, const std::string& key)
 std::string ParseString(const cJSON *root, const std::string& key)
 {
     cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (item && cJSON_IsString(item)) {
+    if (cJSON_IsString(item)) {
         return item->valuestring;
     }
     return "";

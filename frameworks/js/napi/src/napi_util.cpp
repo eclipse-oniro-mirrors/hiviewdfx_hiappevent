@@ -541,7 +541,7 @@ std::string CreateErrMsg(const std::string& name, const napi_valuetype type)
 
 napi_value CreateBaseValueByJson(const napi_env env, const cJSON *jsonValue)
 {
-    if (EventJsonUtil::CJsonIsBool(jsonValue)) {
+    if (cJSON_IsBool(jsonValue)) {
         return CreateBoolean(env, cJSON_IsTrue(jsonValue));
     }
     if (EventJsonUtil::CJsonIsInt(jsonValue)) {

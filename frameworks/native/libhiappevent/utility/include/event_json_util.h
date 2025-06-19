@@ -26,7 +26,6 @@ namespace EventJsonUtil {
 bool CJsonIsInt(const cJSON* item);
 bool CJsonIsUint(const cJSON *item);
 bool CJsonIsInt64(const cJSON *item);
-bool CJsonIsBool(const cJSON *item);
 uint32_t ParseUInt32(const cJSON *root, const std::string& key);
 int ParseInt(const cJSON *root, const std::string& key);
 std::string ParseString(const cJSON *root, const std::string& key);
