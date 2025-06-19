@@ -20,7 +20,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "json/json.h"
+#include "cJSON.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
@@ -81,8 +81,8 @@ std::string CreateErrMsg(const std::string& name);
 std::string CreateErrMsg(const std::string& name, const std::string& type);
 std::string CreateErrMsg(const std::string& name, const napi_valuetype type);
 
-napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValue);
-napi_value CreateValueByJson(napi_env env, const Json::Value& jsonValue);
+napi_value CreateBaseValueByJson(const napi_env env, const cJSON *jsonValue);
+napi_value CreateValueByJson(napi_env env, const cJSON *jsonValue);
 napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr);
 napi_value CreateEventInfo(napi_env env, std::shared_ptr<AppEventPack> event);
 napi_value CreateEventInfoArray(napi_env env, const std::vector<std::shared_ptr<AppEventPack>>& events);

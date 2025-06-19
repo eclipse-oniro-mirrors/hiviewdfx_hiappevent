@@ -14,7 +14,10 @@
 import("//build/ohos.gni")
 
 ohos_shared_library("hiappevent") {
-  include_dirs = [ "include/" ]
+  include_dirs = [
+    "include/",
+    "../../../frameworks/native/libhiappevent/utility/include/",
+  ]
 
   sources = [
     "./src/napi_hiappevent_builder.cpp",
@@ -30,7 +33,7 @@ ohos_shared_library("hiappevent") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "jsoncpp:jsoncpp",
+    "cJSON:cjson",
     "napi:ace_napi",
   ]
 
@@ -69,7 +72,7 @@ ohos_shared_library("hiappevent_v9") {
     "c_utils:utils",
     "ffrt:libffrt",
     "hilog:libhilog",
-    "jsoncpp:jsoncpp",
+    "cJSON:cjson",
     "napi:ace_napi",
     "relational_store:native_rdb",
   ]

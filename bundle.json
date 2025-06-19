@@ -36,7 +36,7 @@
         "relational_store",
         "samgr",
         "storage_service",
-        "jsoncpp",
+        "cJSON",
         "runtime_core"
       ]
     },
