@@ -26,22 +26,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct ParamArray {
-    std::vector<bool> boolArray;
-    std::vector<double> numberArray;
-    std::vector<std::string> stringArray;
-    std::vector<int64_t> bigintArray;
-};
-
-enum AniArgsType {
-    ANI_UNKNOWN = -1,
-    ANI_INT = 0,
-    ANI_BOOLEAN = 1,
-    ANI_NUMBER = 2,
-    ANI_STRING = 3,
-    ANI_UNDEFINED = 5,
-};
-
 class HiAppEventAniHelper {
 public:
     bool AddProcessor(ani_env *env, ani_object processor, int64_t &out);
