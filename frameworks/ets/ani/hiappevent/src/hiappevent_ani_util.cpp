@@ -22,6 +22,14 @@
 #define LOG_TAG "HIAPPEVENT_ANI_UTIL"
 
 using namespace OHOS::HiviewDFX;
+namespace {
+const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
+    {CLASS_NAME_INT, AniArgsType::ANI_INT},
+    {CLASS_NAME_BOOLEAN, AniArgsType::ANI_BOOLEAN},
+    {CLASS_NAME_DOUBLE, AniArgsType::ANI_NUMBER},
+    {CLASS_NAME_STRING, AniArgsType::ANI_STRING},
+};
+}
 
 std::string HiAppEventAniUtil::CreateErrMsg(const std::string& name)
 {
@@ -224,4 +232,133 @@ void HiAppEventAniUtil::ThrowAniError(ani_env *env, int32_t code, const std::str
     if (env->ThrowError(static_cast<ani_error>(error)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "throwError ani_error object failed");
     }
+}
+
+AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)
+{
+    if (env == nullptr) {
+        return AniArgsType::ANI_UNKNOWN;
+    }
+    if (HiAppEventAniUtil::IsRefUndefined(env, static_cast<ani_ref>(elementObj))) {
+        return AniArgsType::ANI_UNDEFINED;
+    }
+    for (const auto &objType : OBJECT_TYPE) {
+        ani_class cls {};
+        if (env->FindClass(objType.first, &cls) != ANI_OK) {
+            continue;
+        }
+        ani_boolean isInstance = ANI_FALSE;
+        if (env->Object_InstanceOf(elementObj, cls, &isInstance) != ANI_OK) {
+            continue;
+        }
+        if (static_cast<bool>(isInstance)) {
+            return objType.second;
+        }
+    }
+    return AniArgsType::ANI_UNKNOWN;
+}
+
+AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_ref arrayRef)
+{
+    if (env == nullptr) {
+        return AniArgsType::ANI_UNKNOWN;
+    }
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return AniArgsType::ANI_UNDEFINED;
+    }
+    AniArgsType type = AniArgsType::ANI_NULL; // note: empty array returns null type
+    for (ani_size i = 0; i < len; ++i) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            return AniArgsType::ANI_UNDEFINED;
+        }
+        if (i == 0) {
+            type = GetArgType(env, static_cast<ani_object>(element));
+            continue;
+        }
+        if (type != GetArgType(env, static_cast<ani_object>(element))) {
+            HILOG_ERROR(LOG_CORE, "array has different element types");
+            return AniArgsType::ANI_UNDEFINED;
+        }
+    }
+    return type;
+}
+
+std::vector<bool> HiAppEventAniUtil::GetBooleans(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<bool> bools;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return bools;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        bools.emplace_back(HiAppEventAniUtil::ParseBoolValue(env, element));
+    }
+    return bools;
+}
+
+std::vector<double> HiAppEventAniUtil::GetDoubles(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<double> doubles;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return doubles;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        doubles.emplace_back(HiAppEventAniUtil::ParseNumberValue(env, element));
+    }
+    return doubles;
+}
+
+std::vector<std::string> HiAppEventAniUtil::GetStrings(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<std::string> strs;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return strs;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        strs.emplace_back(HiAppEventAniUtil::ParseStringValue(env, element));
+    }
+    return strs;
+}
+
+std::vector<int> HiAppEventAniUtil::GetInts(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<int> ints;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return ints;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        ints.emplace_back(HiAppEventAniUtil::ParseIntValue(env, element));
+    }
+    return ints;
 }

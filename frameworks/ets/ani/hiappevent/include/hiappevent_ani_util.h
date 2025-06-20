@@ -26,11 +26,22 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+enum AniArgsType {
+    ANI_UNKNOWN = -1,
+    ANI_INT = 0,
+    ANI_BOOLEAN = 1,
+    ANI_NUMBER = 2,
+    ANI_STRING = 3,
+    ANI_NULL = 4,
+    ANI_UNDEFINED = 5,
+};
 class HiAppEventAniUtil {
 public:
     static std::string CreateErrMsg(const std::string &name);
     static bool IsArray(ani_env *env, ani_object object);
     static bool IsRefUndefined(ani_env *env, ani_ref ref);
+    static AniArgsType GetArgType(ani_env *env, ani_object elementObj);
+    static AniArgsType GetArrayType(ani_env *env, ani_ref arrayRef);
     static std::string ParseStringValue(ani_env *env, ani_ref aniStrRef);
     static int32_t ParseIntValue(ani_env *env, ani_ref elementRef);
     static bool ParseBoolValue(ani_env *env, ani_ref elementRef);
@@ -39,6 +50,10 @@ public:
     static void ParseRecord(ani_env *env, ani_ref recordRef, std::map<std::string, ani_ref> &recordResult);
     static ani_ref GetProperty(ani_env *env, ani_object object, const std::string &name);
     static void ThrowAniError(ani_env *env, int32_t code, const std::string &message);
+    static std::vector<bool> GetBooleans(ani_env *env, ani_ref arrayRef);
+    static std::vector<double> GetDoubles(ani_env *env, ani_ref arrayRef);
+    static std::vector<std::string> GetStrings(ani_env *env, ani_ref arrayRef);
+    static std::vector<int> GetInts(ani_env *env, ani_ref arrayRef);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -39,13 +39,6 @@ typedef struct ConfigProp {
     std::string key;
     int32_t(*func)(ani_env*, ani_object, const std::string&, ReportConfig&);
 } ConfigProp;
-
-const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
-    {CLASS_NAME_INT, AniArgsType::ANI_INT},
-    {CLASS_NAME_BOOLEAN, AniArgsType::ANI_BOOLEAN},
-    {CLASS_NAME_DOUBLE, AniArgsType::ANI_NUMBER},
-    {CLASS_NAME_STRING, AniArgsType::ANI_STRING},
-};
 }
 
 static bool AddParamToCustomConfigs(ani_env *env, ani_ref recordRef, HiAppEvent::ReportConfig &conf)
@@ -401,58 +394,35 @@ ani_status HiAppEventAniHelper::ParseEnumGetValueInt32(ani_env *env, ani_enum_it
     return ANI_OK;
 }
 
-static AniArgsType GetArgType(ani_env *env, ani_object elementObj)
-{
-    if (HiAppEventAniUtil::IsRefUndefined(env, static_cast<ani_ref>(elementObj))) {
-        return AniArgsType::ANI_UNDEFINED;
-    }
-    for (const auto &objType : OBJECT_TYPE) {
-        ani_class cls {};
-        if (env->FindClass(objType.first, &cls) != ANI_OK) {
-            continue;
-        }
-        ani_boolean isInstance = false;
-        if (env->Object_InstanceOf(elementObj, cls, &isInstance) != ANI_OK) {
-            continue;
-        }
-        if (static_cast<bool>(isInstance)) {
-            return objType.second;
-        }
-    }
-    return AniArgsType::ANI_UNKNOWN;
-}
-
-static void AppendArray(ani_env *env, ani_ref valueRef, AniArgsType type, ParamArray &paramArray)
-{
-    switch (type) {
-        case AniArgsType::ANI_BOOLEAN:
-            paramArray.boolArray.emplace_back(HiAppEventAniUtil::ParseBoolValue(env, valueRef));
-            break;
-        case AniArgsType::ANI_NUMBER:
-            paramArray.numberArray.emplace_back(HiAppEventAniUtil::ParseNumberValue(env, valueRef));
-            break;
-        case AniArgsType::ANI_STRING:
-            paramArray.stringArray.emplace_back(HiAppEventAniUtil::ParseStringValue(env, valueRef));
-            break;
-        default:
-            HILOG_ERROR(LOG_CORE, "Unexpected type");
-            break;
-    }
-}
-
-static bool AddArrayParam(AniArgsType type, std::string key, ParamArray &paramArray,
+bool HiAppEventAniHelper::AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
     std::shared_ptr<AppEventPack> &appEventPack)
 {
-    switch (type) {
-        case AniArgsType::ANI_BOOLEAN:
-            appEventPack->AddParam(key, paramArray.boolArray);
+    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array_ref>(arrayRef));
+    switch (arrayType) {
+        case AniArgsType::ANI_INT: {
+            std::vector<int> ints = HiAppEventAniUtil::GetInts(env, arrayRef);
+            appEventPack->AddParam(key, ints);
             break;
-        case AniArgsType::ANI_NUMBER:
-            appEventPack->AddParam(key, paramArray.numberArray);
+        }
+        case AniArgsType::ANI_BOOLEAN: {
+            std::vector<bool> bools = HiAppEventAniUtil::GetBooleans(env, arrayRef);
+            appEventPack->AddParam(key, bools);
             break;
-        case AniArgsType::ANI_STRING:
-            appEventPack->AddParam(key, paramArray.stringArray);
+        }
+        case AniArgsType::ANI_NUMBER: {
+            std::vector<double> doubles = HiAppEventAniUtil::GetDoubles(env, arrayRef);
+            appEventPack->AddParam(key, doubles);
             break;
+        }
+        case AniArgsType::ANI_STRING: {
+            std::vector<std::string> strs = HiAppEventAniUtil::GetStrings(env, arrayRef);
+            appEventPack->AddParam(key, strs);
+            break;
+        }
+        case AniArgsType::ANI_NULL: {
+            appEventPack->AddParam(key);
+            break;
+        }
         default:
             HILOG_ERROR(LOG_CORE, "array param value type is invalid");
             return false;
@@ -460,58 +430,18 @@ static bool AddArrayParam(AniArgsType type, std::string key, ParamArray &paramAr
     return true;
 }
 
-static AniArgsType GetArrayType(ani_env *env, ani_array_ref arrayRef)
-{
-    ani_size index = 0;
-    ani_ref valueRef {};
-    if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), index, &valueRef) != ANI_OK) {
-        HILOG_ERROR(LOG_CORE, "fail to get first element in array.");
-        return AniArgsType::ANI_UNKNOWN;
-    }
-    return GetArgType(env, static_cast<ani_object>(valueRef));
-}
-
-bool HiAppEventAniHelper::AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
-    std::shared_ptr<AppEventPack> &appEventPack)
-{
-    ani_size size = 0;
-    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &size) != ANI_OK) {
-        HILOG_ERROR(LOG_CORE, "get array length failed");
-        return false;
-    }
-    if (size == 0) {
-        appEventPack->AddParam(key);
-        return true;
-    }
-    ParamArray paramArray;
-    AniArgsType arrayType = GetArrayType(env, static_cast<ani_array_ref>(arrayRef));
-    if (arrayType <= AniArgsType::ANI_UNKNOWN || arrayType >= AniArgsType::ANI_UNDEFINED) {
-        return false;
-    }
-    for (ani_size i = 0; i < size; i++) {
-        ani_ref valueRef {};
-        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &valueRef) != ANI_OK) {
-            HILOG_ERROR(LOG_CORE, "get %{public}zu element of array failed", i);
-            return false;
-        }
-        if (arrayType != GetArgType(env, static_cast<ani_object>(valueRef))) {
-            HILOG_ERROR(LOG_CORE, "the elements in array is not same type");
-            return false;
-        }
-        AppendArray(env, valueRef, arrayType, paramArray);
-    }
-    return AddArrayParam(arrayType, key, paramArray, appEventPack);
-}
-
 bool HiAppEventAniHelper::AddParamToAppEventPack(ani_env *env, const std::string &key, ani_ref element,
     std::shared_ptr<AppEventPack> &appEventPack)
 {
     ani_object elementObj = static_cast<ani_object>(element);
-    AniArgsType type = GetArgType(env, elementObj);
+    AniArgsType type = HiAppEventAniUtil::GetArgType(env, elementObj);
     if (type <= AniArgsType::ANI_UNKNOWN || type >= AniArgsType::ANI_UNDEFINED) {
         return false;
     }
     switch (type) {
+        case AniArgsType::ANI_INT:
+            appEventPack->AddParam(key, HiAppEventAniUtil::ParseIntValue(env, element));
+            break;
         case AniArgsType::ANI_BOOLEAN:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseBoolValue(env, element));
             break;

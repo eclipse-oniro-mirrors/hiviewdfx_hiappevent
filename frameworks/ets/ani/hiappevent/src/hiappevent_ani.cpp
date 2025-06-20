@@ -95,12 +95,12 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
     ani_env *env = nullptr;
     if (vm->GetEnv(ANI_VERSION_1, &env)  != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Unsupported ANI_VERSION_1");
-        return ANI_OUT_OF_REF;
+        return ANI_ERROR;
     }
 
     ani_namespace  ns {};
     if (env->FindNamespace(NAMESPACE_NAME_HIAPPEVENT, &ns)  != ANI_OK) {
-        return ANI_INVALID_ARGS;
+        return ANI_ERROR;
     }
 
     std::array methods = {
@@ -109,7 +109,7 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
     };
 
     if (env->Namespace_BindNativeFunctions(ns, methods.data(), methods.size()) != ANI_OK) {
-        return ANI_INVALID_TYPE;
+        return ANI_ERROR;
     };
 
     *result = ANI_VERSION_1;
