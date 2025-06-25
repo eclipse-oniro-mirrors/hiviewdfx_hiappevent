@@ -89,10 +89,10 @@ void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_
 OnTriggerContext::~OnTriggerContext()
 {
     ani_env* env = GetAniEnv(vm);
-    if (!HiAppEventAniUtil::IsRefUndefined(env, onTrigger)) {
+    if (env != nullptr && !HiAppEventAniUtil::IsRefUndefined(env, onTrigger)) {
         env->GlobalReference_Delete(onTrigger);
     }
-    if (!HiAppEventAniUtil::IsRefUndefined(env, holder)) {
+    if (env != nullptr && !HiAppEventAniUtil::IsRefUndefined(env, holder)) {
         env->GlobalReference_Delete(holder);
     }
 }
@@ -100,7 +100,7 @@ OnTriggerContext::~OnTriggerContext()
 OnReceiveContext::~OnReceiveContext()
 {
     ani_env* env = GetAniEnv(vm);
-    if (!HiAppEventAniUtil::IsRefUndefined(env, onReceive)) {
+    if (env != nullptr && !HiAppEventAniUtil::IsRefUndefined(env, onReceive)) {
         env->GlobalReference_Delete(onReceive);
     }
 }
