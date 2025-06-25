@@ -264,6 +264,7 @@ static ani_status BindHolderFunction(ani_env *env)
     std::array methods = {
         ani_native_function {"nativeConstructor", nullptr,
             reinterpret_cast<void *>(AniAppEventHolder::AniConstructor)},
+        ani_native_function {"_finalize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniFinalize)},
         ani_native_function {"setSize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetSize)},
         ani_native_function {"setRow", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetRow)},
         ani_native_function {"takeNext", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniTakeNext)},
