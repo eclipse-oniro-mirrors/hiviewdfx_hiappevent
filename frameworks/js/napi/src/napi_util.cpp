@@ -16,7 +16,6 @@
 
 #include <unordered_map>
 
-#include "event_json_util.h"
 #include "hiappevent_base.h"
 #include "hilog/log.h"
 
@@ -539,43 +538,41 @@ std::string CreateErrMsg(const std::string& name, const napi_valuetype type)
     return CreateErrMsg(name, typeStr);
 }
 
-napi_value CreateBaseValueByJson(const napi_env env, const cJSON *jsonValue)
+napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValue)
 {
-    if (cJSON_IsBool(jsonValue)) {
-        return CreateBoolean(env, cJSON_IsTrue(jsonValue));
+    if (jsonValue.isBool()) {
+        return CreateBoolean(env, jsonValue.asBool());
     }
-    if (EventJsonUtil::CJsonIsInt(jsonValue)) {
-        return CreateInt32(env, static_cast<int32_t>(jsonValue->valuedouble));
+    if (jsonValue.isInt()) {
+        return CreateInt32(env, jsonValue.asInt());
     }
-    if (EventJsonUtil::CJsonIsInt64(jsonValue) && !EventJsonUtil::CJsonIsUint(jsonValue)) {
-        return CreateInt64(env, static_cast<int64_t>(jsonValue->valuedouble));
+    if (jsonValue.isInt64() && jsonValue.type() != Json::ValueType::uintValue) {
+        return CreateInt64(env, jsonValue.asInt64());
     }
-    if (cJSON_IsNumber(jsonValue)) {
-        return CreateDouble(env, jsonValue->valuedouble);
+    if (jsonValue.isDouble()) {
+        return CreateDouble(env, jsonValue.asDouble());
     }
-    if (cJSON_IsString(jsonValue)) {
-        return CreateString(env, jsonValue->valuestring);
+    if (jsonValue.isString()) {
+        return CreateString(env, jsonValue.asString());
     }
     return nullptr;
 }
 
-napi_value CreateValueByJson(napi_env env, const cJSON *jsonValue)
+napi_value CreateValueByJson(napi_env env, const Json::Value& jsonValue)
 {
-    if (cJSON_IsArray(jsonValue)) {
+    if (jsonValue.isArray()) {
         napi_value array = CreateArray(env);
-        size_t jsonSize = cJSON_GetArraySize(jsonValue);
-        for (size_t i = 0; i < jsonSize; ++i) {
-            SetElement(env, array, i, CreateValueByJson(env, cJSON_GetArrayItem(jsonValue, i)));
+        for (size_t i = 0; i < jsonValue.size(); ++i) {
+            SetElement(env, array, i, CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
         }
         return array;
     }
-    if (cJSON_IsObject(jsonValue)) {
+    if (jsonValue.isObject()) {
         napi_value obj = CreateObject(env);
-        auto eventNameList = EventJsonUtil::CJsonGetMemberNames(jsonValue);
+        auto eventNameList = jsonValue.getMemberNames();
         for (auto it = eventNameList.cbegin(); it != eventNameList.cend(); ++it) {
             auto propertyName = *it;
-            SetNamedProperty(env, obj, propertyName,
-                CreateValueByJson(env, cJSON_GetObjectItemCaseSensitive(jsonValue, propertyName.c_str())));
+            SetNamedProperty(env, obj, propertyName, CreateValueByJson(env, jsonValue[propertyName]));
         }
         return obj;
     }
@@ -584,14 +581,13 @@ napi_value CreateValueByJson(napi_env env, const cJSON *jsonValue)
 
 napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr)
 {
-    cJSON *root = cJSON_Parse(jsonStr.c_str());
-    if (!root) {
+    Json::Value jsonValue;
+    Json::Reader reader(Json::Features::strictMode());
+    if (!reader.parse(jsonStr, jsonValue)) {
         HILOG_ERROR(LOG_CORE, "parse event detail info failed, please check the style of json");
         return nullptr;
     }
-    auto ret = CreateValueByJson(env, root);
-    cJSON_Delete(root);
-    return ret;
+    return CreateValueByJson(env, jsonValue);
 }
 
 napi_value CreateEventInfo(napi_env env, std::shared_ptr<AppEventPack> event)

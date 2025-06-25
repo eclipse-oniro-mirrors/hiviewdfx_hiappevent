@@ -20,9 +20,7 @@
 
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
-#include "cJSON.h"
-#include "file_ex.h"
-#include "event_json_util.h"
+#include "json/json.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -87,11 +85,11 @@ private:
     int ParseIntProp(const std::string& key, int& out, const std::function<bool(int)>& validationFunc);
     int ParseUnorderedSetProp(const std::string& key, std::unordered_set<std::string>& out,
         const std::function<bool(std::string)>& validationFunc);
-    int ParseConfigReportProp(const cJSON *eventConfig, HiAppEvent::EventConfig& reportConf);
+    int ParseConfigReportProp(const Json::Value& eventConfig, HiAppEvent::EventConfig& reportConf);
 
 private:
     ReportConfig conf_;
-    std::shared_ptr<cJSON> jsonConfig_;
+    Json::Value jsonConfig_;
 };
 
 ProcessorConfigLoader::ProcessorConfigLoader()
@@ -113,44 +111,41 @@ bool ProcessorConfigLoader::LoadProcessorConfig(const std::string& processorName
 int ProcessorConfigLoader::Impl::ParseStringProp(const std::string& key, std::string& out,
     const std::function<bool(std::string)>& validationFunc)
 {
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(jsonConfig_.get(), key.c_str());
-    if (!item) {
+    if (!jsonConfig_.isMember(key)) {
         out = "";
         return ERR_CODE_SUCC;
     }
-    if (!cJSON_IsString(item) || !validationFunc(item->valuestring)) {
+    if (!jsonConfig_[key].isString() || !validationFunc(jsonConfig_[key].asString())) {
         return ERR_CODE_PARAM_INVALID;
     }
-    out = item->valuestring;
+    out = jsonConfig_[key].asString();
     return ERR_CODE_SUCC;
 }
 
 int ProcessorConfigLoader::Impl::ParseBoolProp(const std::string& key, bool& out)
 {
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(jsonConfig_.get(), key.c_str());
-    if (!item) {
+    if (!jsonConfig_.isMember(key)) {
         out = false;
         return ERR_CODE_SUCC;
     }
-    if (cJSON_IsBool(item)) {
-        out = cJSON_IsTrue(item);
-        return ERR_CODE_SUCC;
+    if (!jsonConfig_[key].isBool()) {
+        return ERR_CODE_PARAM_INVALID;
     }
-    return ERR_CODE_PARAM_INVALID;
+    out = jsonConfig_[key].asBool();
+    return ERR_CODE_SUCC;
 }
 
 int ProcessorConfigLoader::Impl::ParseIntProp(const std::string& key, int& out,
     const std::function<bool(int)>& validationFunc)
 {
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(jsonConfig_.get(), key.c_str());
-    if (!item) {
+    if (!jsonConfig_.isMember(key)) {
         out = 0;
         return ERR_CODE_SUCC;
     }
-    if (!EventJsonUtil::CJsonIsInt(item) || !validationFunc(static_cast<int32_t>(item->valuedouble))) {
+    if (!jsonConfig_[key].isIntegral() || !validationFunc(jsonConfig_[key].asInt())) {
         return ERR_CODE_PARAM_INVALID;
     }
-    out = static_cast<int32_t>(item->valuedouble);
+    out = jsonConfig_[key].asInt();
     return ERR_CODE_SUCC;
 }
 
@@ -158,52 +153,46 @@ int ProcessorConfigLoader::Impl::ParseUnorderedSetProp(const std::string& key, s
     const std::function<bool(std::string)>& validationFunc)
 {
     std::unordered_set<std::string> curSet;
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(jsonConfig_.get(), key.c_str());
-    if (!item) {
+    if (!jsonConfig_.isMember(key)) {
         out = std::move(curSet);
         return ERR_CODE_SUCC;
     }
-    if (!cJSON_IsArray(item)) {
+    if (!jsonConfig_[key].isArray()) {
         return ERR_CODE_PARAM_INVALID;
     }
-    size_t jsonSize = cJSON_GetArraySize(item);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *it = cJSON_GetArrayItem(item, i);
-        if (!cJSON_IsString(it) || !validationFunc(it->valuestring)) {
+    for (const auto& userId : jsonConfig_[key]) {
+        if (!userId.isString() || !validationFunc(userId.asString())) {
             return ERR_CODE_PARAM_INVALID;
         }
-        curSet.insert(it->valuestring);
+        curSet.insert(userId.asString());
     }
     out = std::move(curSet);
     return ERR_CODE_SUCC;
 }
 
-int ProcessorConfigLoader::Impl::ParseConfigReportProp(const cJSON *eventConfig,
+int ProcessorConfigLoader::Impl::ParseConfigReportProp(const Json::Value& eventConfig,
     HiAppEvent::EventConfig& reportConf)
 {
-    cJSON* configDomain = cJSON_GetObjectItemCaseSensitive(eventConfig, EVENT_CONFIG_DOMAIN);
-    if (configDomain) {
-        if (!cJSON_IsString(configDomain)) {
+    if (eventConfig.isMember(EVENT_CONFIG_DOMAIN)) {
+        if (!eventConfig[EVENT_CONFIG_DOMAIN].isString()) {
             HILOG_WARN(LOG_CORE, "Parameter error. The event domain parameter is invalid.");
             return ERR_CODE_PARAM_INVALID;
         }
-        reportConf.domain = configDomain->valuestring;
+        reportConf.domain = eventConfig[EVENT_CONFIG_DOMAIN].asString();
     }
-    cJSON* configName = cJSON_GetObjectItemCaseSensitive(eventConfig, EVENT_CONFIG_NAME);
-    if (configName) {
-        if (!cJSON_IsString(configName)) {
+    if (eventConfig.isMember(EVENT_CONFIG_NAME)) {
+        if (!eventConfig[EVENT_CONFIG_NAME].isString()) {
             HILOG_WARN(LOG_CORE, "Parameter error. The event name parameter is invalid.");
             return ERR_CODE_PARAM_INVALID;
         }
-        reportConf.name = configName->valuestring;
+        reportConf.name = eventConfig[EVENT_CONFIG_NAME].asString();
     }
-    cJSON* configRealtime = cJSON_GetObjectItemCaseSensitive(eventConfig, EVENT_CONFIG_REALTIME);
-    if (configRealtime) {
-        if (!cJSON_IsBool(configRealtime)) {
+    if (eventConfig.isMember(EVENT_CONFIG_REALTIME)) {
+        if (!eventConfig[EVENT_CONFIG_REALTIME].isBool()) {
             HILOG_WARN(LOG_CORE, "Parameter error. The event isRealTime parameter is invalid.");
             return ERR_CODE_PARAM_INVALID;
         }
-        reportConf.isRealTime = cJSON_IsTrue(configRealtime);
+        reportConf.isRealTime = eventConfig[EVENT_CONFIG_REALTIME].asBool();
     }
     if (!IsValidEventConfig(reportConf)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The event config is invalid, domain=%{public}s, name=%{public}s.",
@@ -266,18 +255,15 @@ int ProcessorConfigLoader::Impl::ParseConfigIdProp()
 int ProcessorConfigLoader::Impl::ParseEventConfigsProp()
 {
     std::vector<HiAppEvent::EventConfig> eventConfigs;
-    cJSON* configs = cJSON_GetObjectItemCaseSensitive(jsonConfig_.get(), EVENT_CONFIGS);
-    if (!configs) {
+    if (!jsonConfig_.isMember(EVENT_CONFIGS)) {
         conf_.eventConfigs = std::move(eventConfigs);
         return ERR_CODE_SUCC;
     }
-    if (!cJSON_IsArray(configs)) {
+    if (!jsonConfig_[EVENT_CONFIGS].isArray()) {
         return ERR_CODE_PARAM_INVALID;
     }
-    size_t jsonSize = cJSON_GetArraySize(configs);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *eventConfig = cJSON_GetArrayItem(configs, i);
-        if (!cJSON_IsObject(eventConfig)) {
+    for (const auto& eventConfig : jsonConfig_[EVENT_CONFIGS]) {
+        if (!eventConfig.isObject()) {
             return ERR_CODE_PARAM_INVALID;
         }
         HiAppEvent::EventConfig reportConf;
@@ -293,21 +279,20 @@ int ProcessorConfigLoader::Impl::ParseEventConfigsProp()
 int ProcessorConfigLoader::Impl::ParseCustomConfigsProp()
 {
     std::unordered_map<std::string, std::string> customConfigs;
-    cJSON* configs = cJSON_GetObjectItemCaseSensitive(jsonConfig_.get(), CUSTOM_CONFIG);
-    if (!configs) {
+    if (!jsonConfig_.isMember(CUSTOM_CONFIG)) {
         conf_.customConfigs = std::move(customConfigs);
         return ERR_CODE_SUCC;
     }
-    if (!cJSON_IsObject(configs)) {
+    if (!jsonConfig_[CUSTOM_CONFIG].isObject()) {
         return ERR_CODE_PARAM_INVALID;
     }
-    const std::vector<std::string> members = EventJsonUtil::CJsonGetMemberNames(configs);
+    const Json::Value::Members& members = jsonConfig_[CUSTOM_CONFIG].getMemberNames();
     for (const auto& name : members) {
-        const cJSON *item = cJSON_GetObjectItemCaseSensitive(configs, name.c_str());
-        if (!cJSON_IsString(item) || !IsValidCustomConfig(name, item->valuestring)) {
+        if (!jsonConfig_[CUSTOM_CONFIG][name].isString() ||
+            !IsValidCustomConfig(name, jsonConfig_[CUSTOM_CONFIG][name].asString())) {
             return ERR_CODE_PARAM_INVALID;
         }
-        customConfigs.insert(std::pair<std::string, std::string>(name, item->valuestring));
+        customConfigs.insert(std::pair<std::string, std::string>(name, jsonConfig_[CUSTOM_CONFIG][name].asString()));
     }
     conf_.customConfigs = std::move(customConfigs);
     return ERR_CODE_SUCC;
@@ -341,37 +326,32 @@ bool ProcessorConfigLoader::Impl::ParseProcessorConfig()
 
 bool ProcessorConfigLoader::Impl::LoadProcessorConfig(const std::string& processorName, const std::string& configName)
 {
-    std::string content;
-    if (!LoadStringFromFile(PROCESSOR_CONFIG_PATH, content)) {
+    std::ifstream file(PROCESSOR_CONFIG_PATH);
+    if (!file.is_open()) {
         HILOG_ERROR(LOG_CORE, "failed to open the processor config file, path:%{public}s.", PROCESSOR_CONFIG_PATH);
         return false;
     }
 
-    std::shared_ptr<cJSON> jsonConfig(cJSON_Parse(content.c_str()), [](cJSON *object) {
-        if (object != nullptr) {
-            cJSON_Delete(object);
-        }
-    });
-    if (!jsonConfig) {
+    Json::Value jsonConfig;
+    Json::CharReaderBuilder builder;
+    Json::CharReaderBuilder::strictMode(&builder.settings_);
+    JSONCPP_STRING errs;
+    if (!parseFromStream(builder, file, &jsonConfig, &errs)) {
         HILOG_ERROR(LOG_CORE, "failed to parse the processor config file, path:%{public}s.", PROCESSOR_CONFIG_PATH);
         return false;
     }
-    if (cJSON_IsNull(jsonConfig.get()) || !cJSON_IsObject(jsonConfig.get())) {
+    if (jsonConfig.empty() || !jsonConfig.isObject()) {
         HILOG_ERROR(LOG_CORE, "the processor config file is invalid.");
         return false;
     }
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(jsonConfig.get(), configName.c_str());
-    if (!item || !cJSON_IsObject(item)) {
+    if (!jsonConfig.isMember(configName) || !jsonConfig[configName].isObject()) {
         HILOG_ERROR(LOG_CORE, "the configName=%{public}s is invalid in config file.", configName.c_str());
         return false;
     }
     conf_.name = processorName;
     conf_.configName = configName;
-    jsonConfig_ = std::shared_ptr<cJSON>(cJSON_Duplicate(item, true), [](cJSON *object) {
-        if (object != nullptr) {
-            cJSON_Delete(object);
-        }
-    });
+    jsonConfig_ = jsonConfig[configName];
+
     return ParseProcessorConfig();
 }
 

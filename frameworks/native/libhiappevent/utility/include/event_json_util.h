@@ -18,20 +18,16 @@
 #include <string>
 #include <unordered_set>
 
-#include "cJSON.h"
+#include "json/json.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventJsonUtil {
-bool CJsonIsInt(const cJSON* item);
-bool CJsonIsUint(const cJSON *item);
-bool CJsonIsInt64(const cJSON *item);
-uint32_t ParseUInt32(const cJSON *root, const std::string& key);
-int ParseInt(const cJSON *root, const std::string& key);
-std::string ParseString(const cJSON *root, const std::string& key);
-void ParseStrings(const cJSON *root, const std::string& key, std::unordered_set<std::string>& strs);
-cJSON *GetJsonObjectFromJsonString(const std::string& paramString);
-std::vector<std::string> CJsonGetMemberNames(const cJSON *json);
+uint32_t ParseUInt32(const Json::Value& root, const std::string& key);
+int ParseInt(const Json::Value& root, const std::string& key);
+std::string ParseString(const Json::Value& root, const std::string& key);
+void ParseStrings(const Json::Value& root, const std::string& key, std::unordered_set<std::string>& strs);
+bool GetJsonObjectFromJsonString(Json::Value& eventJson, const std::string& paramString);
 } // namespace EventJsonUtil
 } // namespace HiviewDFX
 } // namespace OHOS
