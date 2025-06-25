@@ -19,7 +19,7 @@ class AppEventInfoInner implements hiAppEvent.AppEventInfo {
     domain: string = "";
     name: string = "";
     eventType: hiAppEvent.EventType = hiAppEvent.EventType.FAULT;
-    params: Record<string, number | string | boolean | (number | string | boolean)[]> = {};
+    params: object = {};
 }
 
 class AppEventPackageInner implements hiAppEvent.AppEventPackage {
@@ -68,12 +68,12 @@ class ProcessorInner implements hiAppEvent.Processor {
     appId?: string | undefined;
     onStartReport?: boolean | undefined;
     onBackgroundReport?: boolean | undefined;
-    periodReport?: int | undefined;
-    batchReport?: int | undefined;
+    periodReport?: number | undefined;
+    batchReport?: number | undefined;
     userIds?: string[] | undefined;
     userProperties?: string[] | undefined;
     eventConfigs?: hiAppEvent.AppEventReportConfig[] | undefined;
-    configId?: int | undefined;
+    configId?: number | undefined;
     customConfigs?: Record<string, string> | undefined;
 }
 
@@ -138,7 +138,7 @@ export default namespace hiAppEvent {
         domain: string;
         name: string;
         eventType: EventType;
-        params: Record<string, number | string | boolean | (number | string | boolean)[]>;
+        params: object;
     }
 
     native function writeSync(info: AppEventInfo): Results;
@@ -275,12 +275,12 @@ export default namespace hiAppEvent {
         appId?: string;
         onStartReport?: boolean;
         onBackgroundReport?: boolean;
-        periodReport?: int;
-        batchReport?: int;
+        periodReport?: number;
+        batchReport?: number;
         userIds?: string[];
         userProperties?: string[];
         eventConfigs?: AppEventReportConfig[];
-        configId?: int;
+        configId?: number;
         customConfigs?: Record<string, string>;
     }
 

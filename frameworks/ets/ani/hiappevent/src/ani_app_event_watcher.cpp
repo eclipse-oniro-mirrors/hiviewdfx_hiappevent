@@ -35,7 +35,7 @@ constexpr ani_size REFERENCES_MAX_NUMBER = 16;
 static ani_vm* GetAniVm(ani_env *env)
 {
     ani_vm* vm = nullptr;
-    if (ANI_OK != env->GetVM(&vm)) {
+    if (env->GetVM(&vm) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "GetVM failed");
         return nullptr;
     }
@@ -45,7 +45,7 @@ static ani_vm* GetAniVm(ani_env *env)
 static ani_env* GetAniEnv(ani_vm *vm)
 {
     ani_env* env = nullptr;
-    if (ANI_OK != vm->GetEnv(ANI_VERSION_1, &env)) {
+    if (vm->GetEnv(ANI_VERSION_1, &env) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "GetEnv failed");
         return nullptr;
     }
@@ -56,7 +56,7 @@ static ani_env* AttachAniEnv(ani_vm *vm)
 {
     ani_env *workerEnv = nullptr;
     ani_options aniArgs {0, nullptr};
-    if (ANI_OK != vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &workerEnv)) {
+    if (vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &workerEnv) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Attach Env failed");
         return nullptr;
     }
@@ -65,7 +65,7 @@ static ani_env* AttachAniEnv(ani_vm *vm)
 
 static void DetachAniEnv(ani_vm *vm)
 {
-    if (ANI_OK != vm->DetachCurrentThread()) {
+    if (vm->DetachCurrentThread() != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Detach Env failed");
         return;
     }
@@ -191,13 +191,13 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
             context->holder
         };
         ani_ref ret {};
-        if (ANI_OK != env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
-            args.size(), args.data(), &ret)) {
+        if (env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
+            args.size(), args.data(), &ret) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "failed to call onTrigger function");
         }
         env->DestroyLocalScope();
     };
-    if (ANI_OK != AniSendEvent(onTriggerWork, "OnTrigger")) {
+    if (AniSendEvent(onTriggerWork, "OnTrigger") != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "failed to send event OnTrigger.");
     }
 }
@@ -266,15 +266,15 @@ void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
             HiAppEventAniUtil::CreateEventGroups(env, context->events)
         };
         ani_ref ret {};
-        if (ANI_OK == env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
-            args.size(), args.data(), &ret)) {
+        if (env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
+            args.size(), args.data(), &ret) == ANI_OK) {
             DeleteEventMappingAsync(context->observerSeq, context->events);
         } else {
             HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
         }
         env->DestroyLocalScope();
     };
-    if (ANI_OK != AniSendEvent(onReceiveWork, "OnReceive")) {
+    if (AniSendEvent(onReceiveWork, "OnReceive") != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "failed to send event OnReceive.");
     }
 }
