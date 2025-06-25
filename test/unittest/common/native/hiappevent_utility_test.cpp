@@ -15,7 +15,7 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
-#include "cJSON.h"
+#include <json/json.h>
 
 #include "event_json_util.h"
 #include "file_util.h"
@@ -48,26 +48,22 @@ void HiAppEventUtilityTest::SetUp()
 HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil001, TestSize.Level1)
 {
     std::cout << "HiAppEventJsonUtil001 start" << std::endl;
-    cJSON *root = cJSON_CreateObject();
-    ASSERT_TRUE(root);
+    Json::Value root;
     uint32_t result = EventJsonUtil::ParseUInt32(root, "testKey");
     EXPECT_EQ(result, 0u);
 
-    cJSON_AddItemToObject(root, "testKey", cJSON_CreateNull());
+    root["testKey"] = Json::Value::null;
     result = EventJsonUtil::ParseUInt32(root, "testKey");
     EXPECT_EQ(result, 0u);
 
-    cJSON_DeleteItemFromObject(root, "testKey");
-    cJSON_AddNumberToObject(root, "testKey", 123.45);
+    root["testKey"] = 123.45;
     result = EventJsonUtil::ParseUInt32(root, "testKey");
     EXPECT_EQ(result, 0u);
 
-    cJSON_DeleteItemFromObject(root, "testKey");
-    cJSON_AddNumberToObject(root, "testKey", 123u);
+    root["testKey"] = 123u;
     result = EventJsonUtil::ParseUInt32(root, "testKey");
     EXPECT_EQ(result, 123u);
     std::cout << "HiAppEventJsonUtil001 end" << std::endl;
-    cJSON_Delete(root);
 }
 
 /**
@@ -79,26 +75,22 @@ HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil001, TestSize.Level1)
 HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil002, TestSize.Level1)
 {
     std::cout << "HiAppEventJsonUtil002 start" << std::endl;
-    cJSON *root = cJSON_CreateObject();
-    ASSERT_TRUE(root);
+    Json::Value root;
     int result = EventJsonUtil::ParseInt(root, "testKey");
     EXPECT_EQ(result, 0);
 
-    cJSON_AddItemToObject(root, "testKey", cJSON_CreateNull());
+    root["testKey"] = Json::Value::null;
     result = EventJsonUtil::ParseInt(root, "testKey");
     EXPECT_EQ(result, 0);
 
-    cJSON_DeleteItemFromObject(root, "testKey");
-    cJSON_AddNumberToObject(root, "testKey", 123.45);
+    root["testKey"] = 123.45;
     result = EventJsonUtil::ParseInt(root, "testKey");
     EXPECT_EQ(result, 0);
 
-    cJSON_DeleteItemFromObject(root, "testKey");
-    cJSON_AddNumberToObject(root, "testKey", 123);
+    root["testKey"] = 123;
     result = EventJsonUtil::ParseInt(root, "testKey");
     EXPECT_EQ(result, 123);
     std::cout << "HiAppEventJsonUtil002 end" << std::endl;
-    cJSON_Delete(root);
 }
 
 /**
@@ -110,26 +102,22 @@ HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil002, TestSize.Level1)
 HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil003, TestSize.Level1)
 {
     std::cout << "HiAppEventJsonUtil003 start" << std::endl;
-    cJSON *root = cJSON_CreateObject();
-    ASSERT_TRUE(root);
+    Json::Value root;
     std::string result = EventJsonUtil::ParseString(root, "testKey");
     EXPECT_EQ(result, "");
 
-    cJSON_AddItemToObject(root, "testKey", cJSON_CreateNull());
+    root["testKey"] = Json::Value::null;
     result = EventJsonUtil::ParseString(root, "testKey");
     EXPECT_EQ(result, "");
 
-    cJSON_DeleteItemFromObject(root, "testKey");
-    cJSON_AddNumberToObject(root, "testKey", 123.45);
+    root["testKey"] = 123.45;
     result = EventJsonUtil::ParseString(root, "testKey");
     EXPECT_EQ(result, "");
 
-    cJSON_DeleteItemFromObject(root, "testKey");
-    cJSON_AddStringToObject(root, "testKey", "testStr");
+    root["testKey"] = "testStr";
     result = EventJsonUtil::ParseString(root, "testKey");
     EXPECT_EQ(result, "testStr");
     std::cout << "HiAppEventJsonUtil003 end" << std::endl;
-    cJSON_Delete(root);
 }
 
 /**
@@ -141,23 +129,19 @@ HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil003, TestSize.Level1)
 HWTEST_F(HiAppEventUtilityTest, HiAppEventJsonUtil004, TestSize.Level1)
 {
     std::cout << "HiAppEventJsonUtil004 start" << std::endl;
-    cJSON *root = cJSON_CreateObject();
-    ASSERT_TRUE(root);
+    Json::Value root;
     std::unordered_set<std::string> strs;
 
     EventJsonUtil::ParseStrings(root, "testKey", strs);
     EXPECT_TRUE(strs.empty());
 
-    cJSON *array = cJSON_CreateArray();
-    ASSERT_TRUE(array);
-    cJSON_AddItemToArray(array, cJSON_CreateString("string1"));
-    cJSON_AddItemToArray(array, cJSON_CreateString("string2"));
-    cJSON_AddItemToObject(root, "testKey", array);
+    root["testKey"] = Json::arrayValue;
+    root["testKey"].append("string1");
+    root["testKey"].append("string2");
     EventJsonUtil::ParseStrings(root, "testKey", strs);
     EXPECT_TRUE(strs.find("string1") != strs.end());
     EXPECT_TRUE(strs.find("string2") != strs.end());
     std::cout << "HiAppEventJsonUtil004 end" << std::endl;
-    cJSON_Delete(root);
 }
 
 /**

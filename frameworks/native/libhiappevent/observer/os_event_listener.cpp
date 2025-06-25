@@ -256,8 +256,8 @@ void OsEventListener::GetEventsFromFiles(
 
 std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std::string& jsonStr)
 {
-    cJSON *eventJson = EventJsonUtil::GetJsonObjectFromJsonString(jsonStr);
-    if (!eventJson) {
+    Json::Value eventJson;
+    if (!EventJsonUtil::GetJsonObjectFromJsonString(eventJson, jsonStr)) {
         HILOG_ERROR(LOG_CORE, "parse event detail info failed, please check the style of json");
         return nullptr;
     }
@@ -265,18 +265,14 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
     appEventPack->SetDomain(EventJsonUtil::ParseString(eventJson, HiAppEvent::DOMAIN_PROPERTY));
     appEventPack->SetName(EventJsonUtil::ParseString(eventJson, HiAppEvent::NAME_PROPERTY));
     appEventPack->SetType(EventJsonUtil::ParseInt(eventJson, HiAppEvent::EVENT_TYPE_PROPERTY));
-    cJSON* paramsJson = cJSON_GetObjectItemCaseSensitive(eventJson, HiAppEvent::PARAM_PROPERTY);
-    if (paramsJson && cJSON_IsObject(paramsJson)) {
-        cJSON *property = cJSON_GetObjectItemCaseSensitive(paramsJson, RUNNING_ID_PROPERTY.c_str());
-        if (property && cJSON_IsString(property)) {
-            appEventPack->SetRunningId(property->valuestring);
-            cJSON_DeleteItemFromObject(paramsJson, RUNNING_ID_PROPERTY.c_str());
+    if (eventJson.isMember(HiAppEvent::PARAM_PROPERTY) && eventJson[HiAppEvent::PARAM_PROPERTY].isObject()) {
+        Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
+        if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
+            appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
+            paramsJson.removeMember(RUNNING_ID_PROPERTY);
         }
-        auto itemStr = cJSON_PrintUnformatted(paramsJson);
-        appEventPack->SetParamStr(itemStr);
-        cJSON_free(itemStr);
+        appEventPack->SetParamStr(Json::FastWriter().write(paramsJson));
     }
-    cJSON_Delete(eventJson);
     return appEventPack;
 }
 } // namespace HiviewDFX
