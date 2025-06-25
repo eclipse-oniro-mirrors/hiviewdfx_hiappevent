@@ -27,7 +27,7 @@ using namespace OHOS::HiviewDFX;
 static const std::pair<const char*, AniArgsType> OBJECT_TYPE[] = {
     {CLASS_NAME_INT, AniArgsType::ANI_INT},
     {CLASS_NAME_BOOLEAN, AniArgsType::ANI_BOOLEAN},
-    {CLASS_NAME_DOUBLE, AniArgsType::ANI_NUMBER},
+    {CLASS_NAME_DOUBLE, AniArgsType::ANI_DOUBLE},
     {CLASS_NAME_STRING, AniArgsType::ANI_STRING},
 };
 
@@ -43,6 +43,11 @@ std::string HiAppEventAniUtil::CreateErrMsg(const std::string& name)
     return "Parameter error. The " + name + " parameter is mandatory.";
 }
 
+std::string HiAppEventAniUtil::CreateErrMsg(const std::string &name, const std::string &type)
+{
+    return "Parameter error. The type of " + name + " must be " + type + ".";
+}
+
 bool HiAppEventAniUtil::IsArray(ani_env *env, ani_object object)
 {
     ani_boolean IsArray = ANI_FALSE;
@@ -50,14 +55,14 @@ bool HiAppEventAniUtil::IsArray(ani_env *env, ani_object object)
     if (env == nullptr) {
         return false;
     }
-    if (ANI_OK != env->FindClass(CLASS_NAME_ARRAY, &cls)) {
+    if (env->FindClass(CLASS_NAME_ARRAY, &cls) != ANI_OK) {
         return false;
     }
     ani_static_method static_method {};
-    if (ANI_OK != env->Class_FindStaticMethod(cls, "isArray", nullptr, &static_method)) {
+    if (env->Class_FindStaticMethod(cls, "isArray", nullptr, &static_method) != ANI_OK) {
         return false;
     }
-    if (ANI_OK != env->Class_CallStaticMethod_Boolean(cls, static_method, &IsArray, object)) {
+    if (env->Class_CallStaticMethod_Boolean(cls, static_method, &IsArray, object) != ANI_OK) {
         return false;
     }
     return static_cast<bool>(IsArray);
@@ -78,18 +83,18 @@ void HiAppEventAniUtil::ParseRecord(ani_env *env, ani_ref recordRef, std::map<st
         return;
     }
     ani_ref keys {};
-    if (ANI_OK != env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef), "keys",
-                                                   ":Lescompat/IterableIterator;", &keys)) {
+    if (env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef), "keys",
+        ":Lescompat/IterableIterator;", &keys) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method keys() failed.");
     }
     ani_boolean done = ANI_FALSE;
     while (!done) {
         ani_ref next {};
-        if (ANI_OK != env->Object_CallMethodByName_Ref(static_cast<ani_object>(keys), "next", nullptr, &next)) {
+        if (env->Object_CallMethodByName_Ref(static_cast<ani_object>(keys), "next", nullptr, &next) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "call method next() failed.");
             break;
         }
-        if (ANI_OK != env->Object_GetFieldByName_Boolean(static_cast<ani_object>(next), "done", &done)) {
+        if (env->Object_GetFieldByName_Boolean(static_cast<ani_object>(next), "done", &done) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "get field done failed.");
             break;
         }
@@ -97,13 +102,13 @@ void HiAppEventAniUtil::ParseRecord(ani_env *env, ani_ref recordRef, std::map<st
             break;
         }
         ani_ref keyRef {};
-        if (ANI_OK != env->Object_GetFieldByName_Ref(static_cast<ani_object>(next), "value", &keyRef)) {
+        if (env->Object_GetFieldByName_Ref(static_cast<ani_object>(next), "value", &keyRef) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "get field value failed.");
             break;
         }
         ani_ref valueRef {};
-        if (ANI_OK != env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef),
-                                                       "$_get", nullptr, &valueRef, keyRef)) {
+        if (env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef),
+            "$_get", nullptr, &valueRef, keyRef) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "call method $_get failed.");
             break;
         }
@@ -118,14 +123,14 @@ std::string HiAppEventAniUtil::ParseStringValue(ani_env *env, ani_ref aniStrRef)
         return "";
     }
     ani_size strSize = 0;
-    if (ANI_OK != env->String_GetUTF8Size(static_cast<ani_string>(aniStrRef), &strSize)) {
+    if (env->String_GetUTF8Size(static_cast<ani_string>(aniStrRef), &strSize) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get ani string size failed");
         return "";
     }
     std::vector<char> buffer(strSize + 1);
     char* utf8Buffer = buffer.data();
     ani_size bytesWritten = 0;
-    if (ANI_OK != env->String_GetUTF8(static_cast<ani_string>(aniStrRef), utf8Buffer, strSize + 1, &bytesWritten)) {
+    if (env->String_GetUTF8(static_cast<ani_string>(aniStrRef), utf8Buffer, strSize + 1, &bytesWritten) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get ani string failed");
         return "";
     }
@@ -146,11 +151,11 @@ int32_t HiAppEventAniUtil::ParseIntValue(ani_env *env, ani_ref elementRef)
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_INT);
         return static_cast<int32_t>(intVal);
     }
-    if (ANI_OK != env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":I", &unboxedMethod)) {
+    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":I", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
         return static_cast<int32_t>(intVal);
     }
-    if (ANI_OK != env->Object_CallMethod_Int(static_cast<ani_object>(elementRef), unboxedMethod, &intVal)) {
+    if (env->Object_CallMethod_Int(static_cast<ani_object>(elementRef), unboxedMethod, &intVal) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method %{public}s failed", FUNC_NAME_UNBOXED);
         return static_cast<int32_t>(intVal);
     }
@@ -163,17 +168,17 @@ bool HiAppEventAniUtil::ParseBoolValue(ani_env *env, ani_ref elementRef)
         return false;
     }
     ani_class cls {};
-    if (ANI_OK != env->FindClass(CLASS_NAME_BOOLEAN, &cls)) {
+    if (env->FindClass(CLASS_NAME_BOOLEAN, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_BOOLEAN);
         return false;
     }
     ani_method unboxedMethod {};
-    if (ANI_OK != env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":Z", &unboxedMethod)) {
+    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":Z", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
         return false;
     }
     ani_boolean booleanVal = static_cast<ani_boolean>(false);
-    if (ANI_OK != env->Object_CallMethod_Boolean(static_cast<ani_object>(elementRef), unboxedMethod, &booleanVal)) {
+    if (env->Object_CallMethod_Boolean(static_cast<ani_object>(elementRef), unboxedMethod, &booleanVal) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method %{public}s failed", FUNC_NAME_UNBOXED);
         return false;
     }
@@ -187,15 +192,15 @@ double HiAppEventAniUtil::ParseNumberValue(ani_env *env, ani_ref elementRef)
         return static_cast<double>(doubleVal);
     }
     ani_class cls {};
-    if (ANI_OK != env->FindClass(CLASS_NAME_DOUBLE, &cls)) {
+    if (env->FindClass(CLASS_NAME_DOUBLE, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_DOUBLE);
         return static_cast<double>(doubleVal);
     }
     ani_method unboxedMethod {};
-    if (ANI_OK != env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":D", &unboxedMethod)) {
+    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":D", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
     }
-    if (ANI_OK != env->Object_CallMethod_Double(static_cast<ani_object>(elementRef), unboxedMethod, &doubleVal)) {
+    if (env->Object_CallMethod_Double(static_cast<ani_object>(elementRef), unboxedMethod, &doubleVal) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method %{public}s failed", FUNC_NAME_UNBOXED);
     }
     return static_cast<double>(doubleVal);
@@ -208,12 +213,12 @@ void HiAppEventAniUtil::GetStringsToSet(ani_env *env, ani_ref Ref, std::unordere
         return;
     }
     ani_size length = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
+    if (env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
     }
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value)) {
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "get array element failed");
             continue;
         }
@@ -227,18 +232,18 @@ void HiAppEventAniUtil::GetIntValueToVector(ani_env *env, ani_ref Ref, std::vect
         return;
     }
     ani_size length = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length)) {
+    if (env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return;
     }
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
-        if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value)) {
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "get array element failed");
             continue;
         }
         ani_int aniInt = 0;
-        if (ANI_OK != env->EnumItem_GetValue_Int(static_cast<ani_enum_item>(value), &aniInt)) {
+        if (env->EnumItem_GetValue_Int(static_cast<ani_enum_item>(value), &aniInt) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "enumItem get int value failed");
             return;
         }
@@ -252,7 +257,7 @@ ani_ref HiAppEventAniUtil::GetProperty(ani_env *env, ani_object object, const st
     if (env == nullptr) {
         return value;
     }
-    if (ANI_OK != env->Object_GetPropertyByName_Ref(object, name.c_str(), &value)) {
+    if (env->Object_GetPropertyByName_Ref(object, name.c_str(), &value) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "failed to get property %{public}s from object", name.c_str());
     }
     return value;
@@ -264,34 +269,34 @@ void HiAppEventAniUtil::ThrowAniError(ani_env *env, int32_t code, const std::str
         return;
     }
     ani_class cls {};
-    if (ANI_OK != env->FindClass(CLASS_NAME_BUSINESSERROR, &cls)) {
+    if (env->FindClass(CLASS_NAME_BUSINESSERROR, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_BUSINESSERROR);
         return;
     }
     ani_method ctor {};
-    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":V", &ctor)) {
+    if (env->Class_FindMethod(cls, "<ctor>", ":V", &ctor) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method BusinessError constructor failed");
         return;
     }
     ani_object error {};
-    if (ANI_OK != env->Object_New(cls, ctor, &error)) {
+    if (env->Object_New(cls, ctor, &error) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "new object %{public}s failed", CLASS_NAME_BUSINESSERROR);
         return;
     }
-    if (ANI_OK != env->Object_SetPropertyByName_Double(error, "code", static_cast<ani_double>(code))) {
+    if (env->Object_SetPropertyByName_Double(error, "code", static_cast<ani_double>(code)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "set property BusinessError.code failed");
         return;
     }
     ani_string messageRef {};
-    if (ANI_OK != env->String_NewUTF8(message.c_str(), message.size(), &messageRef)) {
+    if (env->String_NewUTF8(message.c_str(), message.size(), &messageRef) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "new message string failed");
         return;
     }
-    if (ANI_OK != env->Object_SetPropertyByName_Ref(error, "message", static_cast<ani_ref>(messageRef))) {
+    if (env->Object_SetPropertyByName_Ref(error, "message", static_cast<ani_ref>(messageRef)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "set property BusinessError.message failed");
         return;
     }
-    if (ANI_OK != env->ThrowError(static_cast<ani_error>(error))) {
+    if (env->ThrowError(static_cast<ani_error>(error)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "throwError ani_error object failed");
     }
 }
@@ -304,41 +309,41 @@ ani_object HiAppEventAniUtil::Result(ani_env *env, std::pair<int32_t, std::strin
     }
 
     ani_class cls {};
-    if (ANI_OK != env->FindClass(CLASS_NAME_RESULTS, &cls)) {
+    if (env->FindClass(CLASS_NAME_RESULTS, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "failed to find class %{public}s", CLASS_NAME_RESULTS);
         return results_obj;
     }
 
     ani_method ctor {};
-    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", nullptr, &ctor)) {
+    if (env->Class_FindMethod(cls, "<ctor>", nullptr, &ctor) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get method %{public}s <ctor> failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
 
-    if (ANI_OK != env->Object_New(cls, ctor, &results_obj)) {
+    if (env->Object_New(cls, ctor, &results_obj) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "create object %{public}s failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
 
     ani_method codeSetter {};
-    if (ANI_OK != env->Class_FindMethod(cls, "<set>code", nullptr, &codeSetter)) {
+    if (env->Class_FindMethod(cls, "<set>code", nullptr, &codeSetter) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get method codeSetter %{public}s failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
 
-    if (ANI_OK != env->Object_CallMethod_Void(results_obj, codeSetter, result.first)) {
+    if (env->Object_CallMethod_Void(results_obj, codeSetter, result.first) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method codeSetter %{public}s failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
 
     ani_method messageSetter {};
-    if (ANI_OK != env->Class_FindMethod(cls, "<set>message", nullptr, &messageSetter)) {
+    if (env->Class_FindMethod(cls, "<set>message", nullptr, &messageSetter) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method messageSetter %{public}s failed", CLASS_NAME_RESULTS);
         return results_obj;
     }
 
     ani_string message_string = HiAppEventAniUtil::CreateAniString(env, result.second);
-    if (ANI_OK != env->Object_CallMethod_Void(results_obj, messageSetter, message_string)) {
+    if (env->Object_CallMethod_Void(results_obj, messageSetter, message_string) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method messageSetter Fail %{public}s", CLASS_NAME_RESULTS);
         return results_obj;
     }
@@ -381,11 +386,11 @@ AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)
     }
     for (const auto &objType : OBJECT_TYPE) {
         ani_class cls {};
-        if (ANI_OK != env->FindClass(objType.first, &cls)) {
+        if (env->FindClass(objType.first, &cls) != ANI_OK) {
             continue;
         }
         ani_boolean isInstance = ANI_FALSE;
-        if (ANI_OK != env->Object_InstanceOf(elementObj, cls, &isInstance)) {
+        if (env->Object_InstanceOf(elementObj, cls, &isInstance) != ANI_OK) {
             continue;
         }
         if (static_cast<bool>(isInstance)) {
@@ -395,30 +400,54 @@ AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)
     return AniArgsType::ANI_UNKNOWN;
 }
 
-AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_array_ref arrayRef)
+AniArgsType HiAppEventAniUtil::GetArrayType(ani_env *env, ani_ref arrayRef)
 {
     if (env == nullptr) {
         return AniArgsType::ANI_UNKNOWN;
     }
-    ani_size index = 0;
-    ani_ref valueRef {};
-    if (ANI_OK != env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), index, &valueRef)) {
-        HILOG_ERROR(LOG_CORE, "fail to get first element in array.");
-        return AniArgsType::ANI_UNKNOWN;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return AniArgsType::ANI_UNDEFINED;
     }
-    return GetArgType(env, static_cast<ani_object>(valueRef));
+    AniArgsType type = AniArgsType::ANI_NULL; // note: empty array returns null type
+    for (ani_size i = 0; i < len; ++i) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            return AniArgsType::ANI_UNDEFINED;
+        }
+        if (i == 0) {
+            type = GetArgType(env, static_cast<ani_object>(element));
+            continue;
+        }
+        if (type != GetArgType(env, static_cast<ani_object>(element))) {
+            HILOG_ERROR(LOG_CORE, "array has different element types");
+            return AniArgsType::ANI_UNDEFINED;
+        }
+    }
+    return type;
 }
 
-std::string HiAppEventAniUtil::ConfigOptionToString(ani_env *env, const std::string &key, ani_ref valueRef)
+std::string HiAppEventAniUtil::ConvertToString(ani_env *env, ani_ref valueRef)
 {
     if (env == nullptr) {
         return "";
     }
+    AniArgsType type = GetArgType(env, static_cast<ani_object>(valueRef));
     std::string result = "";
-    if (key == CONFIG_OPTION_DISABLE) {
-        result = HiAppEventAniUtil::ParseBoolValue(env, valueRef) ? "true" : "false";
-    } else if (key == CONFIG_OPTION_MAXSTORAGE) {
-        result = HiAppEventAniUtil::ParseStringValue(env, valueRef);
+    switch (type) {
+        case AniArgsType::ANI_BOOLEAN:
+            result = HiAppEventAniUtil::ParseBoolValue(env, valueRef) ? "true" : "false";
+            break;
+        case AniArgsType::ANI_DOUBLE:
+            result = std::to_string(ParseNumberValue(env, valueRef));
+            break;
+        case AniArgsType::ANI_STRING:
+            result = HiAppEventAniUtil::ParseStringValue(env, valueRef);
+            break;
+        default:
+            break;
     }
     return result;
 }
@@ -429,7 +458,7 @@ ani_ref HiAppEventAniUtil::CreateGlobalReference(ani_env *env, ani_ref func)
     if (env == nullptr) {
         return objectGRef;
     }
-    if (ANI_OK != env->GlobalReference_Create(func, &objectGRef)) {
+    if (env->GlobalReference_Create(func, &objectGRef) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "failed to create global reference");
         return objectGRef;
     }
@@ -443,7 +472,7 @@ ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
     if (env == nullptr) {
         return obj;
     }
-    if (ANI_OK != env->FindClass(CLASS_NAME_DOUBLE, &cls)) {
+    if (env->FindClass(CLASS_NAME_DOUBLE, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_DOUBLE);
         return obj;
     }
@@ -467,7 +496,7 @@ static ani_enum_item ToAniEnum(ani_env *env, EventTypeAni value)
     ani_int enumIndex = static_cast<ani_int>(it->second);
 
     ani_enum aniEnum {};
-    if (ANI_OK != env->FindEnum(ENUM_NAME_EVENT_TYPE, &aniEnum)) {
+    if (env->FindEnum(ENUM_NAME_EVENT_TYPE, &aniEnum) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find enum %{public}s failed", ENUM_NAME_EVENT_TYPE);
         return aniEnumItem;
     }
@@ -485,7 +514,7 @@ ani_object HiAppEventAniUtil::CreateBool(ani_env *env, bool boolValue)
     if (env == nullptr) {
         return obj;
     }
-    if (ANI_OK != env->FindClass(CLASS_NAME_BOOLEAN, &cls)) {
+    if (env->FindClass(CLASS_NAME_BOOLEAN, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_BOOLEAN);
         return obj;
     }
@@ -511,16 +540,16 @@ static ani_ref CreateArray(ani_env *env, size_t length)
     if (env == nullptr) {
         return array;
     }
-    if (ANI_OK != env->FindClass(CLASS_NAME_ARRAY, &cls)) {
+    if (env->FindClass(CLASS_NAME_ARRAY, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_ARRAY);
         return array;
     }
     ani_method method {};
-    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "I:V", &method)) {
+    if (env->Class_FindMethod(cls, "<ctor>", "I:V", &method) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "%{public}s Find Method ctor Failed", CLASS_NAME_ARRAY);
         return array;
     }
-    if (ANI_OK != env->Object_New(cls, method, &array, length)) {
+    if (env->Object_New(cls, method, &array, length) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "%{public}s Call Method ctor Failed", CLASS_NAME_ARRAY);
         return array;
     }
@@ -534,11 +563,11 @@ static ani_ref CreateArray(ani_env *env, const std::string &name, ani_size lengt
         return array;
     }
     ani_class cls {};
-    if (ANI_OK != env->FindClass(name.c_str(), &cls)) {
+    if (env->FindClass(name.c_str(), &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", name.c_str());
         return array;
     }
-    if (ANI_OK != env->Array_New_Ref(cls, length, nullptr, &array)) {
+    if (env->Array_New_Ref(cls, length, nullptr, &array) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "New %{public}s Array Ref Failed.", name.c_str());
         return array;
     }
@@ -552,11 +581,11 @@ static ani_method FindArrayMethodSet(ani_env *env)
     if (env == nullptr) {
         return setMethod;
     }
-    if (ANI_OK != env->FindClass(CLASS_NAME_ARRAY, &cls)) {
+    if (env->FindClass(CLASS_NAME_ARRAY, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
     }
-    if (ANI_OK != env->Class_FindMethod(cls, "$_set", "ILstd/core/Object;:V", &setMethod)) {
+    if (env->Class_FindMethod(cls, "$_set", "ILstd/core/Object;:V", &setMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindMethod $_set %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
     }
@@ -580,17 +609,17 @@ ani_object HiAppEventAniUtil::CreateObject(ani_env *env, const std::string &name
     }
 
     ani_class cls {};
-    if (ANI_OK != env->FindClass(name.c_str(), &cls)) {
+    if (env->FindClass(name.c_str(), &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", name.c_str());
     }
 
     ani_method ctor {};
-    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", nullptr, &ctor)) {
+    if (env->Class_FindMethod(cls, "<ctor>", nullptr, &ctor) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get %{public}s ctor Failed", name.c_str());
     }
 
     ani_object obj {};
-    if (ANI_OK != env->Object_New(cls, ctor, &obj)) {
+    if (env->Object_New(cls, ctor, &obj) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Create Object Failed: %{public}s", name.c_str());
     }
     return obj;
@@ -620,13 +649,13 @@ static ani_method GetRecordSetMethod(ani_env *env)
     }
 
     ani_class cls {};
-    if (ANI_OK != env->FindClass(CLASS_NAME_RECORD, &cls)) {
+    if (env->FindClass(CLASS_NAME_RECORD, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_RECORD);
         return nullptr;
     }
 
     ani_method set {};
-    if (ANI_OK != env->Class_FindMethod(cls, "$_set", nullptr, &set)) {
+    if (env->Class_FindMethod(cls, "$_set", nullptr, &set) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get %{public}s set Failed", CLASS_NAME_RECORD);
         return nullptr;
     }
@@ -671,9 +700,8 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         auto eventNameList = jsonValue.getMemberNames();
         for (auto it = eventNameList.cbegin(); it != eventNameList.cend(); ++it) {
             auto propertyName = *it;
-            if (ANI_OK != env->Object_CallMethod_Void(obj, set,
-                HiAppEventAniUtil::CreateAniString(env, propertyName),
-                CreateValueByJson(env, jsonValue[propertyName]))) {
+            if (env->Object_CallMethod_Void(obj, set, HiAppEventAniUtil::CreateAniString(env, propertyName),
+                CreateValueByJson(env, jsonValue[propertyName])) != ANI_OK) {
                 HILOG_ERROR(LOG_CORE, "set record params Fail: %{public}s", CLASS_NAME_RECORD);
                 return obj;
             }
@@ -748,4 +776,80 @@ ani_ref HiAppEventAniUtil::CreateEventGroups(ani_env *env, const std::vector<std
         ++index;
     }
     return eventGroups;
+}
+
+std::vector<bool> HiAppEventAniUtil::GetBooleans(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<bool> bools;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return bools;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        bools.emplace_back(HiAppEventAniUtil::ParseBoolValue(env, element));
+    }
+    return bools;
+}
+
+std::vector<double> HiAppEventAniUtil::GetDoubles(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<double> doubles;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return doubles;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        doubles.emplace_back(HiAppEventAniUtil::ParseNumberValue(env, element));
+    }
+    return doubles;
+}
+
+std::vector<std::string> HiAppEventAniUtil::GetStrings(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<std::string> strs;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return strs;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        strs.emplace_back(HiAppEventAniUtil::ParseStringValue(env, element));
+    }
+    return strs;
+}
+
+std::vector<int> HiAppEventAniUtil::GetInts(ani_env *env, ani_ref arrayRef)
+{
+    std::vector<int> ints;
+    ani_size len = 0;
+    if (env->Array_GetLength(static_cast<ani_array_ref>(arrayRef), &len) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get the length of array");
+        return ints;
+    }
+    for (ani_size i = 0; i < len; i++) {
+        ani_ref element = nullptr;
+        if (env->Array_Get_Ref(static_cast<ani_array_ref>(arrayRef), i, &element) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get the element of array");
+            break;
+        }
+        ints.emplace_back(HiAppEventAniUtil::ParseIntValue(env, element));
+    }
+    return ints;
 }

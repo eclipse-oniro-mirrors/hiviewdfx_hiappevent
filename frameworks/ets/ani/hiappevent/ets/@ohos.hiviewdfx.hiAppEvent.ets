@@ -19,7 +19,7 @@ class AppEventInfoInner implements hiAppEvent.AppEventInfo {
     domain: string = "";
     name: string = "";
     eventType: hiAppEvent.EventType = hiAppEvent.EventType.FAULT;
-    params: Record<string, number | string | boolean | (number | string | boolean)[]> = {};
+    params: object = {};
 }
 
 class AppEventPackageInner implements hiAppEvent.AppEventPackage {
@@ -68,12 +68,12 @@ class ProcessorInner implements hiAppEvent.Processor {
     appId?: string | undefined;
     onStartReport?: boolean | undefined;
     onBackgroundReport?: boolean | undefined;
-    periodReport?: int | undefined;
-    batchReport?: int | undefined;
+    periodReport?: number | undefined;
+    batchReport?: number | undefined;
     userIds?: string[] | undefined;
     userProperties?: string[] | undefined;
     eventConfigs?: hiAppEvent.AppEventReportConfig[] | undefined;
-    configId?: int | undefined;
+    configId?: number | undefined;
     customConfigs?: Record<string, string> | undefined;
 }
 
@@ -138,7 +138,7 @@ export default namespace hiAppEvent {
         domain: string;
         name: string;
         eventType: EventType;
-        params: Record<string, number | string | boolean | (number | string | boolean)[]>;
+        params: object;
     }
 
     native function writeSync(info: AppEventInfo): Results;
@@ -177,6 +177,25 @@ export default namespace hiAppEvent {
     export function setEventParam(params: Record<string, ParamType>, domain: string, name?: string): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventParamSync(params, domain, name); }
+            taskpool.execute(cb).then((ret: NullishType): void => {
+                let retError = new BusinessError<void>();
+                let setResults: Results = ret as Results;
+                if (setResults.code === 0) {
+                    resolve(undefined);
+                } else {
+                    retError.code = setResults.code as number;
+                    retError.message = setResults.message as string;
+                    reject(retError);
+                }
+            });
+        })
+    }
+
+    native function setEventConfigSync(name: string, config: Record<string, ParamType>): Results;
+
+    export function setEventConfig(name: string, config: Record<string, ParamType>): Promise<void> {
+        return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
+            let cb = (): Results => { return setEventConfigSync(name, config); }
             taskpool.execute(cb).then((ret: NullishType): void => {
                 let retError = new BusinessError<void>();
                 let setResults: Results = ret as Results;
@@ -256,12 +275,12 @@ export default namespace hiAppEvent {
         appId?: string;
         onStartReport?: boolean;
         onBackgroundReport?: boolean;
-        periodReport?: int;
-        batchReport?: int;
+        periodReport?: number;
+        batchReport?: number;
         userIds?: string[];
         userProperties?: string[];
         eventConfigs?: AppEventReportConfig[];
-        configId?: int;
+        configId?: number;
         customConfigs?: Record<string, string>;
     }
 
