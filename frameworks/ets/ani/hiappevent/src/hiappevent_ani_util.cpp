@@ -642,7 +642,7 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
     if (jsonValue.isArray()) {
         if (jsonValue[0].isBool()) {
             ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
-            for (size_t i = 0; i < jsonValue.size(); ++i) {
+            for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
                 env->Array_Set_Ref(static_cast<ani_array_ref>(boolArray), static_cast<ani_size>(i),
                     CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
             }
@@ -650,7 +650,7 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         }
         if (jsonValue[0].isDouble()) {
             ani_ref doubleArray = CreateArray(env, CLASS_NAME_DOUBLE, jsonValue.size());
-            for (size_t i = 0; i < jsonValue.size(); ++i) {
+            for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
                 env->Array_Set_Ref(static_cast<ani_array_ref>(doubleArray), static_cast<ani_size>(i),
                     CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
             }
@@ -658,7 +658,7 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         }
         if (jsonValue[0].isString()) {
             ani_ref stringArray = CreateArray(env, CLASS_NAME_STRING, jsonValue.size());
-            for (size_t i = 0; i < jsonValue.size(); ++i) {
+            for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
                 env->Array_Set_Ref(static_cast<ani_array_ref>(stringArray), static_cast<ani_size>(i),
                     CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
             }
