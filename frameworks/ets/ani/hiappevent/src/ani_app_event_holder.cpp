@@ -86,6 +86,12 @@ void AniAppEventHolder::AniConstructor(ani_env *env, ani_object aniObject, ani_s
     Wrap(env, aniObject, holder);
 }
 
+void AniAppEventHolder::AniFinalize(ani_env *env, ani_object object, ani_long nativeHolder)
+{
+    AniAppEventHolder* holder = reinterpret_cast<AniAppEventHolder*>(nativeHolder);
+    delete holder;
+}
+
 void AniAppEventHolder::AniSetRow(ani_env *env, ani_object object, ani_double size)
 {
     int num = static_cast<int>(size);

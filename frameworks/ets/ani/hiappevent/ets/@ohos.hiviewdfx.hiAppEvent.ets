@@ -201,9 +201,14 @@ export default namespace hiAppEvent {
 
     export class AppEventPackageHolder {
         private nativeHolder: long;
+        private static native _finalize(nativeHolder: long): void;
+        private static _registry = new FinalizationRegistry<long>((nativeHolder: long) => {
+            AppEventPackageHolder._finalize(nativeHolder);
+        });
         private native nativeConstructor(watcherName: string): void;
         constructor(watcherName: string) {
-            this.nativeConstructor(watcherName)
+            this.nativeConstructor(watcherName);
+            AppEventPackageHolder._registry.register(this, this.nativeHolder);
         }
         native setSize(size: number): void;
         native setRow(size: number): void;
