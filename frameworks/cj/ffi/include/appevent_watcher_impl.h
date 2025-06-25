@@ -23,7 +23,7 @@
 #include "app_event_watcher.h"
 #include "cj_lambda.h"
 #include "hiappevent_base.h"
-#include "cJSON.h"
+#include "json/json.h"
 #include "native/ffi_remote_data.h"
 
 namespace OHOS {

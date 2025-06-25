@@ -14,9 +14,10 @@
  */
  
 #include "appevent_watcher_impl.h"
-#include "event_json_util.h"
 #include "log.h"
+ 
 using namespace OHOS::HiviewDFX;
+ 
 namespace OHOS {
 namespace CJSystemapi {
 namespace HiAppEvent {
@@ -149,7 +150,7 @@ void AppEventWatcherImpl::InitReceiver(void (*callbackRef)(char*, CArrRetAppEven
     context_->receiveContext->onReceive = CJLambda::Create(callbackRef);
 }
 
-void ConvertArrBool(CParameters &retValue, const cJSON *jsonValue)
+void ConvertArrBool(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRBOOL;
     bool* retArrValue = static_cast<bool*>(malloc(sizeof(bool) * retValue.size));
@@ -157,15 +158,13 @@ void ConvertArrBool(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        retArrValue[i] = cJSON_IsTrue(item);
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        retArrValue[i] = jsonValue[static_cast<int>(i)].asBool();
     }
     retValue.value = retArrValue;
 }
 
-void ConvertArrInt(CParameters &retValue, const cJSON *jsonValue)
+void ConvertArrInt(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRINT;
     int32_t* retArrValue = static_cast<int32_t*>(malloc(sizeof(int32_t) * retValue.size));
@@ -173,17 +172,13 @@ void ConvertArrInt(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        if (item && EventJsonUtil::CJsonIsInt(item)) {
-            retArrValue[i] = static_cast<int32_t>(item->valuedouble);
-        }
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        retArrValue[i] = jsonValue[static_cast<int>(i)].asInt();
     }
     retValue.value = retArrValue;
 }
 
-void ConvertArrInt64(CParameters &retValue, const cJSON *jsonValue)
+void ConvertArrInt64(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRINT64;
     int64_t* retArrValue = static_cast<int64_t*>(malloc(sizeof(int64_t) * retValue.size));
@@ -191,17 +186,13 @@ void ConvertArrInt64(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        if (item && EventJsonUtil::CJsonIsInt64(item)) {
-            retArrValue[i] = static_cast<int64_t>(item->valuedouble);
-        }
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        retArrValue[i] = jsonValue[static_cast<int>(i)].asInt64();
     }
     retValue.value = retArrValue;
 }
 
-void CovertArrDouble(CParameters &retValue, const cJSON *jsonValue)
+void CovertArrDouble(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRFLOAT;
     double* retArrValue = static_cast<double*>(malloc(sizeof(double) * retValue.size));
@@ -209,17 +200,13 @@ void CovertArrDouble(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        if (item && cJSON_IsNumber(item)) {
-            retArrValue[i] = item->valuedouble;
-        }
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        retArrValue[i] = jsonValue[static_cast<int>(i)].asDouble();
     }
     retValue.value = retArrValue;
 }
 
-void CovertArrString(CParameters &retValue, const cJSON *jsonValue)
+void CovertArrString(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRSTRING;
     char** retArrValue = static_cast<char**>(malloc(sizeof(char*) * retValue.size));
@@ -227,15 +214,13 @@ void CovertArrString(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        retArrValue[i] = MallocCString(item->valuestring);
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        retArrValue[i] = MallocCString(jsonValue[static_cast<int>(i)].asString());
     }
     retValue.value = retArrValue;
 }
 
-void CovertArrObjStr(CParameters &retValue, const cJSON *jsonValue)
+void CovertArrObjStr(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.valueType = TYPE_ARRSTRING;
     char** retArrValue = static_cast<char**>(malloc(sizeof(char*) * retValue.size));
@@ -243,81 +228,72 @@ void CovertArrObjStr(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        auto itemStr = cJSON_PrintUnformatted(item);
-        std::string jsonStr = itemStr;
-        retArrValue[i] = MallocCString(jsonStr);
-        cJSON_free(itemStr);
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        Json::FastWriter writer;
+        std::string json_string = writer.write(jsonValue[static_cast<int>(i)]);
+        retArrValue[i] = MallocCString(json_string);
     }
     retValue.value = retArrValue;
 }
 
-bool CheckArrBool(const cJSON *jsonValue)
+bool CheckArrBool(const Json::Value& jsonValue)
 {
     size_t nBool = 0;
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        if (cJSON_IsBool(item)) {
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isBool()) {
             nBool++;
         }
     }
-    return nBool == jsonSize;
+    return nBool == jsonValue.size();
 }
 
-bool CheckArrInt(const cJSON *jsonValue)
+bool CheckArrInt(const Json::Value& jsonValue)
 {
     size_t nInt = 0;
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        if (EventJsonUtil::CJsonIsInt(cJSON_GetArrayItem(jsonValue, i))) {
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isInt()) {
             nInt++;
         }
     }
-    return nInt == jsonSize;
+    return nInt == jsonValue.size();
 }
 
-bool CheckArrInt64(const cJSON *jsonValue)
+bool CheckArrInt64(const Json::Value& jsonValue)
 {
     size_t nInt = 0;
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        cJSON *item = cJSON_GetArrayItem(jsonValue, i);
-        if (EventJsonUtil::CJsonIsInt64(item) && !EventJsonUtil::CJsonIsUint(item)) {
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isInt64() && jsonValue.type() != Json::ValueType::uintValue) {
             nInt++;
         }
     }
-    return nInt == jsonSize;
+    return nInt == jsonValue.size();
 }
 
-bool CheckArrDouble(const cJSON *jsonValue)
+bool CheckArrDouble(const Json::Value& jsonValue)
 {
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        if (!cJSON_IsNumber(cJSON_GetArrayItem(jsonValue, i))) {
-            return false;
+    size_t nDouble = 0;
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isDouble()) {
+            nDouble++;
         }
     }
-    return true;
+    return nDouble == jsonValue.size();
 }
 
-bool CheckArrString(const cJSON *jsonValue)
+bool CheckArrString(const Json::Value& jsonValue)
 {
     size_t nString = 0;
-    size_t jsonSize = cJSON_GetArraySize(jsonValue);
-    for (size_t i = 0; i < jsonSize; ++i) {
-        if (cJSON_IsString(cJSON_GetArrayItem(jsonValue, i))) {
+    for (size_t i = 0; i < jsonValue.size(); ++i) {
+        if (jsonValue[static_cast<int>(i)].isString()) {
             nString++;
         }
     }
-    return nString == jsonSize;
+    return nString == jsonValue.size();
 }
 
-void CreatArr(CParameters &retValue, const cJSON *jsonValue)
+void CreatArr(CParameters &retValue, const Json::Value& jsonValue)
 {
-    retValue.size = cJSON_GetArraySize(jsonValue);
+    retValue.size = jsonValue.size();
     if (CheckArrBool(jsonValue)) {
         ConvertArrBool(retValue, jsonValue);
     } else if (CheckArrInt(jsonValue)) {
@@ -333,7 +309,7 @@ void CreatArr(CParameters &retValue, const cJSON *jsonValue)
     }
 }
 
-void CreatElmInt(CParameters &retValue, const cJSON *jsonValue)
+void CreatElmInt(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_INT;
@@ -342,11 +318,11 @@ void CreatElmInt(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    retInt[0] = static_cast<int32_t>(jsonValue->valuedouble);
+    retInt[0] = jsonValue.asInt();
     retValue.value = retInt;
 }
 
-void CreatElmInt64(CParameters &retValue, const cJSON *jsonValue)
+void CreatElmInt64(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_INT64;
@@ -355,11 +331,11 @@ void CreatElmInt64(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    retInt[0] = static_cast<int64_t>(jsonValue->valuedouble);
+    retInt[0] = jsonValue.asInt64();
     retValue.value = retInt;
 }
 
-void CreatElmBool(CParameters &retValue, const cJSON *jsonValue)
+void CreatElmBool(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_BOOL;
@@ -368,11 +344,11 @@ void CreatElmBool(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    retBool[0] = cJSON_IsTrue(jsonValue);
+    retBool[0] = jsonValue.asBool();
     retValue.value = retBool;
 }
 
-void CreatElmDou(CParameters &retValue, const cJSON *jsonValue)
+void CreatElmDou(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_FLOAT;
@@ -381,40 +357,39 @@ void CreatElmDou(CParameters &retValue, const cJSON *jsonValue)
         LOGE("malloc is failed");
         return;
     }
-    retF[0] = jsonValue->valuedouble;
+    retF[0] = jsonValue.asDouble();
     retValue.value = retF;
 }
 
-void CreatElmStr(CParameters &retValue, const cJSON *jsonValue)
+void CreatElmStr(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_STRING;
-    retValue.value = MallocCString(jsonValue->valuestring);
+    retValue.value = MallocCString(jsonValue.asString());
 }
 
-void CreatObjStr(CParameters &retValue, const cJSON *jsonValue)
+void CreatObjStr(CParameters &retValue, const Json::Value& jsonValue)
 {
     retValue.size = 1;
     retValue.valueType = TYPE_STRING;
-    auto itemStr = cJSON_PrintUnformatted(jsonValue);
-    std::string jsonStr = itemStr;
-    retValue.value = MallocCString(jsonStr);
-    cJSON_free(itemStr);
+    Json::FastWriter writer;
+    std::string json_string = writer.write(jsonValue);
+    retValue.value = MallocCString(json_string);
 }
 
-void CreateValueByJson(CParameters &retValue, const cJSON *jsonValue)
+void CreateValueByJson(CParameters &retValue, const Json::Value& jsonValue)
 {
-    if (cJSON_IsArray(jsonValue)) {
+    if (jsonValue.isArray()) {
         CreatArr(retValue, jsonValue);
-    } else if (EventJsonUtil::CJsonIsInt(jsonValue)) {
+    } else if (jsonValue.isInt()) {
         CreatElmInt(retValue, jsonValue);
-    } else if (cJSON_IsBool(jsonValue)) {
+    } else if (jsonValue.isBool()) {
         CreatElmBool(retValue, jsonValue);
-    } else if (cJSON_IsNumber(jsonValue)) {
+    } else if (jsonValue.isDouble()) {
         CreatElmDou(retValue, jsonValue);
-    } else if (cJSON_IsString(jsonValue)) {
+    } else if (jsonValue.isString()) {
         CreatElmStr(retValue, jsonValue);
-    } else if (EventJsonUtil::CJsonIsInt64(jsonValue) && !EventJsonUtil::CJsonIsUint(jsonValue)) {
+    } else if (jsonValue.isInt64() && jsonValue.type() != Json::ValueType::uintValue) {
         CreatElmInt64(retValue, jsonValue);
     } else {
         CreatObjStr(retValue, jsonValue);
@@ -424,29 +399,28 @@ void CreateValueByJson(CParameters &retValue, const cJSON *jsonValue)
 CArrParameters CreateValueByJsonStr(const std::string& jsonStr)
 {
     CArrParameters pameters{0};
-    cJSON *jsonValue = cJSON_Parse(jsonStr.c_str());
-    if (!jsonValue) {
+    Json::Value jsonValue;
+    Json::Reader reader(Json::Features::strictMode());
+    if (!reader.parse(jsonStr, jsonValue)) {
         LOGE("parse event detail info failed, please check the style of json");
         return pameters;
     }
 
-    auto eventNameList = EventJsonUtil::CJsonGetMemberNames(jsonValue);
+    auto eventNameList = jsonValue.getMemberNames();
     pameters.size = static_cast<int64_t>(eventNameList.size());
     CParameters* retValue = static_cast<CParameters*>(malloc(sizeof(CParameters) * pameters.size));
     if (retValue == nullptr) {
         LOGE("malloc is failed");
-        cJSON_Delete(jsonValue);
         return pameters;
     }
     int i = 0;
     for (const auto& it : eventNameList) {
         const auto& propertyName = it;
         retValue[i].key = MallocCString(propertyName);
-        CreateValueByJson(retValue[i], cJSON_GetObjectItemCaseSensitive(jsonValue, propertyName.c_str()));
+        CreateValueByJson(retValue[i], jsonValue[propertyName]);
         ++i;
     }
     pameters.head = retValue;
-    cJSON_Delete(jsonValue);
     return pameters;
 }
 

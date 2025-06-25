@@ -17,109 +17,43 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventJsonUtil {
-bool CJsonIsInt(const cJSON* item)
+uint32_t ParseUInt32(const Json::Value& root, const std::string& key)
 {
-    if (!cJSON_IsNumber(item)) {
-        return false;
-    }
-    double value = item->valuedouble;
-    if (value > static_cast<double>(INT32_MIN) && value < static_cast<double>(INT32_MAX)) {
-        return value == static_cast<int32_t>(value);
-    }
-    return false;
+    return (root.isMember(key) && root[key].isUInt()) ? root[key].asUInt() : 0;
 }
 
-bool CJsonIsUint(const cJSON *item)
+int ParseInt(const Json::Value& root, const std::string& key)
 {
-    if (!cJSON_IsNumber(item)) {
-        return false;
-    }
-    double value = item->valuedouble;
-    if (item->valueint >= 0 && value < static_cast<double>(UINT32_MAX)) {
-        return value == static_cast<uint32_t>(value);
-    }
-    return false;
+    return (root.isMember(key) && root[key].isInt()) ? root[key].asInt() : 0;
 }
 
-bool CJsonIsInt64(const cJSON *item)
+std::string ParseString(const Json::Value& root, const std::string& key)
 {
-    if (!cJSON_IsNumber(item)) {
-        return false;
-    }
-    double value = item->valuedouble;
-    if (value > static_cast<double>(INT64_MIN) && value < static_cast<double>(INT64_MAX)) {
-        return value == static_cast<int64_t>(value);
-    }
-    return false;
+    return (root.isMember(key) && root[key].isString()) ? root[key].asString() : "";
 }
 
-uint32_t ParseUInt32(const cJSON *root, const std::string& key)
+void ParseStrings(const Json::Value& root, const std::string& key, std::unordered_set<std::string>& strs)
 {
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (CJsonIsUint(item)) {
-        return static_cast<uint32_t>(item->valuedouble);
-    }
-    return 0;
-}
-
-int ParseInt(const cJSON *root, const std::string& key)
-{
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (CJsonIsInt(item)) {
-        return static_cast<int32_t>(item->valuedouble);
-    }
-    return 0;
-}
-
-std::string ParseString(const cJSON *root, const std::string& key)
-{
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (cJSON_IsString(item)) {
-        return item->valuestring;
-    }
-    return "";
-}
-
-void ParseStrings(const cJSON *root, const std::string& key, std::unordered_set<std::string>& strs)
-{
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(root, key.c_str());
-    if (!item || !cJSON_IsArray(item)) {
+    if (!root.isMember(key) || !root[key].isArray()) {
         return;
     }
-    size_t itemSize = cJSON_GetArraySize(item);
-    for (size_t i = 0; i < itemSize; ++i) {
-        cJSON *elem = cJSON_GetArrayItem(item, i);
-        if (elem && cJSON_IsString(elem)) {
-            strs.insert(elem->valuestring);
+    for (Json::ArrayIndex i = 0; i < root[key].size(); ++i) {
+        if (root[key][i].isString()) {
+            strs.insert(root[key][i].asString());
         }
     }
 }
 
-cJSON *GetJsonObjectFromJsonString(const std::string& paramString)
+bool GetJsonObjectFromJsonString(Json::Value& eventJson, const std::string& paramString)
 {
-    cJSON *eventJson = cJSON_Parse(paramString.c_str());
-    if (!eventJson) {
-        return nullptr;
+    Json::Reader reader(Json::Features::strictMode());
+    if (!reader.parse(paramString, eventJson)) {
+        return false;
     }
-    if (!cJSON_IsObject(eventJson)) {
-        cJSON_Delete(eventJson);
-        return nullptr;
+    if (!eventJson.isObject()) {
+        return false;
     }
-    return eventJson;
-}
-
-std::vector<std::string> CJsonGetMemberNames(const cJSON *json)
-{
-    if (cJSON_IsObject(json)) {
-        cJSON *current = json->child;
-        std::vector<std::string> memberNames;
-        while (current) {
-            memberNames.push_back(current->string);
-            current = current->next;
-        }
-        return memberNames;
-    }
-    return {};
+    return true;
 }
 } // namespace EventJsonUtil
 } // namespace HiviewDFX
