@@ -35,6 +35,7 @@
 
 using namespace OHOS::HiviewDFX;
 namespace {
+const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
 int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, std::string>& eventConfigMap)
 {
     std::map<std::string, ani_ref> eventConfig;
@@ -82,9 +83,9 @@ ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
     }
 
     ani_ref paramTemp {};
-    if (ANI_OK != env->Object_GetPropertyByName_Ref(info, "params", &paramTemp)) {
+    if (env->Object_GetPropertyByName_Ref(info, "params", &paramTemp) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get property params failed");
-        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("params")});
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("params", PARAM_VALUE_TYPE)});
     }
 
     auto appEventPack = std::make_shared<AppEventPack>(domain, name, enumValue);
@@ -229,8 +230,8 @@ void HiAppEventAni::RemoveWatcher(ani_env *env, ani_object watcher)
 static ani_status BindEventFunction(ani_env *env)
 {
     ani_namespace  ns {};
-    if (ANI_OK != env->FindNamespace(NAMESPACE_NAME_HIAPPEVENT, &ns)) {
-        return ANI_INVALID_ARGS;
+    if (env->FindNamespace(NAMESPACE_NAME_HIAPPEVENT, &ns) != ANI_OK) {
+        return ANI_ERROR;
     }
     std::array methods = {
         ani_native_function {"writeSync", nullptr, reinterpret_cast<void *>(HiAppEventAni::Write)},
@@ -249,8 +250,8 @@ static ani_status BindEventFunction(ani_env *env)
         ani_native_function {"addWatcher", nullptr, reinterpret_cast<void *>(HiAppEventAni::AddWatcher)},
         ani_native_function {"removeWatcher", nullptr, reinterpret_cast<void *>(HiAppEventAni::RemoveWatcher)},
     };
-    if (ANI_OK != env->Namespace_BindNativeFunctions(ns, methods.data(), methods.size())) {
-        return ANI_INVALID_TYPE;
+    if (env->Namespace_BindNativeFunctions(ns, methods.data(), methods.size()) != ANI_OK) {
+        return ANI_ERROR;
     };
     return ANI_OK;
 }
@@ -258,8 +259,8 @@ static ani_status BindEventFunction(ani_env *env)
 static ani_status BindHolderFunction(ani_env *env)
 {
     ani_class cls {};
-    if (ANI_OK != env->FindClass(CLASS_NAME_EVENT_PACKAGE_HOLDER, &cls)) {
-        return ANI_INVALID_ARGS;
+    if (env->FindClass(CLASS_NAME_EVENT_PACKAGE_HOLDER, &cls) != ANI_OK) {
+        return ANI_ERROR;
     }
     std::array methods = {
         ani_native_function {"nativeConstructor", nullptr,
@@ -269,8 +270,8 @@ static ani_status BindHolderFunction(ani_env *env)
         ani_native_function {"setRow", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetRow)},
         ani_native_function {"takeNext", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniTakeNext)},
     };
-    if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
-        return ANI_INVALID_TYPE;
+    if (env->Class_BindNativeMethods(cls, methods.data(), methods.size()) != ANI_OK) {
+        return ANI_ERROR;
     };
     return ANI_OK;
 }
@@ -278,19 +279,13 @@ static ani_status BindHolderFunction(ani_env *env)
 ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
 {
     ani_env *env = nullptr;
-    if (ANI_OK != vm->GetEnv(ANI_VERSION_1, &env)) {
+    if (vm->GetEnv(ANI_VERSION_1, &env) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Unsupported ANI_VERSION_1");
-        return ANI_OUT_OF_REF;
+        return ANI_ERROR;
     }
-
-    if (ANI_OK != BindEventFunction(env)) {
-        return BindEventFunction(env);
+    if (BindEventFunction(env) || BindHolderFunction(env)) {
+        return ANI_ERROR;
     }
-
-    if (ANI_OK != BindHolderFunction(env)) {
-        return BindHolderFunction(env);
-    }
-
     *result = ANI_VERSION_1;
     return ANI_OK;
 }

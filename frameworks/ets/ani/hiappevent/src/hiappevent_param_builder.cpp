@@ -23,57 +23,16 @@
 
 using namespace OHOS::HiviewDFX;
 
-static void AppendArray(ani_env *env, ani_ref valueRef, AniArgsType type, ParamArray &paramArray)
-{
-    if (type == AniArgsType::ANI_STRING) {
-        paramArray.stringArray.emplace_back(HiAppEventAniUtil::ParseStringValue(env, valueRef));
-    } else {
-        HILOG_ERROR(LOG_CORE, "Unexpected type");
-    }
-}
-
-static bool AddArrayParam(AniArgsType type, std::string key, ParamArray &paramArray,
-    std::shared_ptr<AppEventPack> &appEventPack)
-{
-    if (type == AniArgsType::ANI_STRING) {
-        appEventPack->AddParam(key, paramArray.stringArray);
-    } else {
-        HILOG_ERROR(LOG_CORE, "array param value type is invalid");
-        return false;
-    }
-    return true;
-}
-
 bool HiAppEventParamBuilder::AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
     std::shared_ptr<AppEventPack> &appEventPack)
 {
-    ani_size size = 0;
-    if (ANI_OK != env->Array_GetLength(static_cast<ani_array>(arrayRef), &size)) {
-        HILOG_ERROR(LOG_CORE, "get array length failed");
-        return false;
-    }
-    if (size == 0) {
-        HILOG_ERROR(LOG_CORE, "The array is empty");
-        return false;
-    }
-    ParamArray paramArray;
     AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array>(arrayRef));
     if (arrayType != AniArgsType::ANI_STRING) {
         return false;
     }
-    for (ani_size i = 0; i < size; i++) {
-        ani_ref valueRef {};
-        if (ANI_OK != env->Array_Get(static_cast<ani_array>(arrayRef), i, &valueRef)) {
-            HILOG_ERROR(LOG_CORE, "get %{public}zu element of array failed", i);
-            return false;
-        }
-        if (arrayType != HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(valueRef))) {
-            HILOG_ERROR(LOG_CORE, "the elements in array is not same type");
-            return false;
-        }
-        AppendArray(env, valueRef, arrayType, paramArray);
-    }
-    return AddArrayParam(arrayType, key, paramArray, appEventPack);
+    std::vector<std::string> strs = HiAppEventAniUtil::GetStrings(env, arrayRef);
+    appEventPack->AddParam(key, strs);
+    return true;
 }
 
 bool HiAppEventParamBuilder::ParseParamsInAppEventPack(ani_env *env, ani_ref params,

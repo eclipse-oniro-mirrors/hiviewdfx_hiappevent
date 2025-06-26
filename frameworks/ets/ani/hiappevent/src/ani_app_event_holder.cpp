@@ -61,7 +61,7 @@ AniAppEventHolder::AniAppEventHolder(const std::string& name, int64_t observerSe
 
 static ani_object Wrap(ani_env *env, ani_object aniObject, AniAppEventHolder *holder)
 {
-    if (ANI_OK != env->Object_SetFieldByName_Long(aniObject, "nativeHolder", reinterpret_cast<ani_long>(holder))) {
+    if (env->Object_SetFieldByName_Long(aniObject, "nativeHolder", reinterpret_cast<ani_long>(holder)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "New holder Fail");
         return nullptr;
     }
@@ -71,7 +71,7 @@ static ani_object Wrap(ani_env *env, ani_object aniObject, AniAppEventHolder *ho
 static AniAppEventHolder* Unwrap(ani_env *env, ani_object aniObject)
 {
     ani_long context;
-    if (ANI_OK != env->Object_GetFieldByName_Long(aniObject, "nativeHolder", &context)) {
+    if (env->Object_GetFieldByName_Long(aniObject, "nativeHolder", &context) != ANI_OK) {
         return nullptr;
     }
     return reinterpret_cast<AniAppEventHolder*>(context);
