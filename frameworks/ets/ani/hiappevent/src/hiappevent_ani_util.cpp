@@ -84,7 +84,7 @@ void HiAppEventAniUtil::ParseRecord(ani_env *env, ani_ref recordRef, std::map<st
     }
     ani_ref keys {};
     if (env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef), "keys",
-        ":Lescompat/IterableIterator;", &keys) != ANI_OK) {
+        ":C{escompat.IterableIterator}", &keys) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method keys() failed.");
     }
     ani_boolean done = ANI_FALSE;
@@ -151,7 +151,7 @@ int32_t HiAppEventAniUtil::ParseIntValue(ani_env *env, ani_ref elementRef)
         HILOG_ERROR(LOG_CORE, "find class %{public}s failed", CLASS_NAME_INT);
         return static_cast<int32_t>(intVal);
     }
-    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":I", &unboxedMethod) != ANI_OK) {
+    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":i", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
         return static_cast<int32_t>(intVal);
     }
@@ -173,7 +173,7 @@ bool HiAppEventAniUtil::ParseBoolValue(ani_env *env, ani_ref elementRef)
         return false;
     }
     ani_method unboxedMethod {};
-    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":Z", &unboxedMethod) != ANI_OK) {
+    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":z", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
         return false;
     }
@@ -197,7 +197,7 @@ double HiAppEventAniUtil::ParseNumberValue(ani_env *env, ani_ref elementRef)
         return static_cast<double>(doubleVal);
     }
     ani_method unboxedMethod {};
-    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":D", &unboxedMethod) != ANI_OK) {
+    if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":d", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
     }
     if (env->Object_CallMethod_Double(static_cast<ani_object>(elementRef), unboxedMethod, &doubleVal) != ANI_OK) {
@@ -274,7 +274,7 @@ void HiAppEventAniUtil::ThrowAniError(ani_env *env, int32_t code, const std::str
         return;
     }
     ani_method ctor {};
-    if (env->Class_FindMethod(cls, "<ctor>", ":V", &ctor) != ANI_OK) {
+    if (env->Class_FindMethod(cls, "<ctor>", ":", &ctor) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method BusinessError constructor failed");
         return;
     }
@@ -477,7 +477,7 @@ ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
         return obj;
     }
     ani_method ctor;
-    env->Class_FindMethod(cls, "<ctor>", "D:V", &ctor);
+    env->Class_FindMethod(cls, "<ctor>", "d:", &ctor);
     env->Object_New(cls, ctor, &obj, static_cast<ani_double>(num));
     return obj;
 }
@@ -519,7 +519,7 @@ ani_object HiAppEventAniUtil::CreateBool(ani_env *env, bool boolValue)
         return obj;
     }
     ani_method ctor;
-    env->Class_FindMethod(cls, "<ctor>", "Z:V", &ctor);
+    env->Class_FindMethod(cls, "<ctor>", "l:", &ctor);
     env->Object_New(cls, ctor, &obj, static_cast<ani_boolean>(boolValue));
     return obj;
 }
@@ -545,7 +545,7 @@ static ani_ref CreateArray(ani_env *env, size_t length)
         return array;
     }
     ani_method method {};
-    if (env->Class_FindMethod(cls, "<ctor>", "I:V", &method) != ANI_OK) {
+    if (env->Class_FindMethod(cls, "<ctor>", "i:", &method) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "%{public}s Find Method ctor Failed", CLASS_NAME_ARRAY);
         return array;
     }
@@ -580,7 +580,7 @@ static ani_method FindArrayMethodSet(ani_env *env)
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
     }
-    if (env->Class_FindMethod(cls, "$_set", "ILstd/core/Object;:V", &setMethod) != ANI_OK) {
+    if (env->Class_FindMethod(cls, "$_set", "iC{std.core.Object}:", &setMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindMethod $_set %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
     }
