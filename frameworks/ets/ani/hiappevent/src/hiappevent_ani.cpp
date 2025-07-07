@@ -14,13 +14,18 @@
  */
 
 #include "hiappevent_ani.h"
-
 #include "hiappevent_ani_error_code.h"
-#include "hiappevent_ani_helper.h"
+#include "hiappevent_param_builder.h"
+#include "ani_app_event_holder.h"
+
+#include "app_event_stat.h"
 #include "hiappevent_base.h"
 #include "hiappevent_verify.h"
+#include "hiappevent_clean.h"
+#include "hiappevent_config.h"
 #include "hilog/log.h"
 #include "hilog/log_cpp.h"
+#include "time_util.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -29,6 +34,18 @@
 #define LOG_TAG "HIAPPEVENT_ANI"
 
 using namespace OHOS::HiviewDFX;
+namespace {
+const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
+int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, std::string>& eventConfigMap)
+{
+    std::map<std::string, ani_ref> eventConfig;
+    HiAppEventAniUtil::ParseRecord(env, config, eventConfig);
+    for (const auto &configPair : eventConfig) {
+        eventConfigMap[configPair.first] = HiAppEventAniUtil::ConvertToString(env, configPair.second);
+    }
+    return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+}
+}
 
 ani_double HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
 {
@@ -46,36 +63,36 @@ ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
     HiAppEventAniHelper hiAppEventAniHelper;
     if (!hiAppEventAniHelper.GetPropertyDomain(info, env, domain)) {
         HILOG_ERROR(LOG_CORE, "get property domain failed");
-        return hiAppEventAniHelper.WriteResult(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("domain")});
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("domain")});
     }
 
     std::string name = "";
     if (!hiAppEventAniHelper.GetPropertyName(info, env, name)) {
         HILOG_ERROR(LOG_CORE, "get property name failed");
-        return hiAppEventAniHelper.WriteResult(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("name")});
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("name")});
     }
 
     int32_t enumValue = 0;
     if (!hiAppEventAniHelper.GeteventTypeValue(info, env, enumValue)) {
         HILOG_ERROR(LOG_CORE, "get eventType value failed");
-        return hiAppEventAniHelper.WriteResult(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("eventType")});
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("eventType")});
     }
     if (!IsValidEventType(enumValue)) {
         HILOG_ERROR(LOG_CORE, "eventType value range error");
-        return hiAppEventAniHelper.WriteResult(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("eventType")});
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("eventType")});
     }
 
     ani_ref paramTemp {};
     if (env->Object_GetPropertyByName_Ref(info, "params", &paramTemp) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get property params failed");
-        return hiAppEventAniHelper.WriteResult(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("params")});
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("params", PARAM_VALUE_TYPE)});
     }
 
     auto appEventPack = std::make_shared<AppEventPack>(domain, name, enumValue);
     if (!hiAppEventAniHelper.ParseParamsInAppEventPack(env, paramTemp, appEventPack)) {
         HILOG_ERROR(LOG_CORE, "parse params appEventPack failed");
-        return hiAppEventAniHelper.WriteResult(env,
-            hiAppEventAniHelper.BuildErrorByResult(hiAppEventAniHelper.GetResult()));
+        return HiAppEventAniUtil::Result(env,
+            HiAppEventAniUtil::BuildErrorByResult(hiAppEventAniHelper.GetResult()));
     }
 
     int32_t result = hiAppEventAniHelper.GetResult();
@@ -87,31 +104,188 @@ ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
     if (result >= 0) {
         WriteEvent(appEventPack);
     }
-    return hiAppEventAniHelper.WriteResult(env, hiAppEventAniHelper.BuildErrorByResult(result));
+    return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
+}
+
+void HiAppEventAni::Configure(ani_env *env, ani_object configObj)
+{
+    HiAppEventAniHelper hiAppEventAniHelper;
+    if (!hiAppEventAniHelper.Configure(env, configObj)) {
+        HILOG_ERROR(LOG_CORE, "failed to configure HiAppEvent");
+    }
+}
+
+ani_object HiAppEventAni::SetEventParamSync(ani_env *env, ani_object params, ani_string domain, ani_object name)
+{
+    std::string domainTemp = HiAppEventAniUtil::ParseStringValue(env, domain);
+    std::string nameTemp = "";
+    if (!HiAppEventAniUtil::IsRefUndefined(env, name)) {
+        nameTemp = HiAppEventAniUtil::ParseStringValue(env, name);
+    }
+
+    auto appEventPack = std::make_shared<AppEventPack>(domainTemp, nameTemp);
+    HiAppEventParamBuilder hiAppEventParamBuilder;
+    if (!hiAppEventParamBuilder.ParseParamsInAppEventPack(env, params, appEventPack)) {
+        HILOG_ERROR(LOG_CORE, "parse params appEventPack failed");
+        return HiAppEventAniUtil::Result(env,
+            HiAppEventAniUtil::BuildErrorByResult(hiAppEventParamBuilder.GetResult()));
+    }
+
+    int32_t result = hiAppEventParamBuilder.GetResult();
+    if (result >= 0) {
+        if (auto retTemp = VerifyCustomEventParams(appEventPack); retTemp != 0) {
+            result = retTemp;
+        }
+    }
+    if (result == 0) {
+        if (auto ret = SetEventParam(appEventPack); ret > 0) {
+            result = ret;
+        }
+    }
+    return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
+}
+
+ani_object HiAppEventAni::SetEventConfigSync(ani_env *env, ani_string name, ani_object config)
+{
+    std::string nameString = HiAppEventAniUtil::ParseStringValue(env, name);
+    std::map<std::string, std::string> eventConfigMap;
+    int32_t result = BuildEventConfig(env, config, eventConfigMap);
+    if (result != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL || eventConfigMap.empty()) {
+        HILOG_ERROR(LOG_CORE, "the param type is invalid or the config is empty.");
+        return HiAppEventAniUtil::Result(env, {result, "the param type is invalid or the config is empty."});
+    }
+    result = HiAppEventConfig::GetInstance().SetEventConfig(nameString, eventConfigMap);
+    if (result == 0) {
+        return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
+    } else {
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, "Invalid param value for event config."});
+    }
+}
+
+void HiAppEventAni::ClearData([[maybe_unused]] ani_env *env)
+{
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    HiAppEventClean::ClearData(HiAppEventConfig::GetInstance().GetStorageDir());
+    AppEventStat::WriteApiEndEventAsync("clearData", beginTime, AppEventStat::SUCCESS, ERR_CODE_SUCC);
+}
+
+void HiAppEventAni::SetUserId(ani_env *env, ani_string name, ani_string value)
+{
+    HiAppEventAniHelper hiAppEventAniHelper;
+    if (!hiAppEventAniHelper.SetUserId(env, name, value)) {
+        HILOG_ERROR(LOG_CORE, "failed to set userId");
+    }
+}
+
+ani_string HiAppEventAni::GetUserId(ani_env *env, ani_string name)
+{
+    ani_string userId {};
+    HiAppEventAniHelper hiAppEventAniHelper;
+    if (!hiAppEventAniHelper.GetUserId(env, name, userId)) {
+        HILOG_ERROR(LOG_CORE, "failed to get userId");
+    }
+    return userId;
+}
+
+void HiAppEventAni::SetUserProperty(ani_env *env, ani_string name, ani_string value)
+{
+    HiAppEventAniHelper hiAppEventAniHelper;
+    if (!hiAppEventAniHelper.SetUserProperty(env, name, value)) {
+        HILOG_ERROR(LOG_CORE, "failed to set userProperty");
+    }
+}
+
+ani_string HiAppEventAni::GetUserProperty(ani_env *env, ani_string name)
+{
+    ani_string userProperty {};
+    HiAppEventAniHelper hiAppEventAniHelper;
+    if (!hiAppEventAniHelper.GetUserProperty(env, name, userProperty)) {
+        HILOG_ERROR(LOG_CORE, "failed to get userProperty");
+    }
+    return userProperty;
+}
+
+void HiAppEventAni::RemoveProcessor(ani_env *env, ani_double id)
+{
+    HiAppEventAniHelper hiAppEventAniHelper;
+    if (!hiAppEventAniHelper.RemoveProcessor(env, id)) {
+        HILOG_ERROR(LOG_CORE, "failed to remove processor");
+    }
+}
+
+ani_object HiAppEventAni::AddWatcher(ani_env *env, ani_object watcher)
+{
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    HiAppEventAniHelper hiAppEventAniHelper;
+    return hiAppEventAniHelper.AddWatcher(env, watcher, beginTime);
+}
+
+void HiAppEventAni::RemoveWatcher(ani_env *env, ani_object watcher)
+{
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    HiAppEventAniHelper hiAppEventAniHelper;
+    hiAppEventAniHelper.RemoveWatcher(env, watcher, beginTime);
+}
+
+static ani_status BindEventFunction(ani_env *env)
+{
+    ani_namespace  ns {};
+    if (env->FindNamespace(NAMESPACE_NAME_HIAPPEVENT, &ns) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    std::array methods = {
+        ani_native_function {"writeSync", nullptr, reinterpret_cast<void *>(HiAppEventAni::Write)},
+        ani_native_function {"addProcessor", nullptr, reinterpret_cast<void *>(HiAppEventAni::AddProcessor)},
+        ani_native_function {"configure", nullptr, reinterpret_cast<void *>(HiAppEventAni::Configure)},
+        ani_native_function {"setEventParamSync",
+            nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventParamSync)},
+        ani_native_function {"setEventConfigSync",
+            nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventConfigSync)},
+        ani_native_function {"clearData", nullptr, reinterpret_cast<void *>(HiAppEventAni::ClearData)},
+        ani_native_function {"setUserId", nullptr, reinterpret_cast<void *>(HiAppEventAni::SetUserId)},
+        ani_native_function {"getUserId", nullptr, reinterpret_cast<void *>(HiAppEventAni::GetUserId)},
+        ani_native_function {"setUserProperty", nullptr, reinterpret_cast<void *>(HiAppEventAni::SetUserProperty)},
+        ani_native_function {"getUserProperty", nullptr, reinterpret_cast<void *>(HiAppEventAni::GetUserProperty)},
+        ani_native_function {"removeProcessor", nullptr, reinterpret_cast<void *>(HiAppEventAni::RemoveProcessor)},
+        ani_native_function {"addWatcher", nullptr, reinterpret_cast<void *>(HiAppEventAni::AddWatcher)},
+        ani_native_function {"removeWatcher", nullptr, reinterpret_cast<void *>(HiAppEventAni::RemoveWatcher)},
+    };
+    if (env->Namespace_BindNativeFunctions(ns, methods.data(), methods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    };
+    return ANI_OK;
+}
+
+static ani_status BindHolderFunction(ani_env *env)
+{
+    ani_class cls {};
+    if (env->FindClass(CLASS_NAME_EVENT_PACKAGE_HOLDER, &cls) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    std::array methods = {
+        ani_native_function {"nativeConstructor", nullptr,
+            reinterpret_cast<void *>(AniAppEventHolder::AniConstructor)},
+        ani_native_function {"_finalize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniFinalize)},
+        ani_native_function {"setSize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetSize)},
+        ani_native_function {"setRow", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetRow)},
+        ani_native_function {"takeNext", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniTakeNext)},
+    };
+    if (env->Class_BindNativeMethods(cls, methods.data(), methods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    };
+    return ANI_OK;
 }
 
 ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
 {
     ani_env *env = nullptr;
-    if (vm->GetEnv(ANI_VERSION_1, &env)  != ANI_OK) {
+    if (vm->GetEnv(ANI_VERSION_1, &env) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Unsupported ANI_VERSION_1");
         return ANI_ERROR;
     }
-
-    ani_namespace  ns {};
-    if (env->FindNamespace(NAMESPACE_NAME_HIAPPEVENT, &ns)  != ANI_OK) {
+    if (BindEventFunction(env) || BindHolderFunction(env)) {
         return ANI_ERROR;
     }
-
-    std::array methods = {
-        ani_native_function {"writeSync", nullptr, reinterpret_cast<void *>(HiAppEventAni::Write) },
-        ani_native_function {"addProcessor", nullptr, reinterpret_cast<void *>(HiAppEventAni::AddProcessor) },
-    };
-
-    if (env->Namespace_BindNativeFunctions(ns, methods.data(), methods.size()) != ANI_OK) {
-        return ANI_ERROR;
-    };
-
     *result = ANI_VERSION_1;
     return ANI_OK;
 }
