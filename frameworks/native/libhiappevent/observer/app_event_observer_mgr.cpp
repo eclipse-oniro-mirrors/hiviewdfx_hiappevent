@@ -19,6 +19,7 @@
 #include "app_event_store.h"
 #include "app_event_watcher.h"
 #include "application_context.h"
+#include "ffrt_inner.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
 #include "hilog/log.h"
@@ -40,6 +41,7 @@ constexpr int MILLI_TO_MICRO = 1000;
 constexpr int REFRESH_FREE_SIZE_INTERVAL = 10 * 60 * 1000; // 10 minutes
 constexpr int TIMEOUT_INTERVAL_MILLI = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
+constexpr int TIMEOUT_LIMIT_FOR_ADDPROCESSOR = 500;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
@@ -329,8 +331,25 @@ int64_t AppEventObserverMgr::AddProcessor(const std::string& name, const ReportC
         return seq;
     }
 
-    processor->SetSeq(AppEventStore::GetInstance().QueryObserverSeq(name, hashCode));
-    int64_t observerSeq = InitObserverFromDb(processor, "", hashCode);
+    auto syncPromise = std::make_shared<ffrt::promise<int64_t>>();
+    if (syncPromise == nullptr) {
+        HILOG_ERROR(LOG_CORE, "Failed to create syncPromise.");
+        return -1;
+    }
+    ffrt::future syncFuture = syncPromise->get_future();
+    ffrt::submit([syncPromise, processor, name, hashCode]() {
+        processor->SetSeq(AppEventStore::GetInstance().QueryObserverSeq(name, hashCode));
+        syncPromise->set_value(InitObserverFromDb(processor, "", hashCode));
+        }, ffrt::task_attr()
+            .name("ADD_PROCESSOR_TASK")
+            .qos(static_cast<int>(ffrt_qos_user_initiated)));
+
+    ffrt::future_status wait = syncFuture.wait_for(std::chrono::milliseconds(TIMEOUT_LIMIT_FOR_ADDPROCESSOR));
+    if (wait != ffrt::future_status::ready) {
+        HILOG_WARN(LOG_CORE, "AddProcessor task execution timeout");
+        return -1;
+    }
+    int64_t observerSeq = syncFuture.get();
     if (observerSeq <= 0) {
         return -1;
     }
