@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 
 #ifndef HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_ERROR_H
 #define HIAPPEVENT_FRAMEWORKS_JS_NAPI_INCLUDE_NAPI_ERROR_H
+
+#include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -48,6 +50,8 @@ constexpr int ERR_INVALID_SIZE = 11104001;
 
 // business error for incorrect parameter length or format
 constexpr int ERR_INVALID_PARAM_VALUE = 11105001;
+
+std::string GetErrorMsg(int errCode);
 } // namespace NapiError
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -47,8 +47,7 @@ double GetDouble(const napi_env env, const napi_value value);
 void GetDoubles(const napi_env env, const napi_value arr, std::vector<double>& doubles);
 std::string GetString(const napi_env env, const napi_value value);
 void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs);
-void GetStringsToSet(
-    const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs);
+void GetStringsToSet(const napi_env env, const napi_value arr, std::unordered_set<std::string>& strs);
 napi_valuetype GetType(const napi_env env, const napi_value value);
 napi_valuetype GetArrayType(const napi_env env, const napi_value value);
 uint32_t GetArrayLength(const napi_env env, const napi_value arr);
@@ -75,6 +74,7 @@ void SetElement(const napi_env env, const napi_value obj, uint32_t index, const 
 void SetNamedProperty(const napi_env env, const napi_value obj, const std::string& key, const napi_value value);
 std::string ConvertToString(const napi_env env, const napi_value value);
 
+void ThrowErrorMsg(napi_env env, int code, bool isThrow = true);
 void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow = true);
 napi_value CreateError(napi_env env, int code, const std::string& msg);
 std::string CreateErrMsg(const std::string& name);
