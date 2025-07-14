@@ -74,8 +74,7 @@ bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
             return false;
         }
         if (!HiAppEventConfig::GetInstance().SetConfigurationItem(key, NapiUtil::ConvertToString(env, value))) {
-            std::string errMsg = "Invalid max storage quota value. Possible caused by incorrectly formatted.";
-            NapiUtil::ThrowError(env, NapiError::ERR_INVALID_MAX_STORAGE, errMsg, isThrow);
+            NapiUtil::ThrowErrorMsg(env, NapiError::ERR_INVALID_MAX_STORAGE, isThrow);
             return false;
         }
     }

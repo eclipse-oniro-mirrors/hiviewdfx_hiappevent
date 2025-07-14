@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include "hiappevent_base.h"
 #include "hilog/log.h"
+#include "napi_error.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -483,6 +484,11 @@ std::string ConvertToString(const napi_env env, const napi_value value)
             break;
     }
     return result;
+}
+
+void ThrowErrorMsg(napi_env env, int code, bool isThrow)
+{
+    ThrowError(env, code, NapiError::GetErrorMsg(code), isThrow);
 }
 
 void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow)

@@ -1549,6 +1549,9 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventWatcherTest009 start');
         let watcher = {
             name: "watcher",
+            appEventFilters: [
+                { domain: TEST_DOMAIN },
+            ],
             triggerCondition: {
                 timeOut: 1
             },
@@ -1647,7 +1650,8 @@ describe('HiAppEventJsTest', function () {
         holderSetSizeTest(holder, {}, expectErr);
 
         // invalid size value
-        expectErr = createError(11104001, "Invalid size value. Possible caused by the size value is less than zero.");
+        expectErr = createError(11104001,
+            "Invalid size value. Possible caused by the size value is less than or equal to zero.");
         holderSetSizeTest(holder, -1, expectErr);
         holderSetSizeTest(holder, -100, expectErr);
 
