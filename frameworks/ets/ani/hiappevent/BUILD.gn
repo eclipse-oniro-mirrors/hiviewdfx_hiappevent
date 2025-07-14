@@ -21,14 +21,22 @@ ohos_shared_library("hiappevent_ani") {
     "./src/hiappevent_ani.cpp",
     "./src/hiappevent_ani_helper.cpp",
     "./src/hiappevent_ani_util.cpp",
+    "./src/hiappevent_param_builder.cpp",
+    "./src/ani_app_event_watcher.cpp",
+    "./src/ani_app_event_holder.cpp",
   ]
 
-  deps = [ "../../../native/libhiappevent:libhiappevent_base" ]
+  deps = [
+    "../../../native/libhiappevent:libhiappevent_base",
+    "../../../native/libhiappevent/utility:hiappevent_utility",
+  ]
 
   external_deps = [
-    "c_utils:utils",
+    "eventhandler:libeventhandler",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
+    "relational_store:native_rdb",
     "runtime_core:ani",
   ]
 
