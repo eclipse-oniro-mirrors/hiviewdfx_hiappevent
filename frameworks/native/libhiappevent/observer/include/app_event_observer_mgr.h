@@ -62,6 +62,8 @@ public:
 private:
     AppEventObserverMgr();
     ~AppEventObserverMgr();
+    int64_t AddProcessorWithTimeLimited(const std::string& name, int64_t hashCode,
+        std::shared_ptr<AppEventProcessorProxy> processor);
     void SendTimeoutTask();
     void SendRefreshFreeSizeTask();
     void RegisterAppStateCallback();
@@ -90,6 +92,8 @@ private:
     std::shared_ptr<OsEventListener> listener_ = nullptr;
     bool isTimeoutTaskExist_ = false;
     std::mutex isTimeoutTaskExistMutex_;
+    std::atomic<bool> isFirstAddProcessor_ = true;
+    std::atomic<int> isDbInit_ = false;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
