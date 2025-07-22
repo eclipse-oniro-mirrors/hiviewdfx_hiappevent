@@ -48,6 +48,7 @@ ohos_source_set("hiappevent_observer") {
     "ffrt:libffrt",
     "hilog:libhilog",
     "init:libbegetutil",
+    "ipc:ipc_single",
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "storage_service:storage_manager_acl",
