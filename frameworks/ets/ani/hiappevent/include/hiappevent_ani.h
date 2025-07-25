@@ -26,7 +26,7 @@ namespace HiviewDFX {
 class HiAppEventAni {
 public:
     static ani_object Write(ani_env *env, ani_object info);
-    static ani_double AddProcessor(ani_env *env, ani_object processor);
+    static ani_long AddProcessor(ani_env *env, ani_object processor);
     static void Configure(ani_env *env, ani_object configObj);
     static ani_object SetEventParamSync(ani_env *env, ani_object params, ani_string domain, ani_object name);
     static ani_object SetEventConfigSync(ani_env *env, ani_string name, ani_object config);
@@ -35,7 +35,7 @@ public:
     static ani_string GetUserId(ani_env *env, ani_string name);
     static void SetUserProperty(ani_env *env, ani_string name, ani_string value);
     static ani_string GetUserProperty(ani_env *env, ani_string name);
-    static void RemoveProcessor(ani_env *env, ani_double id);
+    static void RemoveProcessor(ani_env *env, ani_long id);
     static ani_object AddWatcher(ani_env *env, ani_object watcher);
     static void RemoveWatcher(ani_env *env, ani_object watcher);
 };

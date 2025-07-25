@@ -30,11 +30,12 @@ namespace HiviewDFX {
 enum AniArgsType {
     ANI_UNKNOWN = -1,
     ANI_INT = 0,
-    ANI_BOOLEAN = 1,
-    ANI_DOUBLE = 2,
-    ANI_STRING = 3,
-    ANI_NULL = 4,
-    ANI_UNDEFINED = 5,
+    ANI_LONG = 1,
+    ANI_BOOLEAN = 2,
+    ANI_DOUBLE = 3,
+    ANI_STRING = 4,
+    ANI_NULL = 5,
+    ANI_UNDEFINED = 6,
 };
 
 enum EventTypeAni : int32_t {
@@ -52,8 +53,9 @@ public:
     static bool IsRefUndefined(ani_env *env, ani_ref ref);
     static std::string ParseStringValue(ani_env *env, ani_ref aniStrRef);
     static int32_t ParseIntValue(ani_env *env, ani_ref elementRef);
+    static int64_t ParseLongValue(ani_env *env, ani_ref elementRef);
     static bool ParseBoolValue(ani_env *env, ani_ref elementRef);
-    static double ParseNumberValue(ani_env *env, ani_ref elementRef);
+    static double ParseDoubleValue(ani_env *env, ani_ref elementRef);
     static void GetStringsToSet(ani_env *env, ani_ref Ref, std::unordered_set<std::string> &arr);
     static void GetIntValueToVector(ani_env *env, ani_ref Ref, std::vector<int> &arr);
     static void ParseRecord(ani_env *env, ani_ref recordRef, std::map<std::string, ani_ref> &recordResult);
@@ -65,6 +67,7 @@ public:
     static AniArgsType GetArrayType(ani_env *env, ani_ref arrayRef);
     static std::string ConvertToString(ani_env *env, ani_ref valueRef);
     static ani_ref CreateGlobalReference(ani_env *env, ani_ref func);
+    static ani_object CreateInt(ani_env *env, int32_t num);
     static ani_object CreateDouble(ani_env *env, int32_t num);
     static ani_object CreateBool(ani_env *env, bool boolValue);
     static ani_string CreateAniString(ani_env *env, const std::string &str);
@@ -76,6 +79,7 @@ public:
     static std::vector<double> GetDoubles(ani_env *env, ani_ref arrayRef);
     static std::vector<std::string> GetStrings(ani_env *env, ani_ref arrayRef);
     static std::vector<int> GetInts(ani_env *env, ani_ref arrayRef);
+    static std::vector<int64_t> GetLongs(ani_env *env, ani_ref arrayRef);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -186,8 +186,8 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
             return;
         }
         std::vector<ani_ref> args = {
-            HiAppEventAniUtil::CreateDouble(env, context->row),
-            HiAppEventAniUtil::CreateDouble(env, context->size),
+            HiAppEventAniUtil::CreateInt(env, context->row),
+            HiAppEventAniUtil::CreateInt(env, context->size),
             context->holder
         };
         ani_ref ret {};

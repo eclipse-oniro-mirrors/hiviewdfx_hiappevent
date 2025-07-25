@@ -35,7 +35,7 @@
 
 using namespace OHOS::HiviewDFX;
 namespace {
-const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
+const std::string PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
 int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, std::string>& eventConfigMap)
 {
     std::map<std::string, ani_ref> eventConfig;
@@ -47,14 +47,14 @@ int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, 
 }
 }
 
-ani_double HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
+ani_long HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
 {
     int64_t id = 0;
     HiAppEventAniHelper hiAppEventAniHelper;
     if (!hiAppEventAniHelper.AddProcessor(env, processor, id)) {
         HILOG_ERROR(LOG_CORE, "failed to add processor");
     }
-    return static_cast<ani_double>(id);
+    return static_cast<ani_long>(id);
 }
 
 ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
@@ -205,7 +205,7 @@ ani_string HiAppEventAni::GetUserProperty(ani_env *env, ani_string name)
     return userProperty;
 }
 
-void HiAppEventAni::RemoveProcessor(ani_env *env, ani_double id)
+void HiAppEventAni::RemoveProcessor(ani_env *env, ani_long id)
 {
     HiAppEventAniHelper hiAppEventAniHelper;
     if (!hiAppEventAniHelper.RemoveProcessor(env, id)) {
