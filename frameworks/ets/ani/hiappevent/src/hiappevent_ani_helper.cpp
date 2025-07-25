@@ -70,7 +70,7 @@ static int32_t GetConfigIdValue(ani_env *env, ani_object processor, const std::s
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
-        out.configId = static_cast<int32_t>(HiAppEventAniUtil::ParseNumberValue(env, ref));
+        out.configId = HiAppEventAniUtil::ParseIntValue(env, ref);
     }
     return ERR_CODE_SUCC;
 }
@@ -119,7 +119,7 @@ static int32_t GetPeriodReportInt(ani_env *env, ani_object processor, const std:
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
-        out.triggerCond.timeout = static_cast<int32_t>(HiAppEventAniUtil::ParseNumberValue(env, ref));
+        out.triggerCond.timeout = HiAppEventAniUtil::ParseIntValue(env, ref);
         if (!IsValidPeriodReport(out.triggerCond.timeout)) {
             return ERR_CODE_PARAM_INVALID;
         }
@@ -131,7 +131,7 @@ static int32_t GetBatchReportInt(ani_env *env, ani_object processor, const std::
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
-        out.triggerCond.row = static_cast<int32_t>(HiAppEventAniUtil::ParseNumberValue(env, ref));
+        out.triggerCond.row = HiAppEventAniUtil::ParseIntValue(env, ref);
         if (!IsValidBatchReport(out.triggerCond.row)) {
             return ERR_CODE_PARAM_INVALID;
         }
@@ -412,6 +412,11 @@ bool HiAppEventAniHelper::AddArrayParamToAppEventPack(ani_env *env, const std::s
             appEventPack->AddParam(key, ints);
             break;
         }
+        case AniArgsType::ANI_LONG: {
+            std::vector<int64_t> longs = HiAppEventAniUtil::GetLongs(env, arrayRef);
+            appEventPack->AddParam(key, longs);
+            break;
+        }
         case AniArgsType::ANI_BOOLEAN: {
             std::vector<bool> bools = HiAppEventAniUtil::GetBooleans(env, arrayRef);
             appEventPack->AddParam(key, bools);
@@ -450,11 +455,14 @@ bool HiAppEventAniHelper::AddParamToAppEventPack(ani_env *env, const std::string
         case AniArgsType::ANI_INT:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseIntValue(env, element));
             break;
+        case AniArgsType::ANI_LONG:
+            appEventPack->AddParam(key, HiAppEventAniUtil::ParseLongValue(env, element));
+            break;
         case AniArgsType::ANI_BOOLEAN:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseBoolValue(env, element));
             break;
         case AniArgsType::ANI_DOUBLE:
-            appEventPack->AddParam(key, HiAppEventAniUtil::ParseNumberValue(env, element));
+            appEventPack->AddParam(key, HiAppEventAniUtil::ParseDoubleValue(env, element));
             break;
         case AniArgsType::ANI_STRING:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseStringValue(env, element));
@@ -615,7 +623,7 @@ bool HiAppEventAniHelper::GetUserProperty(ani_env *env, ani_string name, ani_str
     return true;
 }
 
-bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_double id)
+bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_long id)
 {
     int64_t processorId = static_cast<int64_t>(id);
     if (processorId <= 0) {
@@ -727,7 +735,7 @@ static int GetConditionValue(ani_env *env, ani_ref cond, const std::string& name
 {
     auto value = HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(cond), name);
     if (!HiAppEventAniUtil::IsRefUndefined(env, value)) {
-        return HiAppEventAniUtil::ParseNumberValue(env, value);
+        return HiAppEventAniUtil::ParseIntValue(env, value);
     }
     return 0;
 }

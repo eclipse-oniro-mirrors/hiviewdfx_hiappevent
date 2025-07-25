@@ -48,7 +48,7 @@ public:
     bool GetUserId(ani_env *env, ani_string name, ani_string &userId);
     bool SetUserProperty(ani_env *env, ani_string name, ani_string value);
     bool GetUserProperty(ani_env *env, ani_string name, ani_string &userProperty);
-    bool RemoveProcessor(ani_env *env, ani_double id);
+    bool RemoveProcessor(ani_env *env, ani_long id);
     ani_object AddWatcher(ani_env *env, ani_object watcher, uint64_t beginTime);
     void RemoveWatcher(ani_env *env, ani_object watcher, uint64_t beginTime);
 

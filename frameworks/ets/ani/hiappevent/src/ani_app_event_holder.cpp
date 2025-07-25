@@ -92,7 +92,7 @@ void AniAppEventHolder::AniFinalize(ani_env *env, ani_object object, ani_long na
     delete holder;
 }
 
-void AniAppEventHolder::AniSetRow(ani_env *env, ani_object object, ani_double size)
+void AniAppEventHolder::AniSetRow(ani_env *env, ani_object object, ani_int size)
 {
     int num = static_cast<int>(size);
     if (num <= 0) {
@@ -106,7 +106,7 @@ void AniAppEventHolder::AniSetRow(ani_env *env, ani_object object, ani_double si
     return;
 }
 
-void AniAppEventHolder::AniSetSize(ani_env *env, ani_object object, ani_double size)
+void AniAppEventHolder::AniSetSize(ani_env *env, ani_object object, ani_int size)
 {
     int num = static_cast<int>(size);
     if (num < 0) {
@@ -131,9 +131,9 @@ ani_object AniAppEventHolder::AniTakeNext(ani_env *env, ani_object object)
     if (package == nullptr) {
         return packageObj;
     }
-    env->Object_SetPropertyByName_Double(packageObj, "packageId", package->packageId);
-    env->Object_SetPropertyByName_Double(packageObj, "row", package->row);
-    env->Object_SetPropertyByName_Double(packageObj, "size", package->size);
+    env->Object_SetPropertyByName_Int(packageObj, "packageId", package->packageId);
+    env->Object_SetPropertyByName_Int(packageObj, "row", package->row);
+    env->Object_SetPropertyByName_Int(packageObj, "size", package->size);
     env->Object_SetPropertyByName_Ref(packageObj, "data", HiAppEventAniUtil::CreateStrings(env, package->data));
     env->Object_SetPropertyByName_Ref(packageObj, "appEventInfos",
         HiAppEventAniUtil::CreateEventInfoArray(env, package->events));
