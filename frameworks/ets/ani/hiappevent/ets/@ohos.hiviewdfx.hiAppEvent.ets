@@ -231,7 +231,7 @@ export default namespace hiAppEvent {
         }
         native setSize(size: int): void;
         native setRow(size: int): void;
-        native takeNext(): AppEventPackage;
+        native takeNext(): AppEventPackage | null;
     }
 
     export interface TriggerCondition {
