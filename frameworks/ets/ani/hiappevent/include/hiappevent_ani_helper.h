@@ -26,6 +26,8 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
+
 class HiAppEventAniHelper {
 public:
     bool AddProcessor(ani_env *env, ani_object processor, int64_t &out);
@@ -33,18 +35,24 @@ public:
     bool GetPropertyName(ani_object info, ani_env *env, std::string &name);
     bool GeteventTypeValue(ani_object info, ani_env *env, int32_t &enumValue);
     ani_status ParseEnumGetValueInt32(ani_env *env, ani_enum_item enumItem, int32_t &value);
-    bool AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
+    virtual bool AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
         std::shared_ptr<AppEventPack> &appEventPack);
     bool AddParamToAppEventPack(ani_env *env, const std::string &key, ani_ref element,
         std::shared_ptr<AppEventPack> &appEventPack);
-
-    ani_object WriteResult(ani_env *env, std::pair<int32_t, std::string> result);
-    std::pair<int32_t, std::string> BuildErrorByResult(int32_t result);
-    bool ParseParamsInAppEventPack(ani_env *env, ani_ref params, std::shared_ptr<AppEventPack> &appEventPack);
+    virtual bool ParseParamsInAppEventPack(ani_env *env, ani_ref params, std::shared_ptr<AppEventPack> &appEventPack);
     int32_t GetResult();
     bool AddAppEventPackParam(ani_env *env,
         std::pair<std::string, ani_ref> recordTemp, std::shared_ptr<AppEventPack> &appEventPack);
-private:
+    bool Configure(ani_env *env, ani_object configObj);
+    bool SetUserId(ani_env *env, ani_string name, ani_string value);
+    bool GetUserId(ani_env *env, ani_string name, ani_string &userId);
+    bool SetUserProperty(ani_env *env, ani_string name, ani_string value);
+    bool GetUserProperty(ani_env *env, ani_string name, ani_string &userProperty);
+    bool RemoveProcessor(ani_env *env, ani_double id);
+    ani_object AddWatcher(ani_env *env, ani_object watcher, uint64_t beginTime);
+    void RemoveWatcher(ani_env *env, ani_object watcher, uint64_t beginTime);
+
+protected:
     int32_t result_ = 0;
 };
 } // namespace HiviewDFX

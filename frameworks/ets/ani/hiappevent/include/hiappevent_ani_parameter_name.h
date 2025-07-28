@@ -36,6 +36,17 @@ const std::string EVENT_CONFIG_NAME = "name";
 const std::string EVENT_CONFIG_REALTIME = "isRealTime";
 const std::string CONFIG_ID = "configId";
 const std::string CUSTOM_CONFIG = "customConfigs";
+const std::string WATCHER_NAME = "name";
+const std::string APPEVENT_FILTERS = "appEventFilters";
+const std::string FILTER_DOMAIN = "domain";
+const std::string FILTER_NAMES = "names";
+const std::string FILTER_TYPES = "eventTypes";
+const std::string TRIGGER_CONDITION = "triggerCondition";
+const std::string FUNCTION_ONTRIGGER = "onTrigger";
+const std::string FUNCTION_ONRECEIVE = "onReceive";
+const std::string EVENT_INFO_PARAMS = "params";
+const std::string EVENT_INFO_EVENT_TYPE = "eventType";
+const std::string EVENT_INFOS_PROPERTY = "appEventInfos";
 
 constexpr char NAMESPACE_NAME_HIAPPEVENT[] = "L@ohos/hiviewdfx/hiAppEvent/hiAppEvent;";
 constexpr char CLASS_NAME_RESULTS[] = "L@ohos/hiviewdfx/hiAppEvent/ResultsInner;";
@@ -48,8 +59,17 @@ constexpr char CLASS_NAME_ARRAY[] = "Lescompat/Array;";
 constexpr char FUNC_NAME_GETLONG[] = "getLong";
 constexpr char CLASS_NAME_ITERATOR[] = "Lescompat/Iterator;";
 constexpr char CLASS_NAME_RECORD[] = "Lescompat/Record;";
+constexpr char CLASS_NAME_EVENT_GROUP[] = "L@ohos/hiviewdfx/hiAppEvent/AppEventGroupInner;";
+constexpr char CLASS_NAME_EVENT_INFO[] = "L@ohos/hiviewdfx/hiAppEvent/AppEventInfoInner;";
+constexpr char CLASS_NAME_EVENT_PACKAGE[] = "L@ohos/hiviewdfx/hiAppEvent/AppEventPackageInner;";
+constexpr char CLASS_NAME_EVENT_PACKAGE_HOLDER[] = "L@ohos/hiviewdfx/hiAppEvent/hiAppEvent/AppEventPackageHolder;";
+constexpr char ENUM_NAME_EVENT_TYPE[] = "L@ohos/hiviewdfx/hiAppEvent/hiAppEvent/EventType;";
+
 constexpr char FUNC_NAME_UNBOXED[] = "unboxed";
 constexpr char FUNC_NAME_NEXT[] = "next";
+
+constexpr int BIT_MASK = 1;
+constexpr unsigned int BIT_ALL_TYPES = 0xff;
 } // namespace HiviewDFX
 } // namespace OHOS
 
