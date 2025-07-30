@@ -135,7 +135,7 @@ void NapiConfigBuilder::GetMainThreadJankConfig(const napi_env env, const napi_v
     std::vector<std::string> configKeys;
     NapiUtil::GetPropertyNames(env, params, configKeys);
     if (configKeys.empty()) {
-        HILOG_INFO(LOG_CORE, "Set config failed, the config is empty.");
+        HILOG_INFO(LOG_CORE, "Set MainThreadJank config failed, the config is empty.");
         return;
     }
 

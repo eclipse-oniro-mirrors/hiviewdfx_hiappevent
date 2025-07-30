@@ -199,6 +199,7 @@ double HiAppEventAniUtil::ParseNumberValue(ani_env *env, ani_ref elementRef)
     ani_method unboxedMethod {};
     if (env->Class_FindMethod(cls, FUNC_NAME_UNBOXED, ":D", &unboxedMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "find method %{public}s failed", FUNC_NAME_UNBOXED);
+        return static_cast<double>(doubleVal);
     }
     if (env->Object_CallMethod_Double(static_cast<ani_object>(elementRef), unboxedMethod, &doubleVal) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method %{public}s failed", FUNC_NAME_UNBOXED);
@@ -373,7 +374,8 @@ std::pair<int32_t, std::string> HiAppEventAniUtil::BuildErrorByResult(int32_t re
         { ErrorCode::ERROR_INVALID_CUSTOM_PARAM_NUM,
             { ERR_INVALID_CUSTOM_PARAM_NUM, "The number of parameter keys exceeds the limit." }},
     };
-    return codeMap.at(result);
+    auto it = codeMap.find(result);
+    return it == codeMap.end() ? std::make_pair(-1, "ErrMsg not found.") : it->second;
 }
 
 AniArgsType HiAppEventAniUtil::GetArgType(ani_env *env, ani_object elementObj)

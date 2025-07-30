@@ -233,7 +233,7 @@ std::string GetString(const napi_env env, const napi_value value)
         HILOG_ERROR(LOG_CORE, "failed to get string value");
         return "";
     }
-    return charVec.data();
+    return std::string(charVec.data());
 }
 
 void GetStrings(const napi_env env, const napi_value arr, std::vector<std::string>& strs)
