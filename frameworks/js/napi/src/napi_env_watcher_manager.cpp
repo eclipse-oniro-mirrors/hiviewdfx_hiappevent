@@ -66,6 +66,7 @@ void EnvWatcherManager::OnEnvRemove(void* envPtr)
 {
     if (envPtr == nullptr) {
         HILOG_ERROR(LOG_CORE, "cur envPtr is nullptr.");
+        return;
     }
     auto env = reinterpret_cast<napi_env*>(envPtr);
     EnvWatcherManager& manager = GetInstance();
