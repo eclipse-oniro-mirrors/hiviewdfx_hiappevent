@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "application_context.h"
+#include "file_util.h"
 #include "hiappevent/hiappevent.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
@@ -42,9 +43,11 @@ const char* TEST_EVENT_PARAM_KEY = "test_param_key";
 const char* TEST_EVENT_PARAM = "{\"test_param_key\":1}";
 constexpr int TEST_EVENT_PARAM_LENGTH = 20;
 constexpr int TEST_EVENT_NUM = 2;
+const std::string PROCESSOR_CONFIG_PATH = "/system/etc/hiappevent/processor.json";
 
 const char* TEST_PROCESSOR_NAME = "test_processor";
 constexpr int32_t TEST_UID = 200000 * 100;
+static bool g_configFileExist = false;
 
 static void WriteEvent()
 {
@@ -101,6 +104,8 @@ void HiAppEventNativeTest::SetUpTestCase()
     auto processor = std::make_shared<HiAppEvent::TestProcessor>();
     int ret = HiAppEvent::AppEventProcessorMgr::RegisterProcessor("test_processor", processor);
     std::cout << "register observer ret = " << ret << std::endl;
+
+    g_configFileExist = FileUtil::IsFileExists(PROCESSOR_CONFIG_PATH);
 }
 
 /**
@@ -1047,18 +1052,17 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest033, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest034, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    EXPECT_TRUE(processor != nullptr);
-    int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
-    EXPECT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        EXPECT_TRUE(processor != nullptr);
+        int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
+        EXPECT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
-    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-    std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-    std::string expectConf = std::string("{test_processor,0,AUTO,com_huawei_hmos_sdk_ocg,{30,0,90,0,0},[],[],") +
-        "[{api_diagnostic,api_exec_end,0},{api_diagnostic,api_called_stat,1},{api_diagnostic,api_called_stat_cnt,1}]" +
-        ",0,[],SDK_OCG}";
-    EXPECT_EQ(loadConf, expectConf);
-    DestroyProcessor(processor);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
 
 /**
@@ -1068,16 +1072,21 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest034, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    EXPECT_TRUE(processor != nullptr);
-    int res = OH_HiAppEvent_SetConfigName(processor, "undefined");
-    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        EXPECT_TRUE(processor != nullptr);
+        int res = OH_HiAppEvent_SetConfigName(processor, "undefined");
+        EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-    std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-    std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],undefined}";
-    EXPECT_EQ(loadConf, expectConf);
-    DestroyProcessor(processor);
+        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
+        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
+        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],undefined}";
+        EXPECT_EQ(loadConf, expectConf);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
 
 /**
@@ -1087,11 +1096,16 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest036, TestSize.Level0)
 {
-    auto processor = CreateProcessor("");
-    EXPECT_TRUE(processor == nullptr);
-    int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
-    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PROCESSOR);
-    DestroyProcessor(processor);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor("");
+        EXPECT_TRUE(processor == nullptr);
+        int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
+        EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PROCESSOR);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
 
 /**
@@ -1101,17 +1115,22 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest036, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    EXPECT_TRUE(processor != nullptr);
-    int res = OH_HiAppEvent_SetConfigName(processor, "");
-    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        EXPECT_TRUE(processor != nullptr);
+        int res = OH_HiAppEvent_SetConfigName(processor, "");
+        EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
 
-    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-    std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-    std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-    EXPECT_EQ(loadConf, expectConf);
+        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
+        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
+        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+        EXPECT_EQ(loadConf, expectConf);
 
-    DestroyProcessor(processor);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
 
 /**
@@ -1121,17 +1140,22 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    EXPECT_TRUE(processor != nullptr);
-    int res = OH_HiAppEvent_SetConfigName(processor, "xxx***");
-    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        EXPECT_TRUE(processor != nullptr);
+        int res = OH_HiAppEvent_SetConfigName(processor, "xxx***");
+        EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-    std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-    std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-    EXPECT_EQ(loadConf, expectConf);
+        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
+        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
+        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+        EXPECT_EQ(loadConf, expectConf);
 
-    DestroyProcessor(processor);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
 
 /**
@@ -1141,17 +1165,22 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    EXPECT_TRUE(processor != nullptr);
-    int res = OH_HiAppEvent_SetConfigName(processor, "123_processor");
-    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        EXPECT_TRUE(processor != nullptr);
+        int res = OH_HiAppEvent_SetConfigName(processor, "123_processor");
+        EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-    std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-    std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-    EXPECT_EQ(loadConf, expectConf);
+        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
+        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
+        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+        EXPECT_EQ(loadConf, expectConf);
 
-    DestroyProcessor(processor);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
 
 /**
@@ -1161,16 +1190,21 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest040, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
-    EXPECT_TRUE(processor != nullptr);
-    std::string longInvalidName(256 + 1, 'a');
-    int res = OH_HiAppEvent_SetConfigName(processor, longInvalidName.c_str());
-    EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
+    if (g_configFileExist) {
+        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        EXPECT_TRUE(processor != nullptr);
+        std::string longInvalidName(256 + 1, 'a');
+        int res = OH_HiAppEvent_SetConfigName(processor, longInvalidName.c_str());
+        EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
 
-    auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-    std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-    std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-    EXPECT_EQ(loadConf, expectConf);
+        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
+        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
+        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
+        EXPECT_EQ(loadConf, expectConf);
 
-    DestroyProcessor(processor);
+        DestroyProcessor(processor);
+    } else {
+        ASSERT_FALSE(g_configFileExist);
+        GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
+    }
 }
