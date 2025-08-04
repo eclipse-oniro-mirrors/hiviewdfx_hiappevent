@@ -57,6 +57,7 @@ void EnvWatcherManager::AddEnvWatcherRecord(const napi_env env, NapiAppEventWatc
             envs_.insert(env);
         } else {
             HILOG_ERROR(LOG_CORE, "failed in napi_add_env_cleanup_hook.");
+            delete envPtr;
         }
     }
     napiEnvWatcherRecords_.emplace_back(env, watcher);
