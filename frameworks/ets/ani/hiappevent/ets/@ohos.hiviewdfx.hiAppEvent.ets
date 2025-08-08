@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import { AsyncCallback, BusinessError } from '@ohos.base';
+import { AsyncCallback, BusinessError, RecordData } from '@ohos.base';
 
 class AppEventInfoInner implements hiAppEvent.AppEventInfo {
     domain: string = "";
     name: string = "";
     eventType: hiAppEvent.EventType = hiAppEvent.EventType.FAULT;
-    params: object = {};
+    params: RecordData = {};
 }
 
 class AppEventPackageInner implements hiAppEvent.AppEventPackage {
@@ -138,7 +138,7 @@ export default namespace hiAppEvent {
         domain: string;
         name: string;
         eventType: EventType;
-        params: object;
+        params: RecordData;
     }
 
     native function writeSync(info: AppEventInfo): Results;
