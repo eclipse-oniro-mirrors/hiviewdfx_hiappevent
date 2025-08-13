@@ -102,7 +102,7 @@ static int32_t GetAppIdRefValue(ani_env *env, ani_object processor, const std::s
 static int32_t GetNameRefValue(ani_env *env, ani_object processor, const std::string &key, ReportConfig &out)
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
-    if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
+    if (ref == nullptr) {
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Invalid processor name.");
         return ERR_CODE_PARAM_FORMAT;
     }
