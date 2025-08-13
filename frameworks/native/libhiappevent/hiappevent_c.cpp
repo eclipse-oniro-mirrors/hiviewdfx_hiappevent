@@ -38,144 +38,130 @@ constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
 
 template<typename T>
-void AddArrayParam(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const T* arr, int len)
+ParamList AddParamValue(ParamList list, const char* name, T value)
 {
+    if (list == nullptr || name == nullptr) {
+        HILOG_WARN(LOG_CORE, "ParamList is nullptr or name is nullptr.");
+        return list;
+    }
+    auto ndkAppEventPackPtr = reinterpret_cast<AppEventPack *>(list);
+    ndkAppEventPackPtr->AddParam(name, value);
+    return reinterpret_cast<ParamList>(ndkAppEventPackPtr);
+}
+
+template<typename T>
+ParamList AddParamArrayValue(ParamList list, const char* name, const T* arr, int len)
+{
+    if (list == nullptr || name == nullptr || arr == nullptr) {
+        HILOG_WARN(LOG_CORE, "ParamList is nullptr or name is nullptr or param array is nullptr.");
+        return list;
+    }
     std::vector<T> params(arr, (len > MAX_SIZE_OF_LIST_PARAM) ? (arr + MAX_SIZE_OF_LIST_PARAM + 1) : (arr + len));
-    appEventPack->AddParam(name, params);
+    auto ndkAppEventPackPtr = reinterpret_cast<AppEventPack *>(list);
+    ndkAppEventPackPtr->AddParam(name, params);
+    return reinterpret_cast<ParamList>(ndkAppEventPackPtr);
+}
 }
 
-using ParamAdder = void (*)(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value);
-
-void AddBoolParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
+ParamList HiAppEventCreateParamList()
 {
-    appEventPack->AddParam(name, value->value.bool_v);
-}
-
-void AddBoolArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.bool_arr_v, value->arrSize);
-}
-
-void AddInt8ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.int8_v);
-}
-
-void AddInt8ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.int8_arr_v, value->arrSize);
-}
-
-void AddInt16ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.int16_v);
-}
-
-void AddInt16ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.int16_arr_v, value->arrSize);
-}
-
-void AddInt32ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.int32_v);
-}
-
-void AddInt32ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.int32_arr_v, value->arrSize);
-}
-
-void AddInt64ParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.int64_v);
-}
-
-void AddInt64ArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.int64_arr_v, value->arrSize);
-}
-
-void AddFloatParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.float_v);
-}
-
-void AddFloatArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.float_arr_v, value->arrSize);
-}
-
-void AddDoubleParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.double_v);
-}
-
-void AddDoubleArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.double_arr_v, value->arrSize);
-}
-
-void AddStringParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    appEventPack->AddParam(name, value->value.str_v);
-}
-
-void AddStringArrayParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    AddArrayParam(appEventPack, name, value->value.str_arr_v, value->arrSize);
-}
-
-const ParamAdder PARAM_ADDERS[] = {
-    &AddBoolParamValue,
-    &AddBoolArrayParamValue,
-    &AddInt8ParamValue,
-    &AddInt8ArrayParamValue,
-    &AddInt16ParamValue,
-    &AddInt16ArrayParamValue,
-    &AddInt32ParamValue,
-    &AddInt32ArrayParamValue,
-    &AddInt64ParamValue,
-    &AddInt64ArrayParamValue,
-    &AddFloatParamValue,
-    &AddFloatArrayParamValue,
-    &AddDoubleParamValue,
-    &AddDoubleArrayParamValue,
-    &AddStringParamValue,
-    &AddStringArrayParamValue
-};
-
-void AddParamValue(std::shared_ptr<AppEventPack>& appEventPack, const char* name, const ParamValue* value)
-{
-    if (name == nullptr || value == nullptr) {
-        HILOG_ERROR(LOG_CORE, "Failed to add the param because the name or value is null.");
-        return;
+    auto ndkAppEventPackPtr = new (std::nothrow) AppEventPack();
+    if (ndkAppEventPackPtr == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to new ParamList.");
     }
-    unsigned int paramType = value->type;
-    if (paramType < (sizeof(PARAM_ADDERS) / sizeof(PARAM_ADDERS[0]))) {
-        PARAM_ADDERS[paramType](appEventPack, name, value);
-    } else {
-        HILOG_ERROR(LOG_CORE, "Failed to add the param because the param type is unknown.");
+    return reinterpret_cast<ParamList>(ndkAppEventPackPtr);
+}
+
+void HiAppEventDestroyParamList(ParamList list)
+{
+    if (list != nullptr) {
+        delete reinterpret_cast<AppEventPack *>(list);
+        list = nullptr;
     }
 }
 
-void AddParamEntry(std::shared_ptr<AppEventPack>& appEventPack, const ParamEntry* entry)
+ParamList AddBoolParamValue(ParamList list, const char* name, bool boolean)
 {
-    if (entry == nullptr) {
-        HILOG_ERROR(LOG_CORE, "Failed to add the param because the entry is null.");
-        return;
-    }
-    AddParamValue(appEventPack, entry->name, entry->value);
+    return AddParamValue(list, name, boolean);
 }
 
-void AddParamList(std::shared_ptr<AppEventPack>& appEventPack, const ParamList list)
+ParamList AddBoolArrayParamValue(ParamList list, const char* name, const bool* booleans, int arrSize)
 {
-    ParamList curNode = list;
-    while (curNode != nullptr) {
-        AddParamEntry(appEventPack, curNode->entry);
-        curNode = curNode->next;
-    }
+    return AddParamArrayValue(list, name, booleans, arrSize);
 }
+
+ParamList AddInt8ParamValue(ParamList list, const char* name, int8_t num)
+{
+    return AddParamValue(list, name, num);
+}
+
+ParamList AddInt8ArrayParamValue(ParamList list, const char* name, const int8_t* nums, int arrSize)
+{
+    return AddParamArrayValue(list, name, nums, arrSize);
+}
+
+ParamList AddInt16ParamValue(ParamList list, const char* name, int16_t num)
+{
+    return AddParamValue(list, name, num);
+}
+
+ParamList AddInt16ArrayParamValue(ParamList list, const char* name, const int16_t* nums, int arrSize)
+{
+    return AddParamArrayValue(list, name, nums, arrSize);
+}
+
+ParamList AddInt32ParamValue(ParamList list, const char* name, int32_t num)
+{
+    return AddParamValue(list, name, num);
+}
+
+ParamList AddInt32ArrayParamValue(ParamList list, const char* name, const int32_t* nums, int arrSize)
+{
+    return AddParamArrayValue(list, name, nums, arrSize);
+}
+
+ParamList AddInt64ParamValue(ParamList list, const char* name, int64_t num)
+{
+    return AddParamValue(list, name, num);
+}
+
+ParamList AddInt64ArrayParamValue(ParamList list, const char* name, const int64_t* nums, int arrSize)
+{
+    return AddParamArrayValue(list, name, nums, arrSize);
+}
+
+ParamList AddFloatParamValue(ParamList list, const char* name, float num)
+{
+    return AddParamValue(list, name, num);
+}
+
+ParamList AddFloatArrayParamValue(ParamList list, const char* name, const float* nums, int arrSize)
+{
+    return AddParamArrayValue(list, name, nums, arrSize);
+}
+
+ParamList AddDoubleParamValue(ParamList list, const char* name, double num)
+{
+    return AddParamValue(list, name, num);
+}
+
+ParamList AddDoubleArrayParamValue(ParamList list, const char* name, const double* nums, int arrSize)
+{
+    return AddParamArrayValue(list, name, nums, arrSize);
+}
+
+ParamList AddStringParamValue(ParamList list, const char* name, const char* str)
+{
+    if (str == nullptr) {
+        HILOG_WARN(LOG_CORE, "the str is nullptr.");
+        return list;
+    }
+    return AddParamValue(list, name, str);
+}
+
+ParamList AddStringArrayParamValue(ParamList list, const char* name, const char* const *strs, int arrSize)
+{
+    return AddParamArrayValue(list, name, strs, arrSize);
 }
 
 bool HiAppEventInnerConfigure(const char* name, const char* value)
@@ -199,7 +185,10 @@ int HiAppEventInnerWrite(const char* domain, const char* name, EventType type, c
     }
 
     std::shared_ptr<AppEventPack> appEventPack = std::make_shared<AppEventPack>(domain, name, type);
-    AddParamList(appEventPack, list);
+    if (list != nullptr) {
+        auto ndkAppEventPackPtr = reinterpret_cast<AppEventPack *>(list);
+        appEventPack->SetBaseParams(ndkAppEventPackPtr->GetBaseParams());
+    }
     int res = VerifyAppEvent(appEventPack);
     if (res >= 0) {
         SubmitWritingTask(appEventPack, "app_c_event");

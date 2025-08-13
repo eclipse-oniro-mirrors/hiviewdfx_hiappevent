@@ -208,6 +208,7 @@ public:
     std::string GetEventStr() const;
     std::string GetParamStr() const;
     std::string GetRunningId() const;
+    std::list<AppEventParam> GetBaseParams() const;
     void GetCustomParams(std::vector<CustomEventParam>& customParams) const;
 
     void SetSeq(int64_t seq);
@@ -222,8 +223,9 @@ public:
     void SetSpanId(int64_t spanId);
     void SetPspanId(int64_t pspanId);
     void SetTraceFlag(int traceFlag);
-    void SetParamStr(const std::string& paramStr);
     void SetRunningId(const std::string& runningId);
+    void SetBaseParams(const std::list<AppEventParam>& baseParams);
+    void SetParamStr(const std::string& paramStr);
 
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack> appEventPack);
     friend int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event);
