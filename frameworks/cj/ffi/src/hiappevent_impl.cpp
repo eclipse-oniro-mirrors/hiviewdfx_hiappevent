@@ -159,6 +159,9 @@ int HiAppEventImpl::SetUserId(const std::string& name, const std::string& value)
         }
         return SUCCESS_CODE;
     }
+    if (!IsValidUserIdValue(std::string(value))) {
+        return ERR_CODE_PARAM_INVALID;
+    }
     if (UserInfo::GetInstance().SetUserId(name, value) != 0) {
         LOGE("failed to set userId");
         return ERR_CODE_PARAM_INVALID;

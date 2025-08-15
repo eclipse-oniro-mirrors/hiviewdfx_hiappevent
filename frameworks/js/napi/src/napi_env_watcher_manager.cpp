@@ -52,27 +52,35 @@ void EnvWatcherManager::AddEnvWatcherRecord(const napi_env env, NapiAppEventWatc
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (envs_.find(env) == envs_.end()) {
-        if (napi_add_env_cleanup_hook(env, EnvWatcherManager::OnEnvRemove, env) == napi_ok) {
+        auto envPtr = new napi_env{env};
+        if (napi_add_env_cleanup_hook(env, EnvWatcherManager::OnEnvRemove, envPtr) == napi_ok) {
             envs_.insert(env);
         } else {
             HILOG_ERROR(LOG_CORE, "failed in napi_add_env_cleanup_hook.");
+            delete envPtr;
         }
     }
     napiEnvWatcherRecords_.emplace_back(env, watcher);
 }
 
-void EnvWatcherManager::OnEnvRemove(void* env)
+void EnvWatcherManager::OnEnvRemove(void* envPtr)
 {
+    if (envPtr == nullptr) {
+        HILOG_ERROR(LOG_CORE, "cur envPtr is nullptr.");
+        return;
+    }
+    auto env = reinterpret_cast<napi_env*>(envPtr);
     EnvWatcherManager& manager = GetInstance();
     std::lock_guard<std::mutex> lockGuard(manager.mutex_);
-    manager.envs_.erase(reinterpret_cast<napi_env>(env));
+    manager.envs_.erase(*env);
     manager.napiEnvWatcherRecords_.remove_if([env](const auto& pair) {
-        if (pair.first == env) {
+        if (pair.first == *env) {
             pair.second->DeleteWatcherContext();
             return true;
         }
         return false;
     });
+    delete env;
 }
 }
 }

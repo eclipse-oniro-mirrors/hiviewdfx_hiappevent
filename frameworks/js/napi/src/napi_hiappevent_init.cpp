@@ -105,7 +105,7 @@ void InitConstClassByName(napi_env env, napi_value exports, const std::string& n
 
     int i = 0;
     napi_property_descriptor descriptors[propertyMap.size()];
-    for (auto it : propertyMap) {
+    for (const auto& it : propertyMap) {
         descriptors[i++] = DECLARE_NAPI_STATIC_PROPERTY(it.first, it.second);
     }
 

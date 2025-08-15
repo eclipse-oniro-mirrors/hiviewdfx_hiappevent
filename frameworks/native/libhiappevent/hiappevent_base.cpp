@@ -716,6 +716,11 @@ std::string AppEventPack::GetRunningId() const
     return runningId_;
 }
 
+std::list<AppEventParam> AppEventPack::GetBaseParams() const
+{
+    return baseParams_;
+}
+
 void AppEventPack::SetSeq(int64_t seq)
 {
     seq_ = seq;
@@ -776,14 +781,21 @@ void AppEventPack::SetTraceFlag(int traceFlag)
     traceFlag_ = traceFlag;
 }
 
-void AppEventPack::SetParamStr(const std::string& paramStr)
-{
-    paramStr_ = paramStr;
-}
-
 void AppEventPack::SetRunningId(const std::string& runningId)
 {
     runningId_ = runningId;
+}
+
+void AppEventPack::SetBaseParams(const std::list<AppEventParam>& baseParams)
+{
+    for (const auto& baseParam : baseParams) {
+        baseParams_.push_back(baseParam);
+    }
+}
+
+void AppEventPack::SetParamStr(const std::string& paramStr)
+{
+    paramStr_ = paramStr;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

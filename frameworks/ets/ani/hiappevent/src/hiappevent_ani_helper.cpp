@@ -182,7 +182,7 @@ static int32_t ParseEventConfigsValue(ani_env *env, ani_ref Ref, std::vector<Eve
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
         if (env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value) != ANI_OK) {
-            HILOG_ERROR(LOG_CORE, "failed to get length");
+            HILOG_ERROR(LOG_CORE, "failed to get element");
             return ERR_CODE_PARAM_INVALID;
         }
         ani_ref domainRef =
@@ -234,7 +234,7 @@ static int32_t GetDebugModeValue(ani_env *env, ani_object processor, const std::
     return ERR_CODE_SUCC;
 }
 
-static int32_t GetOnStartuplValue(ani_env *env, ani_object processor, const std::string &key, ReportConfig &out)
+static int32_t GetOnStartUpValue(ani_env *env, ani_object processor, const std::string &key, ReportConfig &out)
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
@@ -279,7 +279,7 @@ static const ConfigProp CONFIG_PROPS[] = {
     },
     {
         .key = START_REPORT,
-        .func = GetOnStartuplValue
+        .func = GetOnStartUpValue
     },
     {
         .key = BACKGROUND_REPORT,
@@ -339,7 +339,7 @@ bool HiAppEventAniHelper::AddProcessor(ani_env *env, ani_object processor, int64
     if (AppEventObserverMgr::GetInstance().Load(name) != 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, name no found", name.c_str());
         out = INVALID_OUT;
-        return true;
+        return false;
     }
     int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
     if (processorId <= 0) {

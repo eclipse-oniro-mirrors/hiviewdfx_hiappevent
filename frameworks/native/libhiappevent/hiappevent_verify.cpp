@@ -296,7 +296,7 @@ int VerifyTriggerCondOfReportConfig(ReportConfig& config)
         config.triggerCond.row = 0;
     }
     if (!IsValidPeriodReport(config.triggerCond.timeout)) {
-        HILOG_WARN(LOG_CORE, "invalid triggerCond.timeout=%{public}d", config.triggerCond.row);
+        HILOG_WARN(LOG_CORE, "invalid triggerCond.timeout=%{public}d", config.triggerCond.timeout);
         config.triggerCond.timeout = 0;
     }
     // processor does not support the size
@@ -601,7 +601,7 @@ bool IsApp()
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr || context->GetBundleName().empty()) {
-        HILOG_ERROR(LOG_CORE, "context is null.");
+        HILOG_ERROR(LOG_CORE, "context is null or the bundleName is empty.");
         return false;
     }
     return true;

@@ -251,9 +251,6 @@ int FfiOHOSHiAppEventSetUserId(const char* name, const char* value)
     if (!IsValidUserIdName(std::string(name))) {
         return ERR_PARAM;
     }
-    if (!IsValidUserIdValue(std::string(value))) {
-        return ERR_PARAM;
-    }
     int res = HiAppEventImpl::SetUserId(std::string(name), std::string(value));
     if (res != 0) {
         return ERR_PARAM;

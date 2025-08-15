@@ -63,7 +63,7 @@ bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
 
     std::vector<std::string> keys;
     NapiUtil::GetPropertyNames(env, configObj, keys);
-    for (auto key : keys) {
+    for (const auto& key : keys) {
         if (CONFIG_OPTION_MAP.find(key) == CONFIG_OPTION_MAP.end()) {
             continue;
         }
