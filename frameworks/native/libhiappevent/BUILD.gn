@@ -18,6 +18,7 @@ config("libhiappevent_source_config") {
   visibility = [ "*:*" ]
   include_dirs = [
     "include",
+    "dfr/include",
     "load/include",
     "../../../interfaces/native/inner_api/include",
     "../../../interfaces/native/kits/include",
@@ -34,6 +35,7 @@ ohos_shared_library("libhiappevent_base") {
 
   sources = [
     "app_event_util.cpp",
+    "dfr/resource_overlimit_mgr.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
     "hiappevent_clean.cpp",

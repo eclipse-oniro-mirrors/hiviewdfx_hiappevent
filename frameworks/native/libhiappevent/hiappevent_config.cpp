@@ -23,6 +23,7 @@
 #include <string>
 
 #include "app_event_observer_mgr.h"
+#include "resource_overlimit_mgr.h"
 #include "application_context.h"
 #include "context.h"
 #include "hiappevent_base.h"
@@ -290,6 +291,11 @@ int HiAppEventConfig::SetEventConfig(const std::string& name, const std::map<std
     if (name == MAIN_THREAD_JANK) {
         return Watchdog::GetInstance().SetEventConfig(configMap);
     }
+    if (name == RESOURCE_OVERLIMIT) {
+        ResourceOverlimitMgr::GetInstance().SetRunningId(GetRunningId());
+        return ResourceOverlimitMgr::GetInstance().SetEventConfig(configMap);
+    }
+
     HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s", name.c_str());
     return ErrorCode::ERROR_INVALID_PARAM_VALUE;
 }

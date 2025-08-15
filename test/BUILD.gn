@@ -185,6 +185,30 @@ ohos_unittest("HiAppEventVerifyTest") {
   ]
 }
 
+ohos_unittest("HiAppEventDfrResourceOverlimitMgrTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [
+    "unittest/common/native/hiappevent_dfr_resource_overlimit_mgr_test.cpp",
+    "../frameworks/native/libhiappevent/dfr/resource_overlimit_mgr.cpp",
+  ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
+  ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "googletest:gmock_main",
+    "hilog:libhilog",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
@@ -196,6 +220,7 @@ group("unittest") {
     ":HiAppEventUtilityTest",
     ":HiAppEventVerifyTest",
     ":HiAppEventWatcherTest",
+    ":HiAppEventDfrResourceOverlimitMgrTest",
     "unittest/common/napi:unittest",
   ]
 }
