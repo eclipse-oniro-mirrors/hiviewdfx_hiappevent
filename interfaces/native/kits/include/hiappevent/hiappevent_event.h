@@ -169,6 +169,14 @@ extern "C" {
 #define EVENT_AUDIO_JANK_FRAME "AUDIO_JANK_FRAME"
 
 /**
+ * @brief audio jank frame event.
+ *
+ * @since 21
+ * @version 1.0
+ */
+#define EVENT_APP_HICOLLIE "APP_HICOLLIE"
+
+/**
  * @brief OS domain.
  *
  * @since 12
