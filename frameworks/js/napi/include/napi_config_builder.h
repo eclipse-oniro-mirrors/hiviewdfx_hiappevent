@@ -36,7 +36,7 @@ public:
 
 private:
     void GetAppCrashConfig(const napi_env env, const napi_value params);
-    void GetMainThreadJankConfig(const napi_env env, const napi_value params);
+    void GetCommonConfig(const napi_env env, const napi_value params);
 
 private:
     std::unique_ptr<EventConfigPack> eventConfigPack_;

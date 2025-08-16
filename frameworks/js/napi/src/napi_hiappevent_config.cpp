@@ -15,9 +15,11 @@
 #include "napi_hiappevent_config.h"
 
 #include <map>
+#include <unordered_set>
 #include <string>
 
 #include "hiappevent_config.h"
+#include "resource_overlimit_mgr.h"
 #include "hilog/log.h"
 #include "napi_config_builder.h"
 #include "napi_error.h"
@@ -45,8 +47,10 @@ int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
 {
     if (asyncContext->eventConfigPack->eventName == APP_CRASH) {
         return HiAppEventConfig::GetInstance().SetCrashConfig(asyncContext->eventConfigPack->configUintMap);
-    } else if (asyncContext->eventConfigPack->eventName == MAIN_THREAD_JANK) {
-        return HiAppEventConfig::GetInstance().SetEventConfig(MAIN_THREAD_JANK,
+    }
+    std::unordered_set<std::string> whiteList = { MAIN_THREAD_JANK, RESOURCE_OVERLIMIT };
+    if (whiteList.count(asyncContext->eventConfigPack->eventName) != 0) {
+        return HiAppEventConfig::GetInstance().SetEventConfig(asyncContext->eventConfigPack->eventName,
             asyncContext->eventConfigPack->configStringMap);
     }
     HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s",

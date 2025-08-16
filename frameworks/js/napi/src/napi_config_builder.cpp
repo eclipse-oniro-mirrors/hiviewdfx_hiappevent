@@ -18,6 +18,7 @@
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
+#include "resource_overlimit_mgr.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -87,10 +88,11 @@ std::unique_ptr<EventConfigPack> NapiConfigBuilder::BuildEventConfig(const napi_
     }
 
     eventConfigPack_->eventName = NapiUtil::GetString(env, params[INDEX_OF_NAME_CONFIG]);
+    std::unordered_set<std::string> whiteList = { MAIN_THREAD_JANK, RESOURCE_OVERLIMIT };
     if (eventConfigPack_->eventName == APP_CRASH) {
         GetAppCrashConfig(env, params[INDEX_OF_VALUE_CONFIG]);
-    } else if (eventConfigPack_->eventName == MAIN_THREAD_JANK) {
-        GetMainThreadJankConfig(env, params[INDEX_OF_VALUE_CONFIG]);
+    } else if (whiteList.count(eventConfigPack_->eventName) != 0) {
+        GetCommonConfig(env, params[INDEX_OF_VALUE_CONFIG]);
     } else {
         HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s",
             eventConfigPack_->eventName.c_str());
@@ -130,7 +132,7 @@ void NapiConfigBuilder::GetAppCrashConfig(const napi_env env, const napi_value p
     }
 }
 
-void NapiConfigBuilder::GetMainThreadJankConfig(const napi_env env, const napi_value params)
+void NapiConfigBuilder::GetCommonConfig(const napi_env env, const napi_value params)
 {
     std::vector<std::string> configKeys;
     NapiUtil::GetPropertyNames(env, params, configKeys);
