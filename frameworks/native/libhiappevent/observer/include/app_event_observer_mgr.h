@@ -62,6 +62,7 @@ public:
 private:
     AppEventObserverMgr();
     ~AppEventObserverMgr();
+    int64_t AddProcessorWithTimeLimited(std::shared_ptr<AppEventObserver> observer);
     void SendEventToHandler();
     void RegisterAppStateCallback();
     void UnregisterAppStateCallback();
@@ -78,6 +79,8 @@ private:
     std::shared_ptr<OsEventListener> listener_;
     bool hasHandleTimeout_ = false;
     std::mutex handlerMutex_;
+    std::atomic<bool> isFirstAddProcessor_ = true;
+    std::atomic<bool> isDbInit_ = false;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -19,6 +19,7 @@
 #include "app_event_processor_proxy.h"
 #include "app_event_store.h"
 #include "application_context.h"
+#include "ffrt_inner.h"
 #include "hiappevent_base.h"
 #include "hiappevent_ffrt.h"
 #include "hilog/log.h"
@@ -39,6 +40,8 @@ constexpr int ONE_MINUTE = 60 * 1000;
 constexpr int REFRESH_FREE_SIZE_INTERVAL = 10 * ONE_MINUTE; // 10 minutes
 constexpr int TIMEOUT_INTERVAL_MICRO = HiAppEvent::TIMEOUT_STEP * 1000 * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
+constexpr int TIMEOUT_LIMIT_FOR_ADDPROCESSOR = 500;
+constexpr int CHECK_DB_INTERVAL = 1;
 
 void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
@@ -248,6 +251,41 @@ int64_t AppEventObserverMgr::RegisterObserver(std::shared_ptr<AppEventObserver> 
     return observerSeq;
 }
 
+int64_t AppEventObserverMgr::AddProcessorWithTimeLimited(std::shared_ptr<AppEventObserver> observer)
+{
+    if (isFirstAddProcessor_) {
+        isFirstAddProcessor_ = false;
+        auto syncPromise = std::make_shared<ffrt::promise<int64_t>>();
+        if (syncPromise == nullptr) {
+            HILOG_ERROR(LOG_CORE, "Failed to create syncPromise.");
+            return -1;
+        }
+        ffrt::future syncFuture = syncPromise->get_future();
+        ffrt::submit([this, syncPromise, observer]() {
+            syncPromise->set_value(RegisterObserver(observer));
+            this->isDbInit_ = true;
+            }, ffrt::task_attr()
+                .name("ADD_PROCESSOR_TASK")
+                .qos(static_cast<int>(ffrt_qos_user_initiated)));
+        ffrt::future_status wait = syncFuture.wait_for(std::chrono::milliseconds(TIMEOUT_LIMIT_FOR_ADDPROCESSOR));
+        if (wait != ffrt::future_status::ready) {
+            HILOG_WARN(LOG_CORE, "AddProcessor task execution timeout");
+            return -1;
+        }
+        return syncFuture.get();
+    }
+    int remainTime = TIMEOUT_LIMIT_FOR_ADDPROCESSOR;
+    while (!isDbInit_ && remainTime >= 0) {
+        remainTime -= CHECK_DB_INTERVAL;
+        std::this_thread::sleep_for(std::chrono::milliseconds(CHECK_DB_INTERVAL));
+    }
+    if (remainTime < 0) {
+        HILOG_WARN(LOG_CORE, "AddProcessor task execution timeout");
+        return -1;
+    }
+    return RegisterObserver(observer);
+}
+
 int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, const ReportConfig& config)
 {
     if (observerName.empty()) {
@@ -262,7 +300,7 @@ int64_t AppEventObserverMgr::RegisterObserver(const std::string& observerName, c
     }
     observer->SetReportConfig(config);
 
-    int64_t observerSeq = RegisterObserver(observer);
+    int64_t observerSeq = AddProcessorWithTimeLimited(observer);
     if (observerSeq <= 0) {
         return -1;
     }
