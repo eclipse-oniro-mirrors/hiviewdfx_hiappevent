@@ -124,12 +124,14 @@ ani_object AniAppEventHolder::AniTakeNext(ani_env *env, ani_object object)
 {
     ani_object packageObj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_PACKAGE);
     AniAppEventHolder* holder = Unwrap(env, object);
+    ani_ref result = nullptr;
+    env->GetNull(&result);
     if (holder == nullptr) {
-        return packageObj;
+        return static_cast<ani_object>(result);
     }
     auto package = holder->TakeNext();
     if (package == nullptr) {
-        return packageObj;
+        return static_cast<ani_object>(result);
     }
     env->Object_SetPropertyByName_Int(packageObj, "packageId", package->packageId);
     env->Object_SetPropertyByName_Int(packageObj, "row", package->row);

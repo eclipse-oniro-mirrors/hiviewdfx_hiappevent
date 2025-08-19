@@ -39,6 +39,7 @@ ohos_shared_library("hiappevent_ani") {
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "runtime_core:ani",
+    "runtime_core:ani_helpers",
   ]
 
   subsystem_name = "hiviewdfx"
