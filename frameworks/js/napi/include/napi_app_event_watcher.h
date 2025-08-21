@@ -26,23 +26,12 @@ struct OnTriggerContext {
     napi_env env = nullptr;
     napi_ref onTrigger = nullptr;
     napi_ref holder = nullptr;
-    int row = 0;
-    int size = 0;
 };
 
 struct OnReceiveContext {
     ~OnReceiveContext();
     napi_env env = nullptr;
     napi_ref onReceive = nullptr;
-    std::string domain;
-    std::vector<std::shared_ptr<AppEventPack>> events;
-    int64_t observerSeq = 0;
-};
-
-struct WatcherContext {
-    ~WatcherContext();
-    OnTriggerContext* triggerContext = nullptr;
-    OnReceiveContext* receiveContext = nullptr;
 };
 
 class NapiAppEventWatcher : public AppEventWatcher {
@@ -63,7 +52,8 @@ protected:
     void OnTrigger(const TriggerCondition& triggerCond) override;
 
 private:
-    WatcherContext* context_;
+    std::shared_ptr<OnTriggerContext> triggerContext_ = nullptr;
+    std::shared_ptr<OnReceiveContext> receiveContext_ = nullptr;
     std::mutex mutex_;
 };
 } // namespace HiviewDFX
