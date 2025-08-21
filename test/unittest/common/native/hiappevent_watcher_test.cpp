@@ -22,6 +22,7 @@
 #include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
+#include "hiappevent_write.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -293,4 +294,23 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest004, TestSize.Level3)
 
     AppEventObserverMgr::GetInstance().RemoveObserver(watcher->GetName());
     std::cout << "HiAppEventWatcherTest004 end" << std::endl;
+}
+
+/**
+ * @tc.name: HiAppEventConfigTest001
+ * @tc.desc: Test to add watcher onReceive.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventWatcherTest, HiAppEventConfigTest001, TestSize.Level3)
+{
+    GTEST_LOG_(INFO) << "HiAppEventConfigTest001 start";
+    HiAppEventConfig::GetInstance().SetDisable(true);
+    WriteEvent(nullptr);
+    HiAppEventConfig::GetInstance().SetDisable(false);
+    WriteEvent(nullptr);
+    SetEventParam(nullptr);
+    auto appEventPack = std::make_shared<AppEventPack>();
+    int ret = SetEventParam(appEventPack);
+    ASSERT_EQ(ret, 0);
+    GTEST_LOG_(INFO) << "HiAppEventConfigTest001 end";
 }

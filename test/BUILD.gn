@@ -81,6 +81,8 @@ ohos_unittest("HiAppEventWatcherTest") {
 
   configs = [ ":hiappevent_config_test" ]
 
+  cflags_cc = [ "-Dprivate=public" ]
+
   sources = [ "unittest/common/native/hiappevent_watcher_test.cpp" ]
 
   deps = [

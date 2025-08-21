@@ -261,3 +261,19 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest008, TestSize.Level3)
 
     std::cout << "HiAppEventUserInfoTest008 end" << std::endl;
 }
+
+/**
+ * @tc.name: HiAppEventUserInfoTest009
+ * @tc.desc: Test to Abnormal Branch
+ * @tc.type: FUNC
+ * @tc.require: issueI8EOLQ
+ */
+HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest009, TestSize.Level3)
+{
+    GTEST_LOG_(INFO) << "HiAppEventUserInfoTest009 start";
+    int ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty("", "");
+    ASSERT_EQ(ret, 0);
+    ret = HiAppEvent::UserInfo::GetInstance().SetUserId("", "");
+    ASSERT_EQ(ret, 0);
+    GTEST_LOG_(INFO) << "HiAppEventUserInfoTest009 end";
+}
