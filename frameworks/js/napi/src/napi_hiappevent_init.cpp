@@ -72,8 +72,6 @@ void InitEventMap(napi_env env, std::map<const char*, napi_value>& eventMap)
     eventMap["ADDRESS_SANITIZER"] = NapiUtil::CreateString(env, "ADDRESS_SANITIZER");
     eventMap["MAIN_THREAD_JANK"] = NapiUtil::CreateString(env, "MAIN_THREAD_JANK");
     eventMap["APP_KILLED"] = NapiUtil::CreateString(env, "APP_KILLED");
-    eventMap["AUDIO_JANK_FRAME"] = NapiUtil::CreateString(env, "AUDIO_JANK_FRAME");
-    eventMap["APP_HICOLLIE"] = NapiUtil::CreateString(env, "APP_HICOLLIE");
 }
 
 void InitParamMap(napi_env env, std::map<const char*, napi_value>& paramMap)

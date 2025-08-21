@@ -33,7 +33,6 @@ const std::string EVENT_MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 const std::string EVENT_APP_START = "APP_START";
 const std::string EVENT_APP_HICOLLIE = "APP_HICOLLIE";
 const std::string EVENT_APP_KILLED = "APP_KILLED";
-const std::string EVENT_AUDIO_JANK_FRAME = "AUDIO_JANK_FRAME";
 const char DOMAIN_PROPERTY[] = "domain";
 const char NAMES_PROPERTY[] = "names";
 const char TYPES_PROPERTY[] = "types";
