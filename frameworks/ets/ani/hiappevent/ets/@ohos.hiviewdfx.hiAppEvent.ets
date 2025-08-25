@@ -93,7 +93,7 @@ class ResultsInner implements Results {
 }
 
 export default namespace hiAppEvent {
-    loadLibrary("hiappevent_ani");
+    loadLibraryWithPermissionCheck("hiappevent_ani", "@ohos.hiviewdfx.hiAppEvent");
 
     export enum EventType {
         FAULT = 1,
