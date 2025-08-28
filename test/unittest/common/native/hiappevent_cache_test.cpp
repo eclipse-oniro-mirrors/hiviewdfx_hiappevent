@@ -385,6 +385,23 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: HiAppEventCleanTest003
+ * @tc.desc: test the log cleaner operation.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventCleanTest003, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. create a example log.
+     * @tc.steps: step2. clear log space.
+     */
+    OHOS::HiviewDFX::HiAppEventClean::CheckStorageSpace();
+    OHOS::HiviewDFX::HiAppEventClean::CheckStorageSpace();
+    EXPECT_FALSE(OHOS::HiviewDFX::HiAppEventClean::IsStorageSpaceFull("", 0));
+}
+
+/**
  * @tc.name: HiAppEventStat001
  * @tc.desc: test the WriteApiEndEventAsync func of app event stat.
  * @tc.type: FUNC
@@ -397,6 +414,24 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
     AppEventStat::WriteApiEndEventAsync(apiName, beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
     AppEventStat::WriteApiEndEventAsync(apiName, -beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
     EXPECT_GT(beginTime, 0);
+}
+
+/**
+ * @tc.name: HiAppEventConfigTest001
+ * @tc.desc: test the SetCrashConfig func of app event stat.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventConfigTest001, TestSize.Level1)
+{
+    std::map<uint8_t, uint32_t> configMap;
+    std::string name = "test";
+    HiAppEventConfig::GetInstance().GetRunningId();
+    HiAppEventConfig::GetInstance().GetRunningId();
+    HiAppEventConfig::GetInstance().RefreshFreeSize();
+    HiAppEventConfig::GetInstance().SetConfigurationItem(name, "");
+    int ret = HiAppEventConfig::GetInstance().SetCrashConfig(configMap);
+    EXPECT_EQ(ret, 0);
 }
 
 /**
