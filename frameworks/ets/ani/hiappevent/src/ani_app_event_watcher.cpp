@@ -148,6 +148,10 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
         row = triggerCond.row, size = triggerCond.size, holder = triggerContext_->holder] () {
         ani_size nr_refs = REFERENCES_MAX_NUMBER;
         ani_env* env = GetAniEnv(vm);
+        if (env == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to get env from onTrigger context");
+            return;
+        }
         env->CreateLocalScope(nr_refs);
         auto callback = onTrigger;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
@@ -205,6 +209,10 @@ void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
         onReceive = receiveContext_->onReceive] () {
         ani_size nr_refs = REFERENCES_MAX_NUMBER;
         ani_env* env = GetAniEnv(vm);
+        if (env == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to get env from onReceive context");
+            return;
+        }
         env->CreateLocalScope(nr_refs);
         auto callback = onReceive;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
