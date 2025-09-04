@@ -396,6 +396,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest008, TestSize.Level0)
 
     int res = OH_HiAppEvent_Write(TEST_DOMAIN_NAME, nullptr, SECURITY, list);
     OH_HiAppEvent_DestroyParamList(list);
+    OH_HiAppEvent_DestroyParamList(nullptr);
     ASSERT_EQ(res,  ErrorCode::ERROR_INVALID_EVENT_NAME);
 }
 
@@ -443,6 +444,9 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest010, TestSize.Level0)
      * @tc.steps: step2. check the result of config.
      */
     bool res = OH_HiAppEvent_Configure(nullptr, nullptr);
+    ASSERT_FALSE(res);
+
+    res = OH_HiAppEvent_Configure("key", nullptr);
     ASSERT_FALSE(res);
 
     res = OH_HiAppEvent_Configure("key", "true");
@@ -723,90 +727,90 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest023, TestSize.Level0)
 
 /**
  * @tc.name: HiAppEventNDKTest024
- * @tc.desc: check ndk interface of AddProcessor.
+ * @tc.desc: check the interface of OH_HiAppEvent_AddProcessor.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest024, TestSize.Level0)
 {
     setuid(0); // 0 means root uid
-    ASSERT_EQ(CreateProcessor(TEST_PROCESSOR_NAME), nullptr);
-    ASSERT_EQ(SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(SetReportEvent(nullptr, nullptr, nullptr, false), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(SetCustomConfig(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(SetConfigId(nullptr, 0), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
-    ASSERT_EQ(AddProcessor(nullptr), ErrorCode::ERROR_NOT_APP);
-    DestroyProcessor(nullptr);
-    ASSERT_EQ(RemoveProcessor(0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME), nullptr);
+    ASSERT_EQ(OH_HiAppEvent_SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_SetReportEvent(nullptr, nullptr, nullptr, false), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_SetCustomConfig(nullptr, nullptr, nullptr), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigId(nullptr, 0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_NOT_APP);
+    ASSERT_EQ(OH_HiAppEvent_AddProcessor(nullptr), ErrorCode::ERROR_NOT_APP);
+    OH_HiAppEvent_DestroyProcessor(nullptr);
+    ASSERT_EQ(OH_HiAppEvent_RemoveProcessor(0), ErrorCode::ERROR_NOT_APP);
 
     // set app uid
     setuid(TEST_UID);
 
-    ASSERT_EQ(CreateProcessor(nullptr), nullptr);
-    ASSERT_EQ(SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(SetReportEvent(nullptr, nullptr, nullptr, false), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(SetCustomConfig(nullptr, nullptr, nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(SetConfigId(nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
-    ASSERT_EQ(AddProcessor(nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
-    DestroyProcessor(nullptr);
-    ASSERT_EQ(RemoveProcessor(0), ErrorCode::ERROR_PROCESSOR_NOT_ADDED);
+    ASSERT_EQ(OH_HiAppEvent_CreateProcessor(nullptr), nullptr);
+    ASSERT_EQ(OH_HiAppEvent_SetReportRoute(nullptr, nullptr, nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_SetReportPolicy(nullptr, 0, 0, false, false), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_SetReportEvent(nullptr, nullptr, nullptr, false), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_SetCustomConfig(nullptr, nullptr, nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigId(nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserId(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserProperty(nullptr, nullptr, 0), ErrorCode::ERROR_INVALID_PROCESSOR);
+    ASSERT_EQ(OH_HiAppEvent_AddProcessor(nullptr), ErrorCode::ERROR_INVALID_PROCESSOR);
+    OH_HiAppEvent_DestroyProcessor(nullptr);
+    ASSERT_EQ(OH_HiAppEvent_RemoveProcessor(0), ErrorCode::ERROR_PROCESSOR_NOT_ADDED);
 }
 
 /**
  * @tc.name: HiAppEventNDKTest025
- * @tc.desc: check ndk interface of AddProcessor.
+ * @tc.desc: check the interface of OH_HiAppEvent_AddProcessor.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest025, TestSize.Level0)
 {
-    ASSERT_EQ(CreateProcessor(""), nullptr);
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+    ASSERT_EQ(OH_HiAppEvent_CreateProcessor(""), nullptr);
+    auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
     ASSERT_TRUE(processor != nullptr);
-    ASSERT_EQ(SetReportRoute(processor, nullptr, nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    ASSERT_EQ(SetReportRoute(processor, "", ""), 0);
-    ASSERT_EQ(SetReportPolicy(processor, -1, 0, false, false), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    ASSERT_EQ(SetReportEvent(processor, nullptr, nullptr, false), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    ASSERT_EQ(SetCustomConfig(processor, nullptr, nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    ASSERT_EQ(SetCustomConfig(processor, "", ""), ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
-    ASSERT_EQ(SetConfigId(processor, -1), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    ASSERT_EQ(SetReportUserId(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetReportRoute(processor, nullptr, nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetReportRoute(processor, "", ""), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetReportPolicy(processor, -1, 0, false, false), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetReportEvent(processor, nullptr, nullptr, false), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetCustomConfig(processor, nullptr, nullptr), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetCustomConfig(processor, "", ""), ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigId(processor, -1), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserId(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
     const char* userStrs[] = {"aaa", ""};
-    ASSERT_EQ(SetReportUserId(processor, userStrs, 0), 0);
-    ASSERT_EQ(SetReportUserProperty(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    ASSERT_EQ(SetReportUserProperty(processor, userStrs, 0), 0);
-    int seq = AddProcessor(processor);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserId(processor, userStrs, 0), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserProperty(processor, nullptr, 0), ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserProperty(processor, userStrs, 0), 0);
+    int seq = OH_HiAppEvent_AddProcessor(processor);
     ASSERT_GT(seq, 0);
-    DestroyProcessor(processor);
-    ASSERT_EQ(RemoveProcessor(seq), 0);
+    OH_HiAppEvent_DestroyProcessor(processor);
+    ASSERT_EQ(OH_HiAppEvent_RemoveProcessor(seq), 0);
 }
 
 /**
  * @tc.name: HiAppEventNDKTest026
- * @tc.desc: check ndk interface of AddProcessor.
+ * @tc.desc: check the interface of OH_HiAppEvent_AddProcessor.
  * @tc.type: FUNC
  */
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest026, TestSize.Level0)
 {
-    auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+    auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
     ASSERT_TRUE(processor != nullptr);
-    ASSERT_EQ(SetReportRoute(processor, "test_appid", "test_routeInfo"), 0);
-    ASSERT_EQ(SetReportPolicy(processor, 2, 2, false, false), 0);
-    ASSERT_EQ(SetReportEvent(processor, "test_domain", "test_name", false), 0);
-    ASSERT_EQ(SetCustomConfig(processor, "str_key", "str_value"), 0);
-    ASSERT_EQ(SetConfigId(processor, 1), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetReportRoute(processor, "test_appid", "test_routeInfo"), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetReportPolicy(processor, 2, 2, false, false), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetReportEvent(processor, "test_domain", "test_name", false), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetCustomConfig(processor, "str_key", "str_value"), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetConfigId(processor, 1), 0);
     const char* userIds[] = {"test_id"};
-    ASSERT_EQ(SetReportUserId(processor, userIds, 1), 0);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserId(processor, userIds, 1), 0);
     const char* userProperties[] = {"test_property"};
-    ASSERT_EQ(SetReportUserProperty(processor, userProperties, 1), 0);
-    int seq = AddProcessor(processor);
+    ASSERT_EQ(OH_HiAppEvent_SetReportUserProperty(processor, userProperties, 1), 0);
+    int seq = OH_HiAppEvent_AddProcessor(processor);
     ASSERT_GT(seq, 0);
-    DestroyProcessor(processor);
-    ASSERT_EQ(RemoveProcessor(seq), 0);
+    OH_HiAppEvent_DestroyProcessor(processor);
+    ASSERT_EQ(OH_HiAppEvent_RemoveProcessor(seq), 0);
 }
 
 /**
@@ -1053,12 +1057,12 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest033, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest034, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
         EXPECT_TRUE(processor != nullptr);
         int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
         EXPECT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
@@ -1073,16 +1077,11 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest034, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
         EXPECT_TRUE(processor != nullptr);
         int res = OH_HiAppEvent_SetConfigName(processor, "undefined");
         EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
-
-        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],undefined}";
-        EXPECT_EQ(loadConf, expectConf);
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
@@ -1097,11 +1096,11 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest036, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor("");
+        auto processor = OH_HiAppEvent_CreateProcessor("");
         EXPECT_TRUE(processor == nullptr);
         int res = OH_HiAppEvent_SetConfigName(processor, "SDK_OCG");
         EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PROCESSOR);
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
@@ -1116,17 +1115,11 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest036, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
         EXPECT_TRUE(processor != nullptr);
         int res = OH_HiAppEvent_SetConfigName(processor, "");
         EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
-
-        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-        EXPECT_EQ(loadConf, expectConf);
-
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
@@ -1141,17 +1134,11 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
         EXPECT_TRUE(processor != nullptr);
         int res = OH_HiAppEvent_SetConfigName(processor, "xxx***");
         EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
-
-        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-        EXPECT_EQ(loadConf, expectConf);
-
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
@@ -1166,17 +1153,11 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
         EXPECT_TRUE(processor != nullptr);
         int res = OH_HiAppEvent_SetConfigName(processor, "123_processor");
         EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
-
-        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-        EXPECT_EQ(loadConf, expectConf);
-
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
@@ -1191,18 +1172,12 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest040, TestSize.Level0)
 {
     if (g_configFileExist) {
-        auto processor = CreateProcessor(TEST_PROCESSOR_NAME);
+        auto processor = OH_HiAppEvent_CreateProcessor(TEST_PROCESSOR_NAME);
         EXPECT_TRUE(processor != nullptr);
         std::string longInvalidName(256 + 1, 'a');
         int res = OH_HiAppEvent_SetConfigName(processor, longInvalidName.c_str());
         EXPECT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH);
-
-        auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
-        std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
-        EXPECT_EQ(loadConf, expectConf);
-
-        DestroyProcessor(processor);
+        OH_HiAppEvent_DestroyProcessor(processor);
     } else {
         ASSERT_FALSE(g_configFileExist);
         GTEST_LOG_(INFO) << "g_configFileExist is false, skip test.";
