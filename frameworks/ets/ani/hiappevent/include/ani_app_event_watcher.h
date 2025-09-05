@@ -29,23 +29,12 @@ struct OnTriggerContext {
     ani_vm* vm = nullptr;
     ani_ref onTrigger {};
     ani_ref holder {};
-    int row = 0;
-    int size = 0;
 };
 
 struct OnReceiveContext {
     ~OnReceiveContext();
     ani_vm* vm = nullptr;
     ani_ref onReceive {};
-    std::string domain;
-    std::vector<std::shared_ptr<AppEventPack>> events;
-    int64_t observerSeq = 0;
-};
-
-struct WatcherContext {
-    ~WatcherContext();
-    OnTriggerContext* triggerContext = nullptr;
-    OnReceiveContext* receiveContext = nullptr;
 };
 
 class AniAppEventWatcher : public AppEventWatcher {
@@ -54,7 +43,6 @@ public:
         const std::string& name,
         const std::vector<AppEventFilter>& filters,
         TriggerCondition cond);
-    ~AniAppEventWatcher();
     ani_status AniSendEvent(const std::function<void()> cb, const std::string& name);
     void InitTrigger(ani_env *env, ani_ref trigger);
     void InitHolder(ani_env *env, ani_ref holder);
@@ -66,7 +54,8 @@ protected:
     void OnTrigger(const TriggerCondition& triggerCond) override;
 
 private:
-    WatcherContext* context_ = nullptr;
+    std::shared_ptr<OnTriggerContext> triggerContext_ = nullptr;
+    std::shared_ptr<OnReceiveContext> receiveContext_ = nullptr;
     std::shared_ptr<OHOS::AppExecFwk::EventHandler> mainHandler_ = nullptr;
 };
 } // namespace HiviewDFX

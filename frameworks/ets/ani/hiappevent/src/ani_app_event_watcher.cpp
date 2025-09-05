@@ -105,48 +105,20 @@ OnReceiveContext::~OnReceiveContext()
     }
 }
 
-WatcherContext::~WatcherContext()
-{
-    if (triggerContext != nullptr) {
-        delete triggerContext;
-    }
-    if (receiveContext != nullptr) {
-        delete receiveContext;
-    }
-}
-
 AniAppEventWatcher::AniAppEventWatcher(
     const std::string& name,
     const std::vector<AppEventFilter>& filters,
     TriggerCondition cond)
-    : AppEventWatcher(name, filters, cond), context_(nullptr)
+    : AppEventWatcher(name, filters, cond)
 {}
-
-AniAppEventWatcher::~AniAppEventWatcher()
-{
-    HILOG_DEBUG(LOG_CORE, "start to destroy AniAppEventWatcher object");
-    if (context_ != nullptr) {
-        delete context_;
-        return;
-    }
-}
 
 void AniAppEventWatcher::InitHolder(ani_env *env, ani_ref holder)
 {
-    if (context_ == nullptr) {
-        context_ = new(std::nothrow) WatcherContext();
-        if (context_ == nullptr) {
-            return;
-        }
+    if (triggerContext_ == nullptr) {
+        triggerContext_ = std::make_shared<OnTriggerContext>();
     }
-    if (context_->triggerContext == nullptr) {
-        context_->triggerContext = new(std::nothrow) OnTriggerContext();
-        if (context_->triggerContext == nullptr) {
-            return;
-        }
-    }
-    context_->triggerContext->vm = GetAniVm(env);
-    context_->triggerContext->holder = HiAppEventAniUtil::CreateGlobalReference(env, holder);
+    triggerContext_->vm = GetAniVm(env);
+    triggerContext_->holder = HiAppEventAniUtil::CreateGlobalReference(env, holder);
 }
 
 ani_status AniAppEventWatcher::AniSendEvent(const std::function<void()> cb, const std::string& name)
@@ -168,27 +140,29 @@ ani_status AniAppEventWatcher::AniSendEvent(const std::function<void()> cb, cons
 void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 {
     HILOG_DEBUG(LOG_CORE, "onTrigger start");
-    if (context_ == nullptr || context_->triggerContext == nullptr) {
+    if (triggerContext_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "onTrigger context is null");
         return;
     }
-    context_->triggerContext->row = triggerCond.row;
-    context_->triggerContext->size = triggerCond.size;
-    auto onTriggerWork = [triggerContext = context_->triggerContext, this] () {
-        auto context = static_cast<OnTriggerContext*>(triggerContext);
+    auto onTriggerWork = [vm = triggerContext_->vm, onTrigger = triggerContext_->onTrigger,
+        row = triggerCond.row, size = triggerCond.size, holder = triggerContext_->holder] () {
         ani_size nr_refs = REFERENCES_MAX_NUMBER;
-        ani_env* env = GetAniEnv(context->vm);
+        ani_env* env = GetAniEnv(vm);
+        if (env == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to get env from onTrigger context");
+            return;
+        }
         env->CreateLocalScope(nr_refs);
-        auto callback = context->onTrigger;
+        auto callback = onTrigger;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
             env->DestroyLocalScope();
             return;
         }
         std::vector<ani_ref> args = {
-            HiAppEventAniUtil::CreateDouble(env, context->row),
-            HiAppEventAniUtil::CreateDouble(env, context->size),
-            context->holder
+            HiAppEventAniUtil::CreateDouble(env, row),
+            HiAppEventAniUtil::CreateDouble(env, size),
+            holder
         };
         ani_ref ret {};
         if (env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
@@ -205,70 +179,55 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 void AniAppEventWatcher::InitTrigger(ani_env *env, ani_ref triggerFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init OnTrigger");
-    if (context_ == nullptr) {
-        context_ = new(std::nothrow) WatcherContext();
-        if (context_ == nullptr) {
-            return;
-        }
+    if (triggerContext_ == nullptr) {
+        triggerContext_ = std::make_shared<OnTriggerContext>();
     }
-    if (context_->triggerContext == nullptr) {
-        context_->triggerContext = new(std::nothrow) OnTriggerContext();
-        if (context_->triggerContext == nullptr) {
-            return;
-        }
-    }
-    context_->triggerContext->vm = GetAniVm(env);
-    context_->triggerContext->onTrigger = HiAppEventAniUtil::CreateGlobalReference(env, triggerFunc);
+    triggerContext_->vm = GetAniVm(env);
+    triggerContext_->onTrigger = HiAppEventAniUtil::CreateGlobalReference(env, triggerFunc);
 }
 
 void AniAppEventWatcher::InitReceiver(ani_env *env, ani_ref receiveFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init onReceive");
-    if (context_ == nullptr) {
-        context_ = new(std::nothrow) WatcherContext();
-        if (context_ == nullptr) {
-            return;
-        }
+    if (receiveContext_ == nullptr) {
+        receiveContext_ = std::make_shared<OnReceiveContext>();
     }
-    if (context_->receiveContext == nullptr) {
-        context_->receiveContext = new(std::nothrow) OnReceiveContext();
-        if (context_->receiveContext == nullptr) {
-            return;
-        }
-    }
-    context_->receiveContext->vm = GetAniVm(env);
-    context_->receiveContext->onReceive = HiAppEventAniUtil::CreateGlobalReference(env, receiveFunc);
+    receiveContext_->vm = GetAniVm(env);
+    receiveContext_->onReceive = HiAppEventAniUtil::CreateGlobalReference(env, receiveFunc);
 }
 
 void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     HILOG_DEBUG(LOG_CORE, "onEvents start, seq=%{public}" PRId64 ", event num=%{public}zu", GetSeq(), events.size());
-    if (context_ == nullptr || context_->receiveContext == nullptr || events.empty()) {
+    if (receiveContext_ == nullptr || events.empty()) {
         HILOG_ERROR(LOG_CORE, "onReceive context is null or events is empty");
         return;
     }
-    context_->receiveContext->domain = events[0]->GetDomain();
-    context_->receiveContext->events = events;
-    context_->receiveContext->observerSeq = GetSeq();
-    auto onReceiveWork = [receiveContext = context_->receiveContext, this] () {
-        auto context = static_cast<OnReceiveContext*>(receiveContext);
+    auto domain = events[0]->GetDomain();
+    auto observerSeq = GetSeq();
+    auto onReceiveWork = [events, domain, observerSeq, vm = receiveContext_->vm,
+        onReceive = receiveContext_->onReceive] () {
         ani_size nr_refs = REFERENCES_MAX_NUMBER;
-        ani_env* env = GetAniEnv(context->vm);
+        ani_env* env = GetAniEnv(vm);
+        if (env == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to get env from onReceive context");
+            return;
+        }
         env->CreateLocalScope(nr_refs);
-        auto callback = context->onReceive;
+        auto callback = onReceive;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
             env->DestroyLocalScope();
             return;
         }
         std::vector<ani_ref> args = {
-            HiAppEventAniUtil::CreateAniString(env, context->domain),
-            HiAppEventAniUtil::CreateEventGroups(env, context->events)
+            HiAppEventAniUtil::CreateAniString(env, domain),
+            HiAppEventAniUtil::CreateEventGroups(env, events)
         };
         ani_ref ret {};
         if (env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
             args.size(), args.data(), &ret) == ANI_OK) {
-            DeleteEventMappingAsync(context->observerSeq, context->events);
+            DeleteEventMappingAsync(observerSeq, events);
         } else {
             HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
         }
@@ -281,7 +240,7 @@ void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
 
 bool AniAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
 {
-    return (context_ != nullptr && context_->receiveContext != nullptr);
+    return (receiveContext_ != nullptr);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

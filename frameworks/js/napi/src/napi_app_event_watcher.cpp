@@ -66,21 +66,11 @@ OnReceiveContext::~OnReceiveContext()
     }
 }
 
-WatcherContext::~WatcherContext()
-{
-    if (triggerContext != nullptr) {
-        delete triggerContext;
-    }
-    if (receiveContext != nullptr) {
-        delete receiveContext;
-    }
-}
-
 NapiAppEventWatcher::NapiAppEventWatcher(
     const std::string& name,
     const std::vector<AppEventFilter>& filters,
     TriggerCondition cond)
-    : AppEventWatcher(name, filters, cond), context_(nullptr)
+    : AppEventWatcher(name, filters, cond)
 {}
 
 NapiAppEventWatcher::~NapiAppEventWatcher()
@@ -88,90 +78,73 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
     HILOG_DEBUG(LOG_CORE, "start to destroy NapiAppEventWatcher object");
     EnvWatcherManager::GetInstance().RemoveEnvWatcherRecord(this);
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (context_ == nullptr) {
-        return;
-    }
     napi_env env = nullptr;
-    if (context_->receiveContext != nullptr) {
-        env = context_->receiveContext->env;
-    } else if (context_->triggerContext != nullptr) {
-        env = context_->triggerContext->env;
+    if (receiveContext_ != nullptr) {
+        env = receiveContext_->env;
+    } else if (triggerContext_ != nullptr) {
+        env = triggerContext_->env;
     } else {
-        delete context_;
         return;
     }
-    auto task = [contextData = context_] () {
-        HILOG_DEBUG(LOG_CORE, "start to destroy WatcherContext object");
-        delete contextData;
+    auto task = [receiveContext = std::move(receiveContext_), triggerContext = std::move(triggerContext_)] () {
+        HILOG_DEBUG(LOG_CORE, "start to destroy OnTriggerContext or OnReceiveContext object");
     };
     if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
-        delete context_;
     }
 }
 
 void NapiAppEventWatcher::DeleteWatcherContext()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    delete context_;
-    context_ = nullptr;
+    triggerContext_ = nullptr;
+    receiveContext_ = nullptr;
 }
 
 void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (context_ == nullptr) {
-        context_ = new(std::nothrow) WatcherContext();
-        if (context_ == nullptr) {
-            return;
-        }
+    if (triggerContext_ == nullptr) {
+        triggerContext_ = std::make_shared<OnTriggerContext>();
     }
-    if (context_->triggerContext == nullptr) {
-        context_->triggerContext = new(std::nothrow) OnTriggerContext();
-        if (context_->triggerContext == nullptr) {
-            return;
-        }
-    }
-    context_->triggerContext->env = env;
-    context_->triggerContext->holder = NapiUtil::CreateReference(env, holder);
+    triggerContext_->env = env;
+    triggerContext_->holder = NapiUtil::CreateReference(env, holder);
 }
 
 void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 {
     HILOG_DEBUG(LOG_CORE, "onTrigger start");
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (context_ == nullptr || context_->triggerContext == nullptr) {
+    if (triggerContext_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "onTrigger context is null");
         return;
     }
-    context_->triggerContext->row = triggerCond.row;
-    context_->triggerContext->size = triggerCond.size;
-    auto onTriggerWork = [triggerContext = context_->triggerContext] () {
-        auto context = static_cast<OnTriggerContext*>(triggerContext);
+    auto onTriggerWork = [row = triggerCond.row, size = triggerCond.size, holder = triggerContext_->holder,
+        onTrigger = triggerContext_->onTrigger, env = triggerContext_->env] () {
         napi_handle_scope scope = nullptr;
-        napi_open_handle_scope(context->env, &scope);
+        napi_open_handle_scope(env, &scope);
         if (scope == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to open handle scope");
             return;
         }
-        napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onTrigger);
+        napi_value callback = NapiUtil::GetReferenceValue(env, onTrigger);
         if (callback == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
-            napi_close_handle_scope(context->env, scope);
+            napi_close_handle_scope(env, scope);
             return;
         }
         napi_value argv[CALLBACK_PARAM_NUM] = {
-            NapiUtil::CreateInt32(context->env, context->row),
-            NapiUtil::CreateInt32(context->env, context->size),
-            NapiUtil::GetReferenceValue(context->env, context->holder)
+            NapiUtil::CreateInt32(env, row),
+            NapiUtil::CreateInt32(env, size),
+            NapiUtil::GetReferenceValue(env, holder)
         };
         napi_value ret = nullptr;
-        if (napi_call_function(context->env, nullptr, callback, CALLBACK_PARAM_NUM, argv, &ret) != napi_ok) {
+        if (napi_call_function(env, nullptr, callback, CALLBACK_PARAM_NUM, argv, &ret) != napi_ok) {
             HILOG_ERROR(LOG_CORE, "failed to call onTrigger function");
         }
-        napi_close_handle_scope(context->env, scope);
+        napi_close_handle_scope(env, scope);
     };
-    if (napi_send_event(context_->triggerContext->env, onTriggerWork, napi_eprio_high) != napi_status::napi_ok) {
+    if (napi_send_event(triggerContext_->env, onTriggerWork, napi_eprio_high) != napi_status::napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
     }
 }
@@ -180,82 +153,63 @@ void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value trigg
 {
     HILOG_DEBUG(LOG_CORE, "start to init OnTrigger");
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (context_ == nullptr) {
-        context_ = new(std::nothrow) WatcherContext();
-        if (context_ == nullptr) {
-            return;
-        }
+    if (triggerContext_ == nullptr) {
+        triggerContext_ = std::make_shared<OnTriggerContext>();
     }
-    if (context_->triggerContext == nullptr) {
-        context_->triggerContext = new(std::nothrow) OnTriggerContext();
-        if (context_->triggerContext == nullptr) {
-            return;
-        }
-    }
-    context_->triggerContext->env = env;
-    context_->triggerContext->onTrigger = NapiUtil::CreateReference(env, triggerFunc);
+    triggerContext_->env = env;
+    triggerContext_->onTrigger = NapiUtil::CreateReference(env, triggerFunc);
 }
 
 void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value receiveFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init onReceive");
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (context_ == nullptr) {
-        context_ = new(std::nothrow) WatcherContext();
-        if (context_ == nullptr) {
-            return;
-        }
+    if (receiveContext_ == nullptr) {
+        receiveContext_ = std::make_shared<OnReceiveContext>();
     }
-    if (context_->receiveContext == nullptr) {
-        context_->receiveContext = new(std::nothrow) OnReceiveContext();
-        if (context_->receiveContext == nullptr) {
-            return;
-        }
-    }
-    context_->receiveContext->env = env;
-    context_->receiveContext->onReceive = NapiUtil::CreateReference(env, receiveFunc);
+    receiveContext_->env = env;
+    receiveContext_->onReceive = NapiUtil::CreateReference(env, receiveFunc);
 }
 
 void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     HILOG_DEBUG(LOG_CORE, "onEvents start, seq=%{public}" PRId64 ", event num=%{public}zu", GetSeq(), events.size());
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (context_ == nullptr || context_->receiveContext == nullptr || events.empty()) {
+    if (receiveContext_ == nullptr || events.empty()) {
         HILOG_ERROR(LOG_CORE, "onReceive context is null or events is empty");
         return;
     }
-    context_->receiveContext->domain = events[0]->GetDomain();
-    context_->receiveContext->events = events;
-    context_->receiveContext->observerSeq = GetSeq();
+    auto domain = events[0]->GetDomain();
+    auto observerSeq = GetSeq();
     std::string watcherName = GetName();
-    auto onReceiveWork = [receiveContext = context_->receiveContext, watcherName] () {
-        auto context = static_cast<OnReceiveContext*>(receiveContext);
+    auto onReceiveWork = [watcherName, events, domain, observerSeq, onReceive = receiveContext_->onReceive,
+        env = receiveContext_->env] () {
         napi_handle_scope scope = nullptr;
-        napi_open_handle_scope(context->env, &scope);
+        napi_open_handle_scope(env, &scope);
         if (scope == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to open handle scope");
             return;
         }
-        napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onReceive);
+        napi_value callback = NapiUtil::GetReferenceValue(env, onReceive);
         if (callback == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
-            napi_close_handle_scope(context->env, scope);
+            napi_close_handle_scope(env, scope);
             return;
         }
         napi_value argv[RECEIVE_PARAM_NUM] = {
-            NapiUtil::CreateString(context->env, context->domain),
-            NapiUtil::CreateEventGroups(context->env, context->events)
+            NapiUtil::CreateString(env, domain),
+            NapiUtil::CreateEventGroups(env, events)
         };
         napi_value ret = nullptr;
-        if (napi_call_function(context->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
-            AppEventUtil::ReportAppEventReceive(context->events, watcherName, "onReceive");
-            DeleteEventMappingAsync(context->observerSeq, context->events);
+        if (napi_call_function(env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
+            AppEventUtil::ReportAppEventReceive(events, watcherName, "onReceive");
+            DeleteEventMappingAsync(observerSeq, events);
         } else {
             HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
         }
-        napi_close_handle_scope(context->env, scope);
+        napi_close_handle_scope(env, scope);
     };
-    if (napi_send_event(context_->receiveContext->env, onReceiveWork, napi_eprio_high) != napi_status::napi_ok) {
+    if (napi_send_event(receiveContext_->env, onReceiveWork, napi_eprio_high) != napi_status::napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
     }
 }
@@ -263,7 +217,7 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
 bool NapiAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    return (context_ != nullptr && context_->receiveContext != nullptr);
+    return (receiveContext_ != nullptr);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
