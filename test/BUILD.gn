@@ -49,6 +49,8 @@ ohos_unittest("HiAppEventNativeTest") {
 
   external_deps = [
     "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
     "hiappevent:hiappevent_innerapi",
   ]
@@ -111,6 +113,8 @@ ohos_unittest("HiAppEventInnerApiTest") {
 
   external_deps = [
     "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hiappevent:hiappevent_innerapi",
@@ -148,6 +152,8 @@ ohos_unittest("HiAppEventAppEventTest") {
 
   external_deps = [
     "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
     "hiappevent:hiappevent_innerapi",
   ]
@@ -204,6 +210,8 @@ ohos_unittest("HiAppEventDfrResourceOverlimitMgrTest") {
 
   external_deps = [
     "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
     "c_utils:utils",
     "googletest:gtest_main",
     "googletest:gmock_main",
@@ -225,6 +233,8 @@ ohos_unittest("HiAppEventObserverTest") {
 
   external_deps = [
     "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
     "googletest:gmock_main",
     "googletest:gtest_main",
   ]
