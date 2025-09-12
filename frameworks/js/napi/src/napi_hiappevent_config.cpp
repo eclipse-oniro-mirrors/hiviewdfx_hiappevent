@@ -95,17 +95,18 @@ std::string GetStorageDir()
     return HiAppEventConfig::GetInstance().GetStorageDir();
 }
 
-void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncContext)
+void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncContext> asyncContext)
 {
+    HiAppEventConfigAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventSetEventConfig");
     napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
-            HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
+            HiAppEventConfigAsyncContext* asyncContext = static_cast<HiAppEventConfigAsyncContext*>(data);
             asyncContext->result = asyncContext->eventConfigPack->isValid ? SetEventConfigSync(asyncContext) :
                 ERROR_SET_FAILED;
         },
         [](napi_env env, napi_status status, void* data) {
-            HiAppEventConfigAsyncContext* asyncContext = (HiAppEventConfigAsyncContext*)data;
+            HiAppEventConfigAsyncContext* asyncContext = static_cast<HiAppEventConfigAsyncContext*>(data);
             napi_value result = nullptr;
             if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
                 if (asyncContext->result == 0) {
@@ -119,8 +120,10 @@ void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncConte
             napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
-        (void*)asyncContext, &asyncContext->asyncWork);
-    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
+        data, &data->asyncWork);
+    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        delete data;
+    }
 }
 } // namespace NapiHiAppEventConfig
 } // namespace HiviewDFX

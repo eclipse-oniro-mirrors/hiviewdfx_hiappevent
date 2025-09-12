@@ -30,7 +30,7 @@ struct AddProcessorFromConfigAsyncContext {
 };
 
 bool AddProcessor(const napi_env env, const napi_value config, napi_value& out);
-void AddProcessorFromConfig(const napi_env, AddProcessorFromConfigAsyncContext* asyncContext);
+void AddProcessorFromConfig(const napi_env, std::unique_ptr<AddProcessorFromConfigAsyncContext> asyncContext);
 bool RemoveProcessor(const napi_env env, const napi_value id);
 } // namespace NapiHiAppEventProcessor
 } // namespace HiviewDFX

@@ -74,7 +74,7 @@ static napi_value AddProcessorFromConfig(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventProcessor::AddProcessorFromConfigAsyncContext;
+    auto asyncContext = std::make_unique<NapiHiAppEventProcessor::AddProcessorFromConfigAsyncContext>();
     if (asyncContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
@@ -85,11 +85,10 @@ static napi_value AddProcessorFromConfig(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to create promise.");
-        delete asyncContext;
         return nullptr;
     }
 
-    NapiHiAppEventProcessor::AddProcessorFromConfig(env, asyncContext);
+    NapiHiAppEventProcessor::AddProcessorFromConfig(env, std::move(asyncContext));
     return promise;
 }
 
@@ -117,7 +116,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    auto asyncContext = std::make_unique<NapiHiAppEventWrite::HiAppEventAsyncContext>(env);
     if (asyncContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
@@ -137,11 +136,10 @@ static napi_value Write(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     if (asyncContext->callback == nullptr && napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
         HILOG_ERROR(LOG_CORE, "callback is null, failed to create promise.");
-        delete asyncContext;
         return nullptr;
     }
 
-    NapiHiAppEventWrite::Write(env, asyncContext);
+    NapiHiAppEventWrite::Write(env, std::move(asyncContext));
     return promise;
 }
 
@@ -257,7 +255,7 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    auto asyncContext = std::make_unique<NapiHiAppEventWrite::HiAppEventAsyncContext>(env);
     if (asyncContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
@@ -268,11 +266,10 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to create promise.");
-        delete asyncContext;
         return nullptr;
     }
 
-    NapiHiAppEventWrite::SetEventParam(env, asyncContext);
+    NapiHiAppEventWrite::SetEventParam(env, std::move(asyncContext));
     return promise;
 }
 
@@ -287,7 +284,7 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventConfig::HiAppEventConfigAsyncContext;
+    auto asyncContext = std::make_unique<NapiHiAppEventConfig::HiAppEventConfigAsyncContext>();
     if (asyncContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
@@ -297,11 +294,10 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to create promise.");
-        delete asyncContext;
         return nullptr;
     }
 
-    NapiHiAppEventConfig::SetEventConfig(env, asyncContext);
+    NapiHiAppEventConfig::SetEventConfig(env, std::move(asyncContext));
     return promise;
 }
 

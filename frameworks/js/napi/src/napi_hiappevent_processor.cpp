@@ -485,16 +485,17 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
     return true;
 }
 
-void AddProcessorFromConfig(const napi_env env, AddProcessorFromConfigAsyncContext* asyncContext)
+void AddProcessorFromConfig(const napi_env env, std::unique_ptr<AddProcessorFromConfigAsyncContext> asyncContext)
 {
+    AddProcessorFromConfigAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventAddProcessorFromConfig");
     napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
-            AddProcessorFromConfigAsyncContext* asyncContext = (AddProcessorFromConfigAsyncContext*)data;
+            AddProcessorFromConfigAsyncContext* asyncContext = static_cast<AddProcessorFromConfigAsyncContext*>(data);
             asyncContext->result = AddProcessorAsync(asyncContext->processorName, asyncContext->configName);
         },
         [](napi_env env, napi_status status, void* data) {
-            AddProcessorFromConfigAsyncContext* asyncContext = (AddProcessorFromConfigAsyncContext*)data;
+            AddProcessorFromConfigAsyncContext* asyncContext = static_cast<AddProcessorFromConfigAsyncContext*>(data);
             napi_value result = nullptr;
             if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
                 if (asyncContext->result > 0) {
@@ -509,8 +510,10 @@ void AddProcessorFromConfig(const napi_env env, AddProcessorFromConfigAsyncConte
             napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
-        (void*)asyncContext, &asyncContext->asyncWork);
-    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
+        data, &data->asyncWork);
+    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        delete data;
+    }
 }
 
 bool RemoveProcessor(const napi_env env, const napi_value id)

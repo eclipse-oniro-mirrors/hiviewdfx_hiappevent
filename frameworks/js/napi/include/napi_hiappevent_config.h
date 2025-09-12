@@ -32,7 +32,7 @@ struct HiAppEventConfigAsyncContext {
 bool Configure(const napi_env env, const napi_value configObj, bool isThrow = false);
 bool IsDisable();
 std::string GetStorageDir();
-void SetEventConfig(const napi_env env, HiAppEventConfigAsyncContext* asyncContext);
+void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncContext> asyncContext);
 } // namespace NapiHiAppEventConfig
 } // namespace HiviewDFX
 } // namespace OHOS
