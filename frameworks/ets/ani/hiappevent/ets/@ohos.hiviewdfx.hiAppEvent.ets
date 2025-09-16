@@ -202,7 +202,7 @@ export default namespace hiAppEvent {
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code as number;
+                    retError.code = setResults.code.toDouble();
                     retError.message = setResults.message as string;
                     reject(retError);
                 }
