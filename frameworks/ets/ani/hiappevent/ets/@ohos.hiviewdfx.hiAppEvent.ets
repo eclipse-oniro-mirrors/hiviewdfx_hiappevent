@@ -152,7 +152,7 @@ export default namespace hiAppEvent {
                 if (writeResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = writeResults.code as number;
+                    retError.code = writeResults.code;
                     retError.message = writeResults.message as string;
                     reject(retError)
                 }
@@ -165,7 +165,7 @@ export default namespace hiAppEvent {
         taskpool.execute(cb).then((ret: NullishType): void => {
             let retError = new BusinessError<void>();
             let writeResults: Results = ret as Results;
-            retError.code = writeResults.code as number;
+            retError.code = writeResults.code;
             retError.message = writeResults.message as string;
             callback(retError, undefined);
         });
@@ -183,7 +183,7 @@ export default namespace hiAppEvent {
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code as number;
+                    retError.code = setResults.code;
                     retError.message = setResults.message as string;
                     reject(retError);
                 }
@@ -202,7 +202,7 @@ export default namespace hiAppEvent {
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code.toDouble();
+                    retError.code = setResults.code;
                     retError.message = setResults.message as string;
                     reject(retError);
                 }
