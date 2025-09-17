@@ -37,7 +37,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
     napi_value params[PARAM_NUM] = { 0 };
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
 
-    auto asyncContext = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    auto asyncContext = std::make_unique<NapiHiAppEventWrite::HiAppEventAsyncContext>(env);
     if (asyncContext == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return NapiUtil::CreateUndefined(env);
@@ -63,7 +63,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
     }
 
     // 4. try to write the event to file
-    NapiHiAppEventWrite::Write(env, asyncContext);
+    NapiHiAppEventWrite::Write(env, std::move(asyncContext));
     return promise;
 }
 

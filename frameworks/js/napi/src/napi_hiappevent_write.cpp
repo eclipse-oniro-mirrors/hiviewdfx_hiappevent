@@ -49,18 +49,19 @@ napi_value BuildErrorByResult(const napi_env env, int result)
 }
 }
 
-void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
+void Write(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> asyncContext)
 {
+    HiAppEventAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventWriter");
     napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
-            HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
+            HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
                 WriteEvent(asyncContext->appEventPack);
             }
         },
         [](napi_env env, napi_status status, void* data) {
-            HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
+            HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             napi_value results[RESULT_SIZE] = { 0 };
             if (asyncContext->result == 0) {
                 results[ERR_INDEX] = NapiUtil::CreateNull(env);
@@ -91,16 +92,19 @@ void Write(const napi_env env, HiAppEventAsyncContext* asyncContext)
             napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
-        (void*)asyncContext, &asyncContext->asyncWork);
-    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
+        data, &data->asyncWork);
+    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        delete data;
+    }
 }
 
-void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext)
+void SetEventParam(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> asyncContext)
 {
+    HiAppEventAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventSetEventParam");
     napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
-            HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
+            HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             if (asyncContext->appEventPack != nullptr && asyncContext->result == 0) {
                 if (auto ret = SetEventParam(asyncContext->appEventPack); ret > 0) {
                     asyncContext->result = ret;
@@ -108,7 +112,7 @@ void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext)
             }
         },
         [](napi_env env, napi_status status, void* data) {
-            HiAppEventAsyncContext* asyncContext = (HiAppEventAsyncContext*)data;
+            HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             napi_value results[RESULT_SIZE] = { 0 };
             if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
                 if (asyncContext->result == 0) {
@@ -124,8 +128,10 @@ void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext)
             napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
-        (void*)asyncContext, &asyncContext->asyncWork);
-    napi_queue_async_work_with_qos(env, asyncContext->asyncWork, napi_qos_default);
+        data, &data->asyncWork);
+    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        delete data;
+    }
 }
 } // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX

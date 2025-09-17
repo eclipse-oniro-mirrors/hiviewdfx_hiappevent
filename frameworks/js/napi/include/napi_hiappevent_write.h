@@ -44,8 +44,8 @@ struct HiAppEventAsyncContext {
     ~HiAppEventAsyncContext() {}
 };
 
-void Write(const napi_env env, HiAppEventAsyncContext* asyncContext);
-void SetEventParam(const napi_env env, HiAppEventAsyncContext* asyncContext);
+void Write(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> asyncContext);
+void SetEventParam(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> asyncContext);
 } // namespace NapiHiAppEventWrite
 } // namespace HiviewDFX
 } // namespace OHOS
