@@ -26,7 +26,7 @@ using namespace OHOS::HiviewDFX;
 bool HiAppEventParamBuilder::AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
     std::shared_ptr<AppEventPack> &appEventPack)
 {
-    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array_ref>(arrayRef));
+    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array>(arrayRef));
     if (arrayType != AniArgsType::ANI_STRING) {
         return false;
     }

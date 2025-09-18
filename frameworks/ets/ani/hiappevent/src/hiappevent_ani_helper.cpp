@@ -70,7 +70,7 @@ static int32_t GetConfigIdValue(ani_env *env, ani_object processor, const std::s
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
-        out.configId = static_cast<int32_t>(HiAppEventAniUtil::ParseNumberValue(env, ref));
+        out.configId = HiAppEventAniUtil::ParseIntValue(env, ref);
     }
     return ERR_CODE_SUCC;
 }
@@ -119,7 +119,7 @@ static int32_t GetPeriodReportInt(ani_env *env, ani_object processor, const std:
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
-        out.triggerCond.timeout = static_cast<int32_t>(HiAppEventAniUtil::ParseNumberValue(env, ref));
+        out.triggerCond.timeout = HiAppEventAniUtil::ParseIntValue(env, ref);
         if (!IsValidPeriodReport(out.triggerCond.timeout)) {
             return ERR_CODE_PARAM_INVALID;
         }
@@ -131,7 +131,7 @@ static int32_t GetBatchReportInt(ani_env *env, ani_object processor, const std::
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
-        out.triggerCond.row = static_cast<int32_t>(HiAppEventAniUtil::ParseNumberValue(env, ref));
+        out.triggerCond.row = HiAppEventAniUtil::ParseIntValue(env, ref);
         if (!IsValidBatchReport(out.triggerCond.row)) {
             return ERR_CODE_PARAM_INVALID;
         }
@@ -174,15 +174,15 @@ static int32_t GetUserPropertyRefValue(ani_env *env, ani_object processor, const
 static int32_t ParseEventConfigsValue(ani_env *env, ani_ref Ref, std::vector<EventConfig> &arr)
 {
     ani_size length = 0;
-    if (env->Array_GetLength(static_cast<ani_array_ref>(Ref), &length) != ANI_OK) {
+    if (env->Array_GetLength(static_cast<ani_array>(Ref), &length) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "failed to get length.");
         return ERR_CODE_PARAM_INVALID;
     }
     EventConfig config;
     for (ani_size i = 0; i < length; i++) {
         ani_ref value {};
-        if (env->Array_Get_Ref(static_cast<ani_array_ref>(Ref), i, &value) != ANI_OK) {
-            HILOG_ERROR(LOG_CORE, "failed to get element");
+        if (env->Array_Get(static_cast<ani_array>(Ref), i, &value) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to get length");
             return ERR_CODE_PARAM_INVALID;
         }
         ani_ref domainRef =
@@ -234,7 +234,7 @@ static int32_t GetDebugModeValue(ani_env *env, ani_object processor, const std::
     return ERR_CODE_SUCC;
 }
 
-static int32_t GetOnStartUpValue(ani_env *env, ani_object processor, const std::string &key, ReportConfig &out)
+static int32_t GetOnStartupValue(ani_env *env, ani_object processor, const std::string &key, ReportConfig &out)
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
@@ -279,7 +279,7 @@ static const ConfigProp CONFIG_PROPS[] = {
     },
     {
         .key = START_REPORT,
-        .func = GetOnStartUpValue
+        .func = GetOnStartupValue
     },
     {
         .key = BACKGROUND_REPORT,
@@ -339,7 +339,7 @@ bool HiAppEventAniHelper::AddProcessor(ani_env *env, ani_object processor, int64
     if (AppEventObserverMgr::GetInstance().Load(name) != 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, name no found", name.c_str());
         out = INVALID_OUT;
-        return false;
+        return true;
     }
     int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
     if (processorId <= 0) {
@@ -405,11 +405,16 @@ ani_status HiAppEventAniHelper::ParseEnumGetValueInt32(ani_env *env, ani_enum_it
 bool HiAppEventAniHelper::AddArrayParamToAppEventPack(ani_env *env, const std::string &key, ani_ref arrayRef,
     std::shared_ptr<AppEventPack> &appEventPack)
 {
-    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, static_cast<ani_array_ref>(arrayRef));
+    AniArgsType arrayType = HiAppEventAniUtil::GetArrayType(env, arrayRef);
     switch (arrayType) {
         case AniArgsType::ANI_INT: {
             std::vector<int> ints = HiAppEventAniUtil::GetInts(env, arrayRef);
             appEventPack->AddParam(key, ints);
+            break;
+        }
+        case AniArgsType::ANI_LONG: {
+            std::vector<int64_t> longs = HiAppEventAniUtil::GetLongs(env, arrayRef);
+            appEventPack->AddParam(key, longs);
             break;
         }
         case AniArgsType::ANI_BOOLEAN: {
@@ -450,11 +455,14 @@ bool HiAppEventAniHelper::AddParamToAppEventPack(ani_env *env, const std::string
         case AniArgsType::ANI_INT:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseIntValue(env, element));
             break;
+        case AniArgsType::ANI_LONG:
+            appEventPack->AddParam(key, HiAppEventAniUtil::ParseLongValue(env, element));
+            break;
         case AniArgsType::ANI_BOOLEAN:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseBoolValue(env, element));
             break;
         case AniArgsType::ANI_DOUBLE:
-            appEventPack->AddParam(key, HiAppEventAniUtil::ParseNumberValue(env, element));
+            appEventPack->AddParam(key, HiAppEventAniUtil::ParseDoubleValue(env, element));
             break;
         case AniArgsType::ANI_STRING:
             appEventPack->AddParam(key, HiAppEventAniUtil::ParseStringValue(env, element));
@@ -615,7 +623,7 @@ bool HiAppEventAniHelper::GetUserProperty(ani_env *env, ani_string name, ani_str
     return true;
 }
 
-bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_double id)
+bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_long id)
 {
     int64_t processorId = static_cast<int64_t>(id);
     if (processorId <= 0) {
@@ -657,13 +665,13 @@ static bool IsValidFilters(ani_env *env, ani_ref filtersRef, int32_t& errCode)
         return true;
     }
     ani_size length = 0;
-    if (env->Array_GetLength(static_cast<ani_array_ref>(filtersRef), &length) != ANI_OK) {
+    if (env->Array_GetLength(static_cast<ani_array>(filtersRef), &length) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return false;
     }
     for (ani_size i = 0; i < length; i++) {
         ani_ref filterValue {};
-        if (env->Array_Get_Ref(static_cast<ani_array_ref>(filtersRef), i, &filterValue) != ANI_OK) {
+        if (env->Array_Get(static_cast<ani_array>(filtersRef), i, &filterValue) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "get array element failed");
             return false;
         }
@@ -687,13 +695,13 @@ static void GetFilters(ani_env *env, ani_object watcher, std::vector<AppEventFil
         return;
     }
     ani_size len = 0;
-    if (env->Array_GetLength(static_cast<ani_array_ref>(filtersRef), &len) != ANI_OK) {
+    if (env->Array_GetLength(static_cast<ani_array>(filtersRef), &len) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get array length failed");
         return;
     }
     for (ani_size i = 0; i < len; i++) {
         ani_ref value {};
-        if (env->Array_Get_Ref(static_cast<ani_array_ref>(filtersRef), i, &value) != ANI_OK) {
+        if (env->Array_Get(static_cast<ani_array>(filtersRef), i, &value) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "failed to get length");
             return;
         }
@@ -727,7 +735,7 @@ static int GetConditionValue(ani_env *env, ani_ref cond, const std::string& name
 {
     auto value = HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(cond), name);
     if (!HiAppEventAniUtil::IsRefUndefined(env, value)) {
-        return HiAppEventAniUtil::ParseNumberValue(env, value);
+        return HiAppEventAniUtil::ParseIntValue(env, value);
     }
     return 0;
 }

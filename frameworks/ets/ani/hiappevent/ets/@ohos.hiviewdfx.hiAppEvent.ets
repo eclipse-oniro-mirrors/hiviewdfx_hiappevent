@@ -13,27 +13,27 @@
  * limitations under the License.
  */
 
-import { AsyncCallback, BusinessError } from '@ohos.base';
+import { AsyncCallback, BusinessError, RecordData } from '@ohos.base';
 
 class AppEventInfoInner implements hiAppEvent.AppEventInfo {
     domain: string = "";
     name: string = "";
     eventType: hiAppEvent.EventType = hiAppEvent.EventType.FAULT;
-    params: object = {};
+    params: RecordData = {};
 }
 
 class AppEventPackageInner implements hiAppEvent.AppEventPackage {
-    packageId: number = 0;
-    row: number = 0;
-    size: number = 0;
+    packageId: int = 0;
+    row: int = 0;
+    size: int = 0;
     data: string[] = [];
     appEventInfos: Array<hiAppEvent.AppEventInfo> = {};
 }
 
 class TriggerConditionInner implements hiAppEvent.TriggerCondition {
-    row?: number | undefined;
-    size?: number | undefined;
-    timeOut?: number | undefined;
+    row?: int | undefined;
+    size?: int | undefined;
+    timeOut?: int | undefined;
 }
 
 class AppEventFilterInner implements hiAppEvent.AppEventFilter {
@@ -51,7 +51,7 @@ class WatcherInner implements hiAppEvent.Watcher {
     name: string = "";
     triggerCondition?: hiAppEvent.TriggerCondition | undefined;
     appEventFilters?: hiAppEvent.AppEventFilter[] | undefined;
-    onTrigger?: ((curRow: number, curSize: number, holder: hiAppEvent.AppEventPackageHolder) => void) | undefined;
+    onTrigger?: ((curRow: int, curSize: int, holder: hiAppEvent.AppEventPackageHolder) => void) | undefined;
     onReceive?: ((domain: string, appEventGroups: Array<hiAppEvent.AppEventGroup>) => void) | undefined;
 }
 
@@ -68,12 +68,12 @@ class ProcessorInner implements hiAppEvent.Processor {
     appId?: string | undefined;
     onStartReport?: boolean | undefined;
     onBackgroundReport?: boolean | undefined;
-    periodReport?: number | undefined;
-    batchReport?: number | undefined;
+    periodReport?: int | undefined;
+    batchReport?: int | undefined;
     userIds?: string[] | undefined;
     userProperties?: string[] | undefined;
     eventConfigs?: hiAppEvent.AppEventReportConfig[] | undefined;
-    configId?: number | undefined;
+    configId?: int | undefined;
     customConfigs?: Record<string, string> | undefined;
 }
 
@@ -138,7 +138,7 @@ export default namespace hiAppEvent {
         domain: string;
         name: string;
         eventType: EventType;
-        params: object;
+        params: RecordData;
     }
 
     native function writeSync(info: AppEventInfo): Results;
@@ -152,7 +152,7 @@ export default namespace hiAppEvent {
                 if (writeResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = writeResults.code as number;
+                    retError.code = writeResults.code;
                     retError.message = writeResults.message as string;
                     reject(retError)
                 }
@@ -165,13 +165,13 @@ export default namespace hiAppEvent {
         taskpool.execute(cb).then((ret: NullishType): void => {
             let retError = new BusinessError<void>();
             let writeResults: Results = ret as Results;
-            retError.code = writeResults.code as number;
+            retError.code = writeResults.code;
             retError.message = writeResults.message as string;
             callback(retError, undefined);
         });
     }
 
-    type ParamType = number | string | boolean | Array<string>;
+    type ParamType = int | long | double | string | boolean | Array<string>;
     native function setEventParamSync(params: Record<string, ParamType>, domain: string, name?: string): Results;
 
     export function setEventParam(params: Record<string, ParamType>, domain: string, name?: string): Promise<void> {
@@ -183,7 +183,7 @@ export default namespace hiAppEvent {
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code as number;
+                    retError.code = setResults.code;
                     retError.message = setResults.message as string;
                     reject(retError);
                 }
@@ -202,7 +202,7 @@ export default namespace hiAppEvent {
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code.toDouble();
+                    retError.code = setResults.code;
                     retError.message = setResults.message as string;
                     reject(retError);
                 }
@@ -211,9 +211,9 @@ export default namespace hiAppEvent {
     }
 
     export interface AppEventPackage {
-        packageId: number;
-        row: number;
-        size: number;
+        packageId: int;
+        row: int;
+        size: int;
         data: string[];
         appEventInfos: Array<AppEventInfo>;
     }
@@ -229,15 +229,15 @@ export default namespace hiAppEvent {
             this.nativeConstructor(watcherName);
             AppEventPackageHolder._registry.register(this, this.nativeHolder);
         }
-        native setSize(size: number): void;
-        native setRow(size: number): void;
-        native takeNext(): AppEventPackage;
+        native setSize(size: int): void;
+        native setRow(size: int): void;
+        native takeNext(): AppEventPackage | null;
     }
 
     export interface TriggerCondition {
-        row?: number;
-        size?: number;
-        timeOut?: number;
+        row?: int;
+        size?: int;
+        timeOut?: int;
     }
 
     export interface AppEventFilter {
@@ -255,7 +255,7 @@ export default namespace hiAppEvent {
         name: string;
         triggerCondition?: TriggerCondition;
         appEventFilters?: AppEventFilter[];
-        onTrigger?: (curRow: number, curSize: number, holder: AppEventPackageHolder) => void;
+        onTrigger?: (curRow: int, curSize: int, holder: AppEventPackageHolder) => void;
         onReceive?: (domain: string, appEventGroups: Array<AppEventGroup>) => void;
     }
 
@@ -280,15 +280,15 @@ export default namespace hiAppEvent {
         appId?: string;
         onStartReport?: boolean;
         onBackgroundReport?: boolean;
-        periodReport?: number;
-        batchReport?: number;
+        periodReport?: int;
+        batchReport?: int;
         userIds?: string[];
         userProperties?: string[];
         eventConfigs?: AppEventReportConfig[];
-        configId?: number;
+        configId?: int;
         customConfigs?: Record<string, string>;
     }
 
-    export native function addProcessor(processor: Processor): number;
-    export native function removeProcessor(id: number): void;
+    export native function addProcessor(processor: Processor): long;
+    export native function removeProcessor(id: long): void;
 }

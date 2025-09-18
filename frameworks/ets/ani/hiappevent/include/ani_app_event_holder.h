@@ -41,8 +41,8 @@ public:
     ~AniAppEventHolder() {}
     static void AniConstructor(ani_env *env, ani_object aniObject, ani_string watcherName);
     static void AniFinalize(ani_env *env, ani_object object, ani_long nativeHolder);
-    static void AniSetRow(ani_env *env, ani_object object, ani_double size);
-    static void AniSetSize(ani_env *env, ani_object object, ani_double size);
+    static void AniSetRow(ani_env *env, ani_object object, ani_int size);
+    static void AniSetSize(ani_env *env, ani_object object, ani_int size);
     static ani_object AniTakeNext(ani_env *env, ani_object object);
 
     void SetRow(int row);
