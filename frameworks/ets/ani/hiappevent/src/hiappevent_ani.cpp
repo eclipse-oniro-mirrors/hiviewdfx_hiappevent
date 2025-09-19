@@ -35,7 +35,7 @@
 
 using namespace OHOS::HiviewDFX;
 namespace {
-const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
+const std::string PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
 int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, std::string>& eventConfigMap)
 {
     std::map<std::string, ani_ref> eventConfig;
@@ -47,14 +47,14 @@ int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, 
 }
 }
 
-ani_double HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
+ani_long HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
 {
     int64_t id = 0;
     HiAppEventAniHelper hiAppEventAniHelper;
     if (!hiAppEventAniHelper.AddProcessor(env, processor, id)) {
         HILOG_ERROR(LOG_CORE, "failed to add processor");
     }
-    return static_cast<ani_double>(id);
+    return static_cast<ani_long>(id);
 }
 
 ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
@@ -205,7 +205,7 @@ ani_string HiAppEventAni::GetUserProperty(ani_env *env, ani_string name)
     return userProperty;
 }
 
-void HiAppEventAni::RemoveProcessor(ani_env *env, ani_double id)
+void HiAppEventAni::RemoveProcessor(ani_env *env, ani_long id)
 {
     HiAppEventAniHelper hiAppEventAniHelper;
     if (!hiAppEventAniHelper.RemoveProcessor(env, id)) {
@@ -265,14 +265,19 @@ static ani_status BindHolderFunction(ani_env *env)
     std::array methods = {
         ani_native_function {"nativeConstructor", nullptr,
             reinterpret_cast<void *>(AniAppEventHolder::AniConstructor)},
-        ani_native_function {"_finalize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniFinalize)},
         ani_native_function {"setSize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetSize)},
         ani_native_function {"setRow", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniSetRow)},
         ani_native_function {"takeNext", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniTakeNext)},
     };
     if (env->Class_BindNativeMethods(cls, methods.data(), methods.size()) != ANI_OK) {
         return ANI_ERROR;
+    }
+    std::array staticMethods = {
+        ani_native_function {"_finalize", nullptr, reinterpret_cast<void *>(AniAppEventHolder::AniFinalize)},
     };
+    if (env->Class_BindStaticNativeMethods(cls, staticMethods.data(), staticMethods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    }
     return ANI_OK;
 }
 
