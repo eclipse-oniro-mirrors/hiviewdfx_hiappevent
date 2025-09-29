@@ -23,6 +23,7 @@
 #include <string>
 
 #include "app_event_observer_mgr.h"
+#include "event_config_mgr.h"
 #include "resource_overlimit_mgr.h"
 #include "application_context.h"
 #include "context.h"
@@ -47,6 +48,9 @@ constexpr const char* const MAX_STORAGE = "max_storage";
 constexpr const char* const APP_EVENT_DIR = "/hiappevent/";
 constexpr const char* const APP_CRASH = "APP_CRASH";
 constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+constexpr const char* const MAIN_THREAD_JANK_V2 = "MAIN_THREAD_JANK_V2";
+constexpr const char* const MAIN_THREAD_JANK_POLICY = "mainThreadJankPolicy";
+constexpr const char* const CPU_USAGE_HIGH_POLICY = "cpuUsageHighPolicy";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
@@ -94,6 +98,25 @@ sptr<OHOS::StorageManager::IStorageManager> GetStorageMgr()
         return nullptr;
     }
     return iface_cast<OHOS::StorageManager::IStorageManager>(storageMgrSa);
+}
+
+std::map<std::string, std::string> UnifiedCAndTsParamNames(const std::map<std::string, std::string>& configMap)
+{
+    std::map<std::string, std::string> paramTs2CMap = {
+        {"logType", "log_type"}, {"ignoreStartupTime", "ignore_startup_time"}, {"sampleInterval", "sample_interval"},
+        {"sampleCount", "sample_count"}, {"reportTimesPerApp", "report_times_per_app"},
+        {"autoStopSampling", "auto_stop_sampling"}
+    };
+    std::map<std::string, std::string> unifiedConfigMap;
+    for (const auto& config : configMap) {
+        auto cKey = paramTs2CMap.find(config.first);
+        if (cKey == paramTs2CMap.end()) {
+            unifiedConfigMap[config.first] = config.second;
+        } else {
+            unifiedConfigMap[cKey->second] = config.second;
+        }
+    }
+    return unifiedConfigMap;
 }
 }
 
@@ -288,6 +311,13 @@ void HiAppEventConfig::RefreshFreeSize()
 
 int HiAppEventConfig::SetEventConfig(const std::string& name, const std::map<std::string, std::string> &configMap)
 {
+    if (name == CPU_USAGE_HIGH_POLICY) {
+        return EventConfigMgr::GetInstance().SetEventConfig(configMap);
+    }
+    if (name == MAIN_THREAD_JANK_POLICY || name == MAIN_THREAD_JANK_V2) {
+        auto unifiedConfigMap = UnifiedCAndTsParamNames(configMap);
+        return Watchdog::GetInstance().ConfigEventPolicy(unifiedConfigMap);
+    }
     if (name == MAIN_THREAD_JANK) {
         return Watchdog::GetInstance().SetEventConfig(configMap);
     }

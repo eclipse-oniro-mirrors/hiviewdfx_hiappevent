@@ -35,6 +35,16 @@ const std::string NAME_PROPERTY = "name";
 const std::string EVENT_TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
 const std::string EVENT_INFOS_PROPERTY = "appEventInfos";
+
+std::string NapiNumberToString(const napi_env env, const napi_value value)
+{
+    std::string str = std::to_string(GetDouble(env, value));
+    auto endIndex = str.find_last_not_of("0");
+    if (endIndex == std::string::npos) {
+        return str;
+    }
+    return (str[endIndex] == '.') ? str.substr(0, endIndex) : str.substr(0, endIndex + 1);
+}
 }
 
 bool IsNull(const napi_env env, const napi_value value)
@@ -475,7 +485,7 @@ std::string ConvertToString(const napi_env env, const napi_value value)
             result = GetBoolean(env, value) ? "true" : "false";
             break;
         case napi_number:
-            result = std::to_string(GetDouble(env, value));
+            result = NapiNumberToString(env, value);
             break;
         case napi_string:
             result = GetString(env, value);

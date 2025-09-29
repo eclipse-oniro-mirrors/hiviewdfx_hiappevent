@@ -134,6 +134,28 @@ export default namespace hiAppEvent {
         maxStorage?: string;
     }
 
+    export interface MainThreadJankPolicy {
+        logType?: int;
+        ignoreStartupTime?: int;
+        sampleInterval?: int;
+        sampleCount?: int;
+        reportTimesPerApp?: int;
+        autoStopSampling?: boolean;
+    }
+
+    export interface CpuUsageHighPolicy {
+        foregroundLoadThreshold?: int;
+        backgroundLoadThreshold?: int;
+        threadLoadThreshold?: int;
+        perfLogCaptureCount?: int;
+        threadLoadInterval?: int;
+    }
+
+    export interface EventPolicy {
+        mainThreadJankPolicy?: MainThreadJankPolicy;
+        cpuUsageHighPolicy?: CpuUsageHighPolicy;
+    }
+
     export interface AppEventInfo {
         domain: string;
         name: string;
@@ -204,6 +226,27 @@ export default namespace hiAppEvent {
                 } else {
                     retError.code = setResults.code;
                     retError.message = setResults.message as string;
+                    reject(retError);
+                }
+            });
+        })
+    }
+
+    native function configEventPolicySync(policy: EventPolicy): Results;
+
+    export function configEventPolicy(policy: EventPolicy): Promise<void> {
+        return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
+            let cb = (): Results => { return configEventPolicySync(policy); }
+            taskpool.execute(cb).then((ret: NullishType): void => {
+                let retError = new BusinessError<void>();
+                let setResults: Results = ret as Results;
+                if (setResults.code === 0) {
+                    resolve(undefined);
+                } else if (setResults.code === 401){
+                    retError.code = setResults.code;
+                    retError.message = setResults.message as string;
+                    reject(retError);
+                } else {
                     reject(retError);
                 }
             });

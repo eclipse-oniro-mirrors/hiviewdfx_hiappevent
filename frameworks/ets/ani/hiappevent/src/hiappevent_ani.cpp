@@ -14,15 +14,18 @@
  */
 
 #include "hiappevent_ani.h"
-#include "hiappevent_ani_error_code.h"
-#include "hiappevent_param_builder.h"
-#include "ani_app_event_holder.h"
 
+#include <map>
+
+#include "ani_app_event_holder.h"
 #include "app_event_stat.h"
+#include "app_event_observer_mgr.h"
+#include "hiappevent_ani_error_code.h"
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
+#include "hiappevent_param_builder.h"
+#include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "hilog/log_cpp.h"
 #include "time_util.h"
@@ -36,6 +39,19 @@
 using namespace OHOS::HiviewDFX;
 namespace {
 const std::string PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
+
+std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
+{
+    std::map<std::string, std::vector<std::string>> eventPolicyItem = {
+        {"mainThreadJankPolicy",
+            {"logType", "ignoreStartupTime", "sampleInterval", "sampleCount", "reportTimesPerApp", "autoStopSampling"}},
+        {"cpuUsageHighPolicy",
+            {"foregroundLoadThreshold", "backgroundLoadThreshold", "threadLoadThreshold", "perfLogCaptureCount",
+             "threadLoadInterval"}}
+    };
+    return eventPolicyItem;
+}
+
 int32_t BuildEventConfig(ani_env *env, ani_object config, std::map<std::string, std::string>& eventConfigMap)
 {
     std::map<std::string, ani_ref> eventConfig;
@@ -162,6 +178,37 @@ ani_object HiAppEventAni::SetEventConfigSync(ani_env *env, ani_string name, ani_
     }
 }
 
+ani_object HiAppEventAni::ConfigEventPolicySync(ani_env *env, ani_object policy)
+{
+    std::map<std::string, std::map<std::string, std::string>> policyStringMaps;
+    for (const auto& items : GetEventPolicyItem()) {
+        ani_ref itemPolicysRef = HiAppEventAniUtil::GetProperty(env, policy, items.first);
+        if (HiAppEventAniUtil::IsRefUndefined(env, itemPolicysRef)) {
+            continue;
+        }
+        std::map<std::string, std::string> eventPolicyMap;
+        for (const auto& item : items.second) {
+            ani_ref valueRef = HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(itemPolicysRef), item);
+            if (HiAppEventAniUtil::IsRefUndefined(env, valueRef)) {
+                continue;
+            }
+            eventPolicyMap[item] = HiAppEventAniUtil::ConvertToString(env, valueRef);
+        }
+        policyStringMaps[items.first] = std::move(eventPolicyMap);
+    }
+
+    auto rtn = HiAppEventAniUtil::Result(env, {ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL, ""});
+    for (const auto& configMap : policyStringMaps) {
+        int setResult = HiAppEventConfig::GetInstance().SetEventConfig(configMap.first, configMap.second);
+        if (setResult != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+            HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
+                setResult);
+            rtn =  HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(setResult));
+        }
+    }
+    return rtn;
+}
+
 void HiAppEventAni::ClearData([[maybe_unused]] ani_env *env)
 {
     uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
@@ -241,6 +288,8 @@ static ani_status BindEventFunction(ani_env *env)
             nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventParamSync)},
         ani_native_function {"setEventConfigSync",
             nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventConfigSync)},
+        ani_native_function {"configEventPolicySync",
+            nullptr, reinterpret_cast<void *>(HiAppEventAni::ConfigEventPolicySync)},
         ani_native_function {"clearData", nullptr, reinterpret_cast<void *>(HiAppEventAni::ClearData)},
         ani_native_function {"setUserId", nullptr, reinterpret_cast<void *>(HiAppEventAni::SetUserId)},
         ani_native_function {"getUserId", nullptr, reinterpret_cast<void *>(HiAppEventAni::GetUserId)},

@@ -21,11 +21,13 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct EventConfigPack;
+struct EventPolicyPack;
 namespace NapiHiAppEventConfig {
 struct HiAppEventConfigAsyncContext {
     napi_async_work asyncWork {nullptr};
     napi_deferred deferred {nullptr};
     std::unique_ptr<EventConfigPack> eventConfigPack {nullptr};
+    std::unique_ptr<EventPolicyPack> eventPolicyPack {nullptr};
     int result {0};
 };
 
@@ -33,6 +35,7 @@ bool Configure(const napi_env env, const napi_value configObj, bool isThrow = fa
 bool IsDisable();
 std::string GetStorageDir();
 void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncContext> asyncContext);
+void ConfigEventPolicy(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncContext> asyncContext);
 } // namespace NapiHiAppEventConfig
 } // namespace HiviewDFX
 } // namespace OHOS

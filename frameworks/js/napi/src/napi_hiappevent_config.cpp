@@ -57,6 +57,20 @@ int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
         asyncContext->eventConfigPack->eventName.c_str());
     return ERROR_SET_FAILED;
 }
+
+int ConfigEventPolicySync(HiAppEventConfigAsyncContext* asyncContext)
+{
+    int res = NapiError::ERR_OK;
+    for (const auto& configMap : asyncContext->eventPolicyPack->policyStringMaps) {
+        int setResult = HiAppEventConfig::GetInstance().SetEventConfig(configMap.first, configMap.second);
+        if (setResult != NapiError::ERR_OK) {
+            HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
+                setResult);
+            res = setResult;
+        }
+    }
+    return res;
+}
 }
 bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
 {
@@ -115,6 +129,39 @@ void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncCon
                 } else {
                     result = NapiUtil::CreateError(env, NapiError::ERR_PARAM, "Invalid param value for event config.");
                     napi_reject_deferred(env, asyncContext->deferred, result);
+                }
+            }
+            napi_delete_async_work(env, asyncContext->asyncWork);
+            delete asyncContext;
+        },
+        data, &data->asyncWork);
+    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        delete data;
+    }
+}
+
+void ConfigEventPolicy(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncContext> asyncContext)
+{
+    HiAppEventConfigAsyncContext* data = asyncContext.release();
+    napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventConfigEventPolicy");
+    napi_create_async_work(env, nullptr, resource,
+        [](napi_env env, void* data) {
+            HiAppEventConfigAsyncContext* asyncContext = static_cast<HiAppEventConfigAsyncContext*>(data);
+            asyncContext->result = asyncContext->eventPolicyPack->isValid ? ConfigEventPolicySync(asyncContext) :
+                NapiError::ERR_PARAM;
+        },
+        [](napi_env env, napi_status status, void* data) {
+            HiAppEventConfigAsyncContext* asyncContext = static_cast<HiAppEventConfigAsyncContext*>(data);
+            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
+                if (asyncContext->result == NapiError::ERR_OK) {
+                    napi_resolve_deferred(env, asyncContext->deferred, NapiUtil::CreateNull(env));
+                } else if (asyncContext->result == NapiError::ERR_PARAM) {
+                    napi_value result = NapiUtil::CreateError(env, NapiError::ERR_PARAM,
+                        "Invalid param value type for event policy.");
+                    napi_reject_deferred(env, asyncContext->deferred, result);
+                } else {
+                    HILOG_ERROR(LOG_CORE, "Failed to config event policy");
+                    napi_reject_deferred(env, asyncContext->deferred, NapiUtil::CreateNull(env));
                 }
             }
             napi_delete_async_work(env, asyncContext->asyncWork);

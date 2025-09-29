@@ -177,6 +177,14 @@ extern "C" {
 #define EVENT_APP_HICOLLIE "APP_HICOLLIE"
 
 /**
+ * @brief app main thread jank event with extended params.
+ *
+ * @since 22
+ * @version 1.0
+ */
+#define EVENT_MAIN_THREAD_JANK_V2 "MAIN_THREAD_JANK_V2"
+
+/**
  * @brief OS domain.
  *
  * @since 12
