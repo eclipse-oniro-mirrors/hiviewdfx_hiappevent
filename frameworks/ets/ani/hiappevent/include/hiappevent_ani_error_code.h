@@ -42,6 +42,7 @@ constexpr int32_t ERR_INVALID_COND_SIZE = 11102004;
 constexpr int32_t ERR_INVALID_COND_TIMEOUT = 11102005;
 
 constexpr int32_t ERR_INVALID_SIZE = 11104001;
+constexpr int32_t ERR_INVALID_PARAM_VALUE = 11105001;
 } // namespace HiviewDFX
 } // namespace OHOS
 

@@ -75,6 +75,7 @@ class ProcessorInner implements hiAppEvent.Processor {
     eventConfigs?: hiAppEvent.AppEventReportConfig[] | undefined;
     configId?: int | undefined;
     customConfigs?: Record<string, string> | undefined;
+    configName?: string | undefined;
 }
 
 class ConfigOptionInner implements hiAppEvent.ConfigOption {
@@ -119,6 +120,7 @@ export default namespace hiAppEvent {
         const RESOURCE_OVERLIMIT: string = "RESOURCE_OVERLIMIT";
         const ADDRESS_SANITIZER: string = "ADDRESS_SANITIZER";
         const MAIN_THREAD_JANK: string = "MAIN_THREAD_JANK";
+        const APP_KILLED: string = "APP_KILLED";
     }
 
     export namespace param {
@@ -287,8 +289,25 @@ export default namespace hiAppEvent {
         eventConfigs?: AppEventReportConfig[];
         configId?: int;
         customConfigs?: Record<string, string>;
+        configName?: string;
     }
 
     export native function addProcessor(processor: Processor): long;
+
+    native function addProcessorFromConfigSync(processorName: string, configName?: string): long;
+    export function addProcessorFromConfig(processorName: string, configName?: string): Promise<long> {
+        return new Promise<long>((resolve: (v: long) => void, reject: (e: BusinessError<void>) => void): void => {
+            let cb = (): long => { return addProcessorFromConfigSync(processorName, configName); }
+            taskpool.execute(cb).then((ret: long): void => {
+                resolve(ret);
+            }).catch((error: BusinessError): void => {
+                let retError = new BusinessError<void>();
+                retError.code = error.code;
+                retError.message = error.message;
+                reject(retError);
+            });
+        });
+    }
+
     export native function removeProcessor(id: long): void;
 }
