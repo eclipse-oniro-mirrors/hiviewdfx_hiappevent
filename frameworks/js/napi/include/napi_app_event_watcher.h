@@ -26,12 +26,14 @@ struct OnTriggerContext {
     napi_env env = nullptr;
     napi_ref onTrigger = nullptr;
     napi_ref holder = nullptr;
+    int32_t tid = -1;
 };
 
 struct OnReceiveContext {
     ~OnReceiveContext();
     napi_env env = nullptr;
     napi_ref onReceive = nullptr;
+    int32_t tid = -1;
 };
 
 class NapiAppEventWatcher : public AppEventWatcher {

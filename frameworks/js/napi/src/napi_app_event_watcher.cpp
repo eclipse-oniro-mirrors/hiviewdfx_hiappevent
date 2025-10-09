@@ -51,18 +51,38 @@ void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_
 }
 OnTriggerContext::~OnTriggerContext()
 {
-    if (onTrigger != nullptr) {
-        napi_delete_reference(env, onTrigger);
-    }
-    if (holder != nullptr) {
-        napi_delete_reference(env, holder);
+    HILOG_DEBUG(LOG_CORE, "start to destroy OnTriggerContext object");
+    auto task = [env = env, onTrigger = onTrigger, holder = holder] () {
+        if (onTrigger != nullptr) {
+            napi_delete_reference(env, onTrigger);
+        }
+        if (holder != nullptr) {
+            napi_delete_reference(env, holder);
+        }
+    };
+    if (tid == gettid()) {
+        task();
+    } else {
+        if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
+            HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
+        }
     }
 }
 
 OnReceiveContext::~OnReceiveContext()
 {
-    if (onReceive != nullptr) {
-        napi_delete_reference(env, onReceive);
+    HILOG_DEBUG(LOG_CORE, "start to destroy OnReceiveContext object");
+    auto task = [env = env, onReceive = onReceive] () {
+        if (onReceive != nullptr) {
+            napi_delete_reference(env, onReceive);
+        }
+    };
+    if (tid == gettid()) {
+        task();
+    } else {
+        if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
+            HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
+        }
     }
 }
 
@@ -77,21 +97,6 @@ NapiAppEventWatcher::~NapiAppEventWatcher()
 {
     HILOG_DEBUG(LOG_CORE, "start to destroy NapiAppEventWatcher object");
     EnvWatcherManager::GetInstance().RemoveEnvWatcherRecord(this);
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    napi_env env = nullptr;
-    if (receiveContext_ != nullptr) {
-        env = receiveContext_->env;
-    } else if (triggerContext_ != nullptr) {
-        env = triggerContext_->env;
-    } else {
-        return;
-    }
-    auto task = [receiveContext = std::move(receiveContext_), triggerContext = std::move(triggerContext_)] () {
-        HILOG_DEBUG(LOG_CORE, "start to destroy OnTriggerContext or OnReceiveContext object");
-    };
-    if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
-        HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
-    }
 }
 
 void NapiAppEventWatcher::DeleteWatcherContext()
@@ -109,6 +114,7 @@ void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder
     }
     triggerContext_->env = env;
     triggerContext_->holder = NapiUtil::CreateReference(env, holder);
+    triggerContext_->tid = gettid();
 }
 
 void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
@@ -158,6 +164,7 @@ void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value trigg
     }
     triggerContext_->env = env;
     triggerContext_->onTrigger = NapiUtil::CreateReference(env, triggerFunc);
+    triggerContext_->tid = gettid();
 }
 
 void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value receiveFunc)
@@ -169,6 +176,7 @@ void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value rece
     }
     receiveContext_->env = env;
     receiveContext_->onReceive = NapiUtil::CreateReference(env, receiveFunc);
+    receiveContext_->tid = gettid();
 }
 
 void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)

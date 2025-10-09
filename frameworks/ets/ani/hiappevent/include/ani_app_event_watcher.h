@@ -57,6 +57,7 @@ private:
     std::shared_ptr<OnTriggerContext> triggerContext_ = nullptr;
     std::shared_ptr<OnReceiveContext> receiveContext_ = nullptr;
     std::shared_ptr<OHOS::AppExecFwk::EventHandler> mainHandler_ = nullptr;
+    std::mutex mutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
