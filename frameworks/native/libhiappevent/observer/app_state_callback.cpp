@@ -19,7 +19,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-void AppStateCallback::OnAbilityBackground(const std::shared_ptr<NativeReference>& ability)
+void AppStateCallback::OnAbilityBackground(const AbilityRuntime::AbilityLifecycleCallbackArgs& ability)
 {
     AppEventObserverMgr::GetInstance().HandleBackground();
 }
