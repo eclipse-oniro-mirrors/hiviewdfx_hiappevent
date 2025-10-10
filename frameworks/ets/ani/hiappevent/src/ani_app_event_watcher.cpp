@@ -114,7 +114,6 @@ AniAppEventWatcher::AniAppEventWatcher(
 
 void AniAppEventWatcher::InitHolder(ani_env *env, ani_ref holder)
 {
-    std::lock_guard<std::mutex> lockguard(mutex_);
     if (triggerContext_ == nullptr) {
         triggerContext_ = std::make_shared<OnTriggerContext>();
     }
@@ -141,7 +140,6 @@ ani_status AniAppEventWatcher::AniSendEvent(const std::function<void()> cb, cons
 void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 {
     HILOG_DEBUG(LOG_CORE, "onTrigger start");
-    std::lock_guard<std::mutex> lockguard(mutex_);
     if (triggerContext_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "onTrigger context is null");
         return;
@@ -181,7 +179,6 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
 void AniAppEventWatcher::InitTrigger(ani_env *env, ani_ref triggerFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init OnTrigger");
-    std::lock_guard<std::mutex> lockguard(mutex_);
     if (triggerContext_ == nullptr) {
         triggerContext_ = std::make_shared<OnTriggerContext>();
     }
@@ -192,7 +189,6 @@ void AniAppEventWatcher::InitTrigger(ani_env *env, ani_ref triggerFunc)
 void AniAppEventWatcher::InitReceiver(ani_env *env, ani_ref receiveFunc)
 {
     HILOG_DEBUG(LOG_CORE, "start to init onReceive");
-    std::lock_guard<std::mutex> lockguard(mutex_);
     if (receiveContext_ == nullptr) {
         receiveContext_ = std::make_shared<OnReceiveContext>();
     }
@@ -203,7 +199,6 @@ void AniAppEventWatcher::InitReceiver(ani_env *env, ani_ref receiveFunc)
 void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     HILOG_DEBUG(LOG_CORE, "onEvents start, seq=%{public}" PRId64 ", event num=%{public}zu", GetSeq(), events.size());
-    std::lock_guard<std::mutex> lockguard(mutex_);
     if (receiveContext_ == nullptr || events.empty()) {
         HILOG_ERROR(LOG_CORE, "onReceive context is null or events is empty");
         return;
@@ -245,7 +240,6 @@ void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
 
 bool AniAppEventWatcher::IsRealTimeEvent(std::shared_ptr<AppEventPack> event)
 {
-    std::lock_guard<std::mutex> lockguard(mutex_);
     return (receiveContext_ != nullptr);
 }
 } // namespace HiviewDFX
