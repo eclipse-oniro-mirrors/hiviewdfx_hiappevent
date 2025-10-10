@@ -308,20 +308,20 @@ Use Clang 8.0.0 and C++11 or higher.
 
 ## Repositories Involved<a name="section1371113476307"></a>
 
-[DFX Subsystem](https://gitee.com/openharmony/docs/blob/master/en/readme/dfx.md)
+[DFX Subsystem](https://gitcode.com/openharmony/docs/blob/master/en/readme/dfx.md)
 
-[hiviewdfx\_hiview](https://gitee.com/openharmony/hiviewdfx_hiview/blob/master/README.md)
+[hiviewdfx\_hiview](https://gitcode.com/openharmony/hiviewdfx_hiview/blob/master/README.md)
 
-[hiviewdfx\_hilog](https://gitee.com/openharmony/hiviewdfx_hilog/blob/master/README.md)
+[hiviewdfx\_hilog](https://gitcode.com/openharmony/hiviewdfx_hilog/blob/master/README.md)
 
 <strong>hiviewdfx\_hiappevent</strong>
 
-[hiviewdfx\_hisysevent](https://gitee.com/openharmony/hiviewdfx_hisysevent/blob/master/README.md)
+[hiviewdfx\_hisysevent](https://gitcode.com/openharmony/hiviewdfx_hisysevent/blob/master/README.md)
 
-[hiviewdfx\_faultloggerd](https://gitee.com/openharmony/hiviewdfx_faultloggerd/blob/master/README.md)
+[hiviewdfx\_faultloggerd](https://gitcode.com/openharmony/hiviewdfx_faultloggerd/blob/master/README.md)
 
-[hiviewdfx\_hilog\_lite](https://gitee.com/openharmony/hiviewdfx_hilog_lite/blob/master/README.md)
+[hiviewdfx\_hilog\_lite](https://gitcode.com/openharmony/hiviewdfx_hilog_lite/blob/master/README.md)
 
-[hiviewdfx\_hievent\_lite](https://gitee.com/openharmony/hiviewdfx_hievent_lite/blob/master/README.md)
+[hiviewdfx\_hievent\_lite](https://gitcode.com/openharmony/hiviewdfx_hievent_lite/blob/master/README.md)
 
-[hiviewdfx\_hiview\_lite](https://gitee.com/openharmony/hiviewdfx_hiview_lite/blob/master/README.md)
+[hiviewdfx\_hiview\_lite](https://gitcode.com/openharmony/hiviewdfx_hiview_lite/blob/master/README.md)

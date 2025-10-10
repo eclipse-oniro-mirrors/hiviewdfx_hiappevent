@@ -25,6 +25,7 @@ class HiAppEventAni {
 public:
     static ani_object Write(ani_env *env, ani_object info);
     static ani_long AddProcessor(ani_env *env, ani_object processor);
+    static ani_long AddProcessorFromConfigSync(ani_env *env, ani_string processorName, ani_string configName);
     static void Configure(ani_env *env, ani_object configObj);
     static ani_object SetEventParamSync(ani_env *env, ani_object params, ani_string domain, ani_object name);
     static ani_object SetEventConfigSync(ani_env *env, ani_string name, ani_object config);

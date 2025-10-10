@@ -28,6 +28,7 @@
 #include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "hilog/log_cpp.h"
+#include "processor_config_loader.h"
 #include "time_util.h"
 
 #undef LOG_DOMAIN
@@ -38,6 +39,7 @@
 
 using namespace OHOS::HiviewDFX;
 namespace {
+const char* const DEFAULT_CONFIG_NAME = "SDK_OCG";
 const std::string PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
 
 std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
@@ -71,6 +73,52 @@ ani_long HiAppEventAni::AddProcessor(ani_env *env, ani_object processor)
         HILOG_ERROR(LOG_CORE, "failed to add processor");
     }
     return static_cast<ani_long>(id);
+}
+
+ani_long HiAppEventAni::AddProcessorFromConfigSync(ani_env *env, ani_string processorName, ani_string configName)
+{
+    std::string processorNameTemp = HiAppEventAniUtil::ParseStringValue(env, processorName);
+    std::string configNameTemp = DEFAULT_CONFIG_NAME;
+    if (!HiAppEventAniUtil::IsRefUndefined(env, configName)) {
+        configNameTemp = HiAppEventAniUtil::ParseStringValue(env, configName);
+    }
+
+    if (!IsValidProcessorName(processorNameTemp)) {
+        HILOG_ERROR(LOG_CORE, "Invalid processor name.");
+        HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
+            "Invalid param value for add processor from config.");
+        return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
+    }
+    if (!IsValidProcessorName(configNameTemp)) {
+        HILOG_ERROR(LOG_CORE, "Invalid processorConfig name.");
+        HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
+            "Invalid param value for add processor from config.");
+        return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
+    }
+    if (AppEventObserverMgr::GetInstance().Load(processorNameTemp) != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, name not found", processorNameTemp.c_str());
+        HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
+            "Invalid param value for add processor from config.");
+        return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
+    }
+
+    HiAppEvent::ProcessorConfigLoader loader;
+    if (!loader.LoadProcessorConfig(processorNameTemp, configNameTemp)) {
+        HILOG_ERROR(LOG_CORE, "failed to load config content, configName:%{public}s", configNameTemp.c_str());
+        HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
+            "Invalid param value for add processor from config.");
+        return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
+    }
+
+    ReportConfig conf = loader.GetReportConfig();
+    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(processorNameTemp, conf);
+    if (processorId <= 0) {
+        HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, register processor error",
+            processorNameTemp.c_str());
+        HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
+            "Invalid param value for add processor from config.");
+    }
+    return static_cast<ani_long>(processorId);
 }
 
 ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
@@ -283,6 +331,8 @@ static ani_status BindEventFunction(ani_env *env)
     std::array methods = {
         ani_native_function {"writeSync", nullptr, reinterpret_cast<void *>(HiAppEventAni::Write)},
         ani_native_function {"addProcessor", nullptr, reinterpret_cast<void *>(HiAppEventAni::AddProcessor)},
+        ani_native_function {"addProcessorFromConfigSync", nullptr,
+            reinterpret_cast<void *>(HiAppEventAni::AddProcessorFromConfigSync)},
         ani_native_function {"configure", nullptr, reinterpret_cast<void *>(HiAppEventAni::Configure)},
         ani_native_function {"setEventParamSync",
             nullptr, reinterpret_cast<void *>(HiAppEventAni::SetEventParamSync)},
