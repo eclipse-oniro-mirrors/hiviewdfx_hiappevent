@@ -16,13 +16,11 @@
 #ifndef HIAPP_EVENT_ANI_H
 #define HIAPP_EVENT_ANI_H
 
-#include <unordered_map>
 #include <ani.h>
 #include "base_type.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-
 class HiAppEventAni {
 public:
     static ani_object Write(ani_env *env, ani_object info);
@@ -31,6 +29,7 @@ public:
     static void Configure(ani_env *env, ani_object configObj);
     static ani_object SetEventParamSync(ani_env *env, ani_object params, ani_string domain, ani_object name);
     static ani_object SetEventConfigSync(ani_env *env, ani_string name, ani_object config);
+    static ani_object ConfigEventPolicySync(ani_env *env, ani_object policy);
     static void ClearData([[maybe_unused]] ani_env *env);
     static void SetUserId(ani_env *env, ani_string name, ani_string value);
     static ani_string GetUserId(ani_env *env, ani_string name);
@@ -40,8 +39,6 @@ public:
     static ani_object AddWatcher(ani_env *env, ani_object watcher);
     static void RemoveWatcher(ani_env *env, ani_object watcher);
 };
-
 } // namespace HiviewDFX
 } // namespace OHOS
-
 #endif // HIAPP_EVENT_ANI_H

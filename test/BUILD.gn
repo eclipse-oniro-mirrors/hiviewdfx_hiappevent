@@ -36,7 +36,10 @@ ohos_unittest("HiAppEventNativeTest") {
 
   configs = [ ":hiappevent_config_test" ]
 
-  sources = [ "unittest/common/native/hiappevent_native_test.cpp" ]
+  sources = [
+    "unittest/common/native/hiappevent_config_test.cpp",
+    "unittest/common/native/hiappevent_native_test.cpp",
+  ]
 
   deps = [
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",

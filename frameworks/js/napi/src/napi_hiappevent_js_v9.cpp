@@ -301,6 +301,27 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
     return promise;
 }
 
+static napi_value ConfigEventPolicy(napi_env env, napi_callback_info info)
+{
+    napi_value params[MAX_PARAM_NUM] = { 0 };
+    if (NapiUtil::GetCbInfo(env, info, params) < 1) {  // The min num of params for configEventPolicy is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("configEventPolicy"));
+        return nullptr;
+    }
+
+    auto asyncContext = std::make_unique<NapiHiAppEventConfig::HiAppEventConfigAsyncContext>();
+    NapiConfigBuilder builder;
+    asyncContext->eventPolicyPack = builder.BuildEventPolicy(env, params[0]);
+    napi_value promise = nullptr;
+    if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to create promise.");
+        return nullptr;
+    }
+
+    NapiHiAppEventConfig::ConfigEventPolicy(env, std::move(asyncContext));
+    return promise;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
@@ -318,7 +339,8 @@ static napi_value Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("addWatcher", AddWatcher),
         DECLARE_NAPI_FUNCTION("removeWatcher", RemoveWatcher),
         DECLARE_NAPI_FUNCTION("setEventParam", SetEventParam),
-        DECLARE_NAPI_FUNCTION("setEventConfig", SetEventConfig)
+        DECLARE_NAPI_FUNCTION("setEventConfig", SetEventConfig),
+        DECLARE_NAPI_FUNCTION("configEventPolicy", ConfigEventPolicy)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
     NapiHiAppEventInit::InitNapiClassV9(env, exports);

@@ -35,6 +35,7 @@ ohos_shared_library("libhiappevent_base") {
 
   sources = [
     "app_event_util.cpp",
+    "dfr/event_config_mgr.cpp",
     "dfr/resource_overlimit_mgr.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
@@ -69,6 +70,7 @@ ohos_shared_library("libhiappevent_base") {
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
+    "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
 

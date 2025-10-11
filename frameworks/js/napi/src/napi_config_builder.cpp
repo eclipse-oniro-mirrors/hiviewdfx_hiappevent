@@ -30,6 +30,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr size_t CONFIG_PARAM_NUM = 2;
+constexpr size_t POLICY_PARAM_NUM = 1;
 constexpr size_t INDEX_OF_NAME_CONFIG = 0;
 constexpr size_t INDEX_OF_VALUE_CONFIG = 1;
 constexpr const char* const APP_CRASH = "APP_CRASH";
@@ -39,6 +40,22 @@ struct crashConfig {
     uint8_t type;
     std::function<bool(const napi_env, const napi_value, const std::string&, uint32_t&)> func;
 };
+
+std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem()
+{
+    std::map<std::string, std::map<std::string, napi_valuetype>> eventPolicyItem = {
+        {"mainThreadJankPolicy", {
+            {"logType", napi_number}, {"ignoreStartupTime", napi_number}, {"sampleInterval", napi_number},
+            {"sampleCount", napi_number}, {"reportTimesPerApp", napi_number}, {"autoStopSampling", napi_boolean}
+        }},
+        {"cpuUsageHighPolicy", {
+            {"foregroundLoadThreshold", napi_number}, {"backgroundLoadThreshold", napi_number},
+            {"threadLoadThreshold", napi_number}, {"perfLogCaptureCount", napi_number},
+            {"threadLoadInterval", napi_number}
+        }}
+    };
+    return eventPolicyItem;
+}
 
 bool GetCrashConfigBoolValue(const napi_env env, const napi_value configs, const std::string& key, uint32_t& out)
 {
@@ -154,6 +171,53 @@ void NapiConfigBuilder::GetCommonConfig(const napi_env env, const napi_value par
         configMap[configkey] = NapiUtil::GetString(env, configValue);
     }
     eventConfigPack_->configStringMap = std::move(configMap);
+}
+
+std::unique_ptr<EventPolicyPack> NapiConfigBuilder::BuildEventPolicy(const napi_env env, const napi_value param)
+{
+    if (!NapiUtil::IsObject(env, param)) {
+        HILOG_ERROR(LOG_CORE, "the policy type is invalid, it shuould be a EventPloicy");
+        return std::move(eventPolicyPack_);
+    }
+
+    std::vector<std::string> policyNames;
+    NapiUtil::GetPropertyNames(env, param, policyNames);
+    auto eventPolicyItem = GetEventPolicyItem();
+    for (const auto& policyName : policyNames) {
+        if (eventPolicyItem.find(policyName) == eventPolicyItem.end()) {
+            HILOG_INFO(LOG_CORE, "skip config event(%{public}s) policy , it is invalid.", policyName.c_str());
+            continue;
+        }
+        napi_value policy = NapiUtil::GetProperty(env, param, policyName);
+        if (!GetPolicyConfig(env, policyName, policy)) {
+            return std::move(eventPolicyPack_);
+        }
+    }
+    eventPolicyPack_->isValid = true;
+    return std::move(eventPolicyPack_);
+}
+
+bool NapiConfigBuilder::GetPolicyConfig(const napi_env env, const std::string& name, const napi_value policy)
+{
+    std::vector<std::string> configKeys;
+    NapiUtil::GetPropertyNames(env, policy, configKeys);
+    std::map<std::string, std::string> configMap;
+    auto curEventPolicy = GetEventPolicyItem().at(name);
+    for (const auto& configKey : configKeys) {
+        auto it = curEventPolicy.find(configKey);
+        if (it == curEventPolicy.end()) {
+            HILOG_INFO(LOG_CORE, "skip config event policy item(%{public}s), it is invalid.", configKey.c_str());
+            continue;
+        }
+        napi_value configValue = NapiUtil::GetProperty(env, policy, configKey);
+        if (NapiUtil::GetType(env, configValue) != it->second) {
+            HILOG_ERROR(LOG_CORE, "Config event ploicy param(%{public}s) type is invalid", configKey.c_str());
+            return false;
+        }
+        configMap[configKey] = NapiUtil::ConvertToString(env, configValue);
+    }
+    eventPolicyPack_->policyStringMaps[name] = std::move(configMap);
+    return true;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
