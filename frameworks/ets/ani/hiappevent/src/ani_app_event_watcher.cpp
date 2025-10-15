@@ -146,16 +146,15 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
         HILOG_ERROR(LOG_CORE, "onTrigger context is null");
         return;
     }
-    auto onTriggerWork = [vm = triggerContext_->vm, onTrigger = triggerContext_->onTrigger,
-        row = triggerCond.row, size = triggerCond.size, holder = triggerContext_->holder] () {
+    auto onTriggerWork = [triggerContext = triggerContext_, row = triggerCond.row, size = triggerCond.size] () {
         ani_size nr_refs = REFERENCES_MAX_NUMBER;
-        ani_env* env = GetAniEnv(vm);
+        ani_env* env = GetAniEnv(triggerContext->vm);
         if (env == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to get env from onTrigger context");
             return;
         }
         env->CreateLocalScope(nr_refs);
-        auto callback = onTrigger;
+        auto callback = triggerContext->onTrigger;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
             env->DestroyLocalScope();
@@ -164,7 +163,7 @@ void AniAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
         std::vector<ani_ref> args = {
             HiAppEventAniUtil::CreateInt(env, row),
             HiAppEventAniUtil::CreateInt(env, size),
-            holder
+            triggerContext->holder
         };
         ani_ref ret {};
         if (env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
@@ -210,16 +209,15 @@ void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
     }
     auto domain = events[0]->GetDomain();
     auto observerSeq = GetSeq();
-    auto onReceiveWork = [events, domain, observerSeq, vm = receiveContext_->vm,
-        onReceive = receiveContext_->onReceive] () {
+    auto onReceiveWork = [events, domain, observerSeq, receiveContext = receiveContext_] () {
         ani_size nr_refs = REFERENCES_MAX_NUMBER;
-        ani_env* env = GetAniEnv(vm);
+        ani_env* env = GetAniEnv(receiveContext->vm);
         if (env == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to get env from onReceive context");
             return;
         }
         env->CreateLocalScope(nr_refs);
-        auto callback = onReceive;
+        auto callback = receiveContext->onReceive;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
             env->DestroyLocalScope();
