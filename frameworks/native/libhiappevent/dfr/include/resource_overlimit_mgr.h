@@ -29,6 +29,7 @@ public:
 
     int SetEventConfig(const std::map<std::string, std::string>& configMap) const;
     void SetRunningId(const std::string& id);
+    int EventConfigPolicy(std::map<std::string, std::string> configMap) const;
 
 private:
     ResourceOverlimitMgr() = default;

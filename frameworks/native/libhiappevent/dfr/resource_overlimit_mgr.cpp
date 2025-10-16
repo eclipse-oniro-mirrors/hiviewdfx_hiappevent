@@ -18,6 +18,7 @@
 #include <application_context.h>
 #include <hilog/log.h>
 #include "file_util.h"
+#include "event_config_mgr.h"
 #include "hiappevent_base.h"
 
 #undef LOG_DOMAIN
@@ -85,7 +86,9 @@ int ResourceOverlimitMgr::UpdateProperty(const std::string& property, const std:
 
 void ResourceOverlimitMgr::SetRunningId(const std::string& id)
 {
-    runningId_ = id;
+    if (runningId_.empty()) {
+        runningId_ = id;
+    }
 }
 
 bool ResourceOverlimitMgr::IsValid(const std::string &key, const std::string &value) const
@@ -122,6 +125,15 @@ int ResourceOverlimitMgr::SetEventConfig(const std::map<std::string, std::string
     }
 
     return rtn;
+}
+
+int ResourceOverlimitMgr::EventConfigPolicy(std::map<std::string, std::string> configMap) const
+{
+    for (auto& [key, value] : configMap) {
+        value = runningId_ + "," + value;
+    }
+
+    return EventConfigMgr::GetInstance().SetEventConfig(configMap);
 }
 }  // HiviewDFX
 }  // OHOS

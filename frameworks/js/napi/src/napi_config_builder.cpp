@@ -52,7 +52,10 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
             {"foregroundLoadThreshold", napi_number}, {"backgroundLoadThreshold", napi_number},
             {"threadLoadThreshold", napi_number}, {"perfLogCaptureCount", napi_number},
             {"threadLoadInterval", napi_number}
-        }}
+        }},
+        {"resourceOverlimitPolicy", {
+            {"collectNativeHeapProfile", napi_boolean}
+        }},
     };
     return eventPolicyItem;
 }
