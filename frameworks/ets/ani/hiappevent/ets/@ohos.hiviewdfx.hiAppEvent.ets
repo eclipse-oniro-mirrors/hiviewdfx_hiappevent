@@ -146,7 +146,7 @@ export default namespace hiAppEvent {
     export function write(info: AppEventInfo): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return writeSync(info) }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let retError = new BusinessError<void>();
                 let writeResults: Results = ret as Results;
                 if (writeResults.code === 0) {
@@ -162,7 +162,7 @@ export default namespace hiAppEvent {
 
     export function write(info: AppEventInfo, callback: AsyncCallback<void>): void {
         let cb = (): Results => { return writeSync(info) }
-        taskpool.execute(cb).then((ret: NullishType): void => {
+        taskpool.execute(cb).then((ret: Any): void => {
             let retError = new BusinessError<void>();
             let writeResults: Results = ret as Results;
             retError.code = writeResults.code;
@@ -177,7 +177,7 @@ export default namespace hiAppEvent {
     export function setEventParam(params: Record<string, ParamType>, domain: string, name?: string): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventParamSync(params, domain, name); }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let retError = new BusinessError<void>();
                 let setResults: Results = ret as Results;
                 if (setResults.code === 0) {
@@ -196,7 +196,7 @@ export default namespace hiAppEvent {
     export function setEventConfig(name: string, config: Record<string, ParamType>): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventConfigSync(name, config); }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let retError = new BusinessError<void>();
                 let setResults: Results = ret as Results;
                 if (setResults.code === 0) {
