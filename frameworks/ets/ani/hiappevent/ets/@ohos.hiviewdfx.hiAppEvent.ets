@@ -171,13 +171,11 @@ export default namespace hiAppEvent {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return writeSync(info) }
             taskpool.execute(cb).then((ret: NullishType): void => {
-                let retError = new BusinessError<void>();
                 let writeResults: Results = ret as Results;
                 if (writeResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = writeResults.code;
-                    retError.message = writeResults.message as string;
+                    let retError = new BusinessError<void>(writeResults.code, writeResults.message as string);
                     reject(retError)
                 }
             });
@@ -187,10 +185,8 @@ export default namespace hiAppEvent {
     export function write(info: AppEventInfo, callback: AsyncCallback<void>): void {
         let cb = (): Results => { return writeSync(info) }
         taskpool.execute(cb).then((ret: NullishType): void => {
-            let retError = new BusinessError<void>();
             let writeResults: Results = ret as Results;
-            retError.code = writeResults.code;
-            retError.message = writeResults.message as string;
+            let retError = new BusinessError<void>(writeResults.code, writeResults.message as string);
             callback(retError, undefined);
         });
     }
@@ -202,13 +198,11 @@ export default namespace hiAppEvent {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventParamSync(params, domain, name); }
             taskpool.execute(cb).then((ret: NullishType): void => {
-                let retError = new BusinessError<void>();
                 let setResults: Results = ret as Results;
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code;
-                    retError.message = setResults.message as string;
+                    let retError = new BusinessError<void>(setResults.code, setResults.message as string);
                     reject(retError);
                 }
             });
@@ -221,13 +215,11 @@ export default namespace hiAppEvent {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventConfigSync(name, config); }
             taskpool.execute(cb).then((ret: NullishType): void => {
-                let retError = new BusinessError<void>();
                 let setResults: Results = ret as Results;
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else {
-                    retError.code = setResults.code;
-                    retError.message = setResults.message as string;
+                    let retError = new BusinessError<void>(setResults.code, setResults.message as string);
                     reject(retError);
                 }
             });
@@ -240,13 +232,11 @@ export default namespace hiAppEvent {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return configEventPolicySync(policy); }
             taskpool.execute(cb).then((ret: NullishType): void => {
-                let retError = new BusinessError<void>();
                 let setResults: Results = ret as Results;
+                let retError = new BusinessError<void>(setResults.code, setResults.message as string);
                 if (setResults.code === 0) {
                     resolve(undefined);
                 } else if (setResults.code === 401){
-                    retError.code = setResults.code;
-                    retError.message = setResults.message as string;
                     reject(retError);
                 } else {
                     reject(retError);
@@ -344,9 +334,7 @@ export default namespace hiAppEvent {
             taskpool.execute(cb).then((ret: long): void => {
                 resolve(ret);
             }).catch((error: BusinessError): void => {
-                let retError = new BusinessError<void>();
-                retError.code = error.code;
-                retError.message = error.message;
+                let retError = new BusinessError<void>(error.code, error.message);
                 reject(retError);
             });
         });
