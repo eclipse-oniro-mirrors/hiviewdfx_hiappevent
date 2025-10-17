@@ -49,7 +49,9 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
             {"logType", "ignoreStartupTime", "sampleInterval", "sampleCount", "reportTimesPerApp", "autoStopSampling"}},
         {"cpuUsageHighPolicy",
             {"foregroundLoadThreshold", "backgroundLoadThreshold", "threadLoadThreshold", "perfLogCaptureCount",
-             "threadLoadInterval"}}
+             "threadLoadInterval"}},
+        {"resourceOverlimitPolicy",
+            {"collectNativeHeapProfile"}}
     };
     return eventPolicyItem;
 }
