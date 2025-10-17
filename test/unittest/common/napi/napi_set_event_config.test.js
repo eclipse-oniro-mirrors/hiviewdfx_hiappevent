@@ -546,12 +546,12 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest001 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "logType": 1,
-              "ignoreStartupTime": 11,
-              "sampleInterval": 100,
-              "sampleCount": 21,
-              "reportTimesPerApp": 3,
-              "autoStopSampling": true
+                "logType": 1,
+                "ignoreStartupTime": 11,
+                "sampleInterval": 100,
+                "sampleCount": 21,
+                "reportTimesPerApp": 3,
+                "autoStopSampling": true
             }
         }
         configEventPolicyTest(policy, null, done);   
@@ -568,7 +568,7 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest002 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "logType": "1",
+                "logType": "1",
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -586,7 +586,7 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest003 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "ignoreStartupTime": "11",
+                "ignoreStartupTime": "11",
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -604,7 +604,7 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest004 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "sampleInterval": "100",
+                "sampleInterval": "100",
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -622,7 +622,7 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest005 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "sampleCount": "21",
+                "sampleCount": "21",
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -640,7 +640,7 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest006 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "reportTimesPerApp": "3",
+                "reportTimesPerApp": "3",
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -658,7 +658,7 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest007 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "autoStopSampling": "true",
+                "autoStopSampling": "true",
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -675,11 +675,13 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest008', 0, async function (done) {
         console.info('ConfigEventPolicyTest008 start');
         let policy = {
-            "foregroundLoadThreshold": 11,  // [0, 100]
-            "backgroundLoadThreshold": 22,
-            "threadLoadThreshold": 33,
-            "perfLogCaptureCount": 44,  // [-1, 100]
-            "threadLoadInterval": 55,  // [5,60]
+            'cpuUsageHighPolicy': {
+                "foregroundLoadThreshold": 11,  // [1, 100]
+                "backgroundLoadThreshold": 22,  // [1, 100]
+                "threadLoadThreshold": 33,  // [15, 100]
+                "perfLogCaptureCount": 44,  // [-1, 100]
+                "threadLoadInterval": 55,  // [5,3600]
+            }
         }
         configEventPolicyTest(policy, null, done);   
         console.info('ConfigEventPolicyTest008 end');
@@ -694,7 +696,9 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest009', 0, async function (done) {
         console.info('ConfigEventPolicyTest009 start');
         let policy = {
-            "foregroundLoadThreshold": "11",
+            'cpuUsageHighPolicy': {
+                "foregroundLoadThreshold": "11",
+            }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
         configEventPolicyTest(policy, expectErr, done);
@@ -710,7 +714,9 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest010', 0, async function (done) {
         console.info('ConfigEventPolicyTest010 start');
         let policy = {
-            "backgroundLoadThreshold": "22",
+            'cpuUsageHighPolicy': {
+                "backgroundLoadThreshold": "22",
+            }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
         configEventPolicyTest(policy, expectErr, done);
@@ -726,7 +732,9 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest011', 0, async function (done) {
         console.info('ConfigEventPolicyTest011 start');
         let policy = {
-            "threadLoadThreshold": "33",
+            'cpuUsageHighPolicy': {
+                "threadLoadThreshold": "33",
+            }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
         configEventPolicyTest(policy, expectErr, done);
@@ -742,7 +750,9 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest012', 0, async function (done) {
         console.info('ConfigEventPolicyTest012 start');
         let policy = {
-            "perfLogCaptureCount": "44",
+            'cpuUsageHighPolicy': {
+                "perfLogCaptureCount": "44",
+            }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
         configEventPolicyTest(policy, expectErr, done);
@@ -758,7 +768,9 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest013', 0, async function (done) {
         console.info('ConfigEventPolicyTest013 start');
         let policy = {
-            "threadLoadInterval": "55"
+            'cpuUsageHighPolicy': {
+                "threadLoadInterval": "55",
+            }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
         configEventPolicyTest(policy, expectErr, done);
@@ -792,10 +804,10 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest015 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "logType": 0,
+                "logType": 0,
             },
             'cpuUsageHighPolicy': {
-              "foregroundLoadThreshold": 11,
+                "foregroundLoadThreshold": 11,
             }
         }
         configEventPolicyTest(policy, null, done);
@@ -812,10 +824,10 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest016 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "logType": "0",
+                "logType": "0",
             },
             'cpuUsageHighPolicy': {
-              "foregroundLoadThreshold": 11,
+                "foregroundLoadThreshold": 11,
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
@@ -833,10 +845,10 @@ describe('HiAppEventJsTest', function () {
         console.info('ConfigEventPolicyTest017 start');
         let policy = {
             'mainThreadJankPolicy': {
-              "logType": 3,
+                "logType": 3,
             },
             'cpuUsageHighPolicy': {
-              "foregroundLoadThreshold": 11,
+                "foregroundLoadThreshold": 11,
             }
         }
         hiAppEvent.configEventPolicy(policy).then(() => {
