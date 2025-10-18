@@ -88,7 +88,7 @@ void HiAppEventAniUtil::ParseRecord(ani_env *env, ani_ref recordRef, std::map<st
     }
     ani_ref keys {};
     if (env->Object_CallMethodByName_Ref(static_cast<ani_object>(recordRef), "keys",
-        ":C{escompat.IterableIterator}", &keys) != ANI_OK) {
+        ":C{std.core.IterableIterator}", &keys) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "call method keys() failed.");
     }
     ani_boolean done = ANI_FALSE;
