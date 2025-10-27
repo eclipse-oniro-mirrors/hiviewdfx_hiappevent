@@ -125,30 +125,29 @@ void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
         HILOG_ERROR(LOG_CORE, "onTrigger context is null");
         return;
     }
-    auto onTriggerWork = [row = triggerCond.row, size = triggerCond.size, holder = triggerContext_->holder,
-        onTrigger = triggerContext_->onTrigger, env = triggerContext_->env] () {
+    auto onTriggerWork = [row = triggerCond.row, size = triggerCond.size, triggerContext = triggerContext_] () {
         napi_handle_scope scope = nullptr;
-        napi_open_handle_scope(env, &scope);
+        napi_open_handle_scope(triggerContext->env, &scope);
         if (scope == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to open handle scope");
             return;
         }
-        napi_value callback = NapiUtil::GetReferenceValue(env, onTrigger);
+        napi_value callback = NapiUtil::GetReferenceValue(triggerContext->env, triggerContext->onTrigger);
         if (callback == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
-            napi_close_handle_scope(env, scope);
+            napi_close_handle_scope(triggerContext->env, scope);
             return;
         }
         napi_value argv[CALLBACK_PARAM_NUM] = {
-            NapiUtil::CreateInt32(env, row),
-            NapiUtil::CreateInt32(env, size),
-            NapiUtil::GetReferenceValue(env, holder)
+            NapiUtil::CreateInt32(triggerContext->env, row),
+            NapiUtil::CreateInt32(triggerContext->env, size),
+            NapiUtil::GetReferenceValue(triggerContext->env, triggerContext->holder)
         };
         napi_value ret = nullptr;
-        if (napi_call_function(env, nullptr, callback, CALLBACK_PARAM_NUM, argv, &ret) != napi_ok) {
+        if (napi_call_function(triggerContext->env, nullptr, callback, CALLBACK_PARAM_NUM, argv, &ret) != napi_ok) {
             HILOG_ERROR(LOG_CORE, "failed to call onTrigger function");
         }
-        napi_close_handle_scope(env, scope);
+        napi_close_handle_scope(triggerContext->env, scope);
     };
     if (napi_send_event(triggerContext_->env, onTriggerWork, napi_eprio_high) != napi_status::napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
@@ -190,32 +189,31 @@ void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPac
     auto domain = events[0]->GetDomain();
     auto observerSeq = GetSeq();
     std::string watcherName = GetName();
-    auto onReceiveWork = [watcherName, events, domain, observerSeq, onReceive = receiveContext_->onReceive,
-        env = receiveContext_->env] () {
+    auto onReceiveWork = [watcherName, events, domain, observerSeq, receiveContext = receiveContext_] () {
         napi_handle_scope scope = nullptr;
-        napi_open_handle_scope(env, &scope);
+        napi_open_handle_scope(receiveContext->env, &scope);
         if (scope == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to open handle scope");
             return;
         }
-        napi_value callback = NapiUtil::GetReferenceValue(env, onReceive);
+        napi_value callback = NapiUtil::GetReferenceValue(receiveContext->env, receiveContext->onReceive);
         if (callback == nullptr) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
-            napi_close_handle_scope(env, scope);
+            napi_close_handle_scope(receiveContext->env, scope);
             return;
         }
         napi_value argv[RECEIVE_PARAM_NUM] = {
-            NapiUtil::CreateString(env, domain),
-            NapiUtil::CreateEventGroups(env, events)
+            NapiUtil::CreateString(receiveContext->env, domain),
+            NapiUtil::CreateEventGroups(receiveContext->env, events)
         };
         napi_value ret = nullptr;
-        if (napi_call_function(env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
+        if (napi_call_function(receiveContext->env, nullptr, callback, RECEIVE_PARAM_NUM, argv, &ret) == napi_ok) {
             AppEventUtil::ReportAppEventReceive(events, watcherName, "onReceive");
             DeleteEventMappingAsync(observerSeq, events);
         } else {
             HILOG_ERROR(LOG_CORE, "failed to call onReceive function");
         }
-        napi_close_handle_scope(env, scope);
+        napi_close_handle_scope(receiveContext->env, scope);
     };
     if (napi_send_event(receiveContext_->env, onReceiveWork, napi_eprio_high) != napi_status::napi_ok) {
         HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
