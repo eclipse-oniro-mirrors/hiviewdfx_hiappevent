@@ -19,6 +19,7 @@
 #include "app_event_store.h"
 #include "app_event_watcher.h"
 #include "application_context.h"
+#include "c/ffrt_ipc.h"
 #include "ffrt_inner.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
@@ -184,12 +185,14 @@ void AppEventObserverMgr::UnregisterAppStateCallback()
 
 void AppEventObserverMgr::SubmitTaskToFFRTQueue(std::function<void()>&& task, const std::string& taskName)
 {
-    std::lock_guard<std::mutex> lock(queueMutex_);
     if (queue_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "queue is null, failed to submit task=%{public}s", taskName.c_str());
         return;
     }
+    // To prevent the ffrt worker from being switched when the ffrt task is submitted.
+    ffrt_this_task_set_legacy_mode(true);
     queue_->submit(task, ffrt::task_attr().name(taskName.c_str()));
+    ffrt_this_task_set_legacy_mode(false);
 }
 
 int64_t AppEventObserverMgr::GetSeqFromWatchers(const std::string& name, std::string& filters)
