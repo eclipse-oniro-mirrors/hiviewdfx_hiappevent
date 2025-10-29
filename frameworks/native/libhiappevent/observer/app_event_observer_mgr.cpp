@@ -189,10 +189,7 @@ void AppEventObserverMgr::SubmitTaskToFFRTQueue(std::function<void()>&& task, co
         HILOG_ERROR(LOG_CORE, "queue is null, failed to submit task=%{public}s", taskName.c_str());
         return;
     }
-    // To prevent the ffrt worker from being switched when the ffrt task is submitted.
-    ffrt_this_task_set_legacy_mode(true);
     queue_->submit(task, ffrt::task_attr().name(taskName.c_str()));
-    ffrt_this_task_set_legacy_mode(false);
 }
 
 int64_t AppEventObserverMgr::GetSeqFromWatchers(const std::string& name, std::string& filters)
