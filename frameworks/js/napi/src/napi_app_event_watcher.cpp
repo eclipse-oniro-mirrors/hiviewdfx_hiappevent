@@ -61,7 +61,9 @@ OnTriggerContext::~OnTriggerContext()
         }
     };
     if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
-        HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
+        // Do not call "task()" here to destructor onTrigger or holder. Function ~OnTriggerContext() may run
+        // in multi-thread, and call "task()" directly will cause a crash due to thread check.
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent when ~OnTriggerContext.");
     }
 }
 
@@ -74,7 +76,9 @@ OnReceiveContext::~OnReceiveContext()
         }
     };
     if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
-        HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
+        // Do not call "task()" here to destructor onReceive. Function ~OnReceiveContext() may run
+        // in multi-thread, and call "task()" directly will cause a crash due to thread check.
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent when ~OnReceiveContext.");
     }
 }
 

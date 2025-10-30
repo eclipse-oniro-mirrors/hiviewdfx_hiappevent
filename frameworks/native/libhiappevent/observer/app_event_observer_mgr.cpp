@@ -19,7 +19,6 @@
 #include "app_event_store.h"
 #include "app_event_watcher.h"
 #include "application_context.h"
-#include "c/ffrt_ipc.h"
 #include "ffrt_inner.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
