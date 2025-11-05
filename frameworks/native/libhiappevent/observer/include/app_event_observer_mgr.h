@@ -87,7 +87,6 @@ private:
     std::mutex watcherMutex_;
     std::mutex processorMutex_;
     std::shared_ptr<ffrt::queue> queue_ = nullptr;
-    std::mutex queueMutex_;
     std::shared_ptr<AppStateCallback> appStateCallback_;
     std::shared_ptr<OsEventListener> listener_ = nullptr;
     bool isTimeoutTaskExist_ = false;

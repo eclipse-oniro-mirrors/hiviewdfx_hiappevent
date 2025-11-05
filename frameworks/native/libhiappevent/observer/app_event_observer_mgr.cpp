@@ -184,7 +184,6 @@ void AppEventObserverMgr::UnregisterAppStateCallback()
 
 void AppEventObserverMgr::SubmitTaskToFFRTQueue(std::function<void()>&& task, const std::string& taskName)
 {
-    std::lock_guard<std::mutex> lock(queueMutex_);
     if (queue_ == nullptr) {
         HILOG_ERROR(LOG_CORE, "queue is null, failed to submit task=%{public}s", taskName.c_str());
         return;
