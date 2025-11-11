@@ -60,12 +60,10 @@ OnTriggerContext::~OnTriggerContext()
             napi_delete_reference(env, holder);
         }
     };
-    if (tid == gettid()) {
-        task();
-    } else {
-        if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
-            HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
-        }
+    if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
+        // Do not call "task()" here to destructor onTrigger or holder. Function ~OnTriggerContext() may run
+        // in multi-thread, and call "task()" directly will cause a crash due to thread check.
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent when ~OnTriggerContext.");
     }
 }
 
@@ -77,12 +75,10 @@ OnReceiveContext::~OnReceiveContext()
             napi_delete_reference(env, onReceive);
         }
     };
-    if (tid == gettid()) {
-        task();
-    } else {
-        if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
-            HILOG_ERROR(LOG_CORE, "failed to SendEvent.");
-        }
+    if (napi_send_event(env, task, napi_eprio_high) != napi_status::napi_ok) {
+        // Do not call "task()" here to destructor onReceive. Function ~OnReceiveContext() may run
+        // in multi-thread, and call "task()" directly will cause a crash due to thread check.
+        HILOG_ERROR(LOG_CORE, "failed to SendEvent when ~OnReceiveContext.");
     }
 }
 
@@ -114,7 +110,6 @@ void NapiAppEventWatcher::InitHolder(const napi_env env, const napi_value holder
     }
     triggerContext_->env = env;
     triggerContext_->holder = NapiUtil::CreateReference(env, holder);
-    triggerContext_->tid = gettid();
 }
 
 void NapiAppEventWatcher::OnTrigger(const TriggerCondition& triggerCond)
@@ -163,7 +158,6 @@ void NapiAppEventWatcher::InitTrigger(const napi_env env, const napi_value trigg
     }
     triggerContext_->env = env;
     triggerContext_->onTrigger = NapiUtil::CreateReference(env, triggerFunc);
-    triggerContext_->tid = gettid();
 }
 
 void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value receiveFunc)
@@ -175,7 +169,6 @@ void NapiAppEventWatcher::InitReceiver(const napi_env env, const napi_value rece
     }
     receiveContext_->env = env;
     receiveContext_->onReceive = NapiUtil::CreateReference(env, receiveFunc);
-    receiveContext_->tid = gettid();
 }
 
 void NapiAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack>>& events)
