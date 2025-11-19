@@ -70,17 +70,6 @@ describe('HiAppEventJsTest', function () {
         expect(actualErr.message).assertEqual(expectErr.message)
     }
 
-    function writeTest(params) {
-        hiAppEvent.write({
-            domain: TEST_DOMAIN,
-            name: TEST_NAME,
-            eventType: hiAppEvent.EventType.FAULT,
-            params: params
-        }, (err) => {
-            expect(err).assertNull()
-        });
-    }
-
     function setEventParamTestWithNameTestCatch(params, domain, name, expectErr, done) {
         try {
             hiAppEvent.setEventParam(params, domain, name);
