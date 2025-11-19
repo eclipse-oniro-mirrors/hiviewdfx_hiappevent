@@ -153,14 +153,9 @@ export default namespace hiAppEvent {
         threadLoadInterval?: int;
     }
 
-    export interface ResourceOverlimitPolicy {
-        collectNativeHeapProfile?: boolean;
-    }
-
     export interface EventPolicy {
         mainThreadJankPolicy?: MainThreadJankPolicy;
         cpuUsageHighPolicy?: CpuUsageHighPolicy;
-        resourceOverlimitPolicy?: ResourceOverlimitPolicy;
     }
 
     export interface AppEventInfo {
