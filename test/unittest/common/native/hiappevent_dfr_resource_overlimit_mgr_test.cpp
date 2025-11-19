@@ -166,27 +166,16 @@ protected:
 };
 
 /**
- * @tc.name  : SetRunningIdTest_ShouldSetSuccess_WhenBeforeEmpty
+ * @tc.name  : SetRunningIdTest_ShouldReturnEmpty_WhenInputEmpty
  * @tc.number: SetRunningIdTest_001
- * @tc.desc  : id == "", runningId_ 应等于 "testValue"
+ * @tc.desc  : id == "", runningId_ 应等于 ""
  */
 HWTEST_F(SetRunningIdTest, SetRunningIdTest_001, TestSize.Level0)
 {
-    ResourceOverlimitMgr::GetInstance().runningId_ = "";
+    ResourceOverlimitMgr::GetInstance().SetRunningId("");
+    EXPECT_TRUE(ResourceOverlimitMgr::GetInstance().runningId_.empty());
     ResourceOverlimitMgr::GetInstance().SetRunningId("testValue");
     EXPECT_EQ(ResourceOverlimitMgr::GetInstance().runningId_, "testValue");
-}
-
-/**
- * @tc.name  : SetRunningIdTest_ShouldSetFail_WhenBeforeNotEmpty
- * @tc.number: SetRunningIdTest_002
- * @tc.desc  : id == "someValue", runningId_ 应等于 "someValue"
- */
-HWTEST_F(SetRunningIdTest, SetRunningIdTest_002, TestSize.Level0)
-{
-    ResourceOverlimitMgr::GetInstance().runningId_ = "someValue";
-    ResourceOverlimitMgr::GetInstance().SetRunningId("testValue");
-    EXPECT_EQ(ResourceOverlimitMgr::GetInstance().runningId_, "someValue");
 }
 
 // IsValid

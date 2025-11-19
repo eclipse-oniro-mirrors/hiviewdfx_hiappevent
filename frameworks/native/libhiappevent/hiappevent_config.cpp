@@ -51,7 +51,6 @@ constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr const char* const MAIN_THREAD_JANK_V2 = "MAIN_THREAD_JANK_V2";
 constexpr const char* const MAIN_THREAD_JANK_POLICY = "mainThreadJankPolicy";
 constexpr const char* const CPU_USAGE_HIGH_POLICY = "cpuUsageHighPolicy";
-constexpr const char* const RESOURCE_OVERLIMIT_POLICY = "resourceOverlimitPolicy";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
@@ -325,10 +324,6 @@ int HiAppEventConfig::SetEventConfig(const std::string& name, const std::map<std
     if (name == RESOURCE_OVERLIMIT) {
         ResourceOverlimitMgr::GetInstance().SetRunningId(GetRunningId());
         return ResourceOverlimitMgr::GetInstance().SetEventConfig(configMap);
-    }
-    if (name == RESOURCE_OVERLIMIT_POLICY) {
-        ResourceOverlimitMgr::GetInstance().SetRunningId(GetRunningId());
-        return ResourceOverlimitMgr::GetInstance().EventConfigPolicy(configMap);
     }
 
     HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s", name.c_str());
