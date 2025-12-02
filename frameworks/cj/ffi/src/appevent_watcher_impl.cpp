@@ -44,24 +44,6 @@ void FreeCAppEventInfo(CAppEventInfo info)
     FreeCArrParameters(info.cArrParamters);
 }
 
-OnTriggerContext::~OnTriggerContext()
-{
-    if (onTrigger != nullptr) {
-        onTrigger = nullptr;
-    }
-    if (holder != nullptr) {
-        delete holder;
-        holder = nullptr;
-    }
-}
-
-OnReceiveContext::~OnReceiveContext()
-{
-    if (onReceive != nullptr) {
-        onReceive = nullptr;
-    }
-}
-
 WatcherContext::~WatcherContext()
 {
     if (triggerContext != nullptr) {
