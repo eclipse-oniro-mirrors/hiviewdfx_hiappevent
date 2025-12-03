@@ -41,7 +41,7 @@ constexpr uint8_t TYPE_INT64 = 8;
 constexpr uint8_t TYPE_ARRINT64 = 9;
 
 struct OnTriggerContext {
-    ~OnTriggerContext();
+    ~OnTriggerContext() = default;
     int row = 0;
     int size = 0;
     std::function<void(int, int, int64_t)> onTrigger = nullptr;
@@ -49,7 +49,7 @@ struct OnTriggerContext {
 };
 
 struct OnReceiveContext {
-    ~OnReceiveContext();
+    ~OnReceiveContext() = default;
     std::function<void(char*, CArrRetAppEventGroup)> onReceive = nullptr;
     std::string domain = "";
     std::vector<std::shared_ptr<OHOS::HiviewDFX::AppEventPack>> events;
