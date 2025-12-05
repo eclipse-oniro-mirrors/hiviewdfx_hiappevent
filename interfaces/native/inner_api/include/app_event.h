@@ -65,6 +65,20 @@ private:
     std::shared_ptr<AppEventPack> eventPack_;
 };
 
+/**
+ * @brief Implements logging of application events.
+ *
+ * Before logging an application event, this interface will first verify the parameters of the event.
+ * If the verification is successful, the interface will write the event to the event file.
+ *
+ * @param event Event object to be logged.
+ * @return Returns 0 if the event parameter verification is successful, and the event will be written to
+ *         the event file; returns a positive integer if the event contains invalid parameters, and the event will be
+ *         written to the event file after the invalid parameters are ignored; returns a negative integer if the event
+ *         parameter verification fails, and the event will not be written to the event file.
+ * @warning This interface is an asynchronous interface and includes time-consuming operations. To ensure performance,
+ *          avoid calling this interface frequently or continuously.
+*/
 int Write(const Event& event);
 } // namespace HiAppEvent
 } // namespace HiviewDFX
