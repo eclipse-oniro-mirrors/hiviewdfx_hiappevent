@@ -16,7 +16,7 @@
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_CACHE_APP_EVENT_STORE_H
 
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -77,11 +77,14 @@ private:
     ~AppEventStore();
     bool InitDbStoreDir();
     void CheckAndRepairDbStore(int errCode);
+    int ExecuteDbOperation(const std::function<int()>& func);
+    int ExecuteReadOperation(const std::function<int()>& func, bool& isExecuted);
+    int ExecuteWriteOperation(const std::function<int()>& func, const bool& isExecuted, int& OperationRes);
 
 private:
     std::shared_ptr<NativeRdb::RdbStore> dbStore_;
     std::string dirPath_;
-    std::mutex dbMutex_;
+    std::shared_mutex dbMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
