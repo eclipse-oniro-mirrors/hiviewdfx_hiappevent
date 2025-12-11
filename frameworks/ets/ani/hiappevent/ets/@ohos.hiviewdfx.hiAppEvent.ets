@@ -121,6 +121,8 @@ export default namespace hiAppEvent {
         const ADDRESS_SANITIZER: string = "ADDRESS_SANITIZER";
         const MAIN_THREAD_JANK: string = "MAIN_THREAD_JANK";
         const APP_KILLED: string = "APP_KILLED";
+        const APP_HICOLLIE: string = "APP_HICOLLIE";
+        const AUDIO_JANK_FRAME: string = "AUDIO_JANK_FRAME";
     }
 
     export namespace param {
