@@ -66,7 +66,10 @@ constexpr char CLASS_NAME_EVENT_PACKAGE[] = "@ohos.hiviewdfx.hiAppEvent.AppEvent
 constexpr char CLASS_NAME_EVENT_PACKAGE_HOLDER[] = "@ohos.hiviewdfx.hiAppEvent.hiAppEvent.AppEventPackageHolder";
 constexpr char ENUM_NAME_EVENT_TYPE[] = "@ohos.hiviewdfx.hiAppEvent.hiAppEvent.EventType";
 
-constexpr char FUNC_NAME_UNBOXED[] = "unboxed";
+constexpr char FUNC_NAME_TOINT[] = "toInt";
+constexpr char FUNC_NAME_TOLONG[] = "toLong";
+constexpr char FUNC_NAME_TOBOOLEAN[] = "toBoolean";
+constexpr char FUNC_NAME_TODOUBLE[] = "toDouble";
 constexpr char FUNC_NAME_NEXT[] = "next";
 
 constexpr int BIT_MASK = 1;
