@@ -185,14 +185,6 @@ extern "C" {
 #define EVENT_MAIN_THREAD_JANK_V2 "MAIN_THREAD_JANK_V2"
 
 /**
- * @brief arkweb fling jank event
- *
- * @since 23
- * @version 1.0
- */
-#define EVENT_SCROLL_ARKWEB_FLING_JANK "SCROLL_ARKWEB_FLING_JANK"
-
-/**
  * @brief OS domain.
  *
  * @since 12
