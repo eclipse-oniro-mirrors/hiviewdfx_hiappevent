@@ -34,6 +34,7 @@ const std::string EVENT_APP_START = "APP_START";
 const std::string EVENT_APP_HICOLLIE = "APP_HICOLLIE";
 const std::string EVENT_APP_KILLED = "APP_KILLED";
 const std::string EVENT_AUDIO_JANK_FRAME = "AUDIO_JANK_FRAME";
+const std::string EVENT_SCROLL_ARKWEB_FLING_JANK = "SCROLL_ARKWEB_FLING_JANK";
 const char DOMAIN_PROPERTY[] = "domain";
 const char NAMES_PROPERTY[] = "names";
 const char TYPES_PROPERTY[] = "types";
