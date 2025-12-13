@@ -123,7 +123,7 @@ export default namespace hiAppEvent {
         const APP_KILLED: string = "APP_KILLED";
         const APP_HICOLLIE: string = "APP_HICOLLIE";
         const AUDIO_JANK_FRAME: string = "AUDIO_JANK_FRAME";
-        const SCROLL_ARKWEB_FLING_JANK: string = "web_fling_missed_frame";
+        const SCROLL_ARKWEB_FLING_JANK: string = "SCROLL_ARKWEB_FLING_JANK";
     }
 
     export namespace param {
