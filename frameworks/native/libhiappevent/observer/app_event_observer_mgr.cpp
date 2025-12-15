@@ -330,7 +330,7 @@ int64_t AppEventObserverMgr::AddProcessorWithTimeLimited(const std::string& name
                 .qos(static_cast<int>(ffrt_qos_user_initiated)));
         ffrt::future_status wait = syncFuture.wait_for(std::chrono::milliseconds(TIMEOUT_LIMIT_FOR_ADDPROCESSOR));
         if (wait != ffrt::future_status::ready) {
-            HILOG_WARN(LOG_CORE, "AddProcessor task execution timeout");
+            HILOG_WARN(LOG_CORE, "AddProcessor first task execution timeout");
             return -1;
         }
         return syncFuture.get();
@@ -341,7 +341,7 @@ int64_t AppEventObserverMgr::AddProcessorWithTimeLimited(const std::string& name
         std::this_thread::sleep_for(std::chrono::milliseconds(CHECK_DB_INTERVAL));
     }
     if (remainTime < 0) {
-        HILOG_WARN(LOG_CORE, "AddProcessor task execution timeout");
+        HILOG_WARN(LOG_CORE, "AddProcessor subsequent task execution timeout");
         return -1;
     }
     processor->SetSeq(AppEventStore::GetInstance().QueryObserverSeq(name, hashCode));
