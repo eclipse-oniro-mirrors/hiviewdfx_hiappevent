@@ -56,17 +56,20 @@ constexpr char CLASS_NAME_LONG[] = "std.core.Long";
 constexpr char CLASS_NAME_BOOLEAN[] = "std.core.Boolean";
 constexpr char CLASS_NAME_DOUBLE[] = "std.core.Double";
 constexpr char CLASS_NAME_STRING[] = "std.core.String";
-constexpr char CLASS_NAME_ARRAY[] = "escompat.Array";
+constexpr char CLASS_NAME_ARRAY[] = "std.core.Array";
 constexpr char FUNC_NAME_GETLONG[] = "getLong";
 constexpr char CLASS_NAME_ITERATOR[] = "std.core.Iterator";
-constexpr char CLASS_NAME_RECORD[] = "escompat.Record";
+constexpr char CLASS_NAME_RECORD[] = "std.core.Record";
 constexpr char CLASS_NAME_EVENT_GROUP[] = "@ohos.hiviewdfx.hiAppEvent.AppEventGroupInner";
 constexpr char CLASS_NAME_EVENT_INFO[] = "@ohos.hiviewdfx.hiAppEvent.AppEventInfoInner";
 constexpr char CLASS_NAME_EVENT_PACKAGE[] = "@ohos.hiviewdfx.hiAppEvent.AppEventPackageInner";
 constexpr char CLASS_NAME_EVENT_PACKAGE_HOLDER[] = "@ohos.hiviewdfx.hiAppEvent.hiAppEvent.AppEventPackageHolder";
 constexpr char ENUM_NAME_EVENT_TYPE[] = "@ohos.hiviewdfx.hiAppEvent.hiAppEvent.EventType";
 
-constexpr char FUNC_NAME_UNBOXED[] = "unboxed";
+constexpr char FUNC_NAME_TOINT[] = "toInt";
+constexpr char FUNC_NAME_TOLONG[] = "toLong";
+constexpr char FUNC_NAME_TOBOOLEAN[] = "toBoolean";
+constexpr char FUNC_NAME_TODOUBLE[] = "toDouble";
 constexpr char FUNC_NAME_NEXT[] = "next";
 
 constexpr int BIT_MASK = 1;

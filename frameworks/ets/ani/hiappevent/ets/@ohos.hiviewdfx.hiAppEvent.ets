@@ -173,7 +173,7 @@ export default namespace hiAppEvent {
     export function write(info: AppEventInfo): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return writeSync(info) }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let writeResults: Results = ret as Results;
                 if (writeResults.code === 0) {
                     resolve(undefined);
@@ -187,7 +187,7 @@ export default namespace hiAppEvent {
 
     export function write(info: AppEventInfo, callback: AsyncCallback<void>): void {
         let cb = (): Results => { return writeSync(info) }
-        taskpool.execute(cb).then((ret: NullishType): void => {
+        taskpool.execute(cb).then((ret: Any): void => {
             let writeResults: Results = ret as Results;
             let retError = new BusinessError<void>(writeResults.code, writeResults.message as string);
             callback(retError, undefined);
@@ -200,7 +200,7 @@ export default namespace hiAppEvent {
     export function setEventParam(params: Record<string, ParamType>, domain: string, name?: string): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventParamSync(params, domain, name); }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let setResults: Results = ret as Results;
                 if (setResults.code === 0) {
                     resolve(undefined);
@@ -217,7 +217,7 @@ export default namespace hiAppEvent {
     export function setEventConfig(name: string, config: Record<string, ParamType>): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return setEventConfigSync(name, config); }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let setResults: Results = ret as Results;
                 if (setResults.code === 0) {
                     resolve(undefined);
@@ -234,7 +234,7 @@ export default namespace hiAppEvent {
     export function configEventPolicy(policy: EventPolicy): Promise<void> {
         return new Promise<void>((resolve: (v: undefined) => void, reject: (e: BusinessError<void>) => void): void => {
             let cb = (): Results => { return configEventPolicySync(policy); }
-            taskpool.execute(cb).then((ret: NullishType): void => {
+            taskpool.execute(cb).then((ret: Any): void => {
                 let setResults: Results = ret as Results;
                 let retError = new BusinessError<void>(setResults.code, setResults.message as string);
                 if (setResults.code === 0) {
