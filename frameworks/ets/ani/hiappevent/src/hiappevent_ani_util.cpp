@@ -629,7 +629,7 @@ static ani_method FindArrayMethodSet(ani_env *env)
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
     }
-    if (env->Class_FindMethod(cls, "$_set", "iC{std.core.Object}:", &setMethod) != ANI_OK) {
+    if (env->Class_FindMethod(cls, "$_set", "iY:", &setMethod) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindMethod $_set %{public}s Failed", CLASS_NAME_ARRAY);
         return setMethod;
     }
