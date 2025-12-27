@@ -37,11 +37,12 @@ static napi_value Write(napi_env env, napi_callback_info info)
     napi_value params[PARAM_NUM] = { 0 };
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
 
-    auto asyncContext = std::make_unique<NapiHiAppEventWrite::HiAppEventAsyncContext>(env);
-    if (asyncContext == nullptr) {
+    auto asyncContextPtr = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    if (asyncContextPtr == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return NapiUtil::CreateUndefined(env);
     }
+    auto asyncContext = std::unique_ptr<NapiHiAppEventWrite::HiAppEventAsyncContext>(asyncContextPtr);
 
     // 1. build AppEventPack object
     NapiHiAppEventBuilder builder;
