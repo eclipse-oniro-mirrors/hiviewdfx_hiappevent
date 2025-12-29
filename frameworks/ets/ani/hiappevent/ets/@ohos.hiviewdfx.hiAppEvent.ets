@@ -332,11 +332,12 @@ export default namespace hiAppEvent {
 
     native function addProcessorFromConfigSync(processorName: string, configName?: string): long;
     export function addProcessorFromConfig(processorName: string, configName?: string): Promise<long> {
-        return new Promise<long>((resolve: (v: long) => void, reject: (e: BusinessError<void>) => void): void => {
+        return new Promise<long>((resolve: (v: long) => void, reject: (e: Error) => void): void => {
             let cb = (): long => { return addProcessorFromConfigSync(processorName, configName); }
-            taskpool.execute(cb).then((ret: long): void => {
+            taskpool.execute(cb).then((value: Any): void => {
+                const ret = value as long;
                 resolve(ret);
-            }).catch((error: BusinessError): void => {
+            }).catch((error: Error): void => {
                 let retError = new BusinessError<void>(error.code, error.message);
                 reject(retError);
             });
