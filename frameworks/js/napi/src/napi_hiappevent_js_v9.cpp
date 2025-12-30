@@ -74,11 +74,12 @@ static napi_value AddProcessorFromConfig(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = std::make_unique<NapiHiAppEventProcessor::AddProcessorFromConfigAsyncContext>();
-    if (asyncContext == nullptr) {
+    auto asyncContextPtr = new(std::nothrow) NapiHiAppEventProcessor::AddProcessorFromConfigAsyncContext;
+    if (asyncContextPtr == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
     }
+    auto asyncContext = std::unique_ptr<NapiHiAppEventProcessor::AddProcessorFromConfigAsyncContext>(asyncContextPtr);
     asyncContext->processorName = NapiUtil::GetString(env, params[0]);
     asyncContext->configName = paramNum > 1 ? NapiUtil::GetString(env, params[1]) : asyncContext->configName;
 
@@ -116,11 +117,13 @@ static napi_value Write(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = std::make_unique<NapiHiAppEventWrite::HiAppEventAsyncContext>(env);
-    if (asyncContext == nullptr) {
+    auto asyncContextPtr = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    if (asyncContextPtr == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
+        napi_delete_reference(env, builder.GetCallback());
         return nullptr;
     }
+    auto asyncContext = std::unique_ptr<NapiHiAppEventWrite::HiAppEventAsyncContext>(asyncContextPtr);
     asyncContext->appEventPack = appEventPack;
     asyncContext->result = builder.GetResult();
     asyncContext->callback = builder.GetCallback();
@@ -255,11 +258,12 @@ static napi_value SetEventParam(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = std::make_unique<NapiHiAppEventWrite::HiAppEventAsyncContext>(env);
-    if (asyncContext == nullptr) {
+    auto asyncContextPtr = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
+    if (asyncContextPtr == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
     }
+    auto asyncContext = std::unique_ptr<NapiHiAppEventWrite::HiAppEventAsyncContext>(asyncContextPtr);
     asyncContext->appEventPack = appEventPack;
     asyncContext->result = builder.GetResult();
 
@@ -284,11 +288,12 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = std::make_unique<NapiHiAppEventConfig::HiAppEventConfigAsyncContext>();
-    if (asyncContext == nullptr) {
+    auto asyncContextPtr = new(std::nothrow) NapiHiAppEventConfig::HiAppEventConfigAsyncContext;
+    if (asyncContextPtr == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
         return nullptr;
     }
+    auto asyncContext = std::unique_ptr<NapiHiAppEventConfig::HiAppEventConfigAsyncContext>(asyncContextPtr);
     asyncContext->eventConfigPack = std::move(eventConfigPack);
 
     napi_value promise = nullptr;
@@ -309,7 +314,12 @@ static napi_value ConfigEventPolicy(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto asyncContext = std::make_unique<NapiHiAppEventConfig::HiAppEventConfigAsyncContext>();
+    auto asyncContextPtr = new(std::nothrow) NapiHiAppEventConfig::HiAppEventConfigAsyncContext;
+    if (asyncContextPtr == nullptr) {
+        HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
+        return nullptr;
+    }
+    auto asyncContext = std::unique_ptr<NapiHiAppEventConfig::HiAppEventConfigAsyncContext>(asyncContextPtr);
     NapiConfigBuilder builder;
     asyncContext->eventPolicyPack = builder.BuildEventPolicy(env, params[0]);
     napi_value promise = nullptr;
