@@ -39,7 +39,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
 
     auto asyncContextPtr = new(std::nothrow) NapiHiAppEventWrite::HiAppEventAsyncContext(env);
     if (asyncContextPtr == nullptr) {
-        HILOG_ERROR(LOG_CORE, "failed to new asyncContext.");
+        HILOG_ERROR(LOG_CORE, "failed to new asyncContext in write(API7).");
         return NapiUtil::CreateUndefined(env);
     }
     auto asyncContext = std::unique_ptr<NapiHiAppEventWrite::HiAppEventAsyncContext>(asyncContextPtr);
