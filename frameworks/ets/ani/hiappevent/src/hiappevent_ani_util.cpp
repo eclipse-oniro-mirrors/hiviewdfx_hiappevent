@@ -611,7 +611,12 @@ static ani_ref CreateArray(ani_env *env, const std::string &name, ani_size lengt
     if (env == nullptr) {
         return array;
     }
-    if (env->Array_New(length, nullptr, &array) != ANI_OK) {
+    ani_ref undefinedRef {};
+    if (env->GetUndefined(&undefinedRef) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "Get Undefined Ref Failed.");
+        return array;
+    }
+    if (env->Array_New(length, undefinedRef, &array) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "New %{public}s Array Ref Failed.", name.c_str());
         return array;
     }
