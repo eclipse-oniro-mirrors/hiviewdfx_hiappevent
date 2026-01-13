@@ -39,6 +39,7 @@ int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
         if (loader.LoadProcessorConfig(realConfig.name, realConfig.configName)) {
             realConfig = loader.GetReportConfig();
         }
+        realConfig.configName = "";  // Normalize processor config
     }
     return AppEventObserverMgr::GetInstance().AddProcessor(realConfig.name, realConfig);
 }
