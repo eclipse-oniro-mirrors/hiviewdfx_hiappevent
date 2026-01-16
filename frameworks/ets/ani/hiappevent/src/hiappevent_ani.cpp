@@ -111,6 +111,7 @@ ani_long HiAppEventAni::AddProcessorFromConfigSync(ani_env *env, ani_string proc
     }
 
     ReportConfig conf = loader.GetReportConfig();
+    conf.configName = "";  // Normalize processor config
     int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(processorNameTemp, conf);
     if (processorId <= 0) {
         HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, register processor error",

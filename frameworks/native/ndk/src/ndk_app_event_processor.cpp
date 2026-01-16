@@ -89,8 +89,10 @@ int NdkAppEventProcessor::SetConfigName(const std::string& configName)
     HiAppEvent::ProcessorConfigLoader loader;
     if (loader.LoadProcessorConfig(config_.name, config_.configName)) {
         config_ = loader.GetReportConfig();
+        config_.configName = "";  // Normalize processor config
     } else {
         HILOG_WARN(LOG_CORE, "failed to load config content, configName:%{public}s", configName.c_str());
+        config_.configName = "";  // Normalize processor config
         return CODE_FAILED;
     }
     return CODE_SUCC;
