@@ -18,10 +18,8 @@
 #include "hisysevent_c.h"
 #include "parameters.h"
 
-#ifdef LOG_MAIN
-#undef LOG_MAIN
-#define LOG_MAIN 0xD002D07
-#endif
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D07
 
 #ifdef LOG_TAG
 #undef LOG_TAG
