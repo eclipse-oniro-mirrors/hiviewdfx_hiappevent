@@ -743,9 +743,13 @@ describe('HiAppEventJsTest', function () {
 
             let holder = new hiAppEventV9.AppEventPackageHolder("watcher");
             let eventPkg = holder.takeNext();
+            console.info("HiAppEventWatcherTest020 (eventPkg != null) is " + eventPkg != null);
             expect(eventPkg != null).assertTrue();
+            console.info("eventPkg.data.length is " + eventPkg.data.length);
             expect(eventPkg.data.length == 1).assertTrue();
             let paramJsonStr = JSON.stringify(params);;
+            console.info("paramJsonStr = " + paramJsonStr + ", len = " + paramJsonStr.length());
+            console.info("eventPkg.data[0] = " + eventPkg.data[0] + ", len = " + eventPkg.data[0].length());
             expect(eventPkg.data[0].includes(paramJsonStr.substr(1, paramJsonStr.length - 2))).assertTrue();
             hiAppEventV9.removeWatcher(watcher);
             done();
