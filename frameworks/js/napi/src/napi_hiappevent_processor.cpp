@@ -440,6 +440,7 @@ int64_t AddProcessorAsync(const std::string& processorName, const std::string& c
     }
 
     ReportConfig conf = loader.GetReportConfig();
+    conf.configName = "";  // Normalize processor config
     int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(processorName, conf);
     if (processorId <= 0) {
         HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, register processor error", processorName.c_str());
@@ -474,6 +475,7 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
         } else {
             HILOG_WARN(LOG_CORE, "failed to load config content, configName:%{public}s", conf.configName.c_str());
         }
+        conf.configName = "";  // Normalize processor config
     }
     int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
     if (processorId <= 0) {

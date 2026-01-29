@@ -1080,7 +1080,7 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest035, TestSize.Level0)
 
         auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
         std::string loadConf = ndkProcessorPtr->GetConfig().ToString();
-        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],undefined}";
+        std::string expectConf = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
         EXPECT_EQ(loadConf, expectConf);
         DestroyProcessor(processor);
     } else {
