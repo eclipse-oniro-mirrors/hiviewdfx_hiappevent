@@ -1039,7 +1039,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest027, TestSize.Level1)
  
     ReportConfig realConfig;
     EXPECT_EQ(AppEventProcessorMgr::GetProcessorConfig(processorId, realConfig), 0);
-    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],undefine}";
+    std::string expectStr = "{test_processor,0,,,{0,0,0,0,0},[],[],[],0,[],}";
     EXPECT_EQ(realConfig.ToString(), expectStr);
  
     EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
