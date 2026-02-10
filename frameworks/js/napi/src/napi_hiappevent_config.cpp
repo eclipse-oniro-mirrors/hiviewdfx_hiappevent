@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,11 +15,10 @@
 #include "napi_hiappevent_config.h"
 
 #include <map>
-#include <unordered_set>
 #include <string>
 
+#include "event_policy_mgr.h"
 #include "hiappevent_config.h"
-#include "resource_overlimit_mgr.h"
 #include "hilog/log.h"
 #include "napi_config_builder.h"
 #include "napi_error.h"
@@ -37,7 +36,6 @@ namespace NapiHiAppEventConfig {
 namespace {
 constexpr int ERROR_SET_FAILED = -1;
 constexpr const char* const APP_CRASH = "APP_CRASH";
-constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 const std::map<std::string, napi_valuetype> CONFIG_OPTION_MAP = {
     { "disable", napi_boolean },
     { "maxStorage", napi_string },
@@ -46,23 +44,17 @@ const std::map<std::string, napi_valuetype> CONFIG_OPTION_MAP = {
 int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
 {
     if (asyncContext->eventConfigPack->eventName == APP_CRASH) {
-        return HiAppEventConfig::GetInstance().SetCrashConfig(asyncContext->eventConfigPack->configUintMap);
+        return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->configUintMap);
     }
-    std::unordered_set<std::string> whiteList = { MAIN_THREAD_JANK, RESOURCE_OVERLIMIT };
-    if (whiteList.count(asyncContext->eventConfigPack->eventName) != 0) {
-        return HiAppEventConfig::GetInstance().SetEventConfig(asyncContext->eventConfigPack->eventName,
-            asyncContext->eventConfigPack->configStringMap);
-    }
-    HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s",
-        asyncContext->eventConfigPack->eventName.c_str());
-    return ERROR_SET_FAILED;
+    return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->eventName,
+        asyncContext->eventConfigPack->configStringMap);
 }
 
 int ConfigEventPolicySync(HiAppEventConfigAsyncContext* asyncContext)
 {
     int res = NapiError::ERR_OK;
     for (const auto& configMap : asyncContext->eventPolicyPack->policyStringMaps) {
-        int setResult = HiAppEventConfig::GetInstance().SetEventConfig(configMap.first, configMap.second);
+        int setResult = EventPolicyMgr::GetInstance().SetEventPolicy(configMap.first, configMap.second);
         if (setResult != NapiError::ERR_OK) {
             HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
                 setResult);

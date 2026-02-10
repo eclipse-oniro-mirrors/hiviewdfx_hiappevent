@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,8 +20,8 @@
 #include "ani_app_event_holder.h"
 #include "app_event_stat.h"
 #include "app_event_observer_mgr.h"
+#include "event_policy_mgr.h"
 #include "hiappevent_ani_error_code.h"
-#include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
 #include "hiappevent_param_builder.h"
@@ -49,7 +49,11 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
             {"logType", "ignoreStartupTime", "sampleInterval", "sampleCount", "reportTimesPerApp", "autoStopSampling"}},
         {"cpuUsageHighPolicy",
             {"foregroundLoadThreshold", "backgroundLoadThreshold", "threadLoadThreshold", "perfLogCaptureCount",
-             "threadLoadInterval"}}
+             "threadLoadInterval"}},
+        {"appCrashPolicy", {"pageSwitchLogEnable"}},
+        {"appFreezePolicy", {"pageSwitchLogEnable"}},
+        {"resourceOverlimitPolicy", {"pageSwitchLogEnable"}},
+        {"addressSanitizerPolicy", {"pageSwitchLogEnable"}}
     };
     return eventPolicyItem;
 }
@@ -219,7 +223,7 @@ ani_object HiAppEventAni::SetEventConfigSync(ani_env *env, ani_string name, ani_
         HILOG_ERROR(LOG_CORE, "the param type is invalid or the config is empty.");
         return HiAppEventAniUtil::Result(env, {result, "the param type is invalid or the config is empty."});
     }
-    result = HiAppEventConfig::GetInstance().SetEventConfig(nameString, eventConfigMap);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy(nameString, eventConfigMap);
     if (result == 0) {
         return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
     } else {
@@ -248,7 +252,7 @@ ani_object HiAppEventAni::ConfigEventPolicySync(ani_env *env, ani_object policy)
 
     auto rtn = HiAppEventAniUtil::Result(env, {ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL, ""});
     for (const auto& configMap : policyStringMaps) {
-        int setResult = HiAppEventConfig::GetInstance().SetEventConfig(configMap.first, configMap.second);
+        int setResult = EventPolicyMgr::GetInstance().SetEventPolicy(configMap.first, configMap.second);
         if (setResult != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
             HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
                 setResult);

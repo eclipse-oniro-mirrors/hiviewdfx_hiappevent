@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,8 +33,6 @@ public:
     std::string GetRunningId();
     bool IsFreeSizeOverLimit();
     void RefreshFreeSize();
-    int SetEventConfig(const std::string& name, const std::map<std::string, std::string>& eventConfig);
-    int SetCrashConfig(const std::map<uint8_t, uint32_t> &configMap);
 
 private:
     HiAppEventConfig() {}

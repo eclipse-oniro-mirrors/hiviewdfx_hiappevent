@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -18,7 +18,6 @@ config("libhiappevent_source_config") {
   visibility = [ "*:*" ]
   include_dirs = [
     "include",
-    "dfr/include",
     "load/include",
     "../../../interfaces/native/inner_api/include",
     "../../../interfaces/native/kits/include",
@@ -35,8 +34,6 @@ ohos_shared_library("libhiappevent_base") {
 
   sources = [
     "app_event_util.cpp",
-    "dfr/event_config_mgr.cpp",
-    "dfr/resource_overlimit_mgr.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
     "hiappevent_clean.cpp",
@@ -52,6 +49,7 @@ ohos_shared_library("libhiappevent_base") {
     "cache:hiappevent_cache",
     "cleaner:hiappevent_cleaner",
     "observer:hiappevent_observer",
+    "policy:hiappevent_policy",
     "utility:hiappevent_utility",
   ]
 
@@ -61,7 +59,6 @@ ohos_shared_library("libhiappevent_base") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "ffrt:libffrt",
-    "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:libhitracechain",
@@ -70,7 +67,6 @@ ohos_shared_library("libhiappevent_base") {
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
-    "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
 

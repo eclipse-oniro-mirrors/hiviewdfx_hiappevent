@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -859,5 +859,81 @@ describe('HiAppEventJsTest', function () {
             done();
         });
         console.info('ConfigEventPolicyTest017 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest018
+     * @tc.desc: Test the ConfigEventPolicy interface for appcrash
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest018', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018 start');
+        let policy = {"appCrashPolicy":{"pageSwitchLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest018 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest019
+     * @tc.desc: Test the ConfigEventPolicy interface for appFreeze
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest019', 0, async function (done) {
+        console.info('ConfigEventPolicyTest019 start');
+        let policy = {"appFreezePolicy":{"pageSwitchLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest019 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest020
+     * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest020', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020 start');
+        let policy = {"resourceOverlimitPolicy":{"pageSwitchLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest020 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest021
+     * @tc.desc: Test the ConfigEventPolicy interface for addressSanitizer
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest021', 0, async function (done) {
+        console.info('ConfigEventPolicyTest021 start');
+        let policy = {"addressSanitizerPolicy":{"pageSwitchLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest021 end');
     });
 });

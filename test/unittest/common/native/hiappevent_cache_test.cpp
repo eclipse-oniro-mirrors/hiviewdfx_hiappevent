@@ -417,21 +417,24 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
 }
 
 /**
- * @tc.name: HiAppEventConfigTest001
- * @tc.desc: test the SetCrashConfig func of app event stat.
+ * @tc.name: SetConfigurationItem001
+ * @tc.desc: test the SetConfigurationItem func of app event stat.
  * @tc.type: FUNC
  * @tc.require: issueI5NTOS
  */
-HWTEST_F(HiAppEventCacheTest, HiAppEventConfigTest001, TestSize.Level1)
+HWTEST_F(HiAppEventCacheTest, SetConfigurationItem001, TestSize.Level1)
 {
-    std::map<uint8_t, uint32_t> configMap;
-    std::string name = "test";
-    HiAppEventConfig::GetInstance().GetRunningId();
     HiAppEventConfig::GetInstance().GetRunningId();
     HiAppEventConfig::GetInstance().RefreshFreeSize();
-    HiAppEventConfig::GetInstance().SetConfigurationItem(name, "");
-    int ret = HiAppEventConfig::GetInstance().SetCrashConfig(configMap);
-    EXPECT_EQ(ret, 0);
+
+    bool ret = HiAppEventConfig::GetInstance().SetConfigurationItem("", "");
+    EXPECT_FALSE(ret);
+    std::string name = "test";
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "");
+    EXPECT_FALSE(ret);
+    name = "disable";
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "false");
+    EXPECT_TRUE(ret);
 }
 
 /**

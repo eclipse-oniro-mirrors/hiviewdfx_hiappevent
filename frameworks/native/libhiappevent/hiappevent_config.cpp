@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,8 +23,6 @@
 #include <string>
 
 #include "app_event_observer_mgr.h"
-#include "event_config_mgr.h"
-#include "resource_overlimit_mgr.h"
 #include "application_context.h"
 #include "context.h"
 #include "hiappevent_base.h"
@@ -32,7 +30,6 @@
 #include "iservice_registry.h"
 #include "storage_manager_proxy.h"
 #include "system_ability_definition.h"
-#include "xcollie/watchdog.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -46,11 +43,6 @@ namespace {
 constexpr const char* const DISABLE = "disable";
 constexpr const char* const MAX_STORAGE = "max_storage";
 constexpr const char* const APP_EVENT_DIR = "/hiappevent/";
-constexpr const char* const APP_CRASH = "APP_CRASH";
-constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
-constexpr const char* const MAIN_THREAD_JANK_V2 = "MAIN_THREAD_JANK_V2";
-constexpr const char* const MAIN_THREAD_JANK_POLICY = "mainThreadJankPolicy";
-constexpr const char* const CPU_USAGE_HIGH_POLICY = "cpuUsageHighPolicy";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
@@ -59,8 +51,6 @@ constexpr int DECIMAL_UNIT = 10;
 constexpr int64_t FREE_SIZE_LIMIT = STORAGE_UNIT_MB * 300;
 
 std::mutex g_mutex;
-
-extern "C" int DFX_SetCrashLogConfig(uint8_t type, uint32_t value) __attribute__((weak));
 
 std::string TransUpperToUnderscoreAndLower(const std::string& str)
 {
@@ -98,25 +88,6 @@ sptr<OHOS::StorageManager::IStorageManager> GetStorageMgr()
         return nullptr;
     }
     return iface_cast<OHOS::StorageManager::IStorageManager>(storageMgrSa);
-}
-
-std::map<std::string, std::string> UnifiedCAndTsParamNames(const std::map<std::string, std::string>& configMap)
-{
-    std::map<std::string, std::string> paramTs2CMap = {
-        {"logType", "log_type"}, {"ignoreStartupTime", "ignore_startup_time"}, {"sampleInterval", "sample_interval"},
-        {"sampleCount", "sample_count"}, {"reportTimesPerApp", "report_times_per_app"},
-        {"autoStopSampling", "auto_stop_sampling"}
-    };
-    std::map<std::string, std::string> unifiedConfigMap;
-    for (const auto& config : configMap) {
-        auto cKey = paramTs2CMap.find(config.first);
-        if (cKey == paramTs2CMap.end()) {
-            unifiedConfigMap[config.first] = config.second;
-        } else {
-            unifiedConfigMap[cKey->second] = config.second;
-        }
-    }
-    return unifiedConfigMap;
 }
 }
 
@@ -307,40 +278,6 @@ void HiAppEventConfig::RefreshFreeSize()
     HILOG_INFO(LOG_CORE, "refresh free size=%{public}" PRId64, freeSize);
     std::lock_guard<std::mutex> lockGuard(g_mutex);
     freeSize_ = freeSize;
-}
-
-int HiAppEventConfig::SetEventConfig(const std::string& name, const std::map<std::string, std::string> &configMap)
-{
-    if (name == CPU_USAGE_HIGH_POLICY) {
-        return EventConfigMgr::GetInstance().SetEventConfig(configMap);
-    }
-    if (name == MAIN_THREAD_JANK_POLICY || name == MAIN_THREAD_JANK_V2) {
-        auto unifiedConfigMap = UnifiedCAndTsParamNames(configMap);
-        return Watchdog::GetInstance().ConfigEventPolicy(unifiedConfigMap);
-    }
-    if (name == MAIN_THREAD_JANK) {
-        return Watchdog::GetInstance().SetEventConfig(configMap);
-    }
-    if (name == RESOURCE_OVERLIMIT) {
-        ResourceOverlimitMgr::GetInstance().SetRunningId(GetRunningId());
-        return ResourceOverlimitMgr::GetInstance().SetEventConfig(configMap);
-    }
-
-    HILOG_ERROR(LOG_CORE, "Failed to set event config, name is invalid. name=%{public}s", name.c_str());
-    return ErrorCode::ERROR_INVALID_PARAM_VALUE;
-}
-
-int HiAppEventConfig::SetCrashConfig(const std::map<uint8_t, uint32_t> &configMap)
-{
-    if (DFX_SetCrashLogConfig == nullptr) {
-        HILOG_ERROR(LOG_CORE, "set crash log config func was not found.");
-        return ErrorCode::ERROR_UNKNOWN;
-    }
- 
-    for (const auto& [key, value] : configMap) {
-        (void)DFX_SetCrashLogConfig(key, value);
-    }
-    return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

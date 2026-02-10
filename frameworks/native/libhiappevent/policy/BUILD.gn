@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2026 Huawei Device Co., Ltd.
+# Copyright (c) 2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,47 +13,33 @@
 
 import("//build/ohos.gni")
 
-config("hiappevent_watcher_config") {
+config("hiappevent_policy_config") {
   visibility = [ "*:*" ]
   include_dirs = [
     "include",
-    "../include",
-    "../load/include",
-    "../../../../interfaces/native/inner_api/include",
   ]
 }
 
-ohos_source_set("hiappevent_observer") {
-  public_configs = [ ":hiappevent_watcher_config" ]
+ohos_source_set("hiappevent_policy") {
+  public_configs = [ ":hiappevent_policy_config" ]
 
   sources = [
-    "app_event_observer.cpp",
-    "app_event_observer_mgr.cpp",
-    "app_event_processor_proxy.cpp",
-    "app_event_watcher.cpp",
-    "app_state_callback.cpp",
-    "os_event_listener.cpp",
+    "event_policy_mgr.cpp",
+    "resource_overlimit_mgr.cpp",
   ]
 
-  deps = [
-    "../cache:hiappevent_cache",
-    "../policy:hiappevent_policy",
-    "../utility:hiappevent_utility",
-  ]
+  deps = [ "../utility:hiappevent_utility" ]
 
   external_deps = [
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "ffrt:libffrt",
+    "hicollie:libhicollie",
     "hilog:libhilog",
     "hilog:libsandboxlog",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "jsoncpp:jsoncpp",
-    "relational_store:native_rdb",
     "storage_service:storage_manager_acl",
+    "storage_service:storage_manager_sa_proxy",
   ]
 
   part_name = "hiappevent"
