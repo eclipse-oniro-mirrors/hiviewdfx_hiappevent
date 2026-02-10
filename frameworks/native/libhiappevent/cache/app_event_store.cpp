@@ -512,6 +512,7 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
             auto event = GetEventFromResultSet(resultSet);
             // query custom event params, and add to AppEventPack
             std::unordered_map<std::string, std::string> params;
+            // event name is not mandatory, query custom event params with event name is "" first
             CustomEventParamDao::Query(dbStore_, params, CustomEvent(event->GetRunningId(), event->GetDomain(), ""));
             CustomEventParamDao::Query(dbStore_, params,
                 CustomEvent(event->GetRunningId(), event->GetDomain(), event->GetName()));
@@ -532,6 +533,7 @@ int AppEventStore::QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> 
 {
     auto func = [this, &event] () {
         std::unordered_map<std::string, std::string> params;
+        // event name is not mandatory, query custom event params with event name is "" first
         CustomEventParamDao::Query(dbStore_, params, CustomEvent(event->GetRunningId(), event->GetDomain(), ""));
         CustomEventParamDao::Query(dbStore_, params,
             CustomEvent(event->GetRunningId(), event->GetDomain(), event->GetName()));
@@ -642,10 +644,10 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
     }
     auto func = [this, &curRunningId] () {
         int deleteRows = 0;
-        // delete custom_event_params if running_id not in events, and running_id isn't current runningId
-        std::string whereClause = "(" + CustomEventParams::TABLE + "." + CustomEventParams::FIELD_RUNNING_ID
-            + " NOT IN (SELECT " + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + ")) AND "
-            + CustomEventParams::FIELD_RUNNING_ID + " != ?";
+        // delete custom_event_params if running_id isn't current runningId, and running_id not in events
+        std::string whereClause = CustomEventParams::FIELD_RUNNING_ID + " != ?" + " AND ("
+            + CustomEventParams::TABLE + "." + CustomEventParams::FIELD_RUNNING_ID + " NOT IN (SELECT "
+            + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + "))";
         int ret = dbStore_->Delete(deleteRows, CustomEventParams::TABLE, whereClause,
             std::vector<std::string>{curRunningId});
         if (ret != NativeRdb::E_OK) {
