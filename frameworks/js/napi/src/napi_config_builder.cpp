@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,11 +14,9 @@
  */
 #include "napi_config_builder.h"
 
-#include "hiappevent_base.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
-#include "resource_overlimit_mgr.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -35,6 +33,7 @@ constexpr size_t INDEX_OF_NAME_CONFIG = 0;
 constexpr size_t INDEX_OF_VALUE_CONFIG = 1;
 constexpr const char* const APP_CRASH = "APP_CRASH";
 constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+constexpr const char* const RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
 constexpr int CRASH_LOG_MAX_CAPACITY = 5 * 1024 * 1024;  // 5M
 struct crashConfig {
     uint8_t type;
@@ -52,7 +51,11 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
             {"foregroundLoadThreshold", napi_number}, {"backgroundLoadThreshold", napi_number},
             {"threadLoadThreshold", napi_number}, {"perfLogCaptureCount", napi_number},
             {"threadLoadInterval", napi_number}
-        }}
+        }},
+        {"appCrashPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
+        {"appFreezePolicy", {{"pageSwitchLogEnable", napi_boolean}}},
+        {"resourceOverlimitPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
+        {"addressSanitizerPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
     };
     return eventPolicyItem;
 }

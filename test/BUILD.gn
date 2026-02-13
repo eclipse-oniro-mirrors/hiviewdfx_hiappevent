@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,6 +26,8 @@ config("hiappevent_config_test") {
     "$native_hiappevent_path/libhiappevent/cleaner/include",
     "$native_hiappevent_path/libhiappevent/include",
     "$native_hiappevent_path/libhiappevent/observer/include",
+    "$native_hiappevent_path/libhiappevent/policy/include",
+    "$native_hiappevent_path/libhiappevent/utility/include",
     "$native_hiappevent_path/ndk/include",
     "$hiappevent_interfaces/native/kits/include",
   ]
@@ -94,6 +96,7 @@ ohos_unittest("HiAppEventWatcherTest") {
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
     "$native_hiappevent_path/libhiappevent/observer:hiappevent_observer",
+    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
   ]
 
   external_deps = [
@@ -102,6 +105,35 @@ ohos_unittest("HiAppEventWatcherTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
+  ]
+}
+
+ohos_unittest("HiAppEventPolicyTest") {
+  module_out_path = native_module_output_path
+ 
+  configs = [ ":hiappevent_config_test" ]
+ 
+  sources = [ 
+    "unittest/common/native/hiappevent_policy_test.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_mgr.cpp",
+  ]
+ 
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+  ]
+ 
+  external_deps = [
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
+    "ffrt:libffrt",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hilog:libsandboxlog",
+    "storage_service:storage_manager_acl",
+    "storage_service:storage_manager_sa_proxy",
   ]
 }
 
@@ -203,7 +235,7 @@ ohos_unittest("HiAppEventDfrResourceOverlimitMgrTest") {
 
   sources = [
     "unittest/common/native/hiappevent_dfr_resource_overlimit_mgr_test.cpp",
-    "../frameworks/native/libhiappevent/dfr/resource_overlimit_mgr.cpp",
+    "../frameworks/native/libhiappevent/policy/resource_overlimit_mgr.cpp",
   ]
 
   deps = [
@@ -250,6 +282,7 @@ group("unittest") {
     ":HiAppEventCacheTest",
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
+    ":HiAppEventPolicyTest",
     ":HiAppEventUserInfoTest",
     ":HiAppEventUtilityTest",
     ":HiAppEventVerifyTest",

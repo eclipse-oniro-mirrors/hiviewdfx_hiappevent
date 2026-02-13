@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 
+#include "event_policy_mgr.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
@@ -251,7 +252,7 @@ int HiAppEventSetEventConfig(const char* name, HiAppEvent_Config* config)
     }
 
     auto configMap = reinterpret_cast<std::map<std::string, std::string> *>(config);
-    int res = HiAppEventConfig::GetInstance().SetEventConfig(name, *configMap);
+    int res = EventPolicyMgr::GetInstance().SetEventPolicy(name, *configMap);
     if (res != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }

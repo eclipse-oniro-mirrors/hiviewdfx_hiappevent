@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,10 +22,12 @@
 #include "app_event_store.h"
 #include "application_context.h"
 #include "event_json_util.h"
+#include "event_policy_mgr.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_common.h"
 #include "hilog/log.h"
+#include "page_switch_log.h"
 #include "parameters.h"
 #include "storage_acl.h"
 
@@ -100,6 +102,8 @@ void OsEventListener::Init()
     }
     // get subscribed events from dir xattr
     osEventsMask_ = GetMaskFromDirXattr(osEventPath_);
+
+    FlushPageSwitchLog();
 
     // read os events from dir files
     std::vector<std::string> files;
@@ -265,14 +269,23 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
     appEventPack->SetDomain(EventJsonUtil::ParseString(eventJson, HiAppEvent::DOMAIN_PROPERTY));
     appEventPack->SetName(EventJsonUtil::ParseString(eventJson, HiAppEvent::NAME_PROPERTY));
     appEventPack->SetType(EventJsonUtil::ParseInt(eventJson, HiAppEvent::EVENT_TYPE_PROPERTY));
-    if (eventJson.isMember(HiAppEvent::PARAM_PROPERTY) && eventJson[HiAppEvent::PARAM_PROPERTY].isObject()) {
-        Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
-        if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
-            appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
-            paramsJson.removeMember(RUNNING_ID_PROPERTY);
-        }
-        appEventPack->SetParamStr(Json::FastWriter().write(paramsJson));
+    if (!eventJson.isMember(HiAppEvent::PARAM_PROPERTY) || !eventJson[HiAppEvent::PARAM_PROPERTY].isObject()) {
+        return appEventPack;
     }
+ 
+    Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
+    if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
+        appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
+        paramsJson.removeMember(RUNNING_ID_PROPERTY);
+    }
+ 
+    if (EventPolicyMgr::GetInstance().GetEventPageSwitchStatus(appEventPack->GetName())) {
+        std::string pageSwitchLog;
+        paramsJson["page_switch_log_over_limit"] =
+            CreatePageSwitchSnapshot(pageSwitchLog) != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+        paramsJson["page_switch_log"] = pageSwitchLog;
+    }
+    appEventPack->SetParamStr(Json::FastWriter().write(paramsJson));
     return appEventPack;
 }
 } // namespace HiviewDFX
