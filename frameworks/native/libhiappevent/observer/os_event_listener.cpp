@@ -103,7 +103,9 @@ void OsEventListener::Init()
     // get subscribed events from dir xattr
     osEventsMask_ = GetMaskFromDirXattr(osEventPath_);
 
-    FlushPageSwitchLog();
+    if (!FlushPageSwitchLog()) {
+        HILOG_WARN(LOG_CORE, "failed to flush the pageSwitch log.");
+    }
 
     // read os events from dir files
     std::vector<std::string> files;
