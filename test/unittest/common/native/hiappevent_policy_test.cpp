@@ -138,6 +138,8 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003, TestSize.Level0)
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     status = EventPolicyMgr::GetInstance().GetEventPageSwitchStatus("APP_CRASH");
     EXPECT_FALSE(status);
+    status = EventPolicyMgr::GetInstance().GetEventPageSwitchStatus("invalidParams");
+    EXPECT_FALSE(status);
 }
 
 /**
@@ -291,5 +293,45 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest009, TestSize.Level0)
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("testPolicy", {{"pageSwitchLogEnable", "true"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest010
+ * @tc.desc: test the SetEventPolicy func with invalid params.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest010, TestSize.Level0)
+{
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return(TEST_DIR));
+    g_applicationContext.reset(contextMock);
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"invalidParam", "true"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy({{0, 0}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest011
+ * @tc.desc: test the SetEventPolicy func with invalid params.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest011, TestSize.Level0)
+{
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return(TEST_DIR));
+    g_applicationContext.reset(contextMock);
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("MAIN_THREAD_JANK_V2", {{"logType", "0"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("mainThreadJankPolicy", {{"logType", "2"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 }
 }  // OHOS
