@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -83,6 +83,7 @@ describe('HiAppEventJsTest', function () {
             hiAppEventV9.addWatcher({
                 name: name
             });
+            hiAppEventV9.removeWatcher({name: name});
         } catch (err) {
             assertErrorEqual(err, expectErr)
         }
@@ -91,9 +92,10 @@ describe('HiAppEventJsTest', function () {
     function triggerConditionTest(condition, expectErr) {
         try {
             hiAppEventV9.addWatcher({
-                name: "watcher",
+                name: "watcherConditionTest",
                 triggerCondition: condition
             });
+            hiAppEventV9.removeWatcher({name: "watcherConditionTest"});
         } catch (err) {
             assertErrorEqual(err, expectErr)
         }
@@ -102,9 +104,10 @@ describe('HiAppEventJsTest', function () {
     function appEventFiltersTest(filters, expectErr) {
         try {
             hiAppEventV9.addWatcher({
-                name: "watcher",
+                name: "watcherFilterTest",
                 appEventFilters: filters
             });
+            hiAppEventV9.removeWatcher({name: "watcherFilterTest"});
         } catch (err) {
             assertErrorEqual(err, expectErr)
         }
@@ -406,9 +409,10 @@ describe('HiAppEventJsTest', function () {
         function onTriggerTest(onTrigger, expectErr) {
             try {
                 hiAppEventV9.addWatcher({
-                    name: "watcher",
+                    name: "watcher013",
                     onTrigger: onTrigger
                 });
+                hiAppEventV9.removeWatcher({name: "watcher013"});
             } catch (err) {
                 assertErrorEqual(err, expectErr);
             }
@@ -675,7 +679,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest019', 0, function () {
         let watcher = {
-            name: "watcher",
+            name: "watcher019",
         };
         let holder = hiAppEventV9.addWatcher(watcher);
         expect(holder != null).assertTrue();
@@ -719,7 +723,7 @@ describe('HiAppEventJsTest', function () {
      */
      it('HiAppEventWatcherTest020', 0, async function (done) {
         let watcher = {
-            name: "watcher",
+            name: "watcher020",
         };
         hiAppEventV9.addWatcher(watcher);
 
@@ -747,7 +751,7 @@ describe('HiAppEventJsTest', function () {
             expect(eventPkg != null).assertTrue();
             console.info("eventPkg.data.length is " + eventPkg.data.length);
             expect(eventPkg.data.length == 1).assertTrue();
-            let paramJsonStr = JSON.stringify(params);;
+            let paramJsonStr = JSON.stringify(params);
             console.info("paramJsonStr = " + paramJsonStr + ", length = " + paramJsonStr.length);
             console.info("eventPkg.data[0] = " + eventPkg.data[0] + ", length = " + eventPkg.data[0].length);
             expect(eventPkg.data[0].includes(paramJsonStr.substr(1, paramJsonStr.length - 2))).assertTrue();
@@ -765,7 +769,7 @@ describe('HiAppEventJsTest', function () {
      it('HiAppEventWatcherTest021', 0, async function (done) {
         let testRow = 5;
         let watcher = {
-            name: "watcher",
+            name: "watcher021",
             triggerCondition: {
                 row: testRow
             },
@@ -811,7 +815,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest022', 0, async function (done) {
         let watcher = {
-            name: "watcheros1",
+            name: "watcher022",
             appEventFilters: [
                 {
                     domain: hiAppEventV9.domain.OS,
@@ -846,7 +850,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest023', 0, async function (done) {
         let watcher = {
-            name: "watcher",
+            name: "watcher023",
             appEventFilters: [
                 {domain: TEST_DOMAIN, names: [TEST_NAME]},
             ],
@@ -872,7 +876,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventWatcherTest024', 0, async function (done) {
         let result = true;
         let watcher1 = {
-            name: "watcheros1",
+            name: "watcher024_1",
             appEventFilters: [
                 {
                     domain: hiAppEventV9.domain.OS,
@@ -885,7 +889,7 @@ describe('HiAppEventJsTest', function () {
         expect(result != null).assertTrue();
 
         let watcher2 = {
-            name: "watcheros2",
+            name: "watcher024_2",
             appEventFilters: [
                 {
                     domain: hiAppEventV9.domain.OS,
@@ -899,7 +903,7 @@ describe('HiAppEventJsTest', function () {
         expect(result != null).assertTrue();
 
         let watcher3 = {
-            name: "watcheros3",
+            name: "watcher024_3",
             appEventFilters: [
                 {
                     domain: hiAppEventV9.domain.OS,
