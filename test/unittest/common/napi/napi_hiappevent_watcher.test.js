@@ -999,4 +999,44 @@ describe('HiAppEventJsTest', function () {
             done();
         }, 1000);
     });
+
+    /**
+     * @tc.name: HiAppEventWatcherTest027
+     * @tc.desc: test Repeatedly adding the same name Watcher.
+     * @tc.type: FUNC
+     * @tc.require: issueI5KYYI
+     */
+    it('HiAppEventWatcherTest027', 0, async function (done) {
+        hiAppEventV9.addWatcher({
+            name: "watcher_027",
+            appEventFilters: [
+                {domain: "testDomain"},
+            ],});
+        hiAppEventV9.write({
+            domain: TEST_DOMAIN,
+            name: TEST_NAME,
+            eventType: hiAppEventV9.EventType.FAULT,
+            params: {"key": "value"}
+        }, (err) => {
+            expect(err).assertNull();
+            let holder = new hiAppEventV9.AppEventPackageHolder("watcher_027");
+            let eventPkg = holder.takeNext();
+            expect(eventPkg == null).assertTrue();
+
+            hiAppEventV9.addWatcher({name: "watcher_027"});  // Repeatedly adding the same name watcher
+            hiAppEventV9.write({
+                domain: TEST_DOMAIN,
+                name: TEST_NAME,
+                eventType: hiAppEventV9.EventType.FAULT,
+                params: {"key": "value"}
+            }, (err) => {
+                expect(err).assertNull();
+                let holder = new hiAppEventV9.AppEventPackageHolder("watcher_027");
+                let eventPkg = holder.takeNext();
+                expect(eventPkg != null).assertTrue();
+                hiAppEventV9.removeWatcher({name: "watcher_027"});
+                done();
+            })
+        });
+    });
 });
