@@ -278,7 +278,6 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
     Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
     if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
         appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
-        paramsJson.removeMember(RUNNING_ID_PROPERTY);
     }
  
     if (EventPolicyMgr::GetInstance().GetEventPageSwitchStatus(appEventPack->GetName())) {
