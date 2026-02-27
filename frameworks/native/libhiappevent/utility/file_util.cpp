@@ -235,6 +235,11 @@ bool GetDirXattr(const std::string& dir, const std::string& name, std::string& v
     value = buf;
     return true;
 }
+
+bool RemoveDirXattr(const std::string& dir, const std::string& name)
+{
+    return removexattr(dir.c_str(), name.c_str()) == 0;
+}
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

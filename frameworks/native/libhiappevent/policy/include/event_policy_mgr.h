@@ -28,9 +28,12 @@ public:
     bool GetEventPageSwitchStatus(const std::string& eventName) const;
     int SetEventPolicy(const std::string& name, const std::map<std::string, std::string>& configMap) const;
     int SetEventPolicy(const std::map<uint8_t, uint32_t> &configMap) const;
+    std::string GetRunningId();
+    void SetRunningId(const std::string& id);
 private:
     EventPolicyMgr() = default;
     ~EventPolicyMgr() = default;
+    std::string runningId_;
 };
 }  // HiviewDFX
 }  // OHOS

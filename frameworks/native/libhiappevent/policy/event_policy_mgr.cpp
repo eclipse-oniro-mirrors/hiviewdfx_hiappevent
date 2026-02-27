@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -77,19 +77,51 @@ std::string GetConfigDir(const std::string& subDir)
 
 int SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap)
 {
+    if (EventPolicyMgr::GetInstance().GetRunningId().empty()) {
+        EventPolicyMgr::GetInstance().SetRunningId(HiAppEventConfig::GetInstance().GetRunningId());
+        if (EventPolicyMgr::GetInstance().GetRunningId().empty()) {
+            return ErrorCode::ERROR_UNKNOWN;
+        }
+    }
+
     for (const auto& config : configMap) {
         std::string property = "user.event_config." + config.first;
-        if (!FileUtil::SetDirXattr(configDir, property, config.second)) {
+        std::string newValue = EventPolicyMgr::GetInstance().GetRunningId() + "," + config.second;
+        if (!FileUtil::SetDirXattr(configDir, property, newValue)) {
             HILOG_ERROR(LOG_CORE, "failed to SetDirXattr, dir: %{public}s, property: %{public}s, newValue: %{public}s,"
-                " err: %{public}s, errno: %{public}d", configDir.c_str(), property.c_str(), config.second.c_str(),
+                " err: %{public}s, errno: %{public}d", configDir.c_str(), property.c_str(), newValue.c_str(),
                 strerror(errno), errno);
             return ErrorCode::ERROR_UNKNOWN;
         } else {
             HILOG_INFO(LOG_CORE, "succeed to UpdateProperty, property: %{public}s, newValue: %{public}s",
-                property.c_str(), config.second.c_str());
+                property.c_str(), newValue.c_str());
         }
     }
     return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+}
+
+void RemoveEventConfig(const std::string& configDir, const std::string& property)
+{
+    std::string historyRunningId;
+    if (!FileUtil::GetDirXattr(configDir, property, historyRunningId)) {
+        HILOG_WARN(LOG_CORE, "failed to get dir runningId xattr, clear history enable status failed.");
+        return;
+    }
+    auto pos = historyRunningId.find(",");
+    if (pos == std::string::npos) {
+        HILOG_WARN(LOG_CORE, "failed to clear history enable status. the value format is error.");
+        return;
+    }
+
+    historyRunningId = historyRunningId.substr(0, pos);
+    if (EventPolicyMgr::GetInstance().GetRunningId().empty()) {
+        EventPolicyMgr::GetInstance().SetRunningId(HiAppEventConfig::GetInstance().GetRunningId());
+    }
+    if (EventPolicyMgr::GetInstance().GetRunningId() != historyRunningId) {
+        if (!FileUtil::RemoveDirXattr(configDir, property)) {
+            HILOG_WARN(LOG_CORE, "failed to clear history enable status.");
+        }
+    }
 }
 
 bool GetCurSysPageSwitchStatus(const std::string& configDir)
@@ -98,7 +130,15 @@ bool GetCurSysPageSwitchStatus(const std::string& configDir)
         APP_FREEZE_PAGE_SWITCH_LOG_ENABLE, RESOURCE_OVERLIMIT_PAGE_SWITCH_LOG_ENABLE};
     std::string value;
     for (const auto& key : keys) {
-        if (FileUtil::GetDirXattr(configDir, "user.event_config." + key, value) && value == "true") {
+        if (!FileUtil::GetDirXattr(configDir, "user.event_config." + key, value)) {
+            continue;
+        }
+        auto pos = value.find(",");
+        if (pos == std::string::npos) {
+            HILOG_WARN(LOG_CORE, "failed to parse history enable status. the value format is error.");
+            continue;
+        }
+        if (value.substr(pos + 1) == "true") {
             return true;
         }
     }
@@ -254,11 +294,27 @@ bool EventPolicyMgr::GetEventPageSwitchStatus(const std::string& eventName) cons
     }
     std::string property = "user.event_config." + propertyName->second + PAGE_SWITCH_CONFIG;
     std::string value;
-    if (!FileUtil::GetDirXattr(configDir, property, value) || value == "false") {
-        HILOG_INFO(LOG_CORE, "failed to get dir xattr or pageSwitch value=%{public}s.", value.c_str());
+    if (!FileUtil::GetDirXattr(configDir, property, value)) {
+        HILOG_WARN(LOG_CORE, "failed to get dir cfg xattr.");
         return false;
     }
-    return true;
+    RemoveEventConfig(configDir, property);
+    auto pos = value.find(",");
+    if (pos == std::string::npos) {
+        HILOG_WARN(LOG_CORE, "failed to parse history enable status. the status format is error.");
+        return false;
+    }
+    return value.substr(pos + 1) == "true";
+}
+
+std::string EventPolicyMgr::GetRunningId()
+{
+    return runningId_;
+}
+
+void EventPolicyMgr::SetRunningId(const std::string& id)
+{
+    runningId_ = id;
 }
 }  // HiviewDFX
 }  // OHOS
