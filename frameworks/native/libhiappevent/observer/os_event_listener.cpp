@@ -103,10 +103,6 @@ void OsEventListener::Init()
     // get subscribed events from dir xattr
     osEventsMask_ = GetMaskFromDirXattr(osEventPath_);
 
-    if (!FlushPageSwitchLog()) {
-        HILOG_WARN(LOG_CORE, "failed to flush the pageSwitch log.");
-    }
-
     // read os events from dir files
     std::vector<std::string> files;
     FileUtil::GetDirFiles(osEventPath_, files);
@@ -283,8 +279,7 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
  
     if (EventPolicyMgr::GetInstance().GetEventPageSwitchStatus(appEventPack->GetName())) {
         std::string pageSwitchLog;
-        paramsJson["page_switch_log_over_limit"] =
-            CreatePageSwitchSnapshot(pageSwitchLog) != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+        (void)CreatePageSwitchSnapshot(pageSwitchLog);
         paramsJson["page_switch_log"] = pageSwitchLog;
     }
     appEventPack->SetParamStr(Json::FastWriter().write(paramsJson));
