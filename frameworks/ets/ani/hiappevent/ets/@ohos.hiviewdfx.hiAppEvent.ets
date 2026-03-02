@@ -139,13 +139,16 @@ export default namespace hiAppEvent {
         maxStorage?: string;
     }
 
-    export interface MainThreadJankPolicy {
-        logType?: int;
-        ignoreStartupTime?: int;
-        sampleInterval?: int;
-        sampleCount?: int;
-        reportTimesPerApp?: int;
-        autoStopSampling?: boolean;
+    export interface AddressSanitizerPolicy {
+        pageSwitchLogEnable?: boolean;
+    }
+
+    export interface AppCrashPolicy {
+        pageSwitchLogEnable?: boolean;
+    }
+
+    export interface AppFreezePolicy {
+        pageSwitchLogEnable?: boolean;
     }
 
     export interface CpuUsageHighPolicy {
@@ -156,9 +159,26 @@ export default namespace hiAppEvent {
         threadLoadInterval?: int;
     }
 
+    export interface MainThreadJankPolicy {
+        logType?: int;
+        ignoreStartupTime?: int;
+        sampleInterval?: int;
+        sampleCount?: int;
+        reportTimesPerApp?: int;
+        autoStopSampling?: boolean;
+    }
+
+    export interface ResourceOverlimitPolicy {
+        pageSwitchLogEnable?: boolean;
+    }
+
     export interface EventPolicy {
-        mainThreadJankPolicy?: MainThreadJankPolicy;
+        addressSanitizerPolicy?: AddressSanitizerPolicy;
+        appCrashPolicy?: AppCrashPolicy;
+        appFreezePolicy?: AppFreezePolicy;
         cpuUsageHighPolicy?: CpuUsageHighPolicy;
+        mainThreadJankPolicy?: MainThreadJankPolicy;
+        resourceOverlimitPolicy?: ResourceOverlimitPolicy;
     }
 
     export interface AppEventInfo {
