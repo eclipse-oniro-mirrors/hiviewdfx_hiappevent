@@ -151,7 +151,7 @@ bool GetCurSysPageSwitchStatus(const std::string& configDir)
             HILOG_WARN(LOG_CORE, "failed to parse history enable status. the value format is error.");
             continue;
         }
-        if (value.substr(pos + 1) == "true") {
+        if (value.substr(0, pos) == EventPolicyMgr::GetInstance().GetRunningId() && value.substr(pos + 1) == "true") {
             return true;
         }
     }
