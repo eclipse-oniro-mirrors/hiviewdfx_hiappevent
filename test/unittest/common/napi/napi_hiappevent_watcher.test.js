@@ -722,10 +722,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5KYYI
      */
      it('HiAppEventWatcherTest020', 0, async function (done) {
-        let watcher = {
-            name: "watcher020",
-        };
-        hiAppEventV9.addWatcher(watcher);
+        hiAppEventV9.addWatcher({name: "watcher020"});
 
         let params = {
             "key_int": 100,
@@ -745,7 +742,7 @@ describe('HiAppEventJsTest', function () {
         }, (err) => {
             expect(err).assertNull();
 
-            let holder = new hiAppEventV9.AppEventPackageHolder("watcher");
+            let holder = new hiAppEventV9.AppEventPackageHolder("watcher020");
             let eventPkg = holder.takeNext();
             console.info("HiAppEventWatcherTest020 (eventPkg != null) is " + eventPkg != null);
             expect(eventPkg != null).assertTrue();
@@ -754,8 +751,8 @@ describe('HiAppEventJsTest', function () {
             let paramJsonStr = JSON.stringify(params);
             console.info("paramJsonStr = " + paramJsonStr + ", length = " + paramJsonStr.length);
             console.info("eventPkg.data[0] = " + eventPkg.data[0] + ", length = " + eventPkg.data[0].length);
-            expect(eventPkg.data[0].includes(paramJsonStr.substr(1, paramJsonStr.length - 2))).assertTrue();
-            hiAppEventV9.removeWatcher(watcher);
+            expect(eventPkg.data[0].includes(paramJsonStr.substring(1, paramJsonStr.length - 2))).assertTrue();
+            hiAppEventV9.removeWatcher({name: "watcher020"});
             done();
         });
     });
