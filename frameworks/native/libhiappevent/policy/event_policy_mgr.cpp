@@ -15,6 +15,7 @@
 #include "event_policy_mgr.h"
 
 #include <application_context.h>
+#include <cerrno>
 #include <hilog/log.h>
 
 #include "file_util.h"
@@ -38,6 +39,7 @@ constexpr const char* const APP_EVENT_DIR = "/eventConfig";
 constexpr const char* const PAGE_SWITCH_CONFIG = "pageSwitchLogEnable";
 constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr const char* const MAIN_THREAD_JANK_V2 = "MAIN_THREAD_JANK_V2";
+constexpr const char* const APP_CRASH = "APP_CRASH";
 constexpr const char* const ADDRESS_SANITIZER_POLICY = "addressSanitizerPolicy";
 constexpr const char* const APP_CRASH_POLICY = "appCrashPolicy";
 constexpr const char* const APP_FREEZE_POLICY = "appFreezePolicy";
@@ -48,6 +50,17 @@ constexpr const char* const ADDRESS_SANITIZER_PAGE_SWITCH_LOG_ENABLE = "addrepag
 constexpr const char* const APP_CRASH_PAGE_SWITCH_LOG_ENABLE = "appCrpageSwitchLogEnable";
 constexpr const char* const APP_FREEZE_PAGE_SWITCH_LOG_ENABLE = "appFrpageSwitchLogEnable";
 constexpr const char* const RESOURCE_OVERLIMIT_PAGE_SWITCH_LOG_ENABLE = "resoupageSwitchLogEnable";
+const uint32_t MAX_CUTOFF_SZ_BYTES = 5 * 1024 * 1024; // 5M: 5242880
+enum CrashLogConfigType : uint8_t {
+    EXTEND_PC_LR_PRINTING = 0,
+    LOG_FILE_CUTOFF_SZ_BYTES,
+    SIMPLIFY_VMA_PRINTING,
+    MERGE_CPPCRASH_APP_LOG,
+};
+struct crashConfig {
+    uint8_t type;
+    std::function<bool(const std::string&, uint32_t&)> func;
+};
 
 extern "C" int DFX_SetCrashLogConfig(uint8_t type, uint32_t value) __attribute__((weak));
 
@@ -191,10 +204,72 @@ int SetAddressSanitizerPolicy(const std::map<std::string, std::string>& configMa
     return ConfigPageSwitch(ADDRESS_SANITIZER_PAGE_SWITCH_LOG_ENABLE, conf);
 }
 
+bool ChangeCrashConfigToUIntValue(const std::string& strValue, uint32_t& out)
+{
+    const int decimal = 10;
+    char* end;
+    out = strtoul(strValue.c_str(), &end, decimal);
+    if (strValue.empty() || *end != '\0' || errno == ERANGE) {
+        return false;
+    }
+    if (out > MAX_CUTOFF_SZ_BYTES) {
+        return false;
+    }
+    return true;
+}
+bool ChangeCrashConfigToBoolValue(const std::string& strValue, uint32_t& out)
+{
+    if (strValue == "true") {
+        out = 1;
+        return true;
+    } else if (strValue == "false") {
+        out = 0;
+        return true;
+    }
+    return false;
+}
+int SetAppCrashLogPolicy(const std::map<std::string, std::string>& configMap)
+{
+    std::map<std::string, crashConfig> crashCongigs = {
+        {"extend_pc_lr_printing", {.type = EXTEND_PC_LR_PRINTING, .func = ChangeCrashConfigToBoolValue}},
+        {"log_file_cutoff_sz_bytes", {.type = LOG_FILE_CUTOFF_SZ_BYTES, .func = ChangeCrashConfigToUIntValue}},
+        {"simplify_vma_printing", {.type = SIMPLIFY_VMA_PRINTING, .func = ChangeCrashConfigToBoolValue}},
+        {"merge_cppcrash_app_log", {.type = MERGE_CPPCRASH_APP_LOG, .func = ChangeCrashConfigToBoolValue}}
+    };
+    std::map<uint8_t, uint32_t> crashConfigMap;
+    uint32_t configValue = 0;
+    for (const auto& [key, value] : configMap) {
+        auto it = crashCongigs.find(key);
+        if (it == crashCongigs.end()) {
+            HILOG_WARN(LOG_CORE, "Failed to set crash log config, name is invalid. name = %{public}s",
+                key.c_str());
+            continue;
+        }
+        if ((it->second.func)(value, configValue)) {
+            crashConfigMap[it->second.type] = configValue;
+        } else {
+            HILOG_WARN(LOG_CORE, "Failed to set crash log config, value is invalid. value = %{public}s",
+                value.c_str());
+        }
+    }
+    if (crashConfigMap.empty()) {
+        HILOG_ERROR(LOG_CORE, "Failed to set crash log config, name or value is invalid.");
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+    return EventPolicyMgr::GetInstance().SetEventPolicy(crashConfigMap);
+}
+
 int SetAppCrashPolicy(const std::map<std::string, std::string>& configMap)
 {
     auto conf = configMap;
-    return ConfigPageSwitch(APP_CRASH_PAGE_SWITCH_LOG_ENABLE, conf);
+    // Set PageSwitch config if exist, then, set CrashLog config if exist
+    int res = ConfigPageSwitch(APP_CRASH_PAGE_SWITCH_LOG_ENABLE, conf);
+    if (conf.size() < configMap.size()) {
+        if (conf.size() == 0 || res != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+            return res;
+        }
+    }
+    return SetAppCrashLogPolicy(conf);
 }
 
 int SetAppFreezePolicy(const std::map<std::string, std::string>& configMap)
@@ -249,6 +324,7 @@ int EventPolicyMgr::SetEventPolicy(const std::string& name, const std::map<std::
     std::map<std::string, std::function<int(const std::map<std::string, std::string>&)>> eventPolicy = {
         {ADDRESS_SANITIZER_POLICY, SetAddressSanitizerPolicy},
         {APP_CRASH_POLICY, SetAppCrashPolicy},
+        {APP_CRASH, SetAppCrashPolicy},
         {APP_FREEZE_POLICY, SetAppFreezePolicy},
         {CPU_USAGE_HIGH_POLICY, SetCpuUsageHighPolicy},
         {MAIN_THREAD_JANK, SetMainThreadJankConfig},

@@ -352,4 +352,87 @@ HWTEST_F(HiAppEventConfigTest, SetEventConfigTest008, TestSize.Level0)
 
     OH_HiAppEvent_DestroyConfig(config);
 }
+
+/**
+ * @tc.name: SetEventConfigTest009
+ * @tc.desc: check the interface of SetEventConfig for EVENT_APP_CRASH with valid item name and item value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventConfigTest, SetEventConfigTest009, TestSize.Level0)
+{
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    int res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_EXTEND_PC_LR_PRINTING, "true");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "50000");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_SIMPLIFY_VMA_PRINTING, "true");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_MERGE_CPPCRASH_APP_LOG, "false");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_MERGE_CPPCRASH_APP_LOG, "true");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    OH_HiAppEvent_DestroyConfig(config);
+}
+
+/**
+ * @tc.name: SetEventConfigTest010
+ * @tc.desc: check the interface of SetEventConfig for EVENT_APP_CRASH with invalid item name or item value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventConfigTest, SetEventConfigTest010, TestSize.Level0)
+{
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    int res = OH_HiAppEvent_SetConfigItem(config, "testInvalidItemNameString", "true");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_EXTEND_PC_LR_PRINTING, "true_or_false");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "length_bigger_than_seven");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_SIMPLIFY_VMA_PRINTING, "false_or_true");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_MERGE_CPPCRASH_APP_LOG, "true_or_false");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "^\\d+$");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "-1");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "524288100000000000");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "a881");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "881aaaa");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_APP_CRASH_PARAM_LOG_FILE_CUTOFF_SZ_BYTES, "5242881");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_APP_CRASH, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    OH_HiAppEvent_DestroyConfig(config);
+}
 }  // OHOS
