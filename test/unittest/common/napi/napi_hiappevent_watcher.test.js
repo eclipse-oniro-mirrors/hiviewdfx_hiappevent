@@ -722,7 +722,10 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5KYYI
      */
      it('HiAppEventWatcherTest020', 0, async function (done) {
-        hiAppEventV9.addWatcher({name: "watcher020"});
+        hiAppEventV9.addWatcher({
+            name: "watcher020",
+            appEventFilters: [{domain: TEST_DOMAIN + "020"}],
+        });
 
         let params = {
             "key_int": 100,
@@ -735,7 +738,7 @@ describe('HiAppEventJsTest', function () {
             "key_bool_arr": [true, false, true]
         };
         hiAppEventV9.write({
-            domain: TEST_DOMAIN,
+            domain: TEST_DOMAIN + "020",
             name: TEST_NAME,
             eventType: hiAppEventV9.EventType.FAULT,
             params: params
@@ -743,6 +746,7 @@ describe('HiAppEventJsTest', function () {
             expect(err).assertNull();
 
             let holder = new hiAppEventV9.AppEventPackageHolder("watcher020");
+            expect(holder != null).assertTrue();
             let eventPkg = holder.takeNext();
             console.info("HiAppEventWatcherTest020 (eventPkg != null) is " + eventPkg != null);
             expect(eventPkg != null).assertTrue();
