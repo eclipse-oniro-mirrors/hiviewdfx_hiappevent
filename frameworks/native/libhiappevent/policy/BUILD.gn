@@ -38,6 +38,7 @@ ohos_source_set("hiappevent_policy") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hilog:libsandboxlog",
+    "ipc:ipc_single",
     "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
