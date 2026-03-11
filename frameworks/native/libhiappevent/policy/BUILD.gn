@@ -31,6 +31,7 @@ ohos_source_set("hiappevent_policy") {
   deps = [ "../utility:hiappevent_utility" ]
 
   external_deps = [
+    "ability_base:configuration",
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -39,6 +40,7 @@ ohos_source_set("hiappevent_policy") {
     "hilog:libhilog",
     "hilog:libsandboxlog",
     "ipc:ipc_single",
+    "resource_management:global_resmgr",
     "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]

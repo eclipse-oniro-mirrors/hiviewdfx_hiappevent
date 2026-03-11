@@ -54,6 +54,7 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   external_deps = [
+    "ability_base:configuration",
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -66,6 +67,7 @@ ohos_shared_library("libhiappevent_base") {
     "ipc:ipc_core",
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
+    "resource_management:global_resmgr",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
   ]
