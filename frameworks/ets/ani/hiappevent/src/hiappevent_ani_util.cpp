@@ -509,8 +509,12 @@ ani_object HiAppEventAniUtil::CreateInt(ani_env *env, int32_t num)
         return obj;
     }
     ani_method ctor;
-    env->Class_FindMethod(cls, "<ctor>", "i:", &ctor);
-    env->Object_New(cls, ctor, &obj, static_cast<ani_int>(num));
+    if (env->Class_FindMethod(cls, "<ctor>", "i:", &ctor) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "create int failed, Class_FindMethod failed");
+    }
+    if (env->Object_New(cls, ctor, &obj, static_cast<ani_int>(num)) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "create int failed, Object_New failed");
+    }
     return obj;
 }
 
@@ -527,7 +531,9 @@ ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
     }
     ani_method ctor;
     env->Class_FindMethod(cls, "<ctor>", "d:", &ctor);
-    env->Object_New(cls, ctor, &obj, static_cast<ani_double>(num));
+    if (env->Object_New(cls, ctor, &obj, static_cast<ani_double>(num)) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "create double failed, Object_New failed");
+    }
     return obj;
 }
 
@@ -569,7 +575,9 @@ ani_object HiAppEventAniUtil::CreateBool(ani_env *env, bool boolValue)
     }
     ani_method ctor;
     env->Class_FindMethod(cls, "<ctor>", "l:", &ctor);
-    env->Object_New(cls, ctor, &obj, static_cast<ani_boolean>(boolValue));
+    if (env->Object_New(cls, ctor, &obj, static_cast<ani_boolean>(boolValue)) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "create bool failed, Object_New failed");
+    }
     return obj;
 }
 
@@ -577,7 +585,9 @@ ani_string HiAppEventAniUtil::CreateAniString(ani_env *env, const std::string &s
 {
     ani_string aniString {};
     if (env != nullptr) {
-        env->String_NewUTF8(str.c_str(), str.size(), &aniString);
+        if (env->String_NewUTF8(str.c_str(), str.size(), &aniString) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "new ani string failed, String_NewUTF8 for message failed");
+        }
     }
     return aniString;
 }
@@ -645,8 +655,11 @@ ani_ref HiAppEventAniUtil::CreateStrings(ani_env *env, const std::vector<std::st
 {
     ani_ref arr = CreateArray(env, CLASS_NAME_STRING, strs.size());
     for (size_t i = 0; i < strs.size(); ++i) {
-        env->Array_Set(static_cast<ani_array>(arr),
+        ani_status status = env->Array_Set(static_cast<ani_array>(arr),
             static_cast<ani_size>(i), HiAppEventAniUtil::CreateAniString(env, strs[i]));
+        if (status != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "create strings failed, Array_Set failed");
+        }
     }
     return arr;
 }
@@ -717,31 +730,32 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
         return nullptr;
     }
 
-    if (jsonValue.isArray()) {
-        if (jsonValue[0].isBool()) {
-            ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
-            for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-                env->Array_Set(static_cast<ani_array>(boolArray), static_cast<ani_size>(i),
-                    CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
+    if (jsonValue.isArray() && jsonValue[0].isBool()) {
+        ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
+        for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
+            ani_status status = env->Array_Set(static_cast<ani_array>(boolArray), static_cast<ani_size>(i),
+                CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
+            if (status != ANI_OK) {
+                HILOG_ERROR(LOG_CORE, "create boolArray failed, Array_Set failed");
             }
-            return boolArray;
         }
-        if (jsonValue[0].isDouble()) {
-            ani_ref doubleArray = CreateArray(env, CLASS_NAME_DOUBLE, jsonValue.size());
-            for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-                env->Array_Set(static_cast<ani_array>(doubleArray), static_cast<ani_size>(i),
-                    CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
-            }
-            return doubleArray;
+        return boolArray;
+    }
+    if (jsonValue.isArray() && jsonValue[0].isDouble()) {
+        ani_ref doubleArray = CreateArray(env, CLASS_NAME_DOUBLE, jsonValue.size());
+        for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
+            env->Array_Set(static_cast<ani_array>(doubleArray), static_cast<ani_size>(i),
+                CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
         }
-        if (jsonValue[0].isString()) {
-            ani_ref stringArray = CreateArray(env, CLASS_NAME_STRING, jsonValue.size());
-            for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-                env->Array_Set(static_cast<ani_array>(stringArray), static_cast<ani_size>(i),
-                    CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
-            }
-            return stringArray;
+        return doubleArray;
+    }
+    if (jsonValue.isArray() && jsonValue[0].isString()) {
+        ani_ref stringArray = CreateArray(env, CLASS_NAME_STRING, jsonValue.size());
+        for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
+            env->Array_Set(static_cast<ani_array>(stringArray), static_cast<ani_size>(i),
+                CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
         }
+        return stringArray;
     }
     if (jsonValue.isObject()) {
         ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_RECORD);
@@ -796,7 +810,11 @@ ani_ref HiAppEventAniUtil::CreateEventInfoArray(ani_env *env, const std::vector<
     ani_ref arr = CreateArray(env, events.size());
     ani_method setMethod = FindArrayMethodSet(env);
     for (size_t i = 0; i < events.size(); ++i) {
-        env->Object_CallMethod_Void(static_cast<ani_object>(arr), setMethod, i, CreateEventInfo(env, events[i]));
+        ani_status status = env->Object_CallMethod_Void(static_cast<ani_object>(arr), setMethod, i,
+            CreateEventInfo(env, events[i]));
+        if (status != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "call Object_CallMethod_Void failed when create EventInfoArray");
+        }
     }
     return arr;
 }

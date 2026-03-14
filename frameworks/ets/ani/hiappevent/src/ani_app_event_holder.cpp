@@ -125,7 +125,11 @@ ani_object AniAppEventHolder::AniTakeNext(ani_env *env, ani_object object)
     ani_object packageObj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_PACKAGE);
     AniAppEventHolder* holder = Unwrap(env, object);
     ani_ref result = nullptr;
-    env->GetNull(&result);
+    ani_status status = env->GetNull(&result);
+    if (status != ANI_OK) {
+        HILOG_INFO(LOG_CORE, "GetNull failed %{public}d", status);
+        return static_cast<ani_object>(result);
+    }
     if (holder == nullptr) {
         return static_cast<ani_object>(result);
     }

@@ -574,7 +574,10 @@ bool HiAppEventAniHelper::GetUserId(ani_env *env, ani_string name, ani_string &u
         HILOG_ERROR(LOG_CORE, "failed to get userId");
         return false;
     }
-    env->String_NewUTF8(strUserId.c_str(), strUserId.size(), &userId);
+    if (env->String_NewUTF8(strUserId.c_str(), strUserId.size(), &userId) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get userId, String_NewUTF8 for message failed");
+        return false;
+    }
     return true;
 }
 
@@ -619,7 +622,10 @@ bool HiAppEventAniHelper::GetUserProperty(ani_env *env, ani_string name, ani_str
         HILOG_ERROR(LOG_CORE, "failed to get user property");
         return false;
     }
-    env->String_NewUTF8(strUserProperty.c_str(), strUserProperty.size(), &userProperty);
+    if (env->String_NewUTF8(strUserProperty.c_str(), strUserProperty.size(), &userProperty) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "failed to get user property, String_NewUTF8 for message failed");
+        return false;
+    }
     return true;
 }
 
