@@ -530,7 +530,10 @@ ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
         return obj;
     }
     ani_method ctor;
-    env->Class_FindMethod(cls, "<ctor>", "d:", &ctor);
+    if (env->Class_FindMethod(cls, "<ctor>", "d:", &ctor) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "find method %{public}s failed", "ctor");
+        return obj;
+    }
     if (env->Object_New(cls, ctor, &obj, static_cast<ani_double>(num)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "create double failed, Object_New failed");
     }
@@ -574,7 +577,10 @@ ani_object HiAppEventAniUtil::CreateBool(ani_env *env, bool boolValue)
         return obj;
     }
     ani_method ctor;
-    env->Class_FindMethod(cls, "<ctor>", "l:", &ctor);
+    if (env->Class_FindMethod(cls, "<ctor>", "l:", &ctor) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "%{public}s Find Method ctor Failed", CLASS_NAME_BOOLEAN);
+        return obj;
+    }
     if (env->Object_New(cls, ctor, &obj, static_cast<ani_boolean>(boolValue)) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "create bool failed, Object_New failed");
     }
@@ -752,8 +758,10 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
     if (jsonValue.isArray() && jsonValue[0].isString()) {
         ani_ref stringArray = CreateArray(env, CLASS_NAME_STRING, jsonValue.size());
         for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-            env->Array_Set(static_cast<ani_array>(stringArray), static_cast<ani_size>(i),
-                CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
+            if (env->Array_Set(static_cast<ani_array>(stringArray), static_cast<ani_size>(i),
+                CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
+                    HILOG_ERROR(LOG_CORE, "create stringArray failed, Array_Set failed");
+            }
         }
         return stringArray;
     }

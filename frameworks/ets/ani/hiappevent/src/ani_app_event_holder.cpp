@@ -137,12 +137,23 @@ ani_object AniAppEventHolder::AniTakeNext(ani_env *env, ani_object object)
     if (package == nullptr) {
         return static_cast<ani_object>(result);
     }
-    env->Object_SetPropertyByName_Int(packageObj, "packageId", package->packageId);
-    env->Object_SetPropertyByName_Int(packageObj, "row", package->row);
-    env->Object_SetPropertyByName_Int(packageObj, "size", package->size);
-    env->Object_SetPropertyByName_Ref(packageObj, "data", HiAppEventAniUtil::CreateStrings(env, package->data));
-    env->Object_SetPropertyByName_Ref(packageObj, "appEventInfos",
-        HiAppEventAniUtil::CreateEventInfoArray(env, package->events));
+    if (env->Object_SetPropertyByName_Int(packageObj, "packageId", package->packageId) != ANI_OK) {
+        HILOG_INFO(LOG_CORE, "Object_SetPropertyByName_Ref set packageId failed");
+    }
+    if (env->Object_SetPropertyByName_Int(packageObj, "row", package->row) != ANI_OK) {
+        HILOG_INFO(LOG_CORE, "Object_SetPropertyByName_Ref set row failed");
+    }
+    if (env->Object_SetPropertyByName_Int(packageObj, "size", package->size) != ANI_OK) {
+        HILOG_INFO(LOG_CORE, "Object_SetPropertyByName_Ref set size failed");
+    }
+    if (env->Object_SetPropertyByName_Ref(packageObj, "data", HiAppEventAniUtil::CreateStrings(env, package->data)) !=
+        ANI_OK) {
+        HILOG_INFO(LOG_CORE, "Object_SetPropertyByName_Ref set data failed");
+    }
+    if (env->Object_SetPropertyByName_Ref(packageObj, "appEventInfos",
+        HiAppEventAniUtil::CreateEventInfoArray(env, package->events)) != ANI_OK) {
+            HILOG_INFO(LOG_CORE, "Object_SetPropertyByName_Ref set appEventInfos failed");
+    }
     return packageObj;
 }
 

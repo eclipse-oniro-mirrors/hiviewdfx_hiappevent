@@ -90,10 +90,14 @@ OnTriggerContext::~OnTriggerContext()
 {
     ani_env* env = GetAniEnv(vm);
     if (env != nullptr && !HiAppEventAniUtil::IsRefUndefined(env, onTrigger)) {
-        env->GlobalReference_Delete(onTrigger);
+        if (env->GlobalReference_Delete(onTrigger) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "call GlobalReference_Delete onTrigger failed");
+        }
     }
     if (env != nullptr && !HiAppEventAniUtil::IsRefUndefined(env, holder)) {
-        env->GlobalReference_Delete(holder);
+        if (env->GlobalReference_Delete(holder) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "call GlobalReference_Delete holder failed");
+        }
     }
 }
 
@@ -102,7 +106,7 @@ OnReceiveContext::~OnReceiveContext()
     ani_env* env = GetAniEnv(vm);
     if (env != nullptr && !HiAppEventAniUtil::IsRefUndefined(env, onReceive)) {
         if (env->GlobalReference_Delete(onReceive) != ANI_OK) {
-            HILOG_ERROR(LOG_CORE, "call GlobalReference_Delete failed");
+            HILOG_ERROR(LOG_CORE, "call GlobalReference_Delete onReceive failed");
         }
     }
 }
@@ -221,7 +225,10 @@ void AniAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
             HILOG_ERROR(LOG_CORE, "failed to get env from onReceive context");
             return;
         }
-        env->CreateLocalScope(nr_refs);
+        if (env->CreateLocalScope(nr_refs) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to create local scope from onReceive context");
+            return;
+        }
         auto callback = receiveContext->onReceive;
         if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
             HILOG_ERROR(LOG_CORE, "failed to get callback from the context");
