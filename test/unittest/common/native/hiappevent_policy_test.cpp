@@ -18,6 +18,9 @@
 
 #include "application_context.h"
 #include "event_policy_mgr.h"
+#define private public
+#include "event_policy_utils.h"
+#undef private
 #include "file_util.h"
 #include "hiappevent_base.h"
 
@@ -28,7 +31,6 @@ using namespace OHOS::AbilityRuntime;
 namespace OHOS {
 namespace {
 const std::string TEST_DIR = "/data/test/policy";
-const std::string TEST_RUNNING_ID = "123456";
 const std::string XATTR_NAME = "user.appevent";
 std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> g_applicationContext = nullptr;
 
@@ -63,7 +65,7 @@ public:
 void HiAppEventPolicyTest::SetUp()
 {
     (void)FileUtil::ForceCreateDirectory(TEST_DIR);
-    EventPolicyMgr::GetInstance().SetRunningId(TEST_RUNNING_ID);
+    EventPolicyUtils::GetInstance().runningId_ = "123456";
 }
 
 void HiAppEventPolicyTest::TearDown()
@@ -113,12 +115,12 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest002, TestSize.Level0)
 }
 
 /**
- * @tc.name: HiAppEventPolicyTest003
- * @tc.desc: test the SetEventPolicy func for appCrash.
+ * @tc.name: HiAppEventPolicyTest003_1
+ * @tc.desc: test the SetEventPolicy func for appCrash with pageSwitchLogEnable.
  * @tc.type: FUNC
  * @tc.require: issueI5NTOS
  */
-HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003, TestSize.Level0)
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_1, TestSize.Level0)
 {
     SetTestContext();
 
@@ -137,8 +139,92 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003, TestSize.Level0)
 }
 
 /**
+ * @tc.name: HiAppEventPolicyTest003_2
+ * @tc.desc: test the SetEventPolicy func for appCrash with valid crash log config.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_2, TestSize.Level0)
+{
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extendPcLrPrinting", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"logFileCutoffSzBytes", "1024"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplifyVmaPrinting", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extend_pc_lr_printing", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"log_file_cutoff_sz_bytes", "1024"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplify_vma_printing", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"merge_cppcrash_app_log", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest003_3
+ * @tc.desc: test the SetEventPolicy func for appCrash with invalid crash log config.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_3, TestSize.Level0)
+{
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extendPcLrPrinting", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"logFileCutoffSzBytes", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplifyVmaPrinting", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extend_pc_lr_printing", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"log_file_cutoff_sz_bytes", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplify_vma_printing", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"merge_cppcrash_app_log", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"testKey", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest003_4
+ * @tc.desc: test the SetEventPolicy func for appCrash with specifications.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_4, TestSize.Level0)
+{
+    std::map<std::string, std::string> configMap = {{"pageSwitchLogEnable", "true"}, {"extendPcLrPrinting", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    SetTestContext();
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"pageSwitchLogEnable", "true"}, {"extendPcLrPrinting", "!@#$"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    configMap = {{"extendPcLrPrinting", "!@#$"}, {"logFileCutoffSzBytes", "1024"}, {"simplifyVmaPrinting", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    configMap = {{"extendPcLrPrinting", "!@#$"}, {"logFileCutoffSzBytes", "!@#$"}, {"simplifyVmaPrinting", "!@#$"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    configMap = {};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+}
+
+/**
  * @tc.name: HiAppEventPolicyTest004
- * @tc.desc: test the SetEventPolicy func for appFreeze.
+ * @tc.desc: test the SetEventPolicy func for appFreeze with pageSwitchLogEnable.
  * @tc.type: FUNC
  * @tc.require: issueI5NTOS
  */
@@ -159,12 +245,12 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest004, TestSize.Level0)
 }
 
 /**
- * @tc.name: HiAppEventPolicyTest005
- * @tc.desc: test the SetEventPolicy func for resourceOverlimit.
+ * @tc.name: HiAppEventPolicyTest005_1
+ * @tc.desc: test the SetEventPolicy func for resourceOverlimit with pageSwitchLogEnable.
  * @tc.type: FUNC
  * @tc.require: issueI5NTOS
  */
-HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005, TestSize.Level0)
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_1, TestSize.Level0)
 {
     SetTestContext();
 
@@ -183,8 +269,72 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005, TestSize.Level0)
 }
 
 /**
+ * @tc.name: HiAppEventPolicyTest005_2
+ * @tc.desc: test the SetEventPolicy func for resourceOverlimit with jsHeapLogtype.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_2, TestSize.Level0)
+{
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"jsHeapLogtype", "event"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    SetTestContext();
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"jsHeapLogtype", "event"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"js_heap_logtype", "event"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy",
+        {{"jsHeapLogtype", "event_rawheap"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy",
+        {{"js_heap_logtype", "event_rawheap"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"invalid", "event"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"invalid", "event_rawheap"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"invalid", "invalid too"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"jsHeapLogtype", "invalid"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"js_heap_logtype", "invalid"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest005_3
+ * @tc.desc: test the SetEventPolicy func for resourceOverlimit with specifications.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_3, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {{"pageSwitchLogEnable", "true"}, {"jsHeapLogtype", "event"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"pageSwitchLogEnable123", "true"}, {"jsHeapLogtype", "event"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    
+    configMap = {{"pageSwitchLogEnable", "true"}, {"jsHeapLogtype", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    configMap = {};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+}
+
+/**
  * @tc.name: HiAppEventPolicyTest006
- * @tc.desc: test the SetEventPolicy func for addressSanitizer.
+ * @tc.desc: test the SetEventPolicy func for addressSanitizer with pageSwitchLogEnable.
  * @tc.type: FUNC
  * @tc.require: issueI5NTOS
  */
@@ -277,7 +427,8 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest010, TestSize.Level0)
 
     int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"invalidParam", "true"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
-    result = EventPolicyMgr::GetInstance().SetEventPolicy({{0, 0}});
+    std::map<uint8_t, uint32_t> configMap = {{0, 0}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("APP_CRASH", configMap);
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 }
 
@@ -295,21 +446,8 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest011, TestSize.Level0)
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("mainThreadJankPolicy", {{"logType", "2"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
-}
-
-/**
- * @tc.name: HiAppEventPolicyTest012
- * @tc.desc: test the GetRunningId/SetRunningId func.
- * @tc.type: FUNC
- * @tc.require: issueI5NTOS
- */
-HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest012, TestSize.Level0)
-{
-    std::string res = EventPolicyMgr::GetInstance().GetRunningId();
-    EXPECT_EQ(res, TEST_RUNNING_ID);
-    EventPolicyMgr::GetInstance().SetRunningId("xxxxxx");
-    res = EventPolicyMgr::GetInstance().GetRunningId();
-    EXPECT_EQ(res, "xxxxxx");
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("MAIN_THREAD_JANK", {{"log_type", "0"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 }
 
 /**
@@ -328,10 +466,5 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest013, TestSize.Level0)
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     status = EventPolicyMgr::GetInstance().GetEventPageSwitchStatus("APP_CRASH");
     EXPECT_TRUE(status);
-    EventPolicyMgr::GetInstance().SetRunningId("xxxxxx");
-    status = EventPolicyMgr::GetInstance().GetEventPageSwitchStatus("APP_CRASH");
-    EXPECT_TRUE(status);
-    status = EventPolicyMgr::GetInstance().GetEventPageSwitchStatus("APP_CRASH");
-    EXPECT_FALSE(status);
 }
 }  // OHOS

@@ -145,6 +145,9 @@ export default namespace hiAppEvent {
 
     export interface AppCrashPolicy {
         pageSwitchLogEnable?: boolean;
+        extendPcLrPrinting?: boolean;
+        logFileCutoffSzBytes?: int;
+        simplifyVmaPrinting?: boolean;
     }
 
     export interface AppFreezePolicy {
@@ -170,6 +173,7 @@ export default namespace hiAppEvent {
 
     export interface ResourceOverlimitPolicy {
         pageSwitchLogEnable?: boolean;
+        jsHeapLogtype?: string;
     }
 
     export interface EventPolicy {

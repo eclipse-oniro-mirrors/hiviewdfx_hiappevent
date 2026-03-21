@@ -1134,3 +1134,24 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest031, TestSize.Level1)
  
     EXPECT_EQ(AppEventProcessorMgr::RemoveProcessor(processorId), 0);
 }
+
+/**
+ * @tc.name: HiAppEventInnerApiTest032
+ * @tc.desc: test the func of AddProcessorAsync.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest032, TestSize.Level1)
+{
+    ReportConfig config = {
+        .name = "test_processor",
+    };
+    int64_t processorId1 = AppEventProcessorMgr::AddProcessor(config);
+    ASSERT_GT(processorId1, 0);
+    CheckSameConfig(processorId1, config);
+
+    std::function<void(int)> cb = [processorId1] (int processorId2) {
+        ASSERT_EQ(processorId2, processorId1);
+    };
+    AppEventProcessorMgr::AddProcessorAsync(config, cb);
+    sleep(1); // Ensure that the asynchronous task is executed.
+}

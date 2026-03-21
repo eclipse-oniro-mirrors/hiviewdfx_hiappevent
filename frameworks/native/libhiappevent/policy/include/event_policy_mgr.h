@@ -15,8 +15,7 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_POLICY_EVENT_POLICY_MGR_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_POLICY_EVENT_POLICY_MGR_H
 
-#include <map>
-#include <string>
+#include "event_policy_base.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -25,15 +24,18 @@ public:
     static EventPolicyMgr& GetInstance();
     EventPolicyMgr(const EventPolicyMgr&) = delete;
     EventPolicyMgr& operator=(const EventPolicyMgr&) = delete;
-    bool GetEventPageSwitchStatus(const std::string& eventName) const;
+
+    bool GetEventPageSwitchStatus(const std::string& name) const;
     int SetEventPolicy(const std::string& name, const std::map<std::string, std::string>& configMap) const;
-    int SetEventPolicy(const std::map<uint8_t, uint32_t> &configMap) const;
-    std::string GetRunningId();
-    void SetRunningId(const std::string& id);
+    int SetEventPolicy(const std::string& name, const std::map<uint8_t, uint32_t>& configMap) const;
+
 private:
-    EventPolicyMgr() = default;
+    EventPolicyMgr();
     ~EventPolicyMgr() = default;
-    std::string runningId_;
+    void InitializePolicies();
+    void RegisterPolicy(const std::string& name, EventPolicyPtr policy);
+
+    std::map<std::string, EventPolicyPtr> policies_;
 };
 }  // HiviewDFX
 }  // OHOS

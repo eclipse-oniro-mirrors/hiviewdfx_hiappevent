@@ -24,8 +24,14 @@ ohos_source_set("hiappevent_policy") {
   public_configs = [ ":hiappevent_policy_config" ]
 
   sources = [
+    "address_sanitizer_policy.cpp",
+    "app_crash_policy.cpp",
+    "app_freeze_policy.cpp",
+    "cpu_usage_high_policy.cpp",
     "event_policy_mgr.cpp",
-    "resource_overlimit_mgr.cpp",
+    "event_policy_utils.cpp",
+    "main_thread_jank_policy.cpp",
+    "resource_overlimit_policy.cpp",
   ]
 
   deps = [ "../utility:hiappevent_utility" ]

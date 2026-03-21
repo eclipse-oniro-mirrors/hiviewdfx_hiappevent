@@ -34,10 +34,15 @@ constexpr size_t INDEX_OF_VALUE_CONFIG = 1;
 constexpr const char* const APP_CRASH = "APP_CRASH";
 constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr const char* const RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
+constexpr const char* const APP_CRASH_POLICY = "appCrashPolicy";
 constexpr int CRASH_LOG_MAX_CAPACITY = 5 * 1024 * 1024;  // 5M
 struct crashConfig {
     uint8_t type;
     std::function<bool(const napi_env, const napi_value, const std::string&, uint32_t&)> func;
+};
+struct crashConfigVerify {
+    uint8_t type;
+    std::function<bool(const std::string&, uint32_t&)> func;
 };
 
 std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem()
@@ -52,9 +57,11 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
             {"threadLoadThreshold", napi_number}, {"perfLogCaptureCount", napi_number},
             {"threadLoadInterval", napi_number}
         }},
-        {"appCrashPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
+        {"appCrashPolicy", {
+            {"pageSwitchLogEnable", napi_boolean}, {"extendPcLrPrinting", napi_boolean},
+            {"logFileCutoffSzBytes", napi_number}, {"simplifyVmaPrinting", napi_boolean}}},
         {"appFreezePolicy", {{"pageSwitchLogEnable", napi_boolean}}},
-        {"resourceOverlimitPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
+        {"resourceOverlimitPolicy", {{"pageSwitchLogEnable", napi_boolean}, {"jsHeapLogtype", napi_string}}},
         {"addressSanitizerPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
     };
     return eventPolicyItem;
@@ -86,6 +93,32 @@ bool GetCrashConfigUIntValue(const napi_env env, const napi_value configs, const
         return false;
     }
 
+    out = static_cast<uint32_t>(intValue);
+    return true;
+}
+
+bool VerifyCrashConfigBoolValue(const std::string& value, uint32_t& out)
+{
+    if (value != "true" && value != "false") {
+        HILOG_ERROR(LOG_CORE, "the crash config value is invalid. it(%{public}s) should be bool type.", value.c_str());
+        return false;
+    }
+    out = value == "true" ? 1 : 0;
+    return true;
+}
+
+bool VerifyCrashConfigUIntValue(const std::string& value, uint32_t& out)
+{
+    char* numEndIndex = nullptr;
+    int64_t intValue = std::strtoll(value.c_str(), &numEndIndex, 10);
+    if (*numEndIndex != '\0') {
+        HILOG_ERROR(LOG_CORE, "the crash config value is invalid. it(%{public}s) should be a number.", value.c_str());
+        return false;
+    }
+    if (intValue < 0 || intValue > CRASH_LOG_MAX_CAPACITY) {
+        HILOG_ERROR(LOG_CORE, "the crash config value is invalid. it(%{public}s) is over range.", value.c_str());
+        return false;
+    }
     out = static_cast<uint32_t>(intValue);
     return true;
 }
@@ -179,7 +212,7 @@ void NapiConfigBuilder::GetCommonConfig(const napi_env env, const napi_value par
 std::unique_ptr<EventPolicyPack> NapiConfigBuilder::BuildEventPolicy(const napi_env env, const napi_value param)
 {
     if (!NapiUtil::IsObject(env, param)) {
-        HILOG_ERROR(LOG_CORE, "the policy type is invalid, it shuould be a EventPloicy");
+        HILOG_ERROR(LOG_CORE, "the policy type is invalid, it shuould be a EventPolicy");
         return std::move(eventPolicyPack_);
     }
 
@@ -220,6 +253,35 @@ bool NapiConfigBuilder::GetPolicyConfig(const napi_env env, const std::string& n
         configMap[configKey] = NapiUtil::ConvertToString(env, configValue);
     }
     eventPolicyPack_->policyStringMaps[name] = std::move(configMap);
+    if (name == APP_CRASH_POLICY) {
+        return GetAppCrashPolicy();
+    }
+    return true;
+}
+
+bool NapiConfigBuilder::GetAppCrashPolicy()
+{
+    std::map<std::string, crashConfigVerify> crashConfigs = {
+        {"extendPcLrPrinting", {.type = 0, .func = VerifyCrashConfigBoolValue}},
+        {"logFileCutoffSzBytes", {.type = 1, .func = VerifyCrashConfigUIntValue}},
+        {"simplifyVmaPrinting", {.type = 2, .func = VerifyCrashConfigBoolValue}}
+    };
+
+    uint32_t configValue = 0;
+    std::map<uint8_t, uint32_t> uintMap;
+    for (const auto& cfg : eventPolicyPack_->policyStringMaps[APP_CRASH_POLICY]) {
+        auto it = crashConfigs.find(cfg.first);
+        if (it == crashConfigs.end()) {
+            continue;
+        }
+
+        if (!(it->second.func)(cfg.second, configValue)) {
+            return false;
+        }
+        uintMap[it->second.type] = configValue;
+        eventPolicyPack_->policyStringMaps[APP_CRASH_POLICY].erase(cfg.first);
+    }
+    eventPolicyPack_->policyUintMaps[APP_CRASH_POLICY] = std::move(uintMap);
     return true;
 }
 } // namespace HiviewDFX

@@ -44,7 +44,8 @@ const std::map<std::string, napi_valuetype> CONFIG_OPTION_MAP = {
 int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
 {
     if (asyncContext->eventConfigPack->eventName == APP_CRASH) {
-        return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->configUintMap);
+        return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->eventName,
+            asyncContext->eventConfigPack->configUintMap);
     }
     return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->eventName,
         asyncContext->eventConfigPack->configStringMap);
@@ -52,16 +53,24 @@ int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
 
 int ConfigEventPolicySync(HiAppEventConfigAsyncContext* asyncContext)
 {
-    int res = NapiError::ERR_OK;
+    int ret = NapiError::ERR_OK;
     for (const auto& configMap : asyncContext->eventPolicyPack->policyStringMaps) {
-        int setResult = EventPolicyMgr::GetInstance().SetEventPolicy(configMap.first, configMap.second);
-        if (setResult != NapiError::ERR_OK) {
+        ret = EventPolicyMgr::GetInstance().SetEventPolicy(configMap.first, configMap.second);
+        if (ret != NapiError::ERR_OK) {
             HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
-                setResult);
-            res = setResult;
+                ret);
+            return ret;
         }
     }
-    return res;
+    for (const auto& cfgMap : asyncContext->eventPolicyPack->policyUintMaps) {
+        ret = EventPolicyMgr::GetInstance().SetEventPolicy(cfgMap.first, cfgMap.second);
+        if (ret != NapiError::ERR_OK) {
+            HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", cfgMap.first.c_str(),
+                ret);
+            return ret;
+        }
+    }
+    return ret;
 }
 }
 bool Configure(const napi_env env, const napi_value configObj, bool isThrow)

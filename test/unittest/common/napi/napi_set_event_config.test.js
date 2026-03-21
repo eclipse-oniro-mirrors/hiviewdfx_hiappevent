@@ -862,14 +862,14 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
-     * @tc.name: ConfigEventPolicyTest018
+     * @tc.name: ConfigEventPolicyTest018_1
      * @tc.desc: Test the ConfigEventPolicy interface for appcrash
      * @tc.type: FUNC
      * @tc.require: issueI8U2VO
      */
-    it('ConfigEventPolicyTest018', 0, async function (done) {
-        console.info('ConfigEventPolicyTest018 start');
-        let policy = {"appCrashPolicy":{"pageSwitchLogEnable": true}};
+    it('ConfigEventPolicyTest018_1', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018_1 start');
+        let policy = {"appCrashPolicy": {"pageSwitchLogEnable": true}};
         hiAppEvent.configEventPolicy(policy).then(() => {
             expect(true).assertEqual(true);
             done();
@@ -877,7 +877,85 @@ describe('HiAppEventJsTest', function () {
             expect(false).assertEqual(true);
             done();
         });
-        console.info('ConfigEventPolicyTest018 end');
+        console.info('ConfigEventPolicyTest018_1 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest018_2
+     * @tc.desc: Test the ConfigEventPolicy interface for appcrash
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest018_2', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018_2 start');
+        let policy = {"appCrashPolicy":
+            {"extendPcLrPrinting": true, "logFileCutoffSzBytes": 1024, "simplifyVmaPrinting": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest018_2 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest018_3
+     * @tc.desc: Test the ConfigEventPolicy interface for appcrash
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest018_3', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018_3 start');
+        let policy = {"appCrashPolicy":
+            {"extendPcLrPrinting": true, "logFileCutoffSzBytes": 5 * 1024 * 1024 + 1, "simplifyVmaPrinting": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest018_3 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest018_4
+     * @tc.desc: Test the ConfigEventPolicy interface for appcrash
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest018_4', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018_4 start');
+        let policy = {"appCrashPolicy": {"logFileCutoffSzBytes": 5 * 1024 * 1024 + 1}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest018_4 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest018_5
+     * @tc.desc: Test the ConfigEventPolicy interface for appcrash
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest018_5', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018_5 start');
+        let policy = {"appCrashPolicy": {"logFileCutoffSzBytes": 5 * 1024 * 1024 + 1, "pageSwitchLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest018_5 end');
     });
 
     /**
@@ -888,7 +966,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('ConfigEventPolicyTest019', 0, async function (done) {
         console.info('ConfigEventPolicyTest019 start');
-        let policy = {"appFreezePolicy":{"pageSwitchLogEnable": true}};
+        let policy = {"appFreezePolicy": {"pageSwitchLogEnable": true}};
         hiAppEvent.configEventPolicy(policy).then(() => {
             expect(true).assertEqual(true);
             done();
@@ -900,14 +978,14 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
-     * @tc.name: ConfigEventPolicyTest020
+     * @tc.name: ConfigEventPolicyTest020_1
      * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
      * @tc.type: FUNC
      * @tc.require: issueI8U2VO
      */
-    it('ConfigEventPolicyTest020', 0, async function (done) {
-        console.info('ConfigEventPolicyTest020 start');
-        let policy = {"resourceOverlimitPolicy":{"pageSwitchLogEnable": true}};
+    it('ConfigEventPolicyTest020_1', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020_1 start');
+        let policy = {"resourceOverlimitPolicy": {"pageSwitchLogEnable": true}};
         hiAppEvent.configEventPolicy(policy).then(() => {
             expect(true).assertEqual(true);
             done();
@@ -915,7 +993,83 @@ describe('HiAppEventJsTest', function () {
             expect(false).assertEqual(true);
             done();
         });
-        console.info('ConfigEventPolicyTest020 end');
+        console.info('ConfigEventPolicyTest020_1 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest020_2
+     * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest020_2', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020_2 start');
+        let policy = {"resourceOverlimitPolicy": {"jsHeapLogtype": "event"}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest020_2 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest020_3
+     * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest020_3', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020_3 start');
+        let policy = {"resourceOverlimitPolicy": {"jsHeapLogtype": "event_rawheap"}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest020_3 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest020_4
+     * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest020_4', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020_4 start');
+        let policy = {"resourceOverlimitPolicy": {"jsHeapLogtype": "xxx"}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest020_4 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest020_5
+     * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest020_5', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020_5 start');
+        let policy = {"resourceOverlimitPolicy": {"jsHeapLogtype": "xxx", "pageSwitchLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest020_5 end');
     });
 
     /**

@@ -35,6 +35,17 @@ public:
  *          advised to use it in a child thread.
 */
     static int64_t AddProcessor(const ReportConfig& config);
+
+/**
+ * @brief Adds the configuration information of the data processor asynchronous.
+ *
+ * @param config configuration information of a data processor, including the name of the data processor.
+ * @param cb callback function executed after the task of adding configuration information is complete. The input
+ *        parameter of the callback function is an integer, indicating procesor id. The processor id is a positive
+ *        integer if the operation successful; otherwise, it is a negative integer.
+*/
+    static void AddProcessorAsync(const ReportConfig& config, std::function<void(int64_t)> cb);
+
 /**
  * @brief Removes the data processor of a reported event.
  *

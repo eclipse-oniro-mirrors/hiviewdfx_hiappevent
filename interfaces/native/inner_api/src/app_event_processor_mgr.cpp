@@ -44,6 +44,14 @@ int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
     return AppEventObserverMgr::GetInstance().AddProcessor(realConfig.name, realConfig);
 }
 
+void AppEventProcessorMgr::AddProcessorAsync(const ReportConfig& config, std::function<void(int64_t)> cb)
+{
+    AppEventObserverMgr::GetInstance().SubmitTaskToFFRTQueue([config, cb] () {
+        int64_t processorId = AddProcessor(config);
+        cb(processorId);
+        }, "AddProcessorAsync");
+}
+
 int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
 {
     if (!IsApp()) {
