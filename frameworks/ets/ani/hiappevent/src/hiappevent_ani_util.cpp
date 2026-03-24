@@ -739,9 +739,8 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
     if (jsonValue.isArray() && jsonValue[0].isBool()) {
         ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
         for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-            ani_status status = env->Array_Set(static_cast<ani_array>(boolArray), static_cast<ani_size>(i),
-                CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
-            if (status != ANI_OK) {
+            if (env->Array_Set(static_cast<ani_array>(boolArray), static_cast<ani_size>(i),
+                CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
                 HILOG_ERROR(LOG_CORE, "create boolArray failed, Array_Set failed");
             }
         }
@@ -750,8 +749,10 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
     if (jsonValue.isArray() && jsonValue[0].isDouble()) {
         ani_ref doubleArray = CreateArray(env, CLASS_NAME_DOUBLE, jsonValue.size());
         for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-            env->Array_Set(static_cast<ani_array>(doubleArray), static_cast<ani_size>(i),
-                CreateValueByJson(env, jsonValue[static_cast<int>(i)]));
+            if (env->Array_Set(static_cast<ani_array>(doubleArray), static_cast<ani_size>(i),
+                CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
+                HILOG_ERROR(LOG_CORE, "create doubleArray failed, Array_Set failed");
+            }
         }
         return doubleArray;
     }

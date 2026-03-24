@@ -274,6 +274,9 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
     Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
     if (paramsJson.isMember(RUNNING_ID_PROPERTY) && paramsJson[RUNNING_ID_PROPERTY].isString()) {
         appEventPack->SetRunningId(paramsJson[RUNNING_ID_PROPERTY].asString());
+        if (paramsJson[RUNNING_ID_PROPERTY].asString().empty()) {
+            HILOG_INFO(LOG_CORE, "get running id from %{public}s is an empty string", appEventPack->GetName().c_str());
+        }
     }
  
     if (EventPolicyMgr::GetInstance().GetEventPageSwitchStatus(appEventPack->GetName())) {
