@@ -30,6 +30,7 @@ struct EventConfigPack {
 };
 struct EventPolicyPack {
     std::map<std::string, std::map<std::string, std::string>> policyStringMaps;
+    std::map<std::string, std::map<uint8_t, uint32_t>> policyUintMaps;
     bool isValid {false};
 };
 
@@ -44,6 +45,7 @@ public:
 
 private:
     void GetAppCrashConfig(const napi_env env, const napi_value params);
+    bool GetAppCrashPolicy();
     void GetCommonConfig(const napi_env env, const napi_value params);
     bool GetPolicyConfig(const napi_env env, const std::string& name, const napi_value policy);
 

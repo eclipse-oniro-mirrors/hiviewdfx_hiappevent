@@ -50,9 +50,10 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
         {"cpuUsageHighPolicy",
             {"foregroundLoadThreshold", "backgroundLoadThreshold", "threadLoadThreshold", "perfLogCaptureCount",
              "threadLoadInterval"}},
-        {"appCrashPolicy", {"pageSwitchLogEnable"}},
+        {"appCrashPolicy",
+            {"pageSwitchLogEnable", "extendPcLrPrinting", "logFileCutoffSzBytes", "simplifyVmaPrinting"}},
         {"appFreezePolicy", {"pageSwitchLogEnable"}},
-        {"resourceOverlimitPolicy", {"pageSwitchLogEnable"}},
+        {"resourceOverlimitPolicy", {"pageSwitchLogEnable", "jsHeapLogtype"}},
         {"addressSanitizerPolicy", {"pageSwitchLogEnable"}}
     };
     return eventPolicyItem;
