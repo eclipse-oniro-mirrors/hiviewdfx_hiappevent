@@ -44,6 +44,7 @@ ohos_unittest("HiAppEventNativeTest") {
   ]
 
   deps = [
+    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
     "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
     "$native_hiappevent_path/ndk:hiappevent_ndk",
@@ -57,7 +58,6 @@ ohos_unittest("HiAppEventNativeTest") {
     "bundle_framework:appexecfwk_core_headers",
     "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
-    "hiappevent:hiappevent_innerapi",
   ]
 }
 
@@ -110,18 +110,16 @@ ohos_unittest("HiAppEventWatcherTest") {
 
 ohos_unittest("HiAppEventPolicyTest") {
   module_out_path = native_module_output_path
- 
+
   configs = [ ":hiappevent_config_test" ]
- 
-  sources = [ 
-    "unittest/common/native/hiappevent_policy_test.cpp",
+
+  sources = [
     "$native_hiappevent_path/libhiappevent/policy/event_policy_mgr.cpp",
+    "unittest/common/native/hiappevent_policy_test.cpp",
   ]
- 
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-  ]
- 
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
   external_deps = [
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_core_headers",
@@ -144,7 +142,10 @@ ohos_unittest("HiAppEventInnerApiTest") {
 
   sources = [ "unittest/common/native/hiappevent_inner_api_test.cpp" ]
 
-  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+  deps = [
+    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+  ]
 
   external_deps = [
     "ability_runtime:app_context",
@@ -152,7 +153,6 @@ ohos_unittest("HiAppEventInnerApiTest") {
     "common_event_service:cesfwk_innerkits",
     "ffrt:libffrt",
     "googletest:gtest_main",
-    "hiappevent:hiappevent_innerapi",
   ]
 }
 
@@ -183,14 +183,16 @@ ohos_unittest("HiAppEventAppEventTest") {
 
   sources = [ "unittest/common/native/hiappevent_app_event_test.cpp" ]
 
-  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+  deps = [
+    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+  ]
 
   external_deps = [
     "ability_runtime:app_context",
     "bundle_framework:appexecfwk_core_headers",
     "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
-    "hiappevent:hiappevent_innerapi",
   ]
 }
 
@@ -256,12 +258,12 @@ group("unittest") {
     ":HiAppEventCacheTest",
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
+    ":HiAppEventObserverTest",
     ":HiAppEventPolicyTest",
     ":HiAppEventUserInfoTest",
     ":HiAppEventUtilityTest",
     ":HiAppEventVerifyTest",
     ":HiAppEventWatcherTest",
-    ":HiAppEventObserverTest",
     "unittest/common/napi:unittest",
   ]
 }

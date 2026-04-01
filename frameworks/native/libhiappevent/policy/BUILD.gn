@@ -15,9 +15,7 @@ import("//build/ohos.gni")
 
 config("hiappevent_policy_config") {
   visibility = [ "*:*" ]
-  include_dirs = [
-    "include",
-  ]
+  include_dirs = [ "include" ]
 }
 
 ohos_source_set("hiappevent_policy") {
