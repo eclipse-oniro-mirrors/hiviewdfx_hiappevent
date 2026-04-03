@@ -19,12 +19,12 @@ ohos_shared_library("hiappevent_ani") {
   include_dirs = [ "./include/" ]
 
   sources = [
+    "./src/ani_app_event_holder.cpp",
+    "./src/ani_app_event_watcher.cpp",
     "./src/hiappevent_ani.cpp",
     "./src/hiappevent_ani_helper.cpp",
     "./src/hiappevent_ani_util.cpp",
     "./src/hiappevent_param_builder.cpp",
-    "./src/ani_app_event_watcher.cpp",
-    "./src/ani_app_event_holder.cpp",
   ]
 
   deps = [
