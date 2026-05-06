@@ -19,12 +19,18 @@
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
 #include "time_util.h"
+#ifdef ENABLE_API_METRICS
+#include "histogram_plugin_macros.h"
+#endif
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace AppEventStat {
 namespace {
 constexpr int BEHAVIOR = 4;
+#ifdef ENABLE_API_METRICS
+constexpr int MAX_ERR = 11105001;
+#endif
 
 uint64_t RandomNum()
 {
@@ -37,16 +43,25 @@ uint64_t RandomNum()
 
 void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int result, int errCode)
 {
-    auto appEventPack = std::make_shared<AppEventPack>("api_diagnostic", "api_exec_end", BEHAVIOR);
-    appEventPack->AddParam("trans_id", "transId_" + std::to_string(RandomNum()));
-    appEventPack->AddParam("api_name", apiName);
-    appEventPack->AddParam("sdk_name", "PerformanceAnalysisKit");
+#ifdef ENABLE_API_METRICS
+    HISTOGRAM_BOOLEAN("PerformanceAnalysisKit.ApiCall." + apiName, result == AppEventStat::SUCCESS);
+    if (result != AppEventStat::SUCCESS) {
+        HISTOGRAM_ENUMERATION("PerformanceAnalysisKit.ErrCode." + apiName, errCode, MAX_ERR);
+    }
+#endif
     int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
     int64_t realEndTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
     int64_t realBeginTime = realEndTime - costTime;
     if (realBeginTime < 0 || realEndTime < 0) {
         return;
     }
+#ifdef ENABLE_API_METRICS
+    HISTOGRAM_TIMES("PerformanceAnalysisKit.Time." + apiName, costTime);
+#endif
+    auto appEventPack = std::make_shared<AppEventPack>("api_diagnostic", "api_exec_end", BEHAVIOR);
+    appEventPack->AddParam("trans_id", "transId_" + std::to_string(RandomNum()));
+    appEventPack->AddParam("api_name", apiName);
+    appEventPack->AddParam("sdk_name", "PerformanceAnalysisKit");
     appEventPack->AddParam("begin_time", realBeginTime);
     appEventPack->AddParam("end_time", realEndTime);
     appEventPack->AddParam("result", result);
