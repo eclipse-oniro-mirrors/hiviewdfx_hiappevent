@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -403,6 +403,8 @@ int AppEventStore::InsertCustomEventParams(std::shared_ptr<AppEventPack> event)
         return DB_SUCC;
     };
     int res = ExecuteDbOperation(func);
+    HILOG_INFO(LOG_CORE, "the event(%{public}s) current runningId is %{public}s, add %{public}zu custom params, "
+        "ret=%{public}d", event->GetName().c_str(), event->GetRunningId().c_str(), newParams.size(), res);
     return errCode != DB_SUCC ? errCode : res;
 }
 
@@ -566,6 +568,10 @@ int AppEventStore::QueryCustomParamsAdd2EventPack(std::shared_ptr<AppEventPack> 
         CustomEventParamDao::Query(dbStore_, params, CustomEvent(event->GetRunningId(), event->GetDomain(), ""));
         CustomEventParamDao::Query(dbStore_, params,
             CustomEvent(event->GetRunningId(), event->GetDomain(), event->GetName()));
+        if (params.empty() && event->GetDomain() != "api_diagnostic") {
+            HILOG_WARN(LOG_CORE, "the event(%{public}s) current runningId is %{public}s, the custom param is empty.",
+                event->GetName().c_str(), event->GetRunningId().c_str());
+        }
         event->AddCustomParams(params);
         return DB_SUCC;
     };
@@ -736,10 +742,6 @@ bool AppEventStore::DeleteData(int64_t observerSeq, const std::vector<int64_t>& 
     }
     if (DeleteEvent(eventSeqs) < 0) {
         HILOG_WARN(LOG_CORE, "failed to delete unused event");
-    }
-    std::string runningId = HiAppEventConfig::GetInstance().GetRunningId();
-    if (!runningId.empty() && DeleteUnusedParamsExceptCurId(runningId) < 0) {
-        HILOG_WARN(LOG_CORE, "failed to delete unused params");
     }
     return true;
 }
