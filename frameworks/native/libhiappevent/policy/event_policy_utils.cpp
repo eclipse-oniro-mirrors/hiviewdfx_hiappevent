@@ -140,9 +140,10 @@ bool EventPolicyUtils::GetEventPageSwitchStatus(const std::string& eventName)
     return value.substr(pos + 1) == "true";
 }
 
-int EventPolicyUtils::SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap)
+int EventPolicyUtils::SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap,
+    bool needRunningId)
 {
-    if (GetRunningId().empty()) {
+    if (needRunningId && GetRunningId().empty()) {
         SetRunningId(HiAppEventConfig::GetInstance().GetRunningId());
         if (GetRunningId().empty()) {
             return ErrorCode::ERROR_UNKNOWN;
@@ -151,7 +152,7 @@ int EventPolicyUtils::SaveEventConfig(const std::string& configDir, const std::m
 
     for (const auto& config : configMap) {
         std::string property = "user.event_config." + config.first;
-        std::string newValue = GetRunningId() + "," + config.second;
+        std::string newValue =  needRunningId == true ? GetRunningId() + "," + config.second : config.second;
         if (!FileUtil::SetDirXattr(configDir, property, newValue)) {
             HILOG_ERROR(LOG_CORE, "failed to SetDirXattr, dir: %{public}s, property: %{public}s, newValue: %{public}s,"
                 " err: %{public}s, errno: %{public}d", configDir.c_str(), property.c_str(), newValue.c_str(),

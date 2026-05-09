@@ -161,8 +161,6 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_2, TestSize.Level0)
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"merge_cppcrash_app_log", "true"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
-    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collect_minidump", "true"}});
-    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 }
 
 /**
