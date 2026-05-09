@@ -31,7 +31,7 @@ constexpr int INVALID_PARAM = -1;
 int CpuUsageHighPolicy::SetEventPolicy(const std::map<std::string, std::string>& configMap)
 {
     std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir(APP_EVENT_DIR);
-    return EventPolicyUtils::GetInstance().SaveEventConfig(configDir, configMap);
+    return EventPolicyUtils::GetInstance().SaveEventConfig(configDir, configMap, false);
 }
 
 int CpuUsageHighPolicy::SetEventPolicy(const std::map<uint8_t, uint32_t>& configMap)
