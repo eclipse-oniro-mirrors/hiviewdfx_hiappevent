@@ -30,7 +30,8 @@ public:
     int ConfigPageSwitch(const std::string& eventName, std::map<std::string, std::string>& configMap);
     std::string GetConfigDir(const std::string& subDir);
     bool GetEventPageSwitchStatus(const std::string& eventName);
-    int SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap);
+    int SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap,
+        bool needRunningId = true);
 
 private:
     EventPolicyUtils() = default;

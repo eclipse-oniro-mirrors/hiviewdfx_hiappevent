@@ -133,6 +133,10 @@ bool OsEventListener::StartListening()
         RemoveOsEventDir();
         return false;
     }
+    if (FileUtil::IsFileExists(OS_LOG_PATH + "/info") && !FileUtil::RemoveDirectory(OS_LOG_PATH + "/info")) {
+        HILOG_ERROR(LOG_CORE, "failed to remove dir /data/storage/el2/log/hiappevent/info");
+        return false;
+    }
     return InitDir(OS_LOG_PATH) && InitDir(osEventPath_) && RegisterDirListener(osEventPath_);
 }
 
