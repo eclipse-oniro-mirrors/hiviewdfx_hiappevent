@@ -100,7 +100,7 @@ bool SetMinidumpConfig(const std::string& strValue, uint32_t& out)
 
 void RemoveInfoDir(const std::string& dirPath)
 {
-    if (FileUtil::IsFileExists(dirPath) && !FileUtil::RemoveDirectory(dirPath)) {
+    if (FileUtil::IsFileExists(dirPath) && !FileUtil::ForceRemoveDirectory(dirPath)) {
         HILOG_ERROR(LOG_CORE, "failed to remove dir=%{public}s", dirPath.c_str());
     }
 }
