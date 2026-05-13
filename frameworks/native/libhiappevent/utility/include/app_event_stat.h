@@ -24,6 +24,7 @@ constexpr int SUCCESS = 0;
 constexpr int FAILED = 1;
 
 void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int result, int errCode);
+int WriteApiEndMetric(const std::string& apiName, uint64_t beginTime, int result, int errCode);
 } // namespace AppEventStat
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -18,6 +18,7 @@
 
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
+#include "hiappevent_api_metric.h"
 #include "time_util.h"
 #ifdef ENABLE_API_METRICS
 #include "histogram_plugin_macros.h"
@@ -68,6 +69,27 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
     appEventPack->AddParam("error_code", errCode);
     SubmitWritingTask(appEventPack, "appevent_api_end");
 }
+
+int WriteApiEndMetric(const std::string& apiName, uint64_t beginTime, int result, int errCode)
+{
+    int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
+    int64_t realEndTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
+    int64_t realBeginTime = realEndTime - costTime;
+    if (realBeginTime < 0) {
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
+    HiAppEvent::ApiInfo apiInfo = {
+        .kit = "PerformanceAnalysisKit",
+        .api = apiName
+    };
+    HiAppEvent::ApiMetric apiMetric = {
+        .errCode = errCode,
+        .duration = static_cast<int>(costTime),
+        .successful = (result == AppEventStat::SUCCESS)
+    };
+    return HiAppEvent::ApiMetricProcessor::GetInstance().ProcessApiMetric(apiInfo, apiMetric);
+}
+
 } // namespace AppEventStat
 } // namespace HiviewDFX
 } // namespace OHOS

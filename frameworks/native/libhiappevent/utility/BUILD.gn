@@ -19,6 +19,8 @@ config("hiappevent_utility_config") {
   include_dirs = [
     "include",
     "../include",
+    "../stat/include",
+    "../../../../interfaces/native/inner_api/include",
   ]
 }
 
@@ -36,6 +38,7 @@ ohos_source_set("hiappevent_utility") {
   external_deps = [
     "ffrt:libffrt",
     "jsoncpp:jsoncpp",
+    "c_utils:utils",
   ]
 
   if (hiappevent_hiviewdfx_api_metrics_enable) {
