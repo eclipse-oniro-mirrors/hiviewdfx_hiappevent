@@ -678,14 +678,37 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
         return DB_SUCC;
     }
     auto func = [this, &curRunningId] () {
+        // query the count of running_id groups
+        std::string countSql = "SELECT COUNT(DISTINCT " + CustomEventParams::FIELD_RUNNING_ID
+            + ") FROM " + CustomEventParams::TABLE;
+        auto resultSet = dbStore_->QuerySql(countSql);
+        if (resultSet == nullptr) {
+            HILOG_ERROR(LOG_CORE, "failed to query running_id group count");
+            return DB_FAILED;
+        }
+        int groupCount = 0;
+        if (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+            resultSet->GetInt(0, groupCount);
+        }
+        resultSet->Close();
+        // skip aging if group count less than 50
+        int triggerAgingNum = 50;
+        if (groupCount < triggerAgingNum) {
+            HILOG_DEBUG(LOG_CORE, "group count=%{public}d less than 50, skip aging", groupCount);
+            return DB_SUCC;
+        }
         int deleteRows = 0;
-        // delete custom_event_params if running_id isn't current runningId, and running_id not in events
-        std::string whereClause = CustomEventParams::FIELD_RUNNING_ID + " != ?" + " AND ("
-            + CustomEventParams::TABLE + "." + CustomEventParams::FIELD_RUNNING_ID + " NOT IN (SELECT "
-            + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + "))";
+        std::string limitOfStore = "20";
+        // keep the latest 20 running_id groups ordered by max seq, and keep curRunningId data
+        std::string whereClause = CustomEventParams::FIELD_RUNNING_ID + " NOT IN (SELECT "
+            + CustomEventParams::FIELD_RUNNING_ID + " FROM " + CustomEventParams::TABLE
+            + " GROUP BY " + CustomEventParams::FIELD_RUNNING_ID
+            + " ORDER BY MAX(" + CustomEventParams::FIELD_SEQ + ") DESC LIMIT " + limitOfStore + ")"
+            + " AND " + CustomEventParams::FIELD_RUNNING_ID + " != ?";
         int ret = dbStore_->Delete(deleteRows, CustomEventParams::TABLE, whereClause,
             std::vector<std::string>{curRunningId});
         if (ret != NativeRdb::E_OK) {
+            HILOG_ERROR(LOG_CORE, "failed to delete unused params, ret=%{public}d", ret);
             return ret;
         }
         HILOG_INFO(LOG_CORE, "delete %{public}d params unused", deleteRows);
@@ -742,6 +765,10 @@ bool AppEventStore::DeleteData(int64_t observerSeq, const std::vector<int64_t>& 
     }
     if (DeleteEvent(eventSeqs) < 0) {
         HILOG_WARN(LOG_CORE, "failed to delete unused event");
+    }
+    std::string runningId = HiAppEventConfig::GetInstance().GetRunningId();
+    if (!runningId.empty() && DeleteUnusedParamsExceptCurId(runningId) < 0) {
+        HILOG_WARN(LOG_CORE, "failed to delete unused params");
     }
     return true;
 }
