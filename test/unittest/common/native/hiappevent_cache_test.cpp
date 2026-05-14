@@ -426,6 +426,22 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: HiAppEventStat002
+ * @tc.desc: test the WriteApiEndMetric func of app event stat.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, HiAppEventStat002, TestSize.Level1)
+{
+    std::string apiName = "testApi";
+    uint64_t beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
+    int ret = AppEventStat::WriteApiEndMetric(apiName, beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    EXPECT_EQ(ret, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    ret = AppEventStat::WriteApiEndMetric(apiName, -beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    EXPECT_EQ(ret, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+}
+
+/**
  * @tc.name: SetConfigurationItem001
  * @tc.desc: test the SetConfigurationItem func of app event stat.
  * @tc.type: FUNC

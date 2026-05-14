@@ -219,7 +219,8 @@ static napi_value ClearData(napi_env env, napi_callback_info info)
 {
     uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
     HiAppEventClean::ClearData(NapiHiAppEventConfig::GetStorageDir());
-    AppEventStat::WriteApiEndEventAsync("clearData", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
+    int ret = AppEventStat::WriteApiEndMetric("clearData", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
+    HILOG_INFO(LOG_CORE, "clear data write api end metric ret:%{public}d", ret);
     return NapiUtil::CreateUndefined(env);
 }
 
