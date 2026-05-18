@@ -38,7 +38,7 @@ namespace HiAppEventClean {
 namespace {
 constexpr int EVENT_COUNT_OF_CHECK_SPACE = 1000;
 
-static int g_eventCount = -1;
+static std::atomic<int> g_eventCount = -1;
 
 void CreateCleaners(const std::string& dir, std::vector<std::shared_ptr<AppEventCleaner>>& cleaners)
 {

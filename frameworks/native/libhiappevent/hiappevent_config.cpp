@@ -147,6 +147,10 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
 
     char* numEndIndex = nullptr;
     uint64_t numValue = std::strtoull(value.c_str(), &numEndIndex, DECIMAL_UNIT);
+    if (errno == ERANGE) {
+        HILOG_ERROR(LOG_CORE, "value: %{public}s overflow.", value.c_str());
+        return false;
+    }
     if (*numEndIndex == '\0') {
         SetMaxStorageSize(numValue);
         return true;
@@ -156,27 +160,33 @@ bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
     auto len = value.length();
     char unitChr = value[len - unitLen];
     uint64_t maxStoSize = 0;
+    unsigned long long tempResult = 0;
+    uint64_t unitValue = 1;
     switch (unitChr) {
         case 'b':
             maxStoSize = numValue;
             break;
         case 'k':
-            maxStoSize = numValue * STORAGE_UNIT_KB;
+            unitValue = STORAGE_UNIT_KB;
             break;
         case 'm':
-            maxStoSize = numValue * STORAGE_UNIT_MB;
+            unitValue = STORAGE_UNIT_MB;
             break;
         case 'g':
-            maxStoSize = numValue * STORAGE_UNIT_GB;
+            unitValue = STORAGE_UNIT_GB;
             break;
         case 't':
-            maxStoSize = numValue * STORAGE_UNIT_TB;
+            unitValue = STORAGE_UNIT_TB;
             break;
         default:
             HILOG_ERROR(LOG_CORE, "invalid storage unit value=%{public}c.", unitChr);
             return false;
     }
-
+    if (__builtin_umulll_overflow(numValue, unitValue, &tempResult)) {
+        HILOG_ERROR(LOG_CORE, "maxStoSize overflow. value=%{public}s", value.c_str());
+        return false;
+    }
+    maxStoSize = static_cast<uint64_t>(tempResult);
     SetMaxStorageSize(maxStoSize);
     return true;
 }
