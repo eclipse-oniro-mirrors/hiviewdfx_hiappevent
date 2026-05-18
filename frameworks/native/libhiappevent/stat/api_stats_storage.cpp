@@ -112,10 +112,17 @@ int ApiStatsStorage::QueryAll(ApiMetricsMap& apiMetrics)
                     kitName.c_str(), apiName.c_str());
                 continue;
             }
-
+            if (!jsonValue["errCode"].isInt() || !jsonValue["duration"].isInt() || !jsonValue["successful"].isBool()) {
+                HILOG_ERROR(LOG_CORE, "query all failed to parse json");
+                continue;
+            }
             int errCode = jsonValue["errCode"].asInt();
             int duration = jsonValue["duration"].asInt();
             bool successful = jsonValue["successful"].asBool();
+            if (duration < 0) {
+                HILOG_ERROR(LOG_CORE, "query all, duration param error");
+                continue;
+            }
             HILOG_DEBUG(LOG_CORE, "parse metric, kitName=%{public}s, apiName=%{public}s, errCode=%{public}d, \
                 duration=%{public}d, successful=%{public}d",
                 kitName.c_str(), apiName.c_str(), errCode, duration, successful);

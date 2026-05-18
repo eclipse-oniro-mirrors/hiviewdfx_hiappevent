@@ -15,6 +15,8 @@
 
 #include "api_stats_mgr.h"
 
+#include <cinttypes>
+
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
 #include "hilog/log.h"
@@ -109,21 +111,14 @@ std::shared_ptr<AppEventPack> ApiStatsManager::ConvertReportToEventPack(const Ap
     
     appEventPack->AddParam("api_name", report.apiName);
     appEventPack->AddParam("sdk_name", report.kitName);
-    appEventPack->AddParam("begin_time", report.begin_time);
-    appEventPack->AddParam("call_times", report.call_times);
-    appEventPack->AddParam("success_times", report.success_times);
-    appEventPack->AddParam("max_cost_time", report.max_cost_time);
-    appEventPack->AddParam("min_cost_time", report.min_cost_time);
-    appEventPack->AddParam("total_cost_time", report.total_cost_time);
-    
-    std::vector<int> errorCodeTypes;
-    std::vector<int> errorCounts;
-    for (size_t i = 0; i < report.error_code_types.size(); i++) {
-        errorCodeTypes.push_back(report.error_code_types[i]);
-        errorCounts.push_back(report.error_code_num[i]);
-    }
-    appEventPack->AddParam("error_code_types", errorCodeTypes);
-    appEventPack->AddParam("error_code_num", errorCounts);
+    appEventPack->AddParam("begin_time", report.beginTime);
+    appEventPack->AddParam("call_times", report.callTimes);
+    appEventPack->AddParam("success_times", report.successTimes);
+    appEventPack->AddParam("max_cost_time", report.maxCostTime);
+    appEventPack->AddParam("min_cost_time", report.minCostTime);
+    appEventPack->AddParam("total_cost_time", report.totalCostTime);
+    appEventPack->AddParam("error_code_types", report.errorCodeTypes);
+    appEventPack->AddParam("error_code_num", report.errorCodeNum);
 
     return appEventPack;
 }
@@ -140,11 +135,11 @@ void ApiStatsManager::ReportStats(const std::vector<ApiStatsReport>& reports)
     for (const auto& report : reports) {
         auto eventPack = ConvertReportToEventPack(report);
         SubmitWritingTask(eventPack, "api_stats_report");
-        HILOG_INFO(LOG_CORE, "report api stats: kitName=%{public}s, apiName=%{public}s, call_times=%{public}d, "
-            "success_times=%{public}d, max_cost_time=%{public}d, min_cost_time=%{public}d, "
-            "total_cost_time=%{public}d, error_code_count=%{public}zu",
-            report.kitName.c_str(), report.apiName.c_str(), report.call_times, report.success_times,
-            report.max_cost_time, report.min_cost_time, report.total_cost_time, report.error_code_types.size());
+        HILOG_INFO(LOG_CORE, "report api stats: kitName=%{public}s, apiName=%{public}s, callTimes=%{public}d, "
+            "successTimes=%{public}d, maxCostTime=%{public}" PRId64 ", minCostTime=%{public}" PRId64 ", "
+            "totalCostTime=%{public}" PRId64 ", errorCodeCount=%{public}zu",
+            report.kitName.c_str(), report.apiName.c_str(), report.callTimes, report.successTimes,
+            report.maxCostTime, report.minCostTime, report.totalCostTime, report.errorCodeTypes.size());
     }
     
     HILOG_INFO(LOG_CORE, "report api stats success");
