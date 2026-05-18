@@ -29,14 +29,14 @@ namespace HiAppEvent {
 struct ApiStatsReport {
     std::string kitName;
     std::string apiName;
-    int64_t begin_time;
-    int call_times;
-    int success_times;
-    int max_cost_time;
-    int min_cost_time;
-    int total_cost_time;
-    std::vector<int> error_code_types;
-    std::vector<int> error_code_num;
+    int64_t beginTime;
+    int callTimes;
+    int successTimes;
+    int64_t maxCostTime;
+    int64_t minCostTime;
+    int64_t totalCostTime;
+    std::vector<std::string> errorCodeTypes;
+    std::vector<int> errorCodeNum;
 };
 
 class ApiStatsAggregator {

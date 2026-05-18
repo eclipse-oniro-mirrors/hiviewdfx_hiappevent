@@ -79,31 +79,31 @@ std::vector<ApiStatsReport> ApiStatsAggregator::AggregateStats(const ApiMetricsM
         ApiStatsReport report;
         report.kitName = descriptor.KitName();
         report.apiName = descriptor.ApiName();
-        report.begin_time = beginTime;
-        report.call_times = metrics.size();
-        report.success_times = 0;
-        report.max_cost_time = 0;
-        report.min_cost_time = std::numeric_limits<int>::max();
-        report.total_cost_time = 0;
+        report.beginTime = beginTime;
+        report.callTimes = static_cast<int>(metrics.size());
+        report.successTimes = 0;
+        report.maxCostTime = 0;
+        report.minCostTime = std::numeric_limits<int64_t>::max();
+        report.totalCostTime = 0;
         std::map<int, int> errorCodeMap;
         
         for (const auto& metric : metrics) {
             if (metric.successful) {
-                report.success_times++;
+                report.successTimes++;
             }
-            report.total_cost_time += metric.duration;
-            if (metric.duration > report.max_cost_time) {
-                report.max_cost_time = metric.duration;
+            report.totalCostTime += metric.duration;
+            if (metric.duration > report.maxCostTime) {
+                report.maxCostTime = metric.duration;
             }
-            if (metric.duration < report.min_cost_time) {
-                report.min_cost_time = metric.duration;
+            if (metric.duration < report.minCostTime) {
+                report.minCostTime = metric.duration;
             }
             errorCodeMap[metric.errCode]++;
         }
         
         for (const auto& [errCode, count] : errorCodeMap) {
-            report.error_code_types.push_back(errCode);
-            report.error_code_num.push_back(count);
+            report.errorCodeTypes.push_back(std::to_string(errCode));
+            report.errorCodeNum.push_back(count);
         }
         
         reports.push_back(report);

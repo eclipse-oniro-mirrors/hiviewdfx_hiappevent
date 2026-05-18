@@ -459,11 +459,11 @@ HWTEST_F(HiAppEventApiMetricTest, ApiStatsAggregatorTest008, TestSize.Level0)
     EXPECT_EQ(reports.size(), 1);
     EXPECT_EQ(reports[0].kitName, TEST_KIT);
     EXPECT_EQ(reports[0].apiName, TEST_API);
-    EXPECT_EQ(reports[0].call_times, 1);
-    EXPECT_EQ(reports[0].success_times, 1);
-    EXPECT_EQ(reports[0].max_cost_time, TEST_DURATION);
-    EXPECT_EQ(reports[0].min_cost_time, TEST_DURATION);
-    EXPECT_EQ(reports[0].total_cost_time, TEST_DURATION);
+    EXPECT_EQ(reports[0].callTimes, 1);
+    EXPECT_EQ(reports[0].successTimes, 1);
+    EXPECT_EQ(reports[0].maxCostTime, TEST_DURATION);
+    EXPECT_EQ(reports[0].minCostTime, TEST_DURATION);
+    EXPECT_EQ(reports[0].totalCostTime, TEST_DURATION);
 }
 
 /**
@@ -487,11 +487,11 @@ HWTEST_F(HiAppEventApiMetricTest, ApiStatsAggregatorTest009, TestSize.Level0)
     
     auto reports = ApiStatsAggregator::AggregateStats(apiMetrics);
     EXPECT_EQ(reports.size(), 1);
-    EXPECT_EQ(reports[0].call_times, 2);
-    EXPECT_EQ(reports[0].success_times, 1);
-    EXPECT_EQ(reports[0].max_cost_time, TEST_DURATION2);
-    EXPECT_EQ(reports[0].min_cost_time, TEST_DURATION);
-    EXPECT_EQ(reports[0].total_cost_time, TEST_DURATION + TEST_DURATION2);
+    EXPECT_EQ(reports[0].callTimes, 2);
+    EXPECT_EQ(reports[0].successTimes, 1);
+    EXPECT_EQ(reports[0].maxCostTime, TEST_DURATION2);
+    EXPECT_EQ(reports[0].minCostTime, TEST_DURATION);
+    EXPECT_EQ(reports[0].totalCostTime, TEST_DURATION + TEST_DURATION2);
 }
 
 /**
@@ -517,8 +517,8 @@ HWTEST_F(HiAppEventApiMetricTest, ApiStatsAggregatorTest010, TestSize.Level0)
     
     auto reports = ApiStatsAggregator::AggregateStats(apiMetrics);
     EXPECT_EQ(reports.size(), 1);
-    EXPECT_EQ(reports[0].error_code_types.size(), 2);
-    EXPECT_EQ(reports[0].error_code_num.size(), 2);
+    EXPECT_EQ(reports[0].errorCodeTypes.size(), 2);
+    EXPECT_EQ(reports[0].errorCodeNum.size(), 2);
 }
 
 /**
@@ -842,8 +842,18 @@ HWTEST_F(HiAppEventApiMetricTest, ApiStatsStorageTest006, TestSize.Level0)
     std::string invalidJson = "{invalid json";
     AppEventStore::GetInstance().InsertApiMetricInfo(TEST_KIT, TEST_API, invalidJson);
 
+    std::string invalidJsonValue = "{\"errCode\":0,\"duration\":-1,\"successful\":true}";
+    AppEventStore::GetInstance().InsertApiMetricInfo(TEST_KIT, TEST_API, invalidJsonValue);
+
     std::string validJson = "{\"errCode\":0,\"duration\":100,\"successful\":true}";
     AppEventStore::GetInstance().InsertApiMetricInfo(TEST_KIT, TEST_API, validJson);
+
+    std::string invalidErrCode = "{\"errCode\":\"validVlue\",\"duration\":100,\"successful\":true}";
+    std::string invalidDuration = "{\"errCode\":0,\"duration\":\"validVlue\",\"successful\":true}";
+    std::string invalidSuccessful = "{\"errCode\":0,\"duration\":100,\"successful\":\"validVlue\"}";
+    AppEventStore::GetInstance().InsertApiMetricInfo(TEST_KIT, TEST_API, invalidErrCode);
+    AppEventStore::GetInstance().InsertApiMetricInfo(TEST_KIT, TEST_API, invalidDuration);
+    AppEventStore::GetInstance().InsertApiMetricInfo(TEST_KIT, TEST_API, invalidSuccessful);
 
     ApiMetricsMap queriedMetrics;
     int ret = ApiStatsStorage::GetInstance().QueryAll(queriedMetrics);

@@ -434,9 +434,10 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
 HWTEST_F(HiAppEventCacheTest, HiAppEventStat002, TestSize.Level1)
 {
     std::string apiName = "testApi";
-    uint64_t beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
+    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
     int ret = AppEventStat::WriteApiEndMetric(apiName, beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
     EXPECT_EQ(ret, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
     ret = AppEventStat::WriteApiEndMetric(apiName, -beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
     EXPECT_EQ(ret, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 }
