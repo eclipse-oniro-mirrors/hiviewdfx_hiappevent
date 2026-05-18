@@ -699,12 +699,15 @@ int AppEventStore::DeleteUnusedParamsExceptCurId(const std::string& curRunningId
         }
         int deleteRows = 0;
         std::string limitOfStore = "20";
-        // keep the latest 20 running_id groups ordered by max seq, and keep curRunningId data
+        // keep the latest 20 running_id groups ordered by max seq,
+        // keep curRunningId data, and keep running_id data in events table
         std::string whereClause = CustomEventParams::FIELD_RUNNING_ID + " NOT IN (SELECT "
             + CustomEventParams::FIELD_RUNNING_ID + " FROM " + CustomEventParams::TABLE
             + " GROUP BY " + CustomEventParams::FIELD_RUNNING_ID
             + " ORDER BY MAX(" + CustomEventParams::FIELD_SEQ + ") DESC LIMIT " + limitOfStore + ")"
-            + " AND " + CustomEventParams::FIELD_RUNNING_ID + " != ?";
+            + " AND " + CustomEventParams::FIELD_RUNNING_ID + " != ?"
+            + " AND " + CustomEventParams::FIELD_RUNNING_ID + " NOT IN (SELECT DISTINCT "
+            + Events::FIELD_RUNNING_ID + " FROM " + Events::TABLE + ")";
         int ret = dbStore_->Delete(deleteRows, CustomEventParams::TABLE, whereClause,
             std::vector<std::string>{curRunningId});
         if (ret != NativeRdb::E_OK) {
