@@ -29,6 +29,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 inline constexpr const char* const RAWHEAP = "/rawheap";
+constexpr const char* const APP_EVENT_DIR = "/eventConfig";
 constexpr int INVALID_PARAM = -1;
 
 bool IsValid(const std::string& key, const std::string& value)
@@ -55,7 +56,7 @@ int SetEventConfig(const std::map<std::string, std::string>& configMap)
     int rtn = ErrorCode::ERROR_UNKNOWN;
     std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir(RAWHEAP);
     if (configDir.empty()) {
-        HILOG_ERROR(LOG_CORE, "failed to get event config dir");
+        HILOG_ERROR(LOG_CORE, "failed to get rawheap config dir");
         return rtn;
     }
 
@@ -72,6 +73,22 @@ int SetEventConfig(const std::map<std::string, std::string>& configMap)
     }
     return rtn;
 }
+
+int SaveEventConfig(std::map<std::string, std::string>& configMap)
+{
+    if (configMap.find("useRefinedLogFileName") == configMap.end()) {
+        return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+    }
+    std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir(APP_EVENT_DIR);
+    if (configDir.empty()) {
+        HILOG_ERROR(LOG_CORE, "failed to get event config dir");
+        return ErrorCode::ERROR_UNKNOWN;
+    }
+    int ret = EventPolicyUtils::GetInstance().SaveEventConfig(
+        configDir, {{"useRefinedLogFileName", configMap["useRefinedLogFileName"]}}, false);
+    configMap.erase("useRefinedLogFileName");
+    return ret;
+}
 }
 
 int ResourceOverlimitPolicy::SetEventPolicy(const std::map<std::string, std::string>& configMap)
@@ -81,10 +98,16 @@ int ResourceOverlimitPolicy::SetEventPolicy(const std::map<std::string, std::str
         return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
     }
     auto conf = configMap;
-    int res = EventPolicyUtils::GetInstance().ConfigPageSwitch("RESOURCE_OVERLIMIT", conf);
-    if (conf.size() < configMap.size()) {  // whether pageSwitchLogEnable is set.
-        if (conf.size() == 0 || res != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
-            return res;
+    if (configMap.find("pageSwitchLogEnable") != configMap.end()) {  // whether pageSwitchLogEnable is set.
+        int ret = EventPolicyUtils::GetInstance().ConfigPageSwitch("RESOURCE_OVERLIMIT", conf);
+        if (conf.size() == 0 || ret != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+            return ret;
+        }
+    }
+    if (configMap.find("useRefinedLogFileName") != configMap.end()) {  // whether useRefinedLogFileName is set.
+        int ret = SaveEventConfig(conf);
+        if (conf.size() == 0 || ret != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+            return ret;
         }
     }
     return SetEventConfig(conf);

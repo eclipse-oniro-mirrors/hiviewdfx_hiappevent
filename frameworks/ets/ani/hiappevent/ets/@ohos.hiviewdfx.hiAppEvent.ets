@@ -176,6 +176,7 @@ export default namespace hiAppEvent {
     export interface ResourceOverlimitPolicy {
         pageSwitchLogEnable?: boolean;
         jsHeapLogtype?: string;
+        useRefinedLogFileName?: boolean;
     }
 
     export interface EventPolicy {
