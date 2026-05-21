@@ -54,7 +54,7 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
             {"pageSwitchLogEnable", "extendPcLrPrinting", "logFileCutoffSzBytes", "simplifyVmaPrinting",
              "collectMinidump"}},
         {"appFreezePolicy", {"pageSwitchLogEnable"}},
-        {"resourceOverlimitPolicy", {"pageSwitchLogEnable", "jsHeapLogtype"}},
+        {"resourceOverlimitPolicy", {"pageSwitchLogEnable", "jsHeapLogtype", "useRefinedLogFileName"}},
         {"addressSanitizerPolicy", {"pageSwitchLogEnable"}}
     };
     return eventPolicyItem;

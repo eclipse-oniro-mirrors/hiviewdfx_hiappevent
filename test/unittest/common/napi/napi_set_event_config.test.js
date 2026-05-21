@@ -1130,6 +1130,25 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.name: ConfigEventPolicyTest020_6
+     * @tc.desc: Test the ConfigEventPolicy interface for resourceOverlimit
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest020_6', 0, async function (done) {
+        console.info('ConfigEventPolicyTest020_6 start');
+        let policy = {"resourceOverlimitPolicy": {"useRefinedLogFileName": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest020_6 end');
+    });
+
+    /**
      * @tc.name: ConfigEventPolicyTest021
      * @tc.desc: Test the ConfigEventPolicy interface for addressSanitizer
      * @tc.type: FUNC

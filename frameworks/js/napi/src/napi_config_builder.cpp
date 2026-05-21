@@ -63,7 +63,9 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
             {"collectMinidump", napi_boolean}
         }},
         {"appFreezePolicy", {{"pageSwitchLogEnable", napi_boolean}}},
-        {"resourceOverlimitPolicy", {{"pageSwitchLogEnable", napi_boolean}, {"jsHeapLogtype", napi_string}}},
+        {"resourceOverlimitPolicy", {
+            {"pageSwitchLogEnable", napi_boolean}, {"jsHeapLogtype", napi_string},
+            {"useRefinedLogFileName", napi_boolean}}},
         {"addressSanitizerPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
     };
     return eventPolicyItem;

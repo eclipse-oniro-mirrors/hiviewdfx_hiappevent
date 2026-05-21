@@ -333,6 +333,30 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_3, TestSize.Level0)
 }
 
 /**
+ * @tc.name: HiAppEventPolicyTest005_4
+ * @tc.desc: test the SetEventPolicy func for resourceOverlimit with useRefinedLogFileName.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_4, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {{"useRefinedLogFileName", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"useRefinedLogFileName", "false"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {
+        {"pageSwitchLogEnable", "true"}, {"jsHeapLogtype", "event"}, {"useRefinedLogFileName", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
  * @tc.name: HiAppEventPolicyTest006
  * @tc.desc: test the SetEventPolicy func for addressSanitizer with pageSwitchLogEnable.
  * @tc.type: FUNC
