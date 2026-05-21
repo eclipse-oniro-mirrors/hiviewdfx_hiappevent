@@ -456,6 +456,9 @@ void AppEventPack::AddParam(const std::string& key, double d)
 void AppEventPack::AddParam(const std::string& key, const char *s)
 {
     AppEventParam appEventParam(key, AppEventParamType::STRING);
+    if (s == nullptr) {
+        return;
+    }
     appEventParam.value.valueUnion.str_ = s;
     baseParams_.push_back(appEventParam);
 }

@@ -45,7 +45,7 @@ static ani_vm* GetAniVm(ani_env *env)
 static ani_env* GetAniEnv(ani_vm *vm)
 {
     ani_env* env = nullptr;
-    if (vm->GetEnv(ANI_VERSION_1, &env) != ANI_OK) {
+    if (vm == nullptr || vm->GetEnv(ANI_VERSION_1, &env) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "GetEnv failed");
         return nullptr;
     }
