@@ -124,6 +124,7 @@ void OsEventListener::Init()
 void OsEventListener::GetEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
 {
     events = historyEvents_;
+    historyEvents_.clear();
 }
 
 bool OsEventListener::StartListening()

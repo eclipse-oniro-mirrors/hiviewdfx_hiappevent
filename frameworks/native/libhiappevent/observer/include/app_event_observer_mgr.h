@@ -16,7 +16,7 @@
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_OBSERVER_MGR_H
 
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <unordered_map>
 
 #include "app_event_observer.h"
@@ -84,15 +84,15 @@ private:
     std::unique_ptr<ModuleLoader> moduleLoader_; // moduleLoader_ must declared before observers_, or lead to crash
     std::unordered_map<int64_t, std::shared_ptr<AppEventWatcher>> watchers_;
     std::unordered_map<int64_t, std::shared_ptr<AppEventProcessorProxy>> processors_;
-    std::mutex watcherMutex_;
-    std::mutex processorMutex_;
+    std::shared_mutex watcherMutex_;
+    std::shared_mutex processorMutex_;
     std::shared_ptr<ffrt::queue> queue_ = nullptr;
     std::shared_ptr<AppStateCallback> appStateCallback_;
     std::shared_ptr<OsEventListener> listener_ = nullptr;
     bool isTimeoutTaskExist_ = false;
     std::mutex isTimeoutTaskExistMutex_;
     std::atomic<bool> isFirstAddProcessor_ = true;
-    std::atomic<int> isDbInit_ = false;
+    std::atomic<bool> isDbInit_ = false;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
