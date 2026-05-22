@@ -193,7 +193,7 @@ void AppEventObserverMgr::SubmitTaskToFFRTQueue(std::function<void()>&& task, co
 
 int64_t AppEventObserverMgr::GetSeqFromWatchers(const std::string& name, std::string& filters)
 {
-    std::lock_guard<std::mutex> lock(watcherMutex_);
+    std::shared_lock<std::shared_mutex> lock(watcherMutex_);
     for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
         if (it->second->GetName() == name) {
             filters = it->second->GetFiltersStr();
@@ -205,7 +205,7 @@ int64_t AppEventObserverMgr::GetSeqFromWatchers(const std::string& name, std::st
 
 int64_t AppEventObserverMgr::GetSeqFromProcessors(const std::string& name, int64_t hashCode)
 {
-    std::lock_guard<std::mutex> lock(processorMutex_);
+    std::shared_lock<std::shared_mutex> lock(processorMutex_);
     for (auto it = processors_.cbegin(); it != processors_.cend(); ++it) {
         if (it->second->GetName() == name && it->second->GenerateHashCode() == hashCode) {
             return it->second->GetSeq();
@@ -216,26 +216,26 @@ int64_t AppEventObserverMgr::GetSeqFromProcessors(const std::string& name, int64
 
 void AppEventObserverMgr::DeleteWatcher(int64_t observerSeq)
 {
-    std::lock_guard<std::mutex> lock(watcherMutex_);
+    std::unique_lock<std::shared_mutex> lock(watcherMutex_);
     watchers_.erase(observerSeq);
     UnregisterOsEventListener();
 }
 
 void AppEventObserverMgr::DeleteProcessor(int64_t observerSeq)
 {
-    std::lock_guard<std::mutex> lock(processorMutex_);
+    std::unique_lock<std::shared_mutex> lock(processorMutex_);
     processors_.erase(observerSeq);
 }
 
 bool AppEventObserverMgr::IsExistInWatchers(int64_t observerSeq)
 {
-    std::lock_guard<std::mutex> lock(watcherMutex_);
+    std::shared_lock<std::shared_mutex> lock(watcherMutex_);
     return watchers_.find(observerSeq) != watchers_.cend();
 }
 
 bool AppEventObserverMgr::IsExistInProcessors(int64_t observerSeq)
 {
-    std::lock_guard<std::mutex> lock(processorMutex_);
+    std::shared_lock<std::shared_mutex> lock(processorMutex_);
     return processors_.find(observerSeq) != processors_.cend();
 }
 
@@ -243,13 +243,13 @@ std::vector<std::shared_ptr<AppEventObserver>> AppEventObserverMgr::GetObservers
 {
     std::vector<std::shared_ptr<AppEventObserver>> observers;
     {
-        std::lock_guard<std::mutex> watcherLock(watcherMutex_);
+        std::shared_lock<std::shared_mutex> watcherLock(watcherMutex_);
         for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
             observers.emplace_back(it->second);
         }
     }
     {
-        std::lock_guard<std::mutex> processorLock(processorMutex_);
+        std::shared_lock<std::shared_mutex> processorLock(processorMutex_);
         for (auto it = processors_.cbegin(); it != processors_.cend(); ++it) {
             observers.emplace_back(it->second);
         }
@@ -266,7 +266,7 @@ void AppEventObserverMgr::InitWatchers()
             HILOG_WARN(LOG_CORE, "failed to query observers from db");
             return;
         }
-        std::lock_guard<std::mutex> lock(watcherMutex_);
+        std::unique_lock<std::shared_mutex> lock(watcherMutex_);
         for (const auto& observer : observers) {
             auto watcherPtr = std::make_shared<AppEventWatcher>(observer.name);
             watcherPtr->SetSeq(observer.seq);
@@ -301,7 +301,7 @@ int64_t AppEventObserverMgr::AddWatcher(std::shared_ptr<AppEventWatcher> watcher
     if (observerSeq <= 0) {
         return -1;
     }
-    std::lock_guard<std::mutex> lock(watcherMutex_);
+    std::unique_lock<std::shared_mutex> lock(watcherMutex_);
     if (!InitWatcherFromListener(watcher, isExist)) {
         return -1;
     }
@@ -374,7 +374,7 @@ int64_t AppEventObserverMgr::AddProcessor(const std::string& name, const ReportC
         return -1;
     }
     processor->ProcessStartup();
-    std::lock_guard<std::mutex> lock(processorMutex_);
+    std::unique_lock<std::shared_mutex> lock(processorMutex_);
     processors_[observerSeq] = processor;
     HILOG_INFO(LOG_CORE, "register processor=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
@@ -507,7 +507,7 @@ void AppEventObserverMgr::HandleClearUp()
 
 int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig& config)
 {
-    std::lock_guard<std::mutex> lock(processorMutex_);
+    std::unique_lock<std::shared_mutex> lock(processorMutex_);
     if (processors_.find(observerSeq) == processors_.cend()) {
         HILOG_WARN(LOG_CORE, "failed to set config, seq=%{public}" PRId64, observerSeq);
         return -1;
@@ -518,7 +518,7 @@ int AppEventObserverMgr::SetReportConfig(int64_t observerSeq, const ReportConfig
 
 int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& config)
 {
-    std::lock_guard<std::mutex> lock(processorMutex_);
+    std::shared_lock<std::shared_mutex> lock(processorMutex_);
     if (processors_.find(observerSeq) == processors_.cend()) {
         HILOG_WARN(LOG_CORE, "failed to get config, seq=%{public}" PRId64, observerSeq);
         return -1;
@@ -545,8 +545,14 @@ bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatche
     if (isExist) {
         std::vector<std::shared_ptr<AppEventPack>> events;
         listener_->GetEvents(events);
-        StoreEventMappingToDb(events, {watcher});
-        SendEventsToObserver(events, watcher);
+        if (!events.empty()) {
+            std::vector<std::shared_ptr<AppEventObserver>> curWatchers;
+            for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
+                curWatchers.emplace_back(it->second);
+            }
+            StoreEventMappingToDb(events, curWatchers);
+            SendEventsToObserver(events, watcher);  // send history events to current observer
+        }
     }
     return true;
 }
