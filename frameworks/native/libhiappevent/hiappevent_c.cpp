@@ -66,7 +66,8 @@ ParamList AddParamArrayValue(ParamList list, const char* name, const T* arr, int
         HILOG_WARN(LOG_CORE, "ParamList is nullptr or name is nullptr or param array is nullptr.");
         return list;
     }
-    std::vector<T> params(arr, (len > MAX_SIZE_OF_LIST_PARAM) ? (arr + MAX_SIZE_OF_LIST_PARAM) : (arr + len));
+    // (arr + MAX_SIZE_OF_LIST_PARAM + 1) is used as invalid list param length in OH_HiSysEvent_write
+    std::vector<T> params(arr, (len > MAX_SIZE_OF_LIST_PARAM) ? (arr + MAX_SIZE_OF_LIST_PARAM + 1) : (arr + len));
     auto ndkAppEventPackPtr = reinterpret_cast<AppEventPack *>(list);
     ndkAppEventPackPtr->AddParam(name, params);
     return reinterpret_cast<ParamList>(ndkAppEventPackPtr);
