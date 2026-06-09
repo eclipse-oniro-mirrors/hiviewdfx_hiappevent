@@ -66,6 +66,24 @@ public:
         reportCallback_ = callback;
     }
 
+    void ExecuteBackUpCallback()
+    {
+        HILOG_DEBUG(LOG_CORE, "ScheduleBackUpTask executing");
+        if (backUpCallback_) {
+            backUpCallback_();
+            ScheduleBackUpTask();
+        }
+    }
+
+    void ExecuteReportCallback()
+    {
+        HILOG_DEBUG(LOG_CORE, "ScheduleReportTask executing");
+        if (reportCallback_) {
+            reportCallback_();
+            ScheduleReportTask();
+        }
+    }
+
 private:
     void ScheduleBackUpTask()
     {
@@ -76,11 +94,7 @@ private:
             if (!impl || !impl->isRunning_) {
                 return;
             }
-            HILOG_DEBUG(LOG_CORE, "ScheduleBackUpTask executing");
-            if (impl->backUpCallback_) {
-                impl->backUpCallback_();
-                impl->ScheduleBackUpTask();
-            }
+            impl->ExecuteBackUpCallback();
             }, ffrt::task_attr().name("flush_backup").delay(BACKUP_TIME_MS * MILLI_TO_MICRO));
     }
 
@@ -93,11 +107,7 @@ private:
             if (!impl || !impl->isRunning_) {
                 return;
             }
-            HILOG_DEBUG(LOG_CORE, "ScheduleReportTask executing");
-            if (impl->reportCallback_) {
-                impl->reportCallback_();
-                impl->ScheduleReportTask();
-            }
+            impl->ExecuteReportCallback();
             }, ffrt::task_attr().name("flush_report").delay(REPORT_TIME_MS * MILLI_TO_MICRO));
     }
 
@@ -128,6 +138,16 @@ void ApiStatsTimer::SetBackUpCallback(std::function<void()> callback)
 void ApiStatsTimer::SetReportCallback(std::function<void()> callback)
 {
     impl_->SetReportCallback(callback);
+}
+
+void ApiStatsTimer::ExecuteBackUpCallback()
+{
+    impl_->ExecuteBackUpCallback();
+}
+
+void ApiStatsTimer::ExecuteReportCallback()
+{
+    impl_->ExecuteReportCallback();
 }
 
 } // namespace HiAppEvent
