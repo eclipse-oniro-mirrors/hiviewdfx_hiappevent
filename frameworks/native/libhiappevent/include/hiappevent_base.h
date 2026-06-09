@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,9 @@
 #ifndef HI_APP_EVENT_BASE_H
 #define HI_APP_EVENT_BASE_H
 
-#include <ctime>
 #include <list>
-#include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace OHOS {
@@ -78,78 +77,31 @@ enum AppEventParamType {
     STRVECTOR = 16
 };
 
-struct AppEventParamValue {
-    AppEventParamType type;
-    union ValueUnion {
-        bool b_;
-        char c_;
-        int16_t sh_;
-        int i_;
-        int64_t ll_;
-        float f_;
-        double d_;
-        std::string str_;
-        std::vector<bool> bs_;
-        std::vector<char> cs_;
-        std::vector<int16_t> shs_;
-        std::vector<int> is_;
-        std::vector<int64_t> lls_;
-        std::vector<float> fs_;
-        std::vector<double> ds_;
-        std::vector<std::string> strs_;
-
-        ValueUnion() {}
-
-        ValueUnion(AppEventParamType type)
-        {
-            switch (type) {
-                case AppEventParamType::STRING:
-                    new (&str_) std::string;
-                    break;
-                case AppEventParamType::BVECTOR:
-                    new (&bs_) std::vector<bool>;
-                    break;
-                case AppEventParamType::CVECTOR:
-                    new (&cs_) std::vector<char>;
-                    break;
-                case AppEventParamType::SHVECTOR:
-                    new (&shs_) std::vector<int16_t>;
-                    break;
-                case AppEventParamType::IVECTOR:
-                    new (&is_) std::vector<int>;
-                    break;
-                case AppEventParamType::LLVECTOR:
-                    new (&lls_) std::vector<int64_t>;
-                    break;
-                case AppEventParamType::FVECTOR:
-                    new (&fs_) std::vector<float>;
-                    break;
-                case AppEventParamType::DVECTOR:
-                    new (&ds_) std::vector<double>;
-                    break;
-                case AppEventParamType::STRVECTOR:
-                    new (&strs_) std::vector<std::string>;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        ~ValueUnion() {}
-    } valueUnion;
-
-    explicit AppEventParamValue(AppEventParamType t);
-    AppEventParamValue(const AppEventParamValue& value);
-    ~AppEventParamValue();
-};
-using AppEventParamValue = struct AppEventParamValue;
+using AppEventParamValue = std::variant<
+    std::monostate,          // EMPTY
+    bool,                    // BOOL
+    char,                    // CHAR
+    int16_t,                 // SHORT
+    int,                     // INTEGER
+    int64_t,                 // LONGLONG
+    float,                   // FLOAT
+    double,                  // DOUBLE
+    std::string,             // STRING
+    std::vector<bool>,       // BVECTOR
+    std::vector<char>,       // CVECTOR
+    std::vector<int16_t>,    // SHVECTOR
+    std::vector<int>,        // IVECTOR
+    std::vector<int64_t>,    // LLVECTOR
+    std::vector<float>,      // FVECTOR
+    std::vector<double>,     // DVECTOR
+    std::vector<std::string> // STRVECTOR
+>;
 
 struct AppEventParam {
     std::string name;
-    AppEventParamType type;
     AppEventParamValue value;
 
-    AppEventParam(std::string n, AppEventParamType t);
+    AppEventParam(std::string n, AppEventParamValue v);
     AppEventParam(const AppEventParam& param);
     ~AppEventParam();
 };

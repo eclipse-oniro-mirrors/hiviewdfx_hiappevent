@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,11 +15,15 @@
 
 #include "hiappevent_param_builder.h"
 
+#include "hiappevent_ani_error_code.h"
+#include "hiappevent_ani_util.h"
+#include "hilog/log.h"
+
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
 
 #undef LOG_TAG
-#define LOG_TAG "HIAPPEVENT_param_UTIL"
+#define LOG_TAG "HIAPPEVENT_PARAM_UTIL"
 
 using namespace OHOS::HiviewDFX;
 

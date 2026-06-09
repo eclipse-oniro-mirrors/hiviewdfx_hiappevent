@@ -23,158 +23,76 @@ config("hiappevent_config_test") {
   include_dirs = [
     ".",
     "//base/hiviewdfx/hiappevent/interfaces/native/kits/include",
+    "$hiappevent_interfaces/native/kits/include",
     "$native_hiappevent_path/libhiappevent/cleaner/include",
     "$native_hiappevent_path/libhiappevent/include",
     "$native_hiappevent_path/libhiappevent/observer/include",
     "$native_hiappevent_path/libhiappevent/policy/include",
-    "$native_hiappevent_path/libhiappevent/utility/include",
     "$native_hiappevent_path/libhiappevent/stat/include",
+    "$native_hiappevent_path/libhiappevent/utility/include",
     "$native_hiappevent_path/ndk/include",
-    "$hiappevent_interfaces/native/kits/include",
   ]
 }
 
-ohos_unittest("HiAppEventNativeTest") {
+ohos_unittest("HiAppEventApiMetricTest") {
   module_out_path = native_module_output_path
 
   configs = [ ":hiappevent_config_test" ]
 
   sources = [
-    "unittest/common/native/hiappevent_config_test.cpp",
-    "unittest/common/native/hiappevent_native_test.cpp",
+    "unittest/common/native/hiappevent_api_metric_test.cpp",
+    "$native_hiappevent_path/libhiappevent/app_event_util.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/api_stats_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_mapping_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_observer_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_store.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/custom_event_param_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/user_id_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/user_property_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cleaner/app_event_db_cleaner.cpp",
+    "$native_hiappevent_path/libhiappevent/cleaner/app_event_log_cleaner.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_clean.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_config.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_write.cpp",
+    "$native_hiappevent_path/libhiappevent/load/module_loader.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",
+    "$native_hiappevent_path/libhiappevent/stat/api_stats_aggregator.cpp",
+    "$native_hiappevent_path/libhiappevent/stat/api_stats_mgr.cpp",
+    "$native_hiappevent_path/libhiappevent/stat/api_stats_storage.cpp",
+    "$native_hiappevent_path/libhiappevent/stat/api_stats_timer.cpp",
+    "$native_hiappevent_path/libhiappevent/stat/hiappevent_api_metric.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/time_util.cpp",    
   ]
 
   deps = [
-    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
     "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
-    "$native_hiappevent_path/ndk:hiappevent_ndk",
-    "processor:test_processor",
+    "../interfaces/native/inner_api:hiappevent_innerapi",
   ]
 
-  resource_config_file = "resource/ohos_test.xml"
-
   external_deps = [
+    "ability_base:configuration",
     "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "bundle_framework:appexecfwk_core_headers",
     "common_event_service:cesfwk_innerkits",
-    "googletest:gtest_main",
-  ]
-}
-
-ohos_unittest("HiAppEventCacheTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-
-  sources = [ "unittest/common/native/hiappevent_cache_test.cpp" ]
-
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
-    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
-    "$native_hiappevent_path/ndk:hiappevent_ndk",
-  ]
-
-  external_deps = [
     "c_utils:utils",
+    "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
-    "relational_store:native_rdb",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_core",
+    "init:libbegetutil",
     "jsoncpp:jsoncpp",
-  ]
-}
-
-ohos_unittest("HiAppEventWatcherTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-
-  cflags_cc = [ "-Dprivate=public" ]
-
-  sources = [ "unittest/common/native/hiappevent_watcher_test.cpp" ]
-
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
-    "$native_hiappevent_path/libhiappevent/observer:hiappevent_observer",
-    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "ffrt:libffrt",
-    "googletest:gtest_main",
-    "hilog:libhilog",
     "relational_store:native_rdb",
-  ]
-}
-
-ohos_unittest("HiAppEventPolicyTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-
-  sources = [
-    "$native_hiappevent_path/libhiappevent/policy/event_policy_mgr.cpp",
-    "unittest/common/native/hiappevent_policy_test.cpp",
-  ]
-
-  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
-
-  external_deps = [
-    "ability_runtime:app_context",
-    "bundle_framework:appexecfwk_core_headers",
-    "common_event_service:cesfwk_innerkits",
-    "ffrt:libffrt",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hicollie:libhicollie",
-    "hilog:libhilog",
-    "hilog:libsandboxlog",
-    "storage_service:storage_manager_acl",
+    "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
-  ]
-}
-
-ohos_unittest("HiAppEventInnerApiTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-
-  sources = [ "unittest/common/native/hiappevent_inner_api_test.cpp" ]
-
-  deps = [
-    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-  ]
-
-  external_deps = [
-    "ability_runtime:app_context",
-    "bundle_framework:appexecfwk_core_headers",
-    "common_event_service:cesfwk_innerkits",
-    "ffrt:libffrt",
-    "googletest:gtest_main",
-  ]
-}
-
-ohos_unittest("HiAppEventUserInfoTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-
-  sources = [ "unittest/common/native/hiappevent_userinfo_test.cpp" ]
-
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/cache:hiappevent_cache",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "relational_store:native_rdb",
   ]
 }
 
@@ -198,20 +116,236 @@ ohos_unittest("HiAppEventAppEventTest") {
   ]
 }
 
+ohos_unittest("HiAppEventCacheTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ 
+    "unittest/common/native/hiappevent_cache_test.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/api_stats_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_mapping_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_observer_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_store.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/custom_event_param_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/user_id_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/user_property_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cleaner/app_event_db_cleaner.cpp",
+    "$native_hiappevent_path/libhiappevent/cleaner/app_event_log_cleaner.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_clean.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_config.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_write.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_userinfo.cpp",
+    "$native_hiappevent_path/libhiappevent/load/module_loader.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/time_util.cpp",
+  ]
+
+  deps = [
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/ndk:hiappevent_ndk",
+  ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "jsoncpp:jsoncpp",
+    "relational_store:native_rdb",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+}
+
+ohos_unittest("HiAppEventInnerApiTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [
+    "unittest/common/native/hiappevent_inner_api_test.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_processor_proxy.cpp",
+  ]
+
+  deps = [
+    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+  ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gtest_main",
+    "relational_store:native_rdb",
+  ]
+}
+
+ohos_unittest("HiAppEventNativeTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [
+    "unittest/common/native/hiappevent_config_test.cpp",
+    "unittest/common/native/hiappevent_native_test.cpp",
+  ]
+
+  deps = [
+    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
+    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
+    "$native_hiappevent_path/ndk:hiappevent_ndk",
+    "processor:test_processor",
+  ]
+
+  resource_config_file = "resource/ohos_test.xml"
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gtest_main",
+  ]
+}
+
+ohos_unittest("HiAppEventObserverTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [
+    "unittest/common/native/hiappevent_observer_test.cpp",
+    "$native_hiappevent_path/libhiappevent/app_event_util.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/api_stats_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_mapping_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_observer_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/app_event_store.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/custom_event_param_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/user_id_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/cache/user_property_dao.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_config.cpp",
+    "$native_hiappevent_path/libhiappevent/load/module_loader.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/os_event_listener.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/address_sanitizer_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/app_crash_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/app_freeze_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/cpu_usage_high_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_mgr.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_utils.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/main_thread_jank_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/resource_overlimit_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/time_util.cpp",
+  ]
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hilog:libsandboxlog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "jsoncpp:jsoncpp",
+    "relational_store:native_rdb",
+    "resource_management:global_resmgr",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_acl",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+}
+
+ohos_unittest("HiAppEventPolicyTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [
+    "unittest/common/native/hiappevent_policy_test.cpp",
+    "$native_hiappevent_path/libhiappevent/hiappevent_config.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/address_sanitizer_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/app_crash_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/app_freeze_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/cpu_usage_high_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_mgr.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_utils.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/main_thread_jank_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/resource_overlimit_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
+  ]
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_core_headers",
+    "common_event_service:cesfwk_innerkits",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hilog:libsandboxlog",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
+    "storage_service:storage_manager_acl",
+  ]
+}
+
+ohos_unittest("HiAppEventUserInfoTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_userinfo_test.cpp" ]
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
+  external_deps = [ "googletest:gtest_main" ]
+}
+
 ohos_unittest("HiAppEventUtilityTest") {
   module_out_path = native_module_output_path
 
   configs = [ ":hiappevent_config_test" ]
 
-  sources = [ "unittest/common/native/hiappevent_utility_test.cpp" ]
-
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
+  sources = [
+    "unittest/common/native/hiappevent_utility_test.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
   ]
 
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+
   external_deps = [
-    "c_utils:utils",
     "googletest:gtest_main",
     "jsoncpp:jsoncpp",
   ]
@@ -226,59 +360,27 @@ ohos_unittest("HiAppEventVerifyTest") {
 
   deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
 
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gtest_main",
-  ]
+  external_deps = [ "googletest:gtest_main" ]
 }
 
-ohos_unittest("HiAppEventObserverTest") {
+ohos_unittest("HiAppEventWatcherTest") {
   module_out_path = native_module_output_path
 
   configs = [ ":hiappevent_config_test" ]
 
-  sources = [ "unittest/common/native/hiappevent_observer_test.cpp" ]
+  cflags_cc = [ "-Dprivate=public" ]
 
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "$native_hiappevent_path/libhiappevent/utility:hiappevent_utility",
-  ]
+  sources = [ "unittest/common/native/hiappevent_watcher_test.cpp" ]
 
-  external_deps = [
-    "ability_runtime:app_context",
-    "bundle_framework:appexecfwk_core_headers",
-    "common_event_service:cesfwk_innerkits",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-  ]
-}
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
 
-ohos_unittest("HiAppEventApiMetricTest") {
-  module_out_path = native_module_output_path
-
-  configs = [ ":hiappevent_config_test" ]
-  
-  sources = [ "unittest/common/native/hiappevent_api_metric_test.cpp" ]
-
-  deps = [
-    "$native_hiappevent_path/libhiappevent:libhiappevent_base",
-    "../interfaces/native/inner_api:hiappevent_innerapi",
-  ]
-
-  external_deps = [
-    "ability_runtime:app_context",
-    "bundle_framework:appexecfwk_core_headers",
-    "common_event_service:cesfwk_innerkits",
-    "c_utils:utils",
-    "ffrt:libffrt",
-    "googletest:gtest_main",
-    "relational_store:native_rdb",
-  ]
+  external_deps = [ "googletest:gtest_main" ]
 }
 
 group("unittest") {
   testonly = true
   deps = [
+    ":HiAppEventApiMetricTest",
     ":HiAppEventAppEventTest",
     ":HiAppEventCacheTest",
     ":HiAppEventInnerApiTest",
@@ -289,7 +391,6 @@ group("unittest") {
     ":HiAppEventUtilityTest",
     ":HiAppEventVerifyTest",
     ":HiAppEventWatcherTest",
-    ":HiAppEventApiMetricTest",
     "unittest/common/napi:unittest",
   ]
 }

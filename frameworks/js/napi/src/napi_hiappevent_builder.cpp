@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 #include "napi_hiappevent_builder.h"
 
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
@@ -29,12 +29,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const std::string DOMAIN_PROPERTY = "domain";
-const std::string NAME_PROPERTY = "name";
-const std::string TYPE_PROPERTY = "eventType";
-const std::string PARAM_PROPERTY = "params";
+constexpr const char* DOMAIN_PROPERTY = "domain";
+constexpr const char* NAME_PROPERTY = "name";
+constexpr const char* TYPE_PROPERTY = "eventType";
+constexpr const char* PARAM_PROPERTY = "params";
 constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
-const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
+constexpr const char* PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
 }
 using namespace OHOS::HiviewDFX::ErrorCode;
 
@@ -70,7 +70,8 @@ bool NapiHiAppEventBuilder::IsValidEventType(const napi_env env, const napi_valu
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("eventType"), isV9_);
         return false;
     }
-    if (!NapiUtil::IsNumber(env, type) || !OHOS::HiviewDFX::IsValidEventType(NapiUtil::GetInt32(env, type))) {
+    if (!NapiUtil::IsNumber(env, type)
+    || !AppEventVerifyFacade::VerifyIsValidEventType(NapiUtil::GetInt32(env, type))) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("eventType", "EventType"), isV9_);
         return false;
     }

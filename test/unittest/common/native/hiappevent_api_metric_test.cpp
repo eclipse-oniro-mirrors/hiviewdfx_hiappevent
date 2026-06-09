@@ -25,7 +25,7 @@
 #include "api_stats_timer.h"
 #include "hiappevent_api_metric.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "application_context.h"
 #include "hiappevent_test_common.h"
 
@@ -50,7 +50,7 @@ constexpr int32_t TEST_UID = 200000 * 100;
 void HiAppEventApiMetricTest::SetUpTestCase()
 {
     setuid(TEST_UID);
-    HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
+    AppEventConfigFacade::SetStorageDir(TEST_DIR);
     auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
     if (context != nullptr) {
         auto contextImpl = std::make_shared<TestContextImpl>("ohos.hiappevent.test");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,14 +13,11 @@
  * limitations under the License.
  */
 #include <iostream>
-#include <map>
 
 #include <gtest/gtest.h>
 
-#include "app_event_store.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
-#include "hiappevent_userinfo.h"
+#include "hiappevent_facade.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -42,19 +39,19 @@ public:
 
 void HiAppEventUserInfoTest::SetUpTestCase()
 {
-    HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
-    (void)AppEventStore::GetInstance().InitDbStore();
+    AppEventConfigFacade::SetStorageDir(TEST_DIR);
+    (void)AppEventStoreFacade::InitDbStore();
 }
 
 void HiAppEventUserInfoTest::TearDownTestCase()
 {
-    (void)AppEventStore::GetInstance().DestroyDbStore();
+    (void)AppEventStoreFacade::DestroyDbStore();
 }
 
 void HiAppEventUserInfoTest::SetUp()
 {
-    HiAppEvent::UserInfo::GetInstance().RemoveUserId(TEST_USER_ID_NAME);
-    HiAppEvent::UserInfo::GetInstance().RemoveUserProperty(TEST_USER_PROP_NAME);
+    AppEventUserInfoFacade::RemoveUserId(TEST_USER_ID_NAME);
+    AppEventUserInfoFacade::RemoveUserProperty(TEST_USER_PROP_NAME);
 }
 }
 
@@ -69,12 +66,12 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest001, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest001 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserId;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserId(TEST_USER_ID_NAME, strUserId);
+        int ret = AppEventUserInfoFacade::GetUserId(TEST_USER_ID_NAME, strUserId);
         ASSERT_EQ(ret, 0);
         ASSERT_NE(strUserId, "");
     }
@@ -93,12 +90,12 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest002, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest002 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserId;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserId("", strUserId);
+        int ret = AppEventUserInfoFacade::GetUserId("", strUserId);
         ASSERT_EQ(ret, 0);
         ASSERT_EQ(strUserId, "");
     }
@@ -117,15 +114,15 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest003, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest003 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
         ASSERT_EQ(ret, 0);
 
-        ret = HiAppEvent::UserInfo::GetInstance().SetUserId(TEST_USER_ID_NAME, "testUserId1");
+        ret = AppEventUserInfoFacade::SetUserId(TEST_USER_ID_NAME, "testUserId1");
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserId;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserId(TEST_USER_ID_NAME, strUserId);
+        int ret = AppEventUserInfoFacade::GetUserId(TEST_USER_ID_NAME, strUserId);
         ASSERT_EQ(ret, 0);
         ASSERT_EQ(strUserId, "testUserId1");
     }
@@ -144,15 +141,15 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest004, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest004 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserId(TEST_USER_ID_NAME, TEST_USER_ID_VALUE);
         ASSERT_EQ(ret, 0);
         
-        ret = HiAppEvent::UserInfo::GetInstance().SetUserId(TEST_USER_ID_NAME, "");
+        ret = AppEventUserInfoFacade::SetUserId(TEST_USER_ID_NAME, "");
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserId;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserId(TEST_USER_ID_NAME, strUserId);
+        int ret = AppEventUserInfoFacade::GetUserId(TEST_USER_ID_NAME, strUserId);
         ASSERT_EQ(ret, 0);
         ASSERT_EQ(strUserId, "");
     }
@@ -171,12 +168,12 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest005, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest005 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserProperty;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserProperty(TEST_USER_PROP_NAME, strUserProperty);
+        int ret = AppEventUserInfoFacade::GetUserProperty(TEST_USER_PROP_NAME, strUserProperty);
         ASSERT_EQ(ret, 0);
         ASSERT_NE(strUserProperty, "");
     }
@@ -195,12 +192,12 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest006, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest006 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserProperty;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserProperty("", strUserProperty);
+        int ret = AppEventUserInfoFacade::GetUserProperty("", strUserProperty);
         ASSERT_EQ(ret, 0);
         ASSERT_EQ(strUserProperty, "");
     }
@@ -219,15 +216,15 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest007, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest007 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
         ASSERT_EQ(ret, 0);
 
-        ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty(TEST_USER_PROP_NAME, "testUserProperty1");
+        ret = AppEventUserInfoFacade::SetUserProperty(TEST_USER_PROP_NAME, "testUserProperty1");
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserProperty;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserProperty(TEST_USER_PROP_NAME, strUserProperty);
+        int ret = AppEventUserInfoFacade::GetUserProperty(TEST_USER_PROP_NAME, strUserProperty);
         ASSERT_EQ(ret, 0);
         ASSERT_EQ(strUserProperty, "testUserProperty1");
     }
@@ -246,15 +243,15 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest008, TestSize.Level3)
     std::cout << "HiAppEventUserInfoTest008 start" << std::endl;
 
     {
-        int ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
+        int ret = AppEventUserInfoFacade::SetUserProperty(TEST_USER_PROP_NAME, TEST_USER_PROP_VALUE);
         ASSERT_EQ(ret, 0);
 
-        ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty(TEST_USER_PROP_NAME, "");
+        ret = AppEventUserInfoFacade::SetUserProperty(TEST_USER_PROP_NAME, "");
         ASSERT_EQ(ret, 0);
     }
     {
         std::string strUserProperty;
-        int ret = HiAppEvent::UserInfo::GetInstance().GetUserProperty(TEST_USER_PROP_NAME, strUserProperty);
+        int ret = AppEventUserInfoFacade::GetUserProperty(TEST_USER_PROP_NAME, strUserProperty);
         ASSERT_EQ(ret, 0);
         ASSERT_EQ(strUserProperty, "");
     }
@@ -271,9 +268,9 @@ HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest008, TestSize.Level3)
 HWTEST_F(HiAppEventUserInfoTest, HiAppEventUserInfoTest009, TestSize.Level3)
 {
     GTEST_LOG_(INFO) << "HiAppEventUserInfoTest009 start";
-    int ret = HiAppEvent::UserInfo::GetInstance().SetUserProperty("", "");
+    int ret = AppEventUserInfoFacade::SetUserProperty("", "");
     ASSERT_EQ(ret, 0);
-    ret = HiAppEvent::UserInfo::GetInstance().SetUserId("", "");
+    ret = AppEventUserInfoFacade::SetUserId("", "");
     ASSERT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "HiAppEventUserInfoTest009 end";
 }

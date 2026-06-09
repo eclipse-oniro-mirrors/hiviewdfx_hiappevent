@@ -16,7 +16,6 @@
 #define HI_APP_EVENT_CONFIG_H
 
 #include <string>
-#include <map>
 
 #include "nocopyable.h"
 

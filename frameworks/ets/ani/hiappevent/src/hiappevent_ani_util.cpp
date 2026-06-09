@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,9 +15,12 @@
 
 #include "hiappevent_ani_util.h"
 
-#include "json/json.h"
-
 #include <ani_signature_builder.h>
+
+#include "json/json.h"
+#include "hiappevent_ani_error_code.h"
+#include "hiappevent_ani_parameter_name.h"
+#include "hilog/log.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -803,13 +806,13 @@ static ani_object CreateEventInfo(ani_env *env, std::shared_ptr<AppEventPack> ev
         return nullptr;
     }
     ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_INFO);
-    env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_DOMAIN.c_str(),
+    env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_DOMAIN,
         HiAppEventAniUtil::CreateAniString(env, event->GetDomain()));
-    env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_NAME.c_str(),
+    env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_NAME,
         HiAppEventAniUtil::CreateAniString(env, event->GetName()));
-    env->Object_SetPropertyByName_Ref(obj, EVENT_INFO_EVENT_TYPE.c_str(),
+    env->Object_SetPropertyByName_Ref(obj, EVENT_INFO_EVENT_TYPE,
         ToAniEnum(env, static_cast<EventTypeAni>(event->GetType())));
-    env->Object_SetPropertyByName_Ref(obj, EVENT_INFO_PARAMS.c_str(),
+    env->Object_SetPropertyByName_Ref(obj, EVENT_INFO_PARAMS,
         CreateValueByJsonStr(env, event->GetParamStr()));
     return obj;
 }
@@ -845,9 +848,9 @@ ani_ref HiAppEventAniUtil::CreateEventGroups(ani_env *env, const std::vector<std
                 setMethod, i, CreateEventInfo(env, it->second[i]));
         }
         ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_GROUP);
-        env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_NAME.c_str(),
+        env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_NAME,
             HiAppEventAniUtil::CreateAniString(env, it->first));
-        env->Object_SetPropertyByName_Ref(obj, EVENT_INFOS_PROPERTY.c_str(), eventInfos);
+        env->Object_SetPropertyByName_Ref(obj, EVENT_INFOS_PROPERTY, eventInfos);
         env->Object_CallMethod_Void(static_cast<ani_object>(eventGroups), setMethod, index, obj);
         ++index;
     }

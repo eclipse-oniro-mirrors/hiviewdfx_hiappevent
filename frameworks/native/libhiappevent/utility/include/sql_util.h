@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,8 +20,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace SqlUtil {
-const std::string SQL_TEXT_TYPE = "TEXT NOT NULL";
-const std::string SQL_INT_TYPE = "INTEGER";
+constexpr const char* SQL_TEXT_TYPE = "TEXT NOT NULL";
+constexpr const char* SQL_INT_TYPE = "INTEGER";
 
 std::string CreateTable(const std::string& table,
     const std::vector<std::pair<std::string, std::string>>& fields);

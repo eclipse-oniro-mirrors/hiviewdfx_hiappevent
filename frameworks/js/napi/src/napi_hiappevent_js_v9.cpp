@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,10 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "app_event_stat.h"
 #include "hiappevent_base.h"
-#include "hiappevent_clean.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_app_event_holder.h"
 #include "napi_config_builder.h"
@@ -29,7 +27,6 @@
 #include "napi_hiappevent_write.h"
 #include "napi_param_builder.h"
 #include "napi_util.h"
-#include "time_util.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -41,6 +38,8 @@ using namespace OHOS::HiviewDFX;
 
 namespace {
 constexpr size_t MAX_PARAM_NUM = 4;
+constexpr int WRITE_SUCCESS = 0;
+constexpr int WRITE_FAILED = 1;
 }
 
 static napi_value AddProcessor(napi_env env, napi_callback_info info)
@@ -131,7 +130,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
 
     // if the build is successful, the event verification is performed
     if (asyncContext->result >= 0) {
-        if (auto ret = VerifyAppEvent(asyncContext->appEventPack); ret != 0) {
+        if (auto ret = AppEventVerifyFacade::VerifyTheAppEvent(asyncContext->appEventPack); ret != 0) {
             asyncContext->result = ret;
         }
     }
@@ -217,19 +216,19 @@ static napi_value GetUserProperty(napi_env env, napi_callback_info info)
 
 static napi_value ClearData(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
-    HiAppEventClean::ClearData(NapiHiAppEventConfig::GetStorageDir());
-    int ret = AppEventStat::WriteApiEndMetric("clearData", beginTime, AppEventStat::SUCCESS, NapiError::ERR_OK);
+    uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
+    AppEventStoreFacade::ClearData(NapiHiAppEventConfig::GetStorageDir());
+    int ret = AppEventUtilityFacade::WriteApiEndMetric("clearData", beginTime, WRITE_SUCCESS, NapiError::ERR_OK);
     HILOG_INFO(LOG_CORE, "clear data write api end metric ret:%{public}d", ret);
     return NapiUtil::CreateUndefined(env);
 }
 
 static napi_value AddWatcher(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addWatcher is 1
-        AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
+        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
         return nullptr;
     }
@@ -238,10 +237,10 @@ static napi_value AddWatcher(napi_env env, napi_callback_info info)
 
 static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
 {
-    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     napi_value params[MAX_PARAM_NUM] = { 0 };
     if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeWatcher is 1
-        AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::FAILED, NapiError::ERR_PARAM);
+        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
         return nullptr;
     }

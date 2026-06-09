@@ -1,0 +1,29 @@
+{
+  global:
+    extern "C++" {
+      OHOS::HiviewDFX::HiAppEvent::ApiMetricProcessor*;
+      OHOS::HiviewDFX::AppEventPack::Add*;
+      OHOS::HiviewDFX::AppEventPack::AppEventPack*;
+      OHOS::HiviewDFX::AppEventPack::Get*;
+      OHOS::HiviewDFX::AppEventPack::Set*;
+      OHOS::HiviewDFX::AppEventParam::~AppEventParam*;
+      OHOS::HiviewDFX::AppEventUtil::ReportAppEventReceive*;
+      OHOS::HiviewDFX::AppEventWatcher::AppEventWatcher*;
+      OHOS::HiviewDFX::HiAppEvent::AppEventFilter::AppEventFilter*;
+      OHOS::HiviewDFX::HiAppEvent::AppEventObserver*;
+      OHOS::HiviewDFX::HiAppEvent::ProcessorConfigLoader::*;
+      OHOS::HiviewDFX::AppEventConfigFacade::*;
+      OHOS::HiviewDFX::AppEventWriteFacade::*;
+      OHOS::HiviewDFX::AppEventObserverFacade::*;
+      OHOS::HiviewDFX::AppEventUserInfoFacade::*;
+      OHOS::HiviewDFX::AppEventStoreFacade::*;
+      OHOS::HiviewDFX::AppEventVerifyFacade::*;
+      OHOS::HiviewDFX::AppEventUtilityFacade::*;
+    };
+    Add*;
+    ClearData;
+    HiAppEvent*;
+    _ZTVN4OHOS9HiviewDFX10HiAppEvent16AppEventObserverE*;
+  local:
+    *;
+};

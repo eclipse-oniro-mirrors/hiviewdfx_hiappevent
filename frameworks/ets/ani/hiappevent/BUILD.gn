@@ -27,11 +27,7 @@ ohos_shared_library("hiappevent_ani") {
     "./src/hiappevent_param_builder.cpp",
   ]
 
-  deps = [
-    "../../../native/libhiappevent:libhiappevent_base",
-    "../../../native/libhiappevent/policy:hiappevent_policy",
-    "../../../native/libhiappevent/utility:hiappevent_utility",
-  ]
+  deps = [ "../../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "c_utils:utils",

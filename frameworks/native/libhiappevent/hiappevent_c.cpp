@@ -17,7 +17,6 @@
 
 #include <atomic>
 #include <cinttypes>
-#include <memory>
 #include <vector>
 
 #include "app_event_util.h"
@@ -42,8 +41,8 @@ using namespace OHOS::HiviewDFX;
 namespace {
 constexpr int MAX_SIZE_OF_LIST_PARAM = 100;
 constexpr size_t MAX_LENGTH_OF_CUSTOM_CONFIG_VALUE = 1024;
-constexpr const char* const FW_DOMAIN = "HIVIEWDFX";
-constexpr const char* const FW_EVT_NAME = "FW_MEM_ANOMALY";
+constexpr const char* FW_DOMAIN = "HIVIEWDFX";
+constexpr const char* FW_EVT_NAME = "FW_MEM_ANOMALY";
 constexpr int64_t ONE_MINUTE = 1000 * 60;
 const size_t MAX_FWK_VER_SIZE = 128;
 
@@ -69,7 +68,7 @@ ParamList AddParamArrayValue(ParamList list, const char* name, const T* arr, int
     // (arr + MAX_SIZE_OF_LIST_PARAM + 1) is used as invalid list param length in OH_HiSysEvent_write
     std::vector<T> params(arr, (len > MAX_SIZE_OF_LIST_PARAM) ? (arr + MAX_SIZE_OF_LIST_PARAM + 1) : (arr + len));
     auto ndkAppEventPackPtr = reinterpret_cast<AppEventPack *>(list);
-    ndkAppEventPackPtr->AddParam(name, params);
+    ndkAppEventPackPtr->AddParam(name, std::move(params));
     return reinterpret_cast<ParamList>(ndkAppEventPackPtr);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,6 @@
 
 #include "event_json_util.h"
 #include "file_util.h"
-#include "hiappevent_config.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -29,14 +28,9 @@ const std::string TEST_DIR = "/data/test/hiappevent/";
 
 class HiAppEventUtilityTest : public testing::Test {
 public:
-    void SetUp();
+    void SetUp() {}
     void TearDown() {}
 };
-
-void HiAppEventUtilityTest::SetUp()
-{
-    HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
-}
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,13 @@
  */
  
 #include "appevent_packageholder_impl.h"
-#include "log.h"
-#include "hiappevent_base.h"
-#include "hiappevent_config.h"
+
+#include <cinttypes>
+
 #include "error.h"
+#include "hiappevent_base.h"
+#include "hiappevent_facade.h"
+#include "log.h"
 
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
@@ -77,7 +80,7 @@ std::tuple<int32_t, RetAppEventPackage> AppEventPackageHolderImpl::TakeNext()
     std::vector<std::shared_ptr<AppEventPack>> events;
     int32_t ret = ERR_PARAM;
     RetAppEventPackage package;
-    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq_) != 0) {
+    if (AppEventStoreFacade::QueryEvents(events, observerSeq_) != 0) {
         LOGE("failed to query events, seq=%{public}" PRId64, observerSeq_);
         return {ret, package};
     }
@@ -102,7 +105,7 @@ std::tuple<int32_t, RetAppEventPackage> AppEventPackageHolderImpl::TakeNext()
         LOGE("take data is empty, seq=%{public}" PRId64, observerSeq_);
         return {ret, package};
     }
-    if (AppEventStore::GetInstance().DeleteEventMapping(observerSeq_, eventSeqs) < 0) {
+    if (AppEventStoreFacade::DeleteEventMapping(observerSeq_, eventSeqs) < 0) {
         LOGE("failed to delete mapping data, seq=%{public}" PRId64, observerSeq_);
         return {ret, package};
     }
@@ -117,7 +120,7 @@ std::tuple<int32_t, RetAppEventPackage> AppEventPackageHolderImpl::TakeNext()
 int64_t GetObserverSeqByName(const std::string& name)
 {
     int64_t observerSeq = ERR_CODE_PARAM_INVALID;
-    if (observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name); observerSeq <= 0) {
+    if (observerSeq = AppEventStoreFacade::QueryObserverSeq(name); observerSeq <= 0) {
         LOGE("failed to query seq by name= %{public}s", name.c_str());
         return ERR_CODE_PARAM_INVALID;
     }

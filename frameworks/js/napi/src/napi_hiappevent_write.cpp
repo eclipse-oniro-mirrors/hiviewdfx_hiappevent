@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,7 @@
 #include <map>
 
 #include "hiappevent_base.h"
-#include "hiappevent_write.h"
+#include "hiappevent_facade.h"
 #include "napi_error.h"
 #include "napi_util.h"
 
@@ -57,7 +57,7 @@ void Write(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> asyncCont
         [](napi_env env, void* data) {
             HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
-                WriteEvent(asyncContext->appEventPack);
+                AppEventWriteFacade::FacadeWriteEvent(asyncContext->appEventPack);
             }
         },
         [](napi_env env, napi_status status, void* data) {
@@ -106,7 +106,7 @@ void SetEventParam(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> a
         [](napi_env env, void* data) {
             HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             if (asyncContext->appEventPack != nullptr && asyncContext->result == 0) {
-                if (auto ret = SetEventParam(asyncContext->appEventPack); ret > 0) {
+                if (auto ret = AppEventWriteFacade::FacadeSetEventParam(asyncContext->appEventPack); ret > 0) {
                     asyncContext->result = ret;
                 }
             }

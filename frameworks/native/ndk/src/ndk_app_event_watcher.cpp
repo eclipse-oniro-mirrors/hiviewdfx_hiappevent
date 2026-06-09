@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,10 +15,12 @@
 
 #include "ndk_app_event_watcher.h"
 
-#include "app_event_store.h"
+#include <cinttypes>
+
 #include "app_event_util.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
+#include "hiappevent_facade.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -100,7 +102,7 @@ void NdkAppEventWatcher::OnEvents(const std::vector<std::shared_ptr<AppEventPack
         appEventIndex++;
     }
     int64_t observerSeq = GetSeq();
-    if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
+    if (!AppEventStoreFacade::DeleteData(observerSeq, eventSeqs)) {
         HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
             observerSeq, eventSeqs.size());
     }

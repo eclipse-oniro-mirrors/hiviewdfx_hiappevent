@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -131,42 +131,67 @@ bool CheckStrParamLength(std::string& strParamValue, size_t maxLen = MAX_LENGTH_
     return true;
 }
 
-bool CheckListValueSize(AppEventParamType type, AppEventParamValue::ValueUnion& vu)
+bool CheckStrParamLength(AppEventParam& param, size_t maxLen = MAX_LENGTH_OF_STR_PARAM)
 {
-    if (type == AppEventParamType::BVECTOR && vu.bs_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.bs_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::CVECTOR && vu.cs_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.cs_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::SHVECTOR && vu.shs_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.shs_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::IVECTOR && vu.is_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.is_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::LLVECTOR && vu.lls_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.lls_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::FVECTOR && vu.fs_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.fs_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::DVECTOR && vu.ds_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.ds_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else if (type == AppEventParamType::STRVECTOR && vu.strs_.size() > MAX_SIZE_OF_LIST_PARAM) {
-        vu.strs_.resize(MAX_SIZE_OF_LIST_PARAM);
-    } else {
-        return true;
+    auto* strPtr = std::get_if<std::string>(&param.value);
+    if (strPtr == nullptr) {
+        HILOG_ERROR(LOG_CORE, "the variant has no string item.");
+        return false;
     }
-
-    return false;
+    return CheckStrParamLength(*strPtr, maxLen);
 }
 
-bool CheckStringLengthOfList(std::vector<std::string>& strs, size_t maxTotalLen = 0)
+template<typename T>
+bool ResizeVectorValue(AppEventParamValue& paramValue)
 {
-    if (strs.empty()) {
+    auto* vec = std::get_if<T>(&paramValue);
+    if (vec == nullptr) {
+        return false;
+    }
+    if (vec->size() > MAX_SIZE_OF_LIST_PARAM) {
+        vec->resize(MAX_SIZE_OF_LIST_PARAM);
+        return false;
+    }
+    return true;
+}
+
+bool CheckListValueSize(AppEventParam& param)
+{
+    switch (param.value.index()) {
+        case AppEventParamType::BVECTOR:
+            return ResizeVectorValue<std::vector<bool>>(param.value);
+        case AppEventParamType::CVECTOR:
+            return ResizeVectorValue<std::vector<char>>(param.value);
+        case AppEventParamType::SHVECTOR:
+            return ResizeVectorValue<std::vector<int16_t>>(param.value);
+        case AppEventParamType::IVECTOR:
+            return ResizeVectorValue<std::vector<int>>(param.value);
+        case AppEventParamType::LLVECTOR:
+            return ResizeVectorValue<std::vector<int64_t>>(param.value);
+        case AppEventParamType::FVECTOR:
+            return ResizeVectorValue<std::vector<float>>(param.value);
+        case AppEventParamType::DVECTOR:
+            return ResizeVectorValue<std::vector<double>>(param.value);
+        case AppEventParamType::STRVECTOR:
+            return ResizeVectorValue<std::vector<std::string>>(param.value);
+        default:
+            HILOG_WARN(LOG_CORE, "Invalid param value.");
+            return false;
+    }
+}
+
+bool CheckStringLengthOfList(AppEventParam& param, size_t maxTotalLen = 0)
+{
+    auto* strs = std::get_if<std::vector<std::string>>(&param.value);
+    if (strs == nullptr || strs->empty()) {
         return true;
     }
     size_t totalLen = 0;
-    for (auto it = strs.begin(); it != strs.end(); it++) {
+    for (auto it = strs->begin(); it != strs->end(); it++) {
         if (!CheckStrParamLength(*it)) {
             return false;
         }
-        totalLen += (*it).length();
+        totalLen += it->length();
     }
     if (maxTotalLen > 0 && totalLen > maxTotalLen) {
         return false;
@@ -209,21 +234,21 @@ bool VerifyAppEventParam(AppEventParam& param, std::unordered_set<std::string>& 
     const std::unordered_set<std::string> tempTrueNames = {"crash", "anr"};
     size_t maxLen = tempTrueNames.find(name) == tempTrueNames.end() ? MAX_LENGTH_OF_STR_PARAM :
         MAX_LENGTH_OF_SPECIAL_STR_PARAM;
-    if (param.type == AppEventParamType::STRING && !CheckStrParamLength(param.value.valueUnion.str_, maxLen)) {
+    if (param.value.index() == AppEventParamType::STRING && !CheckStrParamLength(param, maxLen)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
             name.c_str(), maxLen);
         verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
         return false;
     }
 
-    if (param.type == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(param.value.valueUnion.strs_)) {
+    if (param.value.index() == AppEventParamType::STRVECTOR && !CheckStringLengthOfList(param)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length of list exceeds 8192.",
             name.c_str());
         verifyRes = ERROR_INVALID_PARAM_VALUE_LENGTH;
         return false;
     }
 
-    if (param.type > AppEventParamType::STRING && !CheckListValueSize(param.type, param.value.valueUnion)) {
+    if (param.value.index() > AppEventParamType::STRING && !CheckListValueSize(param)) {
         HILOG_WARN(LOG_CORE, "list param=%{public}s is truncated because the list size exceeds 100.", name.c_str());
         verifyRes = ERROR_INVALID_LIST_PARAM_SIZE;
         return true;
@@ -244,15 +269,14 @@ int VerifyCustomAppEventParam(AppEventParam& param, std::unordered_set<std::stri
         return ERROR_INVALID_PARAM_NAME;
     }
 
-    if (param.type == AppEventParamType::STRING
-        && !CheckStrParamLength(param.value.valueUnion.str_, MAX_LENGTH_OF_CUSTOM_PARAM)) {
+    if (param.value.index() == AppEventParamType::STRING && !CheckStrParamLength(param, MAX_LENGTH_OF_CUSTOM_PARAM)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length exceeds %{public}zu.",
             name.c_str(), MAX_LENGTH_OF_CUSTOM_PARAM);
         return ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
 
-    if (param.type == AppEventParamType::STRVECTOR
-        && !CheckStringLengthOfList(param.value.valueUnion.strs_, MAX_LENGTH_OF_CUSTOM_PARAM)) {
+    if (param.value.index() == AppEventParamType::STRVECTOR
+        && !CheckStringLengthOfList(param, MAX_LENGTH_OF_CUSTOM_PARAM)) {
         HILOG_WARN(LOG_CORE, "param=%{public}s is discarded because the string length of list exceeds %{public}zu.",
             name.c_str(), MAX_LENGTH_OF_CUSTOM_PARAM);
         return ERROR_INVALID_PARAM_VALUE_LENGTH;

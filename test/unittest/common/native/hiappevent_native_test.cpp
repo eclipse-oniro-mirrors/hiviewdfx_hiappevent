@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,15 +20,12 @@
 #include <vector>
 
 #include "application_context.h"
-#include "file_util.h"
 #include "hiappevent/hiappevent.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "hiappevent_test_common.h"
-#include "hiappevent_userinfo.h"
 #include "ndk_app_event_processor.h"
 #include "ndk_app_event_processor_service.h"
-#include "time_util.h"
 #include "processor/test_processor.h"
 #include "app_event_processor_mgr.h"
 
@@ -83,7 +80,7 @@ static void OnTake(const char* const *events, uint32_t eventLen)
 
 std::string GetStorageFilePath()
 {
-    return "app_event_" + TimeUtil::GetDate() + ".log";
+    return "app_event_" + AppEventUtilityFacade::GetDate() + ".log";
 }
 }
 
@@ -91,7 +88,7 @@ void HiAppEventNativeTest::SetUpTestCase()
 {
     // set app uid
     setuid(TEST_UID);
-    HiAppEventConfig::GetInstance().SetStorageDir(TEST_STORAGE_PATH);
+    AppEventConfigFacade::SetStorageDir(TEST_STORAGE_PATH);
     // set context bundle name
     auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
     if (context == nullptr) {
@@ -105,7 +102,7 @@ void HiAppEventNativeTest::SetUpTestCase()
     int ret = HiAppEvent::AppEventProcessorMgr::RegisterProcessor("test_processor", processor);
     std::cout << "register observer ret = " << ret << std::endl;
 
-    g_configFileExist = FileUtil::IsFileExists(PROCESSOR_CONFIG_PATH);
+    g_configFileExist = AppEventUtilityFacade::IsFileExists(PROCESSOR_CONFIG_PATH);
 }
 
 /**
@@ -703,8 +700,8 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest021, TestSize.Level0)
 HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest022, TestSize.Level0)
 {
     OH_HiAppEvent_ClearData();
-    ASSERT_EQ(HiAppEvent::UserInfo::GetInstance().GetUserIdVersion(), 0);
-    ASSERT_EQ(HiAppEvent::UserInfo::GetInstance().GetUserPropertyVersion(), 0);
+    ASSERT_EQ(AppEventUserInfoFacade::GetUserIdVersion(), 0);
+    ASSERT_EQ(AppEventUserInfoFacade::GetUserPropertyVersion(), 0);
 }
 
 /**

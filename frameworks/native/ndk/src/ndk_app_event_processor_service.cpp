@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,11 +16,10 @@
 
 #include "ndk_app_event_processor_service.h"
 
-#include "app_event_observer_mgr.h"
 #include "base_type.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "ndk_app_event_processor.h"
 
 #undef LOG_DOMAIN
@@ -47,12 +46,12 @@ using namespace OHOS::HiviewDFX;
 
 struct HiAppEvent_Processor* CreateProcessor(const char* name)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         HILOG_DEBUG(LOG_CORE, "caller is not app");
         return nullptr;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(name, nullptr)
-    if (!IsValidProcessorName(name)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(name)) {
         HILOG_DEBUG(LOG_CORE, "Invalid processor name");
         return nullptr;
     }
@@ -62,14 +61,14 @@ struct HiAppEvent_Processor* CreateProcessor(const char* name)
 
 int SetReportRoute(struct HiAppEvent_Processor* processor, const char* appId, const char* routeInfo)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
     if (appId == nullptr || routeInfo == nullptr) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
-    if (!IsValidAppId(appId) || !IsValidRouteInfo(routeInfo)) {
+    if (!AppEventVerifyFacade::VerifyIsValidAppId(appId) || !AppEventVerifyFacade::VerifyIsValidRouteInfo(routeInfo)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
@@ -79,11 +78,12 @@ int SetReportRoute(struct HiAppEvent_Processor* processor, const char* appId, co
 int SetReportPolicy(struct HiAppEvent_Processor* processor, int periodReport, int batchReport, bool onStartReport,
     bool onBackgroundReport)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (!IsValidPeriodReport(periodReport) || !IsValidBatchReport(batchReport)) {
+    if (!AppEventVerifyFacade::VerifyIsValidPeriodReport(periodReport)
+        || !AppEventVerifyFacade::VerifyIsValidBatchReport(batchReport)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
@@ -92,11 +92,13 @@ int SetReportPolicy(struct HiAppEvent_Processor* processor, int periodReport, in
 
 int SetReportEvent(struct HiAppEvent_Processor* processor, const char* domain, const char* name, bool isRealTime)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (domain == nullptr || name == nullptr || !IsValidDomain(domain) || !IsValidEventName(name)) {
+    if (domain == nullptr || name == nullptr
+        || !AppEventVerifyFacade::VerifyIsValidDomain(domain)
+        || !AppEventVerifyFacade::VerifyIsValidEventName(name)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
@@ -105,14 +107,14 @@ int SetReportEvent(struct HiAppEvent_Processor* processor, const char* domain, c
 
 int SetCustomConfig(struct HiAppEvent_Processor* processor, const char* key, const char* value)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
     if (key == nullptr || value == nullptr) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
-    if (!IsValidCustomConfig(key, value)) {
+    if (!AppEventVerifyFacade::VerifyIsValidCustomConfig(key, value)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
@@ -121,11 +123,11 @@ int SetCustomConfig(struct HiAppEvent_Processor* processor, const char* key, con
 
 int SetConfigId(struct HiAppEvent_Processor* processor, int configId)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (!IsValidConfigId(configId)) {
+    if (!AppEventVerifyFacade::VerifyIsValidConfigId(configId)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
@@ -134,14 +136,14 @@ int SetConfigId(struct HiAppEvent_Processor* processor, int configId)
 
 int SetConfigName(struct HiAppEvent_Processor* processor, const char* configName)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (!IsValidConfigNameLength(configName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidConfigNameLength(configName)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
-    if (!IsValidProcessorName(configName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(configName)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
@@ -151,7 +153,7 @@ int SetConfigName(struct HiAppEvent_Processor* processor, const char* configName
 
 int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * userIdNames, int size)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
@@ -162,7 +164,7 @@ int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * 
         if (userIdNames[i] == nullptr) {
             return ErrorCode::ERROR_INVALID_PARAM_VALUE;
         }
-        if (!IsValidUserIdName(userIdNames[i])) {
+        if (!AppEventVerifyFacade::VerifyIsValidUserIdName(userIdNames[i])) {
             return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
         }
     }
@@ -172,7 +174,7 @@ int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * 
 
 int SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* const * userPropertyNames, int size)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
@@ -183,7 +185,7 @@ int SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* co
         if (userPropertyNames[i] == nullptr) {
             return ErrorCode::ERROR_INVALID_PARAM_VALUE;
         }
-        if (!IsValidUserPropName(userPropertyNames[i])) {
+        if (!AppEventVerifyFacade::VerifyIsValidUserPropName(userPropertyNames[i])) {
             return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
         }
     }
@@ -193,21 +195,21 @@ int SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* co
 
 int64_t AddProcessor(struct HiAppEvent_Processor* processor)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
     auto ndkProcessorPtr = reinterpret_cast<NdkAppEventProcessor*>(processor);
     HiAppEvent::ReportConfig config = ndkProcessorPtr->GetConfig();
-    if (VerifyReportConfig(config) != 0) {
+    if (AppEventVerifyFacade::VerifyTheReportConfig(config) != 0) {
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, reportConfig is invalid", config.name.c_str());
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
-    if (AppEventObserverMgr::GetInstance().Load(config.name) != 0) {
+    if (AppEventObserverFacade::Load(config.name) != 0) {
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, name not found", config.name.c_str());
         return ErrorCode::ERROR_UNKNOWN;
     }
-    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(config.name, config);
+    int64_t processorId = AppEventObserverFacade::AddProcessor(config.name, config);
     if (processorId <= 0) {
         HILOG_DEBUG(LOG_CORE, "faied to add processor=%{public}s, register processor error", config.name.c_str());
         return ErrorCode::ERROR_UNKNOWN;
@@ -217,7 +219,7 @@ int64_t AddProcessor(struct HiAppEvent_Processor* processor)
 
 void DestroyProcessor(struct HiAppEvent_Processor* processor)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN_VOID(processor)
@@ -227,14 +229,14 @@ void DestroyProcessor(struct HiAppEvent_Processor* processor)
 
 int RemoveProcessor(int64_t processorId)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     if (processorId <= 0) {
         HILOG_DEBUG(LOG_CORE, "Failed to remove processor id=%{public}" PRId64, processorId);
         return ErrorCode::ERROR_PROCESSOR_NOT_ADDED;
     }
-    if (AppEventObserverMgr::GetInstance().RemoveObserver(processorId) != 0) {
+    if (AppEventObserverFacade::RemoveObserver(processorId) != 0) {
         HILOG_DEBUG(LOG_CORE, "Failed to remove processor id=%{public}" PRId64, processorId);
         return ErrorCode::ERROR_UNKNOWN;
     }

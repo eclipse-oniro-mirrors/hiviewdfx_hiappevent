@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,8 +15,7 @@
 #include "app_event.h"
 
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
-#include "hiappevent_write.h"
+#include "hiappevent_facade.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -78,13 +77,15 @@ void Event::AddParam(const std::string& key, const std::vector<std::string>& val
 
 int Write(const Event& event)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    int ret = VerifyAppEvent(event.eventPack_);
+    int ret = AppEventVerifyFacade::VerifyTheAppEvent(event.eventPack_);
     if (ret >= 0) {
         auto appEventPack = event.eventPack_;
-        SubmitWritingTask(appEventPack, "app_event");
+        AppEventObserverFacade::SubmitTaskToFFRTQueue([appEventPack] () {
+            AppEventWriteFacade::FacadeWriteEvent(appEventPack);
+            }, "app_event");
     }
     return ret;
 }

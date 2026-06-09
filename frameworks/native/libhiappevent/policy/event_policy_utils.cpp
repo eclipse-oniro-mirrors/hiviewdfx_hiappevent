@@ -32,8 +32,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr const char* const APP_EVENT_DIR = "/eventConfig";
-constexpr const char* const PAGE_SWITCH_CONFIG = "pageSwitchLogEnable";
+constexpr const char* APP_EVENT_DIR = "/eventConfig";
+constexpr const char* PAGE_SWITCH_CONFIG = "pageSwitchLogEnable";
 enum PageSwitchLogEnableCode : int {
     ADDRESS_SANITIZER_ENABLE = 0,
     APP_CRASH_ENABLE = 1,

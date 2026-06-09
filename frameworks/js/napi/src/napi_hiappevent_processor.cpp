@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,9 +19,8 @@
 #include <string>
 #include <unordered_set>
 
-#include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
@@ -33,6 +32,7 @@
 #undef LOG_TAG
 #define LOG_TAG "NapiProcessor"
 
+using namespace OHOS::HiviewDFX::HiAppEvent;
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiHiAppEventProcessor {
@@ -41,30 +41,30 @@ constexpr int ERR_CODE_SUCC = 0;
 constexpr int ERR_CODE_PARAM_FORMAT = -1;
 constexpr int ERR_CODE_PARAM_INVALID = -2;
 
-const std::string PROCESSOR_NAME = "name";
-const std::string DEBUG_MODE = "debugMode";
-const std::string ROUTE_INFO = "routeInfo";
-const std::string APP_ID = "appId";
-const std::string START_REPORT = "onStartReport";
-const std::string BACKGROUND_REPORT = "onBackgroundReport";
-const std::string PERIOD_REPORT = "periodReport";
-const std::string BATCH_REPORT = "batchReport";
-const std::string USER_IDS = "userIds";
-const std::string USER_PROPERTIES = "userProperties";
-const std::string EVENT_CONFIGS = "eventConfigs";
-const std::string EVENT_CONFIG_DOMAIN = "domain";
-const std::string EVENT_CONFIG_NAME = "name";
-const std::string EVENT_CONFIG_REALTIME = "isRealTime";
-const std::string CONFIG_ID = "configId";
-const std::string CUSTOM_CONFIG = "customConfigs";
-const std::string CONFIG_NAME = "configName";
+constexpr const char* PROCESSOR_NAME = "name";
+constexpr const char* DEBUG_MODE = "debugMode";
+constexpr const char* ROUTE_INFO = "routeInfo";
+constexpr const char* APP_ID = "appId";
+constexpr const char* START_REPORT = "onStartReport";
+constexpr const char* BACKGROUND_REPORT = "onBackgroundReport";
+constexpr const char* PERIOD_REPORT = "periodReport";
+constexpr const char* BATCH_REPORT = "batchReport";
+constexpr const char* USER_IDS = "userIds";
+constexpr const char* USER_PROPERTIES = "userProperties";
+constexpr const char* EVENT_CONFIGS = "eventConfigs";
+constexpr const char* EVENT_CONFIG_DOMAIN = "domain";
+constexpr const char* EVENT_CONFIG_NAME = "name";
+constexpr const char* EVENT_CONFIG_REALTIME = "isRealTime";
+constexpr const char* CONFIG_ID = "configId";
+constexpr const char* CUSTOM_CONFIG = "customConfigs";
+constexpr const char* CONFIG_NAME = "configName";
 
-const std::string CONFIG_PROP_TYPE_STR = "string";
-const std::string CONFIG_PROP_TYPE_STR_ARRAY = "string array";
-const std::string CONFIG_PROP_TYPE_BOOL = "boolean";
-const std::string CONFIG_PROP_TYPE_NUM = "number";
-const std::string CONFIG_PROP_TYPE_EVENT_CONFIG = "AppEventReportConfig array";
-const std::string CONFIG_PROP_TYPE_RECORD_STRING = "Record string";
+constexpr const char* CONFIG_PROP_TYPE_STR = "string";
+constexpr const char* CONFIG_PROP_TYPE_STR_ARRAY = "string array";
+constexpr const char* CONFIG_PROP_TYPE_BOOL = "boolean";
+constexpr const char* CONFIG_PROP_TYPE_NUM = "number";
+constexpr const char* CONFIG_PROP_TYPE_EVENT_CONFIG = "AppEventReportConfig array";
+constexpr const char* CONFIG_PROP_TYPE_RECORD_STRING = "Record string";
 }
 
 bool GenConfigStrProp(const napi_env env, const napi_value config, const std::string& key, std::string& out,
@@ -125,7 +125,7 @@ int GenProcessorNameProp(const napi_env env, const napi_value config, const std:
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(key, CONFIG_PROP_TYPE_STR));
         return ERR_CODE_PARAM_FORMAT;
     }
-    if (!IsValidProcessorName(name)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(name)) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Invalid processor name.");
         return ERR_CODE_PARAM_FORMAT;
     }
@@ -139,7 +139,7 @@ int GenConfigNameProp(const napi_env env, const napi_value config, const std::st
     if (!GenConfigStrProp(env, config, key, configName)) {
         return ERR_CODE_PARAM_INVALID;
     }
-    if (!IsValidProcessorName(configName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(configName)) {
         return ERR_CODE_PARAM_INVALID;
     }
     out.configName = configName;
@@ -149,7 +149,7 @@ int GenConfigNameProp(const napi_env env, const napi_value config, const std::st
 int GenConfigRouteInfoProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     std::string routeInfo;
-    if (!GenConfigStrProp(env, config, key, routeInfo) || !IsValidRouteInfo(routeInfo)) {
+    if (!GenConfigStrProp(env, config, key, routeInfo) || !AppEventVerifyFacade::VerifyIsValidRouteInfo(routeInfo)) {
         return ERR_CODE_PARAM_INVALID;
     }
     out.routeInfo = routeInfo;
@@ -159,7 +159,7 @@ int GenConfigRouteInfoProp(const napi_env env, const napi_value config, const st
 int GenConfigAppIdProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     std::string appId;
-    if (!GenConfigStrProp(env, config, key, appId) || !IsValidAppId(appId)) {
+    if (!GenConfigStrProp(env, config, key, appId) || !AppEventVerifyFacade::VerifyIsValidAppId(appId)) {
         return ERR_CODE_PARAM_INVALID;
     }
     out.appId = appId;
@@ -173,7 +173,7 @@ int GenConfigUserIdsProp(const napi_env env, const napi_value config, const std:
         return ERR_CODE_PARAM_INVALID;
     }
     for (auto userId : userIdNames) {
-        if (!IsValidUserIdName(userId)) {
+        if (!AppEventVerifyFacade::VerifyIsValidUserIdName(userId)) {
             return ERR_CODE_PARAM_INVALID;
         }
     }
@@ -188,7 +188,7 @@ int GenConfigUserPropertiesProp(const napi_env env, const napi_value config, con
         return ERR_CODE_PARAM_INVALID;
     }
     for (auto userProperty : userPropertyNames) {
-        if (!IsValidUserPropName(userProperty)) {
+        if (!AppEventVerifyFacade::VerifyIsValidUserPropName(userProperty)) {
             return ERR_CODE_PARAM_INVALID;
         }
     }
@@ -215,7 +215,7 @@ int GenConfigBackgroundReportProp(const napi_env env, const napi_value config, c
 int GenConfigPeriodReportProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     int timeout = 0;
-    if (!GenConfigIntProp(env, config, key, timeout) || !IsValidPeriodReport(timeout)) {
+    if (!GenConfigIntProp(env, config, key, timeout) || !AppEventVerifyFacade::VerifyIsValidPeriodReport(timeout)) {
         return ERR_CODE_PARAM_INVALID;
     }
     out.triggerCond.timeout = timeout;
@@ -225,7 +225,7 @@ int GenConfigPeriodReportProp(const napi_env env, const napi_value config, const
 int GenConfigBatchReportProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     int row = 0;
-    if (!GenConfigIntProp(env, config, key, row) || !IsValidBatchReport(row)) {
+    if (!GenConfigIntProp(env, config, key, row) || !AppEventVerifyFacade::VerifyIsValidBatchReport(row)) {
         return ERR_CODE_PARAM_INVALID;
     }
     out.triggerCond.row = row;
@@ -247,7 +247,7 @@ int GenConfigReportProp(const napi_env env, const napi_value config, HiAppEvent:
         HILOG_WARN(LOG_CORE, "Parameter error. The event isRealTime parameter is invalid.");
         return ERR_CODE_PARAM_INVALID;
     }
-    if (!IsValidEventConfig(reportConf)) {
+    if (!AppEventVerifyFacade::VerifyIsValidEventConfig(reportConf)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The event config is invalid, domain=%{public}s, name=%{public}s.",
             reportConf.domain.c_str(), reportConf.name.c_str());
         return ERR_CODE_PARAM_INVALID;
@@ -282,7 +282,7 @@ int GenConfigEventConfigsProp(const napi_env env, const napi_value config, const
 int GenConfigIdProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
     int configId = 0;
-    if (!GenConfigIntProp(env, config, key, configId) || !IsValidConfigId(configId)) {
+    if (!GenConfigIntProp(env, config, key, configId) || !AppEventVerifyFacade::VerifyIsValidConfigId(configId)) {
         HILOG_WARN(LOG_CORE, "invalid configId");
         return ERR_CODE_PARAM_INVALID;
     }
@@ -302,14 +302,15 @@ int GenConfigCustomConfigsProp(const napi_env env, const napi_value config, cons
     }
     std::vector<std::string> keys;
     NapiUtil::GetPropertyNames(env, napiObject, keys);
-    if (!IsValidCustomConfigsNum(keys.size())) {
+    if (!AppEventVerifyFacade::VerifyIsValidCustomConfigsNum(keys.size())) {
         HILOG_WARN(LOG_CORE, "invalid keys size=%{public}zu", keys.size());
         return ERR_CODE_PARAM_INVALID;
     }
     std::unordered_map<std::string, std::string> customConfigs;
     for (const auto& localKey : keys) {
         std::string value;
-        if (!GenConfigStrProp(env, napiObject, localKey, value) || !IsValidCustomConfig(localKey, value)) {
+        if (!GenConfigStrProp(env, napiObject, localKey, value)
+            || !AppEventVerifyFacade::VerifyIsValidCustomConfig(localKey, value)) {
             HILOG_WARN(LOG_CORE, "invalid key");
             return ERR_CODE_PARAM_INVALID;
         }
@@ -419,16 +420,16 @@ int TransConfig(const napi_env env, const napi_value config, ReportConfig& out)
 
 int64_t AddProcessorAsync(const std::string& processorName, const std::string& configName)
 {
-    if (!IsValidProcessorName(processorName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(processorName)) {
         HILOG_ERROR(LOG_CORE, "Invalid processor name.");
         return ERR_CODE_PARAM_INVALID;
     }
-    if (!IsValidProcessorName(configName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(configName)) {
         HILOG_ERROR(LOG_CORE, "Invalid configName name.");
         return ERR_CODE_PARAM_INVALID;
     }
 
-    if (AppEventObserverMgr::GetInstance().Load(processorName) != 0) {
+    if (AppEventObserverFacade::Load(processorName) != 0) {
         HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, name not found", processorName.c_str());
         return ERR_CODE_PARAM_INVALID;
     }
@@ -441,7 +442,7 @@ int64_t AddProcessorAsync(const std::string& processorName, const std::string& c
 
     ReportConfig conf = loader.GetReportConfig();
     conf.configName = "";  // Normalize processor config
-    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(processorName, conf);
+    int64_t processorId = AppEventObserverFacade::AddProcessor(processorName, conf);
     if (processorId <= 0) {
         HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, register processor error", processorName.c_str());
         return ERR_CODE_PARAM_INVALID;
@@ -463,7 +464,7 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
         out = NapiUtil::CreateInt64(env, -1);
         return false;
     }
-    if (AppEventObserverMgr::GetInstance().Load(name) != 0) {
+    if (AppEventObserverFacade::Load(name) != 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, name no found", name.c_str());
         out = NapiUtil::CreateInt64(env, -1);
         return true;
@@ -477,7 +478,7 @@ bool AddProcessor(const napi_env env, const napi_value config, napi_value& out)
         }
         conf.configName = "";  // Normalize processor config
     }
-    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
+    int64_t processorId = AppEventObserverFacade::AddProcessor(name, conf);
     if (processorId <= 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, register processor error", name.c_str());
         out = NapiUtil::CreateInt64(env, -1);
@@ -530,7 +531,7 @@ bool RemoveProcessor(const napi_env env, const napi_value id)
         HILOG_ERROR(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return true;
     }
-    if (AppEventObserverMgr::GetInstance().RemoveObserver(processorId) != 0) {
+    if (AppEventObserverFacade::RemoveObserver(processorId) != 0) {
         HILOG_WARN(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return false;
     }

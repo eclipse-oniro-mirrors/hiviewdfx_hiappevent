@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,7 @@
 #include "app_event.h"
 #include "application_context.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "hiappevent_test_common.h"
 
 using namespace testing::ext;
@@ -48,7 +48,7 @@ void HiAppEventAppEventTest::SetUpTestCase()
 {
     // set app uid
     setuid(TEST_UID);
-    HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
+    AppEventConfigFacade::SetStorageDir(TEST_DIR);
     // set context bundle name
     auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
     if (context != nullptr) {
@@ -294,14 +294,14 @@ HWTEST_F(HiAppEventAppEventTest, HiAppEventAppEventTest008, TestSize.Level1)
 {
     std::cout << "HiAppEventAppEventTest008 start" << std::endl;
 
-    HiAppEventConfig::GetInstance().SetConfigurationItem("disable", "false");
+    AppEventConfigFacade::SetConfigurationItem("disable", "false");
     Event event(TEST_DOMAIN, TEST_NAME, TEST_TYPE);
     ASSERT_EQ(Write(event), HIAPPEVENT_VERIFY_SUCCESSFUL);
 
-    HiAppEventConfig::GetInstance().SetConfigurationItem("disable", "true");
+    AppEventConfigFacade::SetConfigurationItem("disable", "true");
     ASSERT_EQ(Write(event), ERROR_HIAPPEVENT_DISABLE);
 
-    HiAppEventConfig::GetInstance().SetConfigurationItem("disable", "false");
+    AppEventConfigFacade::SetConfigurationItem("disable", "false");
     ASSERT_EQ(Write(event), HIAPPEVENT_VERIFY_SUCCESSFUL);
 
     std::cout << "HiAppEventAppEventTest008 end" << std::endl;

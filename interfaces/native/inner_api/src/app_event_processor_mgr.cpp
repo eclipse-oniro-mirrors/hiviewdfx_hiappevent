@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,9 +14,7 @@
  */
 #include "app_event_processor_mgr.h"
 
-#include "app_event_store.h"
-#include "app_event_observer_mgr.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "processor_config_loader.h"
 
 namespace OHOS {
@@ -24,14 +22,14 @@ namespace HiviewDFX {
 namespace HiAppEvent {
 int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     ReportConfig realConfig = config;
-    if (int ret = VerifyReportConfig(realConfig); ret != 0) {
+    if (int ret = AppEventVerifyFacade::VerifyTheReportConfig(realConfig); ret != 0) {
         return ret;
     }
-    if (int ret = AppEventObserverMgr::GetInstance().Load(realConfig.name); ret != 0) {
+    if (int ret = AppEventObserverFacade::Load(realConfig.name); ret != 0) {
         return ret;
     }
     if (!realConfig.configName.empty()) {
@@ -41,12 +39,12 @@ int64_t AppEventProcessorMgr::AddProcessor(const ReportConfig& config)
         }
         realConfig.configName = "";  // Normalize processor config
     }
-    return AppEventObserverMgr::GetInstance().AddProcessor(realConfig.name, realConfig);
+    return AppEventObserverFacade::AddProcessor(realConfig.name, realConfig);
 }
 
 void AppEventProcessorMgr::AddProcessorAsync(const ReportConfig& config, std::function<void(int64_t)> cb)
 {
-    AppEventObserverMgr::GetInstance().SubmitTaskToFFRTQueue([config, cb] () {
+    AppEventObserverFacade::SubmitTaskToFFRTQueue([config, cb] () {
         int64_t processorId = AddProcessor(config);
         cb(processorId);
         }, "AddProcessorAsync");
@@ -54,54 +52,54 @@ void AppEventProcessorMgr::AddProcessorAsync(const ReportConfig& config, std::fu
 
 int AppEventProcessorMgr::RemoveProcessor(int64_t processorId)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return AppEventObserverMgr::GetInstance().RemoveObserver(processorId);
+    return AppEventObserverFacade::RemoveObserver(processorId);
 }
 
 int AppEventProcessorMgr::RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return AppEventObserverMgr::GetInstance().RegisterProcessor(name, processor);
+    return AppEventObserverFacade::RegisterProcessor(name, processor);
 }
 
 int AppEventProcessorMgr::UnregisterProcessor(const std::string& name)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    if (int ret = AppEventObserverMgr::GetInstance().RemoveObserver(name); ret < 0) {
+    if (int ret = AppEventObserverFacade::RemoveObserver(name); ret < 0) {
         return ret;
     }
-    return AppEventObserverMgr::GetInstance().UnregisterProcessor(name);
+    return AppEventObserverFacade::UnregisterProcessor(name);
 }
 
 int AppEventProcessorMgr::SetProcessorConfig(int64_t processorSeq, const ReportConfig& config)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return AppEventObserverMgr::GetInstance().SetReportConfig(processorSeq, config);
+    return AppEventObserverFacade::SetReportConfig(processorSeq, config);
 }
 
 int AppEventProcessorMgr::GetProcessorConfig(int64_t processorSeq, ReportConfig& config)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
-    return AppEventObserverMgr::GetInstance().GetReportConfig(processorSeq, config);
+    return AppEventObserverFacade::GetReportConfig(processorSeq, config);
 }
 
 int AppEventProcessorMgr::GetProcessorSeqs(const std::string& name, std::vector<int64_t>& processorSeqs)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
     processorSeqs.clear(); // prevent repeated invoking scenarios
-    return AppEventStore::GetInstance().QueryObserverSeqs(name, processorSeqs);
+    return AppEventStoreFacade::QueryObserverSeqs(name, processorSeqs);
 }
 } // namespace HiAppEvent
 } // namespace HiviewDFX

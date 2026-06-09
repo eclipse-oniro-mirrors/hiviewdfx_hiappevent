@@ -26,10 +26,7 @@ ohos_shared_library("hiappevent") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [
-    "../../native/libhiappevent:libhiappevent_base",
-    "../../native/libhiappevent/policy:hiappevent_policy",
-  ]
+  deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "c_utils:utils",
@@ -65,11 +62,7 @@ ohos_shared_library("hiappevent_v9") {
     "./src/napi_util.cpp",
   ]
 
-  deps = [
-    "../../native/libhiappevent:libhiappevent_base",
-    "../../native/libhiappevent/policy:hiappevent_policy",
-    "../../native/libhiappevent/utility:hiappevent_utility",
-  ]
+  deps = [ "../../native/libhiappevent:libhiappevent_base" ]
 
   external_deps = [
     "c_utils:utils",

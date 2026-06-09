@@ -16,14 +16,14 @@
 
 #include "hiappevent_api_metric.h"
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
 int ReportApiMetric(const ApiInfo& apiInfo, const ApiMetric& metric)
 {
-    if (!IsApp()) {
+    if (!AppEventVerifyFacade::VerifyIsApp()) {
         return ErrorCode::ERROR_NOT_APP;
     }
 

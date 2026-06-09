@@ -34,6 +34,7 @@ ohos_shared_library("libhiappevent_base") {
   ]
 
   sources = [
+    "hiappevent_facade.cpp",
     "app_event_util.cpp",
     "hiappevent_base.cpp",
     "hiappevent_c.cpp",
@@ -74,6 +75,7 @@ ohos_shared_library("libhiappevent_base") {
     "storage_service:storage_manager_sa_proxy",
   ]
 
+  version_script = "libhiappevent_base.map"
   part_name = "hiappevent"
   innerapi_tags = [ "platformsdk" ]
   subsystem_name = "hiviewdfx"

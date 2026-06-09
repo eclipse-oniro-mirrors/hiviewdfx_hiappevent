@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,30 +26,30 @@ constexpr int DB_SUCC = 0;
 constexpr int DB_FAILED = -1;
 
 namespace Events {
-const std::string TABLE = "events";
-const std::string FIELD_SEQ = "seq";
-const std::string FIELD_DOMAIN = "domain";
-const std::string FIELD_NAME = "name";
-const std::string FIELD_TYPE = "type";
-const std::string FIELD_TIME = "time";
-const std::string FIELD_TZ = "tz";
-const std::string FIELD_PID = "pid";
-const std::string FIELD_TID = "tid";
-const std::string FIELD_TRACE_ID = "trace_id";
-const std::string FIELD_SPAN_ID = "span_id";
-const std::string FIELD_PSPAN_ID = "pspan_id";
-const std::string FIELD_TRACE_FLAG = "trace_flag";
-const std::string FIELD_PARAMS = "params";
-const std::string FIELD_SIZE = "size";
-const std::string FIELD_RUNNING_ID = "running_id";
+constexpr const char* TABLE = "events";
+constexpr const char* FIELD_SEQ = "seq";
+constexpr const char* FIELD_DOMAIN = "domain";
+constexpr const char* FIELD_NAME = "name";
+constexpr const char* FIELD_TYPE = "type";
+constexpr const char* FIELD_TIME = "time";
+constexpr const char* FIELD_TZ = "tz";
+constexpr const char* FIELD_PID = "pid";
+constexpr const char* FIELD_TID = "tid";
+constexpr const char* FIELD_TRACE_ID = "trace_id";
+constexpr const char* FIELD_SPAN_ID = "span_id";
+constexpr const char* FIELD_PSPAN_ID = "pspan_id";
+constexpr const char* FIELD_TRACE_FLAG = "trace_flag";
+constexpr const char* FIELD_PARAMS = "params";
+constexpr const char* FIELD_SIZE = "size";
+constexpr const char* FIELD_RUNNING_ID = "running_id";
 } // namespace Events
 
 namespace Observers {
-const std::string TABLE = "observers";
-const std::string FIELD_SEQ = "seq";
-const std::string FIELD_NAME = "name";
-const std::string FIELD_HASH = "hash";
-const std::string FIELD_FILTERS = "filters";
+constexpr const char* TABLE = "observers";
+constexpr const char* FIELD_SEQ = "seq";
+constexpr const char* FIELD_NAME = "name";
+constexpr const char* FIELD_HASH = "hash";
+constexpr const char* FIELD_FILTERS = "filters";
 } // namespace Observers
 
 struct Observer {

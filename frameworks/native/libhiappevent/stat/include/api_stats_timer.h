@@ -18,7 +18,6 @@
 
 #include <functional>
 #include <memory>
-#include <mutex>
 
 namespace OHOS {
 namespace HiviewDFX {

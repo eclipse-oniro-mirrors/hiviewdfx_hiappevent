@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,11 +15,12 @@
 
 #include "ndk_app_event_watcher_proxy.h"
 
-#include "app_event_observer_mgr.h"
+#include <cinttypes>
+
 #include "app_event_util.h"
 #include "hilog/log.h"
 #include "hiappevent_base.h"
-#include "app_event_store.h"
+#include "hiappevent_facade.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -59,7 +60,7 @@ int NdkAppEventWatcherProxy::SetWatcherOnReceiver(OH_HiAppEvent_OnReceive onRece
 
 int NdkAppEventWatcherProxy::AddWatcher()
 {
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher_);
+    AppEventObserverFacade::AddWatcher(watcher_);
     return 0;
 }
 
@@ -74,7 +75,7 @@ int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake
         return ErrorCode::ERROR_WATCHER_NOT_ADDED;
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
-    if (AppEventStore::GetInstance().TakeEvents(events, watcher_->GetSeq(), size) != 0) {
+    if (AppEventStoreFacade::TakeEvents(events, watcher_->GetSeq(), size) != 0) {
         HILOG_WARN(LOG_CORE, "failed to query events, seq=%{public}" PRId64, watcher_->GetSeq());
         return ErrorCode::ERROR_UNKNOWN;
     }
@@ -93,7 +94,7 @@ int NdkAppEventWatcherProxy::RemoveWatcher()
 {
     int64_t watcherSeq = watcher_->GetSeq();
     if (watcherSeq > 0) {
-        AppEventObserverMgr::GetInstance().RemoveObserver(watcherSeq);
+        AppEventObserverFacade::RemoveObserver(watcherSeq);
         watcher_->SetSeq(0);
         return 0;
     }

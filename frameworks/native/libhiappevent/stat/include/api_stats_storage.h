@@ -16,10 +16,6 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_STAT_INCLUDE_API_STATS_STORAGE_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_STAT_INCLUDE_API_STATS_STORAGE_H
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "api_stats_types.h"
 #include "nocopyable.h"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,10 +18,9 @@
 #include <gtest/gtest.h>
 
 #include "app_event_processor_mgr.h"
-#include "app_event_observer_mgr.h"
 #include "application_context.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "hiappevent_test_common.h"
 
 using namespace testing::ext;
@@ -48,7 +47,7 @@ void WriteEventOnce()
     event->AddParam("str_key", testStr);
     std::vector<std::shared_ptr<AppEventPack>> events;
     events.emplace_back(event);
-    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverFacade::HandleEvents(events);
     sleep(1); // 1s
 }
 
@@ -56,7 +55,7 @@ void CheckRegisterObserver(const std::string& observer,
     std::shared_ptr<AppEventProcessor> processor, int64_t& processorSeq)
 {
     ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(observer, processor), 0);
-    processorSeq = AppEventObserverMgr::GetInstance().AddProcessor(observer);
+    processorSeq = AppEventObserverFacade::AddProcessor(observer);
     ASSERT_GT(processorSeq, 0);
 }
 
@@ -67,7 +66,7 @@ void CheckRegisterObserverWithConfig(
     int64_t& processorSeq)
 {
     ASSERT_EQ(AppEventProcessorMgr::RegisterProcessor(observer, processor), 0);
-    processorSeq = AppEventObserverMgr::GetInstance().AddProcessor(observer, config);
+    processorSeq = AppEventObserverFacade::AddProcessor(observer, config);
     ASSERT_GT(processorSeq, 0);
 }
 
@@ -228,7 +227,7 @@ public:
     {
         // set app uid
         setuid(TEST_UID);
-        HiAppEventConfig::GetInstance().SetStorageDir("/data/test/hiappevent/");
+        AppEventConfigFacade::SetStorageDir("/data/test/hiappevent/");
         // set context bundle name
         auto context = OHOS::AbilityRuntime::ApplicationContext::GetInstance();
         if (context != nullptr) {
@@ -472,7 +471,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest007, TestSize.Level0)
     ASSERT_EQ(processor->GetReportTimes(), 0);
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);
-    AppEventObserverMgr::GetInstance().HandleBackground();
+    AppEventObserverFacade::HandleBackground();
     sleep(1); // 1s
     ASSERT_EQ(processor->GetReportTimes(), 1);
 
@@ -507,7 +506,7 @@ HWTEST_F(HiAppEventInnerApiTest, HiAppEventInnerApiTest008, TestSize.Level0)
     WriteEventOnce();
     ASSERT_EQ(processor->GetReportTimes(), 0);
 
-    int64_t processorSeq2 = AppEventObserverMgr::GetInstance().AddProcessor(TEST_PROCESSOR_NAME, config);
+    int64_t processorSeq2 = AppEventObserverFacade::AddProcessor(TEST_PROCESSOR_NAME, config);
     ASSERT_EQ(processorSeq1, processorSeq2);
     ASSERT_EQ(processor->GetReportTimes(), 0);
 
