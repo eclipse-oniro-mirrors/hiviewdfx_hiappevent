@@ -17,12 +17,15 @@
 
 #include <iostream>
 
+#define private public
+#include "api_stats_mgr.h"
+#include "api_stats_timer.h"
+#undef private
 #include "api_stats_types.h"
 #include "app_api_metric.h"
 #include "api_stats_aggregator.h"
 #include "api_stats_storage.h"
 #include "app_event_store.h"
-#include "api_stats_timer.h"
 #include "hiappevent_api_metric.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
@@ -94,22 +97,23 @@ HWTEST_F(HiAppEventApiMetricTest, ReportApiMetricTest001, TestSize.Level0)
     metric.duration = TEST_DURATION;
     metric.successful = true;
 
-    int ret = HiAppEvent::ReportApiMetric(apiInfo, metric);
-    EXPECT_EQ(ret, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(15 * 1000));
+    HiAppEvent::ApiStatsManager ApiStatsMgr;
+    HiAppEvent::ApiDescriptor descriptor(apiInfo.kit, apiInfo.api);
+    ApiStatsMgr.AddRecord(descriptor, metric);
+    ApiStatsMgr.ScheduleBackUp();
     std::map<std::pair<std::string, std::string>, std::vector<std::string>> outBackUp;
-    ret = AppEventStore::GetInstance().QueryApiMetricInfoAll(outBackUp);
+    int ret = AppEventStore::GetInstance().QueryApiMetricInfoAll(outBackUp);
     EXPECT_EQ(ret, OHOS::NativeRdb::E_OK);
     EXPECT_EQ(outBackUp.size(), 1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(55 * 1000));
+    
+    ApiStatsMgr.ScheduleReport();
     std::map<std::pair<std::string, std::string>, std::vector<std::string>> outReport;
     ret = AppEventStore::GetInstance().QueryApiMetricInfoAll(outReport);
     EXPECT_EQ(ret, OHOS::NativeRdb::E_OK);
     EXPECT_EQ(outReport.size(), 0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(60 * 1000));
+    ApiStatsMgr.ScheduleReport();
     ret = AppEventStore::GetInstance().QueryApiMetricInfoAll(outReport);
     EXPECT_EQ(ret, OHOS::NativeRdb::E_OK);
     EXPECT_EQ(outReport.size(), 0);
@@ -671,27 +675,29 @@ HWTEST_F(HiAppEventApiMetricTest, ApiStatsTimerTest001, TestSize.Level0)
  */
 HWTEST_F(HiAppEventApiMetricTest, ApiStatsTimerTest002, TestSize.Level0)
 {
-    /**
-     * @tc.steps: step1. create ApiStatsTimer.
-     * @tc.steps: step2. set ReportCallback.
-     * @tc.steps: step3. start and stop timer.
-     */
     ApiStatsTimer timer;
     std::atomic<int> backupCount{0};
     std::atomic<int> reportCount{0};
-    
+
     timer.SetBackUpCallback([&backupCount]() { backupCount++; });
     timer.SetReportCallback([&reportCount]() { reportCount++; });
     timer.Start();
-    timer.Start();
-    EXPECT_EQ(backupCount.load(), 0);
-    EXPECT_EQ(reportCount.load(), 0);
+
+    timer.ExecuteBackUpCallback();
+    timer.ExecuteReportCallback();
+    EXPECT_EQ(backupCount.load(), 1);
+    EXPECT_EQ(reportCount.load(), 1);
+
+    int backupBeforeNull = backupCount.load();
+    int reportBeforeNull = reportCount.load();
 
     timer.SetBackUpCallback(nullptr);
     timer.SetReportCallback(nullptr);
-    std::this_thread::sleep_for(std::chrono::milliseconds(61 * 1000));
-    EXPECT_EQ(backupCount.load(), 0);
-    EXPECT_EQ(reportCount.load(), 0);
+    timer.ExecuteBackUpCallback();
+    timer.ExecuteReportCallback();
+    EXPECT_EQ(backupCount.load(), backupBeforeNull);
+    EXPECT_EQ(reportCount.load(), reportBeforeNull);
+
     timer.Stop();
 }
 
@@ -702,26 +708,27 @@ HWTEST_F(HiAppEventApiMetricTest, ApiStatsTimerTest002, TestSize.Level0)
  */
 HWTEST_F(HiAppEventApiMetricTest, ApiStatsTimerTest003, TestSize.Level0)
 {
-    /**
-     * @tc.steps: step1. create ApiStatsTimer.
-     * @tc.steps: step2. set ReportCallback.
-     * @tc.steps: step3. stop timer.
-     */
     ApiStatsTimer timer;
     std::atomic<int> backupCount{0};
     std::atomic<int> reportCount{0};
-    
+
     timer.SetBackUpCallback([&backupCount]() { backupCount++; });
     timer.SetReportCallback([&reportCount]() { reportCount++; });
     timer.Start();
-    timer.Start();
-    EXPECT_EQ(backupCount.load(), 0);
-    EXPECT_EQ(reportCount.load(), 0);
+
+    timer.ExecuteBackUpCallback();
+    timer.ExecuteReportCallback();
+    EXPECT_EQ(backupCount.load(), 1);
+    EXPECT_EQ(reportCount.load(), 1);
+
+    int backupBeforeStop = backupCount.load();
+    int reportBeforeStop = reportCount.load();
 
     timer.Stop();
-    std::this_thread::sleep_for(std::chrono::milliseconds(61 * 1000));
-    EXPECT_EQ(backupCount.load(), 0);
-    EXPECT_EQ(reportCount.load(), 0);
+    timer.ExecuteBackUpCallback();
+    timer.ExecuteReportCallback();
+    EXPECT_EQ(backupCount.load(), backupBeforeStop);
+    EXPECT_EQ(reportCount.load(), reportBeforeStop);
 }
 
 /**

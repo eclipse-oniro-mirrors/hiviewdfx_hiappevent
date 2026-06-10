@@ -40,6 +40,8 @@ public:
 
 private:
     class ApiStatsTimerImpl;
+    void ExecuteBackUpCallback();
+    void ExecuteReportCallback();
     std::shared_ptr<ApiStatsTimerImpl> impl_;
 };
 
