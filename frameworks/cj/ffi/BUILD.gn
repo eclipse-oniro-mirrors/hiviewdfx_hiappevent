@@ -45,6 +45,7 @@ ohos_shared_library("cj_hiappevent_ffi") {
   ]
 
   external_deps = [
+    "c_utils:utils",
     "ffrt:libffrt",
     "hilog:libhilog",
     "jsoncpp:jsoncpp",
