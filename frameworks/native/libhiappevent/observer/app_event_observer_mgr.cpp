@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,7 +37,6 @@ using HiAppEvent::AppEventFilter;
 using HiAppEvent::TriggerCondition;
 using namespace AppEventCacheCommon;
 namespace {
-constexpr int MILLI_TO_MICRO = 1000;
 constexpr int REFRESH_FREE_SIZE_INTERVAL = 10 * 60 * 1000; // 10 minutes
 constexpr int TIMEOUT_INTERVAL_MILLI = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
@@ -163,6 +162,14 @@ void AppEventObserverMgr::RegisterAppStateCallback()
 AppEventObserverMgr::~AppEventObserverMgr()
 {
     UnregisterAppStateCallback();
+    ffrt_timer_t oldRefreshTimer = refreshTimer_.exchange(ffrt_error);
+    if (oldRefreshTimer != ffrt_error) {
+        ffrt_timer_stop(ffrt_qos_default, oldRefreshTimer);
+    }
+    ffrt_timer_t oldTimeoutTimer = timeoutTimer_.exchange(ffrt_error);
+    if (oldTimeoutTimer != ffrt_error) {
+        ffrt_timer_stop(ffrt_qos_default, oldTimeoutTimer);
+    }
     queue_ = nullptr;
 }
 
@@ -472,17 +479,18 @@ void AppEventObserverMgr::HandleTimeout()
 
 void AppEventObserverMgr::SendTimeoutTask()
 {
-    ffrt::submit([this] {
-        HandleTimeout();
-        }, ffrt::task_attr().name("appevent_timeout").delay(TIMEOUT_INTERVAL_MILLI * MILLI_TO_MICRO));
+    static auto TimeoutTimerCb = [](void*) {
+        AppEventObserverMgr::GetInstance().HandleTimeout();
+    };
+    timeoutTimer_.store(ffrt_timer_start(ffrt_qos_default, TIMEOUT_INTERVAL_MILLI, nullptr, TimeoutTimerCb, false));
 }
 
 void AppEventObserverMgr::SendRefreshFreeSizeTask()
 {
-    ffrt::submit([this] {
+    static auto RefreshTimerCb = [](void*) {
         HiAppEventConfig::GetInstance().RefreshFreeSize();
-        SendRefreshFreeSizeTask();
-        }, ffrt::task_attr().name("appevent_refresh").delay(REFRESH_FREE_SIZE_INTERVAL * MILLI_TO_MICRO));
+    };
+    refreshTimer_.store(ffrt_timer_start(ffrt_qos_default, REFRESH_FREE_SIZE_INTERVAL, nullptr, RefreshTimerCb, true));
 }
 
 void AppEventObserverMgr::HandleBackground()
