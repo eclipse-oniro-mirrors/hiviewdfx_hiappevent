@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_OBSERVER_MGR_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_OBSERVER_APP_EVENT_OBSERVER_MGR_H
 
+#include <atomic>
 #include <memory>
 #include <shared_mutex>
 #include <unordered_map>
@@ -25,6 +26,7 @@
 #include "app_event_watcher.h"
 #include "ffrt.h"
 #include "module_loader.h"
+#include "timer.h"
 #include "nocopyable.h"
 
 namespace OHOS {
@@ -93,6 +95,8 @@ private:
     std::mutex isTimeoutTaskExistMutex_;
     std::atomic<bool> isFirstAddProcessor_ = true;
     std::atomic<bool> isDbInit_ = false;
+    std::atomic<ffrt_timer_t> refreshTimer_ = ffrt_error;
+    std::atomic<ffrt_timer_t> timeoutTimer_ = ffrt_error;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
