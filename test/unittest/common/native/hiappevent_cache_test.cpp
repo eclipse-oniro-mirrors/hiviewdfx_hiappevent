@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,6 +28,7 @@
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "hiappevent_write.h"
 #include "rdb_errno.h"
 #include "rdb_helper.h"
@@ -45,7 +46,6 @@ const std::string TEST_OBSERVER_NAME = "test_observer";
 const std::string TEST_EVENT_DOMAIN = "test_domain";
 const std::string TEST_EVENT_NAME = "test_name";
 constexpr int TEST_EVENT_TYPE = 1;
-const std::string TEST_PACKAGE = "{\"domain_\":\"hiappevent\", \"name_\":\"testEvent\"}";
 const std::string TEST_RUNNING_ID = "running_test";
 const std::string TEST_API_KIT = "test_api_kit";
 const std::string TEST_API_NAME = "test_api_name";
@@ -53,6 +53,7 @@ const std::string TEST_API_KIT2 = "test_api_kit2";
 const std::string TEST_API_NAME2 = "test_api_name2";
 const std::string TEST_METRIC_JSON = "{\"errCode\":0,\"duration\":100,\"successful\":true}";
 const std::string TEST_METRIC_JSON2 = "{\"errCode\":1,\"duration\":200,\"successful\":false}";
+constexpr int WRITE_SUCCESS = 0;
 
 std::shared_ptr<AppEventPack> CreateAppEventPack()
 {
@@ -420,8 +421,8 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
 {
     std::string apiName = "testApi";
     uint64_t beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
-    AppEventStat::WriteApiEndEventAsync(apiName, beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
-    AppEventStat::WriteApiEndEventAsync(apiName, -beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, beginTime, WRITE_SUCCESS, WRITE_SUCCESS);
+    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, -beginTime, WRITE_SUCCESS, WRITE_SUCCESS);
     EXPECT_GT(beginTime, 0);
 }
 
@@ -435,10 +436,10 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat002, TestSize.Level1)
 {
     std::string apiName = "testApi";
     uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
-    int ret = AppEventStat::WriteApiEndMetric(apiName, beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    int ret = AppEventUtilityFacade::WriteApiEndMetric(apiName, beginTime, WRITE_SUCCESS, WRITE_SUCCESS);
     EXPECT_EQ(ret, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
-    ret = AppEventStat::WriteApiEndMetric(apiName, -beginTime, AppEventStat::SUCCESS, AppEventStat::SUCCESS);
+    ret = AppEventUtilityFacade::WriteApiEndMetric(apiName, -beginTime, WRITE_SUCCESS, WRITE_SUCCESS);
     EXPECT_EQ(ret, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,8 @@
 #ifndef APPEVENT_PACKAGEHOLDER_IMPL_H
 #define APPEVENT_PACKAGEHOLDER_IMPL_H
 
-#include "app_event_store.h"
 #include "cj_ffi/cj_common_ffi.h"
 #include "common.h"
-#include "hiappevent_base.h"
 #include "native/ffi_remote_data.h"
 
 namespace OHOS {

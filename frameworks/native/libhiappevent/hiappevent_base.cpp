@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,7 +36,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const std::string DEFAULT_DOMAIN = "default";
+constexpr const char* DEFAULT_DOMAIN = "default";
 constexpr size_t MIN_PARAM_STR_LEN = 3; // 3: '{}\0'
 
 std::string TrimRightZero(const std::string& str)
@@ -47,78 +47,6 @@ std::string TrimRightZero(const std::string& str)
     }
 
     return (str[endIndex] == '.') ? str.substr(0, endIndex) : str.substr(0, endIndex + 1);
-}
-
-void InitValueByBaseType(AppEventParamValue* value, const AppEventParamValue& other)
-{
-    if (value == nullptr) {
-        return;
-    }
-
-    switch (other.type) {
-        case AppEventParamType::BOOL:
-            value->valueUnion.b_ = other.valueUnion.b_;
-            break;
-        case AppEventParamType::CHAR:
-            value->valueUnion.c_ = other.valueUnion.c_;
-            break;
-        case AppEventParamType::SHORT:
-            value->valueUnion.sh_ = other.valueUnion.sh_;
-            break;
-        case AppEventParamType::INTEGER:
-            value->valueUnion.i_ = other.valueUnion.i_;
-            break;
-        case AppEventParamType::LONGLONG:
-            value->valueUnion.ll_ = other.valueUnion.ll_;
-            break;
-        case AppEventParamType::FLOAT:
-            value->valueUnion.f_ = other.valueUnion.f_;
-            break;
-        case AppEventParamType::DOUBLE:
-            value->valueUnion.d_ = other.valueUnion.d_;
-            break;
-        default:
-            break;
-    }
-}
-
-void InitValueByReferType(AppEventParamValue* value, const AppEventParamValue& other)
-{
-    if (value == nullptr) {
-        return;
-    }
-
-    switch (other.type) {
-        case AppEventParamType::STRING:
-            new (&value->valueUnion.str_) auto(other.valueUnion.str_);
-            break;
-        case AppEventParamType::BVECTOR:
-            new (&value->valueUnion.bs_) auto(other.valueUnion.bs_);
-            break;
-        case AppEventParamType::CVECTOR:
-            new (&value->valueUnion.cs_) auto(other.valueUnion.cs_);
-            break;
-        case AppEventParamType::SHVECTOR:
-            new (&value->valueUnion.shs_) auto(other.valueUnion.shs_);
-            break;
-        case AppEventParamType::IVECTOR:
-            new (&value->valueUnion.is_) auto(other.valueUnion.is_);
-            break;
-        case AppEventParamType::LLVECTOR:
-            new (&value->valueUnion.lls_) auto(other.valueUnion.lls_);
-            break;
-        case AppEventParamType::FVECTOR:
-            new (&value->valueUnion.fs_) auto(other.valueUnion.fs_);
-            break;
-        case AppEventParamType::DVECTOR:
-            new (&value->valueUnion.ds_) auto(other.valueUnion.ds_);
-            break;
-        case AppEventParamType::STRVECTOR:
-            new (&value->valueUnion.strs_) auto(other.valueUnion.strs_);
-            break;
-        default:
-            break;
-    }
 }
 
 template<typename T>
@@ -173,173 +101,75 @@ std::string GetValuesStr(const std::vector<T>& values)
     return valuesStr;
 }
 
-std::string GetEmptyParamValueStr(const AppEventParamValue& value)
+template<typename T>
+std::string GetParamValueStrByType(const AppEventParamValue& value)
 {
-    return "\"\"";
+    auto* ptr = std::get_if<T>(&value);
+    if (ptr == nullptr) {
+        HILOG_WARN(LOG_CORE, "the variant value type mismatch.");
+        return "";
+    }
+    return GetValueStr(*ptr);
 }
 
-std::string GetBoolParamValueStr(const AppEventParamValue& value)
+template<typename T>
+std::string GetParamValuesStrByType(const AppEventParamValue& value)
 {
-    return GetValueStr(value.valueUnion.b_);
+    auto* ptr = std::get_if<T>(&value);
+    if (ptr == nullptr) {
+        HILOG_WARN(LOG_CORE, "the variant values type mismatch for vector type.");
+        return "";
+    }
+    return GetValuesStr(*ptr);
 }
-
-std::string GetCharParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.c_);
-}
-
-std::string GetShortParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.sh_);
-}
-
-std::string GetIntParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.i_);
-}
-
-std::string GetLongParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.ll_);
-}
-
-std::string GetFloatParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.f_);
-}
-
-std::string GetDoubleParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.d_);
-}
-
-std::string GetStrParamValueStr(const AppEventParamValue& value)
-{
-    return GetValueStr(value.valueUnion.str_);
-}
-
-std::string GetBoolsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.bs_);
-}
-
-std::string GetCharsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.cs_);
-}
-
-std::string GetShortsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.shs_);
-}
-
-std::string GetIntsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.is_);
-}
-
-std::string GetLongsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.lls_);
-}
-
-std::string GetFloatsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.fs_);
-}
-
-std::string GetDoublesParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.ds_);
-}
-
-std::string GetStrsParamValueStr(const AppEventParamValue& value)
-{
-    return GetValuesStr(value.valueUnion.strs_);
-}
-
-using GetParamValueFunc = std::string (*)(const AppEventParamValue& value);
-const std::unordered_map<AppEventParamType, GetParamValueFunc> GET_PARAM_VALUE_FUNCS = {
-    {EMPTY, &GetEmptyParamValueStr},
-    {BOOL, &GetBoolParamValueStr},
-    {CHAR, &GetCharParamValueStr},
-    {SHORT, &GetShortParamValueStr},
-    {INTEGER, &GetIntParamValueStr},
-    {LONGLONG, &GetLongParamValueStr},
-    {FLOAT, &GetFloatParamValueStr},
-    {DOUBLE, &GetDoubleParamValueStr},
-    {STRING, &GetStrParamValueStr},
-    {BVECTOR, &GetBoolsParamValueStr},
-    {CVECTOR, &GetCharsParamValueStr},
-    {SHVECTOR, &GetShortsParamValueStr},
-    {IVECTOR, &GetIntsParamValueStr},
-    {LLVECTOR, &GetLongsParamValueStr},
-    {FVECTOR, &GetFloatsParamValueStr},
-    {DVECTOR, &GetDoublesParamValueStr},
-    {STRVECTOR, &GetStrsParamValueStr},
-};
 
 std::string GetParamValueStr(const AppEventParam& param)
 {
-    if (GET_PARAM_VALUE_FUNCS.find(param.value.type) == GET_PARAM_VALUE_FUNCS.end()) {
-        HILOG_WARN(LOG_CORE, "Invalid param value");
-        return "";
-    }
-    return GET_PARAM_VALUE_FUNCS.at(param.value.type)(param.value);
-}
-}
-
-AppEventParamValue::AppEventParamValue(AppEventParamType t) : type(t), valueUnion(t)
-{}
-
-AppEventParamValue::AppEventParamValue(const AppEventParamValue& other) : type(other.type)
-{
-    if (other.type < AppEventParamType::STRING) {
-        InitValueByBaseType(this, other);
-    } else {
-        InitValueByReferType(this, other);
-    }
-}
-
-AppEventParamValue::~AppEventParamValue()
-{
-    switch (type) {
+    switch (param.value.index()) {
+        case AppEventParamType::EMPTY:
+            return "";
+        case AppEventParamType::BOOL:
+            return GetParamValueStrByType<bool>(param.value);
+        case AppEventParamType::CHAR:
+            return GetParamValueStrByType<char>(param.value);
+        case AppEventParamType::SHORT:
+            return GetParamValueStrByType<int16_t>(param.value);
+        case AppEventParamType::INTEGER:
+            return GetParamValueStrByType<int>(param.value);
+        case AppEventParamType::LONGLONG:
+            return GetParamValueStrByType<int64_t>(param.value);
+        case AppEventParamType::FLOAT:
+            return GetParamValueStrByType<float>(param.value);
+        case AppEventParamType::DOUBLE:
+            return GetParamValueStrByType<double>(param.value);
         case AppEventParamType::STRING:
-            valueUnion.str_.~basic_string();
-            break;
+            return GetParamValueStrByType<std::string>(param.value);
         case AppEventParamType::BVECTOR:
-            valueUnion.bs_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<bool>>(param.value);
         case AppEventParamType::CVECTOR:
-            valueUnion.cs_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<char>>(param.value);
         case AppEventParamType::SHVECTOR:
-            valueUnion.shs_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<int16_t>>(param.value);
         case AppEventParamType::IVECTOR:
-            valueUnion.is_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<int>>(param.value);
         case AppEventParamType::LLVECTOR:
-            valueUnion.lls_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<int64_t>>(param.value);
         case AppEventParamType::FVECTOR:
-            valueUnion.fs_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<float>>(param.value);
         case AppEventParamType::DVECTOR:
-            valueUnion.ds_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<double>>(param.value);
         case AppEventParamType::STRVECTOR:
-            valueUnion.strs_.~vector();
-            break;
+            return GetParamValuesStrByType<std::vector<std::string>>(param.value);
         default:
-            break;
+            return "";
     }
 }
+}
 
-AppEventParam::AppEventParam(std::string n, AppEventParamType t) : name(n), type(t), value(t)
+AppEventParam::AppEventParam(std::string n, AppEventParamValue v) : name(n), value(v)
 {}
 
-AppEventParam::AppEventParam(const AppEventParam& param) : name(param.name), type(param.type), value(param.value)
+AppEventParam::AppEventParam(const AppEventParam& param) : name(param.name), value(param.value)
 {}
 
 AppEventParam::~AppEventParam()
@@ -393,159 +223,119 @@ void AppEventPack::InitRunningId()
 
 void AppEventPack::AddParam(const std::string& key)
 {
-    AppEventParam appEventParam(key, AppEventParamType::EMPTY);
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, std::monostate{}));
 }
 
 void AppEventPack::AddParam(const std::string& key, bool b)
 {
-    AppEventParam appEventParam(key, AppEventParamType::BOOL);
-    appEventParam.value.valueUnion.b_ = b;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, b));
 }
 
 void AppEventPack::AddParam(const std::string& key, char c)
 {
-    AppEventParam appEventParam(key, AppEventParamType::CHAR);
-    appEventParam.value.valueUnion.c_ = c;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, c));
 }
 
 void AppEventPack::AddParam(const std::string& key, int8_t num)
 {
-    AppEventParam appEventParam(key, AppEventParamType::SHORT);
-    appEventParam.value.valueUnion.sh_ = static_cast<int16_t>(num);
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, static_cast<int16_t>(num)));
 }
 
 void AppEventPack::AddParam(const std::string& key, int16_t s)
 {
-    AppEventParam appEventParam(key, AppEventParamType::SHORT);
-    appEventParam.value.valueUnion.sh_ = s;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, s));
 }
 
 void AppEventPack::AddParam(const std::string& key, int i)
 {
-    AppEventParam appEventParam(key, AppEventParamType::INTEGER);
-    appEventParam.value.valueUnion.i_ = i;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, i));
 }
 
 void AppEventPack::AddParam(const std::string& key, int64_t ll)
 {
-    AppEventParam appEventParam(key, AppEventParamType::LONGLONG);
-    appEventParam.value.valueUnion.ll_ = ll;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, ll));
 }
 
 void AppEventPack::AddParam(const std::string& key, float f)
 {
-    AppEventParam appEventParam(key, AppEventParamType::FLOAT);
-    appEventParam.value.valueUnion.f_ = f;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, f));
 }
 
 void AppEventPack::AddParam(const std::string& key, double d)
 {
-    AppEventParam appEventParam(key, AppEventParamType::DOUBLE);
-    appEventParam.value.valueUnion.d_ = d;
-    baseParams_.emplace_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, d));
 }
 
 void AppEventPack::AddParam(const std::string& key, const char *s)
 {
-    AppEventParam appEventParam(key, AppEventParamType::STRING);
     if (s == nullptr) {
         return;
     }
-    appEventParam.value.valueUnion.str_ = s;
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, s));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::string& s)
 {
-    AppEventParam appEventParam(key, AppEventParamType::STRING);
-    appEventParam.value.valueUnion.str_ = s;
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, s));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<bool>& bs)
 {
-    AppEventParam appEventParam(key, AppEventParamType::BVECTOR);
-    appEventParam.value.valueUnion.bs_.assign(bs.begin(), bs.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, bs));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<char>& cs)
 {
-    AppEventParam appEventParam(key, AppEventParamType::CVECTOR);
-    appEventParam.value.valueUnion.cs_.assign(cs.begin(), cs.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, cs));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<int8_t>& shs)
 {
-    AppEventParam appEventParam(key, AppEventParamType::SHVECTOR);
-    appEventParam.value.valueUnion.shs_.assign(shs.begin(), shs.end());
-    baseParams_.push_back(appEventParam);
+    std::vector<int16_t> values(shs.begin(), shs.end());
+    baseParams_.emplace_back(AppEventParam(key, std::move(values)));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<int16_t>& shs)
 {
-    AppEventParam appEventParam(key, AppEventParamType::SHVECTOR);
-    appEventParam.value.valueUnion.shs_.assign(shs.begin(), shs.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, shs));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<int>& is)
 {
-    AppEventParam appEventParam(key, AppEventParamType::IVECTOR);
-    appEventParam.value.valueUnion.is_.assign(is.begin(), is.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, is));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<int64_t>& lls)
 {
-    AppEventParam appEventParam(key, AppEventParamType::LLVECTOR);
-    appEventParam.value.valueUnion.lls_.assign(lls.begin(), lls.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, lls));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<float>& fs)
 {
-    AppEventParam appEventParam(key, AppEventParamType::FVECTOR);
-    appEventParam.value.valueUnion.fs_.assign(fs.begin(), fs.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, fs));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<double>& ds)
 {
-    AppEventParam appEventParam(key, AppEventParamType::DVECTOR);
-    appEventParam.value.valueUnion.ds_.assign(ds.begin(), ds.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, ds));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<const char*>& cps)
 {
-    AppEventParam appEventParam(key, AppEventParamType::STRVECTOR);
     std::vector<std::string> strs;
     if (cps.size() != 0) {
-        for (auto cp : cps) {
+        for (const auto& cp : cps) {
             if (cp != nullptr) {
-                strs.push_back(cp);
+                strs.emplace_back(cp);
             }
         }
     }
-    appEventParam.value.valueUnion.strs_.assign(strs.begin(), strs.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, std::move(strs)));
 }
 
 void AppEventPack::AddParam(const std::string& key, const std::vector<std::string>& strs)
 {
-    AppEventParam appEventParam(key, AppEventParamType::STRVECTOR);
-    appEventParam.value.valueUnion.strs_.assign(strs.begin(), strs.end());
-    baseParams_.push_back(appEventParam);
+    baseParams_.emplace_back(AppEventParam(key, strs));
 }
 
 void AppEventPack::AddCustomParams(const std::unordered_map<std::string, std::string>& customParams)
@@ -648,7 +438,7 @@ void AppEventPack::GetCustomParams(std::vector<CustomEventParam>& customParams) 
         CustomEventParam customParam = {
             .key = param.name,
             .value = GetParamValueStr(param),
-            .type = param.value.type,
+            .type = param.value.index(),
         };
         customParams.push_back(customParam);
     }

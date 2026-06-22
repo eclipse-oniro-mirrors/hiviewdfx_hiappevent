@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 
 #include <cinttypes>
 
-#include "app_event_store.h"
 #include "app_event_util.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
@@ -34,12 +34,12 @@ namespace {
 constexpr size_t PARAM_NUM = 1;
 constexpr int DEFAULT_ROW_NUM = 1;
 constexpr int DEFAULT_SIZE = 512 * 1024; // 512 * 1024: 512KB
-const std::string HOLDER_CLASS_NAME = "AppEventPackageHolder";
+constexpr const char* HOLDER_CLASS_NAME = "AppEventPackageHolder";
 
 int64_t GetObserverSeqByName(const std::string& name)
 {
     int64_t observerSeq = -1;
-    if (observerSeq = AppEventStore::GetInstance().QueryObserverSeq(name); observerSeq <= 0) {
+    if (observerSeq = AppEventStoreFacade::QueryObserverSeq(name); observerSeq <= 0) {
         HILOG_WARN(LOG_CORE, "failed to query seq by name=%{public}s", name.c_str());
         return -1;
     }
@@ -94,7 +94,7 @@ napi_value NapiAppEventHolder::NapiExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("takeNext", NapiTakeNext)
     };
     napi_value holderClass = nullptr;
-    napi_define_class(env, HOLDER_CLASS_NAME.c_str(), HOLDER_CLASS_NAME.size(), NapiConstructor, nullptr,
+    napi_define_class(env, HOLDER_CLASS_NAME, strlen(HOLDER_CLASS_NAME), NapiConstructor, nullptr,
         sizeof(properties) / sizeof(properties[0]), properties, &holderClass);
     NapiUtil::SetNamedProperty(env, exports, HOLDER_CLASS_NAME, holderClass);
     constructor_ = NapiUtil::CreateReference(env, holderClass);
@@ -196,7 +196,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
     std::vector<std::shared_ptr<AppEventPack>> events;
     bool shouldTakeSize = hasSetSize_ && !hasSetRow_;
     int rowNum = shouldTakeSize ? 0 : takeRow_;
-    if (AppEventStore::GetInstance().QueryEvents(events, observerSeq_, rowNum) != 0) {
+    if (AppEventStoreFacade::QueryEvents(events, observerSeq_, rowNum) != 0) {
         HILOG_WARN(LOG_CORE, "failed to query events, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
@@ -225,7 +225,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
         HILOG_INFO(LOG_CORE, "take data is empty, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }
-    if (!AppEventStore::GetInstance().DeleteData(observerSeq_, eventSeqs)) {
+    if (!AppEventStoreFacade::DeleteData(observerSeq_, eventSeqs)) {
         HILOG_INFO(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64, observerSeq_);
         return nullptr;
     }

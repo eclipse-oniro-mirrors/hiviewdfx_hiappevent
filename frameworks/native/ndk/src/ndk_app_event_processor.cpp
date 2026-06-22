@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,13 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "ndk_app_event_processor.h"
 
 #include <cinttypes>
 
-#include "ndk_app_event_processor.h"
-
-#include "app_event_observer_mgr.h"
-#include "hiappevent_verify.h"
 #include "hilog/log.h"
 #include "processor_config_loader.h"
 
@@ -59,7 +56,7 @@ int NdkAppEventProcessor::SetReportPolicy(int periodReport, int batchReport, boo
 
 int NdkAppEventProcessor::SetReportEvent(const char* domain, const char* name, bool isRealTime)
 {
-    EventConfig event;
+    HiAppEvent::EventConfig event;
     event.domain = domain;
     event.name = name;
     event.isRealTime = isRealTime;

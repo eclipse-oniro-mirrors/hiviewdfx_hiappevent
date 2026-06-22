@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,16 +13,12 @@
  * limitations under the License.
  */
 #include <iostream>
-#include <map>
 
 #include <gtest/gtest.h>
 
-#include "app_event_store.h"
 #include "app_event_watcher.h"
-#include "app_event_observer_mgr.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
-#include "hiappevent_write.h"
+#include "hiappevent_facade.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -52,13 +48,13 @@ public:
 
 void HiAppEventWatcherTest::SetUp()
 {
-    HiAppEventConfig::GetInstance().SetStorageDir(TEST_DIR);
-    (void)AppEventStore::GetInstance().InitDbStore();
+    AppEventConfigFacade::SetStorageDir(TEST_DIR);
+    (void)AppEventStoreFacade::InitDbStore();
 }
 
 void HiAppEventWatcherTest::TearDown()
 {
-    (void)AppEventStore::GetInstance().DestroyDbStore();
+    (void)AppEventStoreFacade::DestroyDbStore();
 }
 
 class AppEventWatcherTest : public AppEventWatcher {
@@ -177,19 +173,19 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest001, TestSize.Level3)
     std::cout << "HiAppEventWatcherTest001 start" << std::endl;
 
     auto watcher1 = BuildSimpleWatcher();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher1);
+    AppEventObserverFacade::AddWatcher(watcher1);
     auto watcher2 = BuildWatcherWithRow();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher2);
+    AppEventObserverFacade::AddWatcher(watcher2);
     auto watcher3 = BuildWatcherWithSize();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher3);
+    AppEventObserverFacade::AddWatcher(watcher3);
     auto watcher4 = BuildWatcherWithTimeout();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher4);
+    AppEventObserverFacade::AddWatcher(watcher4);
     auto watcher5 = BuildWatcherWithTimeout2();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher5);
+    AppEventObserverFacade::AddWatcher(watcher5);
 
     std::vector<std::shared_ptr<AppEventPack>> events;
     events.emplace_back(CreateAppEventPack());
-    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverFacade::HandleEvents(events);
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
@@ -197,21 +193,21 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest001, TestSize.Level3)
 
     events.clear();
     events.emplace_back(CreateAppEventPack("invalid_domain"));
-    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverFacade::HandleEvents(events);
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher3->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher4->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().HandleTimeout();
+    AppEventObserverFacade::HandleTimeout();
     ASSERT_EQ(watcher4->GetTriggerTimes(), 1);
     ASSERT_EQ(watcher5->GetTriggerTimes(), 1);
 
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher1->GetName());
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher2->GetName());
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher3->GetName());
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher4->GetName());
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher5->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher1->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher2->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher3->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher4->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher5->GetName());
     std::cout << "HiAppEventWatcherTest001 end" << std::endl;
 }
 
@@ -228,16 +224,16 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest002, TestSize.Level3)
      * @tc.steps: step2. add the watcher to AppEventObserverMgr.
      */
     std::cout << "HiAppEventWatcherTest002 start" << std::endl;
-    (void)AppEventStore::GetInstance().DestroyDbStore();
+    (void)AppEventStoreFacade::DestroyDbStore();
 
     auto watcher = BuildSimpleWatcher();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher);
+    AppEventObserverFacade::AddWatcher(watcher);
     std::vector<std::shared_ptr<AppEventPack>> events;
     events.emplace_back(CreateAppEventPack());
-    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverFacade::HandleEvents(events);
     ASSERT_EQ(watcher->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher->GetName());
     std::cout << "HiAppEventWatcherTest002 end" << std::endl;
 }
 
@@ -256,18 +252,18 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest003, TestSize.Level3)
     std::cout << "HiAppEventWatcherTest003 start" << std::endl;
 
     auto watcher1 = BuildWatcherWithRow();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher1);
+    AppEventObserverFacade::AddWatcher(watcher1);
     auto watcher2 = BuildWatcherWithRow();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher2);
+    AppEventObserverFacade::AddWatcher(watcher2);
 
     std::vector<std::shared_ptr<AppEventPack>> events;
     events.emplace_back(CreateAppEventPack());
-    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverFacade::HandleEvents(events);
     ASSERT_EQ(watcher1->GetTriggerTimes(), 0);
     ASSERT_EQ(watcher2->GetTriggerTimes(), 1);
 
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher1->GetName());
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher2->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher1->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher2->GetName());
     std::cout << "HiAppEventWatcherTest003 end" << std::endl;
 }
 
@@ -286,13 +282,13 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest004, TestSize.Level3)
     std::cout << "HiAppEventWatcherTest004 start" << std::endl;
 
     auto watcher = BuildSimpleOsWatcher();
-    AppEventObserverMgr::GetInstance().AddWatcher(watcher);
+    AppEventObserverFacade::AddWatcher(watcher);
     std::vector<std::shared_ptr<AppEventPack>> events;
     events.emplace_back(std::make_shared<AppEventPack>("OS", "APP_CRASH", TEST_TYPE));
-    AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverFacade::HandleEvents(events);
     ASSERT_EQ(watcher->GetTriggerTimes(), 0);
 
-    AppEventObserverMgr::GetInstance().RemoveObserver(watcher->GetName());
+    AppEventObserverFacade::RemoveObserver(watcher->GetName());
     std::cout << "HiAppEventWatcherTest004 end" << std::endl;
 }
 
@@ -304,13 +300,15 @@ HWTEST_F(HiAppEventWatcherTest, HiAppEventWatcherTest004, TestSize.Level3)
 HWTEST_F(HiAppEventWatcherTest, HiAppEventConfigTest001, TestSize.Level3)
 {
     GTEST_LOG_(INFO) << "HiAppEventConfigTest001 start";
-    HiAppEventConfig::GetInstance().SetDisable(true);
-    WriteEvent(nullptr);
-    HiAppEventConfig::GetInstance().SetDisable(false);
-    WriteEvent(nullptr);
-    SetEventParam(nullptr);
+    bool setRes = AppEventConfigFacade::SetConfigurationItem("disable", "true");
+    EXPECT_TRUE(setRes);
+    AppEventWriteFacade::FacadeWriteEvent(nullptr);
+    setRes = AppEventConfigFacade::SetConfigurationItem("disable", "false");
+    EXPECT_TRUE(setRes);
+    AppEventWriteFacade::FacadeWriteEvent(nullptr);
+    AppEventWriteFacade::FacadeSetEventParam(nullptr);
     auto appEventPack = std::make_shared<AppEventPack>();
-    int ret = SetEventParam(appEventPack);
+    int ret = AppEventWriteFacade::FacadeSetEventParam(appEventPack);
     ASSERT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "HiAppEventConfigTest001 end";
 }

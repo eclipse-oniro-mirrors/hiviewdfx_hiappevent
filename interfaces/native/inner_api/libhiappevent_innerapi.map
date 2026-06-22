@@ -1,0 +1,12 @@
+{
+  global:
+    extern "C++" {
+        OHOS::HiviewDFX::HiAppEvent::AppEventProcessorMgr::*;
+        OHOS::HiviewDFX::HiAppEvent::Event::Event*;
+        OHOS::HiviewDFX::HiAppEvent::Event::AddParam*;
+        OHOS::HiviewDFX::HiAppEvent::Report*;
+        OHOS::HiviewDFX::HiAppEvent::Write*;
+    };
+  local:
+    *;
+};

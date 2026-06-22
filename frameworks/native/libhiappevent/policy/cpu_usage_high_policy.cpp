@@ -25,7 +25,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr const char* const APP_EVENT_DIR = "/eventConfig";
+constexpr const char* APP_EVENT_DIR = "/eventConfig";
 constexpr int INVALID_PARAM = -1;
 }
 int CpuUsageHighPolicy::SetEventPolicy(const std::map<std::string, std::string>& configMap)

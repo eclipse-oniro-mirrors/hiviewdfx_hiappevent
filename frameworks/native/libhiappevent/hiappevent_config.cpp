@@ -22,7 +22,6 @@
 #include <sstream>
 #include <string>
 
-#include "app_event_observer_mgr.h"
 #include "application_context.h"
 #include "context.h"
 #include "hiappevent_base.h"
@@ -40,9 +39,9 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr const char* const DISABLE = "disable";
-constexpr const char* const MAX_STORAGE = "max_storage";
-constexpr const char* const APP_EVENT_DIR = "/hiappevent/";
+constexpr const char* DISABLE = "disable";
+constexpr const char* MAX_STORAGE = "max_storage";
+constexpr const char* APP_EVENT_DIR = "/hiappevent/";
 constexpr uint64_t STORAGE_UNIT_KB = 1024;
 constexpr uint64_t STORAGE_UNIT_MB = STORAGE_UNIT_KB * 1024;
 constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;

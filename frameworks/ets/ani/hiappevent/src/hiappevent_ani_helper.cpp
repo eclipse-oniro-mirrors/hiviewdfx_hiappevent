@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,21 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include <map>
-#include <cinttypes>
-
 #include "hiappevent_ani_helper.h"
 
-#include "app_event_observer_mgr.h"
-#include "app_event_stat.h"
-#include "ani_app_event_holder.h"
+#include <cinttypes>
+#include <map>
+
 #include "ani_app_event_watcher.h"
-#include "hiappevent_verify.h"
-#include "hiappevent_config.h"
-#include "hiappevent_userinfo.h"
+#include "hiappevent_ani_error_code.h"
+#include "hiappevent_ani_parameter_name.h"
+#include "hiappevent_ani_util.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
-#include "hilog/log_cpp.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -39,6 +35,8 @@ using namespace HiAppEvent;
 
 namespace {
 constexpr int32_t INVALID_OUT = -1;
+constexpr int WRITE_SUCCESS = 0;
+constexpr int WRITE_FAILED = 1;
 
 typedef struct ConfigProp {
     std::string key;
@@ -54,7 +52,7 @@ static bool AddParamToCustomConfigs(ani_env *env, ani_ref recordRef, HiAppEvent:
     if (!HiAppEventAniUtil::IsRefUndefined(env, recordRef)) {
         std::map<std::string, ani_ref> CustomConfigsRecord;
         HiAppEventAniUtil::ParseRecord(env, static_cast<ani_object>(recordRef), CustomConfigsRecord);
-        if (!IsValidCustomConfigsNum(CustomConfigsRecord.size())) {
+        if (!AppEventVerifyFacade::VerifyIsValidCustomConfigsNum(CustomConfigsRecord.size())) {
             HILOG_WARN(LOG_CORE, "invalid keys size=%{public}zu", CustomConfigsRecord.size());
             return false;
         }
@@ -80,7 +78,7 @@ static int32_t GetRouteInfoRefValue(ani_env *env, ani_object processor, const st
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
         out.routeInfo = HiAppEventAniUtil::ParseStringValue(env, ref);
-        if (!IsValidRouteInfo(out.routeInfo)) {
+        if (!AppEventVerifyFacade::VerifyIsValidRouteInfo(out.routeInfo)) {
             return ERR_CODE_PARAM_INVALID;
         }
     }
@@ -92,7 +90,7 @@ static int32_t GetAppIdRefValue(ani_env *env, ani_object processor, const std::s
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
         out.appId = HiAppEventAniUtil::ParseStringValue(env, ref);
-        if (!IsValidAppId(out.appId)) {
+        if (!AppEventVerifyFacade::VerifyIsValidAppId(out.appId)) {
             return ERR_CODE_PARAM_INVALID;
         }
     }
@@ -107,7 +105,7 @@ static int32_t GetNameRefValue(ani_env *env, ani_object processor, const std::st
         return ERR_CODE_PARAM_FORMAT;
     }
     std::string name = HiAppEventAniUtil::ParseStringValue(env, ref);
-    if (!IsValidProcessorName(name)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(name)) {
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Invalid processor name.");
         return ERR_CODE_PARAM_FORMAT;
     }
@@ -120,7 +118,7 @@ static int32_t GetPeriodReportInt(ani_env *env, ani_object processor, const std:
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
         out.triggerCond.timeout = HiAppEventAniUtil::ParseIntValue(env, ref);
-        if (!IsValidPeriodReport(out.triggerCond.timeout)) {
+        if (!AppEventVerifyFacade::VerifyIsValidPeriodReport(out.triggerCond.timeout)) {
             return ERR_CODE_PARAM_INVALID;
         }
     }
@@ -132,7 +130,7 @@ static int32_t GetBatchReportInt(ani_env *env, ani_object processor, const std::
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
         out.triggerCond.row = HiAppEventAniUtil::ParseIntValue(env, ref);
-        if (!IsValidBatchReport(out.triggerCond.row)) {
+        if (!AppEventVerifyFacade::VerifyIsValidBatchReport(out.triggerCond.row)) {
             return ERR_CODE_PARAM_INVALID;
         }
     }
@@ -146,7 +144,7 @@ static int32_t GetUserIdsRefValue(ani_env *env, ani_object processor, const std:
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
         HiAppEventAniUtil::GetStringsToSet(env, ref, userIdNames);
         for (auto userId : userIdNames) {
-            if (!IsValidUserIdName(userId)) {
+            if (!AppEventVerifyFacade::VerifyIsValidUserIdName(userId)) {
                 return ERR_CODE_PARAM_INVALID;
             }
         }
@@ -162,7 +160,7 @@ static int32_t GetUserPropertyRefValue(ani_env *env, ani_object processor, const
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
         HiAppEventAniUtil::GetStringsToSet(env, ref, userPropertyNames);
         for (auto userProperty : userPropertyNames) {
-            if (!IsValidUserPropName(userProperty)) {
+            if (!AppEventVerifyFacade::VerifyIsValidUserPropName(userProperty)) {
                 return ERR_CODE_PARAM_INVALID;
             }
         }
@@ -186,13 +184,13 @@ static int32_t ParseEventConfigsValue(ani_env *env, ani_ref Ref, std::vector<Eve
             return ERR_CODE_PARAM_INVALID;
         }
         ani_ref domainRef =
-            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_DOMAIN.c_str());
+            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_DOMAIN);
         config.domain = HiAppEventAniUtil::ParseStringValue(env, domainRef);
         ani_ref nameRef =
-            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_NAME.c_str());
+            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_NAME);
         config.name = HiAppEventAniUtil::ParseStringValue(env, nameRef);
         ani_ref isRealTimeBol =
-            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_REALTIME.c_str());
+            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_REALTIME);
         if (!HiAppEventAniUtil::IsRefUndefined(env, isRealTimeBol)) {
             config.isRealTime = HiAppEventAniUtil::ParseBoolValue(env, isRealTimeBol);
             arr.emplace_back(config);
@@ -336,12 +334,12 @@ bool HiAppEventAniHelper::AddProcessor(ani_env *env, ani_object processor, int64
         out = INVALID_OUT;
         return false;
     }
-    if (AppEventObserverMgr::GetInstance().Load(name) != 0) {
+    if (AppEventObserverFacade::Load(name) != 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, name no found", name.c_str());
         out = INVALID_OUT;
         return true;
     }
-    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(name, conf);
+    int64_t processorId = AppEventObserverFacade::AddProcessor(name, conf);
     if (processorId <= 0) {
         HILOG_WARN(LOG_CORE, "failed to add processor=%{public}s, register processor error", name.c_str());
         out = INVALID_OUT;
@@ -523,8 +521,7 @@ bool HiAppEventAniHelper::Configure(ani_env *env, ani_object configObj)
         if (HiAppEventAniUtil::IsRefUndefined(env, valueRef)) {
             continue;
         }
-        if (!HiAppEventConfig::GetInstance().SetConfigurationItem(
-            key, HiAppEventAniUtil::ConvertToString(env, valueRef))) {
+        if (!AppEventConfigFacade::SetConfigurationItem(key, HiAppEventAniUtil::ConvertToString(env, valueRef))) {
             std::string errMsg = "Invalid max storage quota value.";
             HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_MAX_STORAGE, errMsg);
             return false;
@@ -536,25 +533,25 @@ bool HiAppEventAniHelper::Configure(ani_env *env, ani_object configObj)
 bool HiAppEventAniHelper::SetUserId(ani_env *env, ani_string name, ani_string value)
 {
     std::string strName = HiAppEventAniUtil::ParseStringValue(env, name);
-    if (!IsValidUserIdName(strName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserIdName(strName)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The name parameter is invalid.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Parameter error. The name parameter is invalid.");
         return false;
     }
     std::string strUserId = HiAppEventAniUtil::ParseStringValue(env, value);
     if (strUserId.empty()) {
-        if (HiAppEvent::UserInfo::GetInstance().RemoveUserId(strName) != 0) {
+        if (AppEventUserInfoFacade::RemoveUserId(strName) != 0) {
             HILOG_ERROR(LOG_CORE, "failed to remove userId");
             return false;
         }
         return true;
     }
-    if (!IsValidUserIdValue(strUserId)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserIdValue(strUserId)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The value parameter is invalid.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Parameter error. The value parameter is invalid.");
         return false;
     }
-    if (HiAppEvent::UserInfo::GetInstance().SetUserId(strName, strUserId) != 0) {
+    if (AppEventUserInfoFacade::SetUserId(strName, strUserId) != 0) {
         HILOG_ERROR(LOG_CORE, "failed to set userId");
         return false;
     }
@@ -564,13 +561,13 @@ bool HiAppEventAniHelper::SetUserId(ani_env *env, ani_string name, ani_string va
 bool HiAppEventAniHelper::GetUserId(ani_env *env, ani_string name, ani_string &userId)
 {
     std::string strName = HiAppEventAniUtil::ParseStringValue(env, name);
-    if (!IsValidUserIdName(strName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserIdName(strName)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The name parameter is invalid.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Parameter error. The name parameter is invalid.");
         return false;
     }
     std::string strUserId = "";
-    if (HiAppEvent::UserInfo::GetInstance().GetUserId(strName, strUserId) != 0) {
+    if (AppEventUserInfoFacade::GetUserId(strName, strUserId) != 0) {
         HILOG_ERROR(LOG_CORE, "failed to get userId");
         return false;
     }
@@ -584,25 +581,25 @@ bool HiAppEventAniHelper::GetUserId(ani_env *env, ani_string name, ani_string &u
 bool HiAppEventAniHelper::SetUserProperty(ani_env *env, ani_string name, ani_string value)
 {
     std::string strName = HiAppEventAniUtil::ParseStringValue(env, name);
-    if (!IsValidUserPropName(strName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropName(strName)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The name parameter is invalid.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Parameter error. The name parameter is invalid.");
         return false;
     }
     std::string strUserProperty = HiAppEventAniUtil::ParseStringValue(env, value);
     if (strUserProperty.empty()) {
-        if (HiAppEvent::UserInfo::GetInstance().RemoveUserProperty(strName) != 0) {
+        if (AppEventUserInfoFacade::RemoveUserProperty(strName) != 0) {
             HILOG_ERROR(LOG_CORE, "failed to remove user property");
             return false;
         }
         return true;
     }
-    if (!IsValidUserPropValue(strUserProperty)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropValue(strUserProperty)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The value parameter is invalid.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Parameter error. The value parameter is invalid.");
         return false;
     }
-    if (HiAppEvent::UserInfo::GetInstance().SetUserProperty(strName, strUserProperty) != 0) {
+    if (AppEventUserInfoFacade::SetUserProperty(strName, strUserProperty) != 0) {
         HILOG_ERROR(LOG_CORE, "failed to set user property");
         return false;
     }
@@ -612,13 +609,13 @@ bool HiAppEventAniHelper::SetUserProperty(ani_env *env, ani_string name, ani_str
 bool HiAppEventAniHelper::GetUserProperty(ani_env *env, ani_string name, ani_string &userProperty)
 {
     std::string strName = HiAppEventAniUtil::ParseStringValue(env, name);
-    if (!IsValidUserPropName(strName)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropName(strName)) {
         HILOG_WARN(LOG_CORE, "Parameter error. The name parameter is invalid.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, "Parameter error. The name parameter is invalid.");
         return false;
     }
     std::string strUserProperty = "";
-    if (HiAppEvent::UserInfo::GetInstance().GetUserProperty(strName, strUserProperty) != 0) {
+    if (AppEventUserInfoFacade::GetUserProperty(strName, strUserProperty) != 0) {
         HILOG_ERROR(LOG_CORE, "failed to get user property");
         return false;
     }
@@ -636,7 +633,7 @@ bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_long id)
         HILOG_ERROR(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return true;
     }
-    if (AppEventObserverMgr::GetInstance().RemoveObserver(processorId) != 0) {
+    if (AppEventObserverFacade::RemoveObserver(processorId) != 0) {
         HILOG_WARN(LOG_CORE, "failed to remove processor id=%{public}" PRId64, processorId);
         return false;
     }
@@ -645,7 +642,7 @@ bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_long id)
 
 static bool IsValidName(ani_env *env, ani_ref nameRef, int32_t& errCode)
 {
-    if (!IsValidWatcherName(HiAppEventAniUtil::ParseStringValue(env, nameRef))) {
+    if (!AppEventVerifyFacade::VerifyIsValidWatcherName(HiAppEventAniUtil::ParseStringValue(env, nameRef))) {
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_WATCHER_NAME, "Invalid watcher name.");
         errCode = ERR_INVALID_WATCHER_NAME;
         return false;
@@ -656,8 +653,8 @@ static bool IsValidName(ani_env *env, ani_ref nameRef, int32_t& errCode)
 static bool IsValidFilter(ani_env *env, ani_ref filterValue, int32_t& errCode)
 {
     ani_ref domainRef =
-        HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(filterValue), FILTER_DOMAIN.c_str());
-    if (!IsValidDomain(HiAppEventAniUtil::ParseStringValue(env, domainRef))) {
+        HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(filterValue), FILTER_DOMAIN);
+    if (!AppEventVerifyFacade::VerifyIsValidDomain(HiAppEventAniUtil::ParseStringValue(env, domainRef))) {
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_FILTER_DOMAIN, "Invalid filtering event domain.");
         errCode = ERR_INVALID_FILTER_DOMAIN;
         return false;
@@ -690,13 +687,13 @@ static bool IsValidFilters(ani_env *env, ani_ref filtersRef, int32_t& errCode)
 
 static bool IsValidWatcher(ani_env *env, ani_object watcher, int32_t& errCode)
 {
-    return IsValidName(env, HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME.c_str()), errCode)
-        && IsValidFilters(env, HiAppEventAniUtil::GetProperty(env, watcher, APPEVENT_FILTERS.c_str()), errCode);
+    return IsValidName(env, HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME), errCode)
+        && IsValidFilters(env, HiAppEventAniUtil::GetProperty(env, watcher, APPEVENT_FILTERS), errCode);
 }
 
 static void GetFilters(ani_env *env, ani_object watcher, std::vector<AppEventFilter>& filters)
 {
-    ani_ref filtersRef = HiAppEventAniUtil::GetProperty(env, watcher, APPEVENT_FILTERS.c_str());
+    ani_ref filtersRef = HiAppEventAniUtil::GetProperty(env, watcher, APPEVENT_FILTERS);
     if (HiAppEventAniUtil::IsRefUndefined(env, filtersRef)) {
         return;
     }
@@ -712,16 +709,16 @@ static void GetFilters(ani_env *env, ani_object watcher, std::vector<AppEventFil
             return;
         }
         ani_ref domainValue =
-            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), FILTER_DOMAIN.c_str());
+            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), FILTER_DOMAIN);
         std::string domain = HiAppEventAniUtil::ParseStringValue(env, domainValue);
         ani_ref namesValue =
-            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), FILTER_NAMES.c_str());
+            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), FILTER_NAMES);
         std::unordered_set<std::string> names;
         if (!HiAppEventAniUtil::IsRefUndefined(env, namesValue)) {
             HiAppEventAniUtil::GetStringsToSet(env, namesValue, names);
         }
         ani_ref typesValue =
-            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), FILTER_TYPES.c_str());
+            HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), FILTER_TYPES);
         if (HiAppEventAniUtil::IsRefUndefined(env, typesValue)) {
             filters.emplace_back(AppEventFilter(domain, names, BIT_ALL_TYPES));
             continue;
@@ -748,7 +745,7 @@ static int GetConditionValue(ani_env *env, ani_ref cond, const std::string& name
 
 static bool GetCondition(ani_env *env, ani_object watcher, TriggerCondition& resCond)
 {
-    ani_ref cond = HiAppEventAniUtil::GetProperty(env, watcher, TRIGGER_CONDITION.c_str());
+    ani_ref cond = HiAppEventAniUtil::GetProperty(env, watcher, TRIGGER_CONDITION);
     if (HiAppEventAniUtil::IsRefUndefined(env, cond)) {
         return true;
     }
@@ -801,13 +798,13 @@ ani_object HiAppEventAniHelper::AddWatcher(ani_env *env, ani_object watcher, uin
     int32_t errCode = ERR_CODE_SUCC;
     if (!IsValidWatcher(env, watcher, errCode)) {
         HILOG_ERROR(LOG_CORE, "invalid watcher");
-        AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, errCode);
+        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, errCode);
         return {};
     }
     std::vector<AppEventFilter> filters;
     GetFilters(env, watcher, filters);
     std::string name = HiAppEventAniUtil::ParseStringValue(env,
-        HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME.c_str()));
+        HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME));
     TriggerCondition cond {
         .row = 0,
         .size = 0,
@@ -818,38 +815,38 @@ ani_object HiAppEventAniHelper::AddWatcher(ani_env *env, ani_object watcher, uin
     }
     auto watcherPtr = std::make_shared<AniAppEventWatcher>(name, filters, cond);
 
-    ani_ref trigger = HiAppEventAniUtil::GetProperty(env, watcher, FUNCTION_ONTRIGGER.c_str());
+    ani_ref trigger = HiAppEventAniUtil::GetProperty(env, watcher, FUNCTION_ONTRIGGER);
     if (!HiAppEventAniUtil::IsRefUndefined(env, trigger)) {
         watcherPtr->InitTrigger(env, trigger);
     }
 
-    ani_ref receiver = HiAppEventAniUtil::GetProperty(env, watcher, FUNCTION_ONRECEIVE.c_str());
+    ani_ref receiver = HiAppEventAniUtil::GetProperty(env, watcher, FUNCTION_ONRECEIVE);
     if (!HiAppEventAniUtil::IsRefUndefined(env, receiver)) {
         watcherPtr->InitReceiver(env, receiver);
     }
 
-    int64_t observerSeq = AppEventObserverMgr::GetInstance().AddWatcher(watcherPtr);
+    int64_t observerSeq = AppEventObserverFacade::AddWatcher(watcherPtr);
     if (observerSeq <= 0) {
         HILOG_ERROR(LOG_CORE, "invalid observer sequence");
-        AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::FAILED, ERR_CODE_SUCC);
+        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, ERR_CODE_SUCC);
         return {};
     }
 
     ani_object holder = CreateHolderObject(env, HiAppEventAniUtil::CreateAniString(env, name));
     watcherPtr->InitHolder(env, holder);
-    AppEventStat::WriteApiEndEventAsync("addWatcher", beginTime, AppEventStat::SUCCESS, ERR_CODE_SUCC);
+    AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC);
     return static_cast<ani_object>(holder);
 }
 
 void HiAppEventAniHelper::RemoveWatcher(ani_env *env, ani_object watcher, uint64_t beginTime)
 {
-    ani_ref nameRef = HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME.c_str());
+    ani_ref nameRef = HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME);
     int32_t errCode = ERR_CODE_SUCC;
     if (!IsValidName(env, nameRef, errCode)) {
-        AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::FAILED, errCode);
+        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, errCode);
         return;
     }
-    (void)AppEventObserverMgr::GetInstance().RemoveObserver(HiAppEventAniUtil::ParseStringValue(env, nameRef));
-    AppEventStat::WriteApiEndEventAsync("removeWatcher", beginTime, AppEventStat::SUCCESS, ERR_CODE_SUCC);
+    (void)AppEventObserverFacade::RemoveObserver(HiAppEventAniUtil::ParseStringValue(env, nameRef));
+    AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC);
     return;
 }

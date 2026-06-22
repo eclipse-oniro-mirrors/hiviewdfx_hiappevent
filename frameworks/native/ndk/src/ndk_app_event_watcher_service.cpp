@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,9 +15,8 @@
 
 #include "ndk_app_event_watcher_service.h"
 
-#include "ndk_app_event_watcher_proxy.h"
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
+#include "ndk_app_event_watcher_proxy.h"
 
 using namespace OHOS::HiviewDFX;
 

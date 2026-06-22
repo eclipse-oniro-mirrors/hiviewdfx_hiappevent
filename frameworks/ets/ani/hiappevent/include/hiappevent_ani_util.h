@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,10 +19,7 @@
 #include <ani.h>
 #include <map>
 #include <unordered_set>
-#include "hilog/log.h"
-#include "hilog/log_cpp.h"
-#include "hiappevent_ani_error_code.h"
-#include "hiappevent_ani_parameter_name.h"
+
 #include "hiappevent_base.h"
 
 namespace OHOS {

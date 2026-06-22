@@ -41,11 +41,11 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr int BUF_SIZE = 2048;
-const std::string APP_EVENT_DIR = "/hiappevent";
-const std::string RUNNING_ID_PROPERTY = "app_running_unique_id";
-const std::string OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
-const std::string XATTR_NAME = "user.appevent";
-const std::string KEY_HIAPPEVENT_ENABLE = "hiviewdfx.hiappevent.enable";
+constexpr const char* APP_EVENT_DIR = "/hiappevent";
+constexpr const char* RUNNING_ID_PROPERTY = "app_running_unique_id";
+constexpr const char* OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
+constexpr const char* XATTR_NAME = "user.appevent";
+constexpr const char* KEY_HIAPPEVENT_ENABLE = "hiviewdfx.hiappevent.enable";
 
 bool UpdateListenedEvents(const std::string& dir, uint64_t eventsMask)
 {
@@ -134,7 +134,8 @@ bool OsEventListener::StartListening()
         RemoveOsEventDir();
         return false;
     }
-    if (FileUtil::IsFileExists(OS_LOG_PATH + "/info") && !FileUtil::ForceRemoveDirectory(OS_LOG_PATH + "/info")) {
+    if (FileUtil::IsFileExists(std::string(OS_LOG_PATH) + "/info")
+        && !FileUtil::ForceRemoveDirectory(std::string(OS_LOG_PATH) + "/info")) {
         HILOG_ERROR(LOG_CORE, "failed to remove dir /data/storage/el2/log/hiappevent/info");
     }
     return InitDir(OS_LOG_PATH) && InitDir(osEventPath_) && RegisterDirListener(osEventPath_);

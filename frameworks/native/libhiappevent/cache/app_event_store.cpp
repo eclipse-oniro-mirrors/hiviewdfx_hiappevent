@@ -108,14 +108,14 @@ std::shared_ptr<AppEventPack> GetEventFromResultSet(std::shared_ptr<NativeRdb::A
 
 int UpToDbVersion2(NativeRdb::RdbStore& rdbStore)
 {
-    std::string sql = "ALTER TABLE " + Events::TABLE + " ADD COLUMN "
+    std::string sql = std::string("ALTER TABLE ") + Events::TABLE + " ADD COLUMN "
         + Events::FIELD_RUNNING_ID + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
     return rdbStore.ExecuteSql(sql);
 }
 
 int UpToDbVersion3(NativeRdb::RdbStore& rdbStore)
 {
-    std::string sql = "ALTER TABLE " + Observers::TABLE + " ADD COLUMN "
+    std::string sql = std::string("ALTER TABLE ") + Observers::TABLE + " ADD COLUMN "
         + Observers::FIELD_FILTERS + " " + SqlUtil::SQL_TEXT_TYPE + " DEFAULT " + "'';";
     return rdbStore.ExecuteSql(sql);
 }
@@ -526,7 +526,7 @@ int AppEventStore::QueryEvents(std::vector<std::shared_ptr<AppEventPack>>& event
 {
     auto func = [this, &events, &observerSeq, &size] () {
         std::shared_ptr<NativeRdb::AbsSharedResultSet> resultSet = nullptr;
-        std::string sql = "SELECT " + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
+        std::string sql = std::string("SELECT ") + Events::TABLE + ".* FROM " + AppEventMapping::TABLE + " INNER JOIN "
             + Events::TABLE + " ON " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + "="
             + Events::TABLE + "." + Events::FIELD_SEQ + " WHERE " + AppEventMapping::FIELD_OBSERVER_SEQ + "=?"
             + " ORDER BY " + AppEventMapping::TABLE + "." + AppEventMapping::FIELD_EVENT_SEQ + " DESC ";
@@ -747,7 +747,7 @@ int AppEventStore::DeleteHistoryEvent(int reservedNum, int reservedNumOs)
         // delete history events, keep the latest reservedNum events,
         // and keep the latest reservedNumOs events of OS domain
         std::string whereClause
-            = Events::FIELD_SEQ + " NOT IN (SELECT " + Events::FIELD_SEQ + " FROM " + Events::TABLE
+            = std::string(Events::FIELD_SEQ) + " NOT IN (SELECT " + Events::FIELD_SEQ + " FROM " + Events::TABLE
             + " WHERE " + Events::FIELD_DOMAIN + " != ? ORDER BY "+ Events::FIELD_SEQ + " DESC LIMIT 0,?) AND "
             + Events::FIELD_SEQ + " NOT IN (SELECT " + Events::FIELD_SEQ + " FROM " + Events::TABLE
             + " WHERE " + Events::FIELD_DOMAIN + " = ? ORDER BY " + Events::FIELD_SEQ + " DESC LIMIT 0,?)";

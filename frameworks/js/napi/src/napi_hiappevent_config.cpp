@@ -17,8 +17,7 @@
 #include <map>
 #include <string>
 
-#include "event_policy_mgr.h"
-#include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_config_builder.h"
 #include "napi_error.h"
@@ -35,7 +34,7 @@ namespace HiviewDFX {
 namespace NapiHiAppEventConfig {
 namespace {
 constexpr int ERROR_SET_FAILED = -1;
-constexpr const char* const APP_CRASH = "APP_CRASH";
+constexpr const char* APP_CRASH = "APP_CRASH";
 const std::map<std::string, napi_valuetype> CONFIG_OPTION_MAP = {
     { "disable", napi_boolean },
     { "maxStorage", napi_string },
@@ -44,10 +43,10 @@ const std::map<std::string, napi_valuetype> CONFIG_OPTION_MAP = {
 int SetEventConfigSync(HiAppEventConfigAsyncContext* asyncContext)
 {
     if (asyncContext->eventConfigPack->eventName == APP_CRASH) {
-        return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->eventName,
+        return AppEventWriteFacade::SetEventPolicy(asyncContext->eventConfigPack->eventName,
             asyncContext->eventConfigPack->configUintMap);
     }
-    return EventPolicyMgr::GetInstance().SetEventPolicy(asyncContext->eventConfigPack->eventName,
+    return AppEventWriteFacade::SetEventPolicy(asyncContext->eventConfigPack->eventName,
         asyncContext->eventConfigPack->configStringMap);
 }
 
@@ -55,7 +54,7 @@ int ConfigEventPolicySync(HiAppEventConfigAsyncContext* asyncContext)
 {
     int ret = NapiError::ERR_OK;
     for (const auto& configMap : asyncContext->eventPolicyPack->policyStringMaps) {
-        ret = EventPolicyMgr::GetInstance().SetEventPolicy(configMap.first, configMap.second);
+        ret = AppEventWriteFacade::SetEventPolicy(configMap.first, configMap.second);
         if (ret != NapiError::ERR_OK) {
             HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
                 ret);
@@ -63,7 +62,7 @@ int ConfigEventPolicySync(HiAppEventConfigAsyncContext* asyncContext)
         }
     }
     for (const auto& cfgMap : asyncContext->eventPolicyPack->policyUintMaps) {
-        ret = EventPolicyMgr::GetInstance().SetEventPolicy(cfgMap.first, cfgMap.second);
+        ret = AppEventWriteFacade::SetEventPolicy(cfgMap.first, cfgMap.second);
         if (ret != NapiError::ERR_OK) {
             HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", cfgMap.first.c_str(),
                 ret);
@@ -92,7 +91,7 @@ bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isThrow);
             return false;
         }
-        if (!HiAppEventConfig::GetInstance().SetConfigurationItem(key, NapiUtil::ConvertToString(env, value))) {
+        if (!AppEventConfigFacade::SetConfigurationItem(key, NapiUtil::ConvertToString(env, value))) {
             NapiUtil::ThrowErrorMsg(env, NapiError::ERR_INVALID_MAX_STORAGE, isThrow);
             return false;
         }
@@ -102,12 +101,12 @@ bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
 
 bool IsDisable()
 {
-    return HiAppEventConfig::GetInstance().GetDisable();
+    return AppEventConfigFacade::GetDisable();
 }
 
 std::string GetStorageDir()
 {
-    return HiAppEventConfig::GetInstance().GetStorageDir();
+    return AppEventConfigFacade::GetStorageDir();
 }
 
 void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncContext> asyncContext)

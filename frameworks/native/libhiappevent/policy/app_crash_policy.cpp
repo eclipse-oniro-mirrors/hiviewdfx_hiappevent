@@ -31,8 +31,8 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr uint32_t MAX_CUTOFF_SZ_BYTES = 5 * 1024 * 1024; // 5M: 5242880
-const char* const DMP_INFO_PATH = "/data/storage/el2/log/hiappevent/info";
-constexpr const char* const APP_EVENT_DIR = "/eventConfig";
+constexpr const char* DMP_INFO_PATH = "/data/storage/el2/log/hiappevent/info";
+constexpr const char* APP_EVENT_DIR = "/eventConfig";
 enum CrashLogConfigType : uint8_t {
     EXTEND_PC_LR_PRINTING = 0,
     LOG_FILE_CUTOFF_SZ_BYTES,

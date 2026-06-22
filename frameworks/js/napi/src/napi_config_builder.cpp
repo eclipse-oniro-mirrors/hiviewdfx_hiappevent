@@ -31,10 +31,10 @@ constexpr size_t CONFIG_PARAM_NUM = 2;
 constexpr size_t POLICY_PARAM_NUM = 1;
 constexpr size_t INDEX_OF_NAME_CONFIG = 0;
 constexpr size_t INDEX_OF_VALUE_CONFIG = 1;
-constexpr const char* const APP_CRASH = "APP_CRASH";
-constexpr const char* const MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
-constexpr const char* const RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
-constexpr const char* const APP_CRASH_POLICY = "appCrashPolicy";
+constexpr const char* APP_CRASH = "APP_CRASH";
+constexpr const char* MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+constexpr const char* RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
+constexpr const char* APP_CRASH_POLICY = "appCrashPolicy";
 constexpr int CRASH_LOG_MAX_CAPACITY = 5 * 1024 * 1024;  // 5M
 struct crashConfig {
     uint8_t type;

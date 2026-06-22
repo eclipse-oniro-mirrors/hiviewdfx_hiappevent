@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,11 +14,11 @@
  */
 
 #include "ani_app_event_watcher.h"
-#include "hiappevent_ani_util.h"
 
-#include "app_event_observer_mgr.h"
-#include "app_event_store.h"
-#include "hiappevent_base.h"
+#include <cinttypes>
+
+#include "hiappevent_ani_util.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 
 #undef LOG_DOMAIN
@@ -77,8 +77,8 @@ void DeleteEventMappingAsync(int64_t observerSeq, const std::vector<std::shared_
     for (const auto& event : events) {
         eventSeqs.emplace_back(event->GetSeq());
     }
-    AppEventObserverMgr::GetInstance().SubmitTaskToFFRTQueue([observerSeq, eventSeqs]() {
-        if (!AppEventStore::GetInstance().DeleteData(observerSeq, eventSeqs)) {
+    AppEventObserverFacade::SubmitTaskToFFRTQueue([observerSeq, eventSeqs]() {
+        if (!AppEventStoreFacade::DeleteData(observerSeq, eventSeqs)) {
             HILOG_ERROR(LOG_CORE, "failed to delete mapping data, seq=%{public}" PRId64 ", event num=%{public}zu",
                 observerSeq, eventSeqs.size());
         }

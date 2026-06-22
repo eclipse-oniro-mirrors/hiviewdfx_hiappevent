@@ -30,11 +30,11 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace NapiUtil {
 namespace {
-const std::string DOMAIN_PROPERTY = "domain";
-const std::string NAME_PROPERTY = "name";
-const std::string EVENT_TYPE_PROPERTY = "eventType";
-const std::string PARAM_PROPERTY = "params";
-const std::string EVENT_INFOS_PROPERTY = "appEventInfos";
+constexpr const char* DOMAIN_PROPERTY = "domain";
+constexpr const char* NAME_PROPERTY = "name";
+constexpr const char* EVENT_TYPE_PROPERTY = "eventType";
+constexpr const char* PARAM_PROPERTY = "params";
+constexpr const char* EVENT_INFOS_PROPERTY = "appEventInfos";
 
 std::string NapiNumberToString(const napi_env env, const napi_value value)
 {

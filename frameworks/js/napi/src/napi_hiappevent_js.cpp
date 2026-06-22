@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 #include "hiappevent_base.h"
-#include "hiappevent_config.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_hiappevent_builder.h"
 #include "napi_hiappevent_config.h"
@@ -52,7 +51,7 @@ static napi_value Write(napi_env env, napi_callback_info info)
 
     // 2. if the build is successful, the event verification is performed
     if (asyncContext->result >= 0) {
-        if (auto ret = VerifyAppEvent(asyncContext->appEventPack); ret != 0) {
+        if (auto ret = AppEventVerifyFacade::VerifyTheAppEvent(asyncContext->appEventPack); ret != 0) {
             asyncContext->result = ret;
         }
     }

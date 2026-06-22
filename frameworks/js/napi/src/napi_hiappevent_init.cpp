@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,12 +28,12 @@ constexpr int STATISTIC_EVENT_TYPE = 2;
 constexpr int SECURITY_EVENT_TYPE = 3;
 constexpr int BEHAVIOR_EVENT_TYPE = 4;
 
-const std::string EVENT_CLASS_NAME = "Event";
-const std::string EVENT_CLASS_NAME_V9 = "event";
-const std::string PARAM_CLASS_NAME = "Param";
-const std::string PARAM_CLASS_NAME_V9 = "param";
-const std::string EVENT_TYPE_CLASS_NAME = "EventType";
-const std::string DOMAIN_CLASS_NAME = "domain";
+constexpr const char* EVENT_CLASS_NAME = "Event";
+constexpr const char* EVENT_CLASS_NAME_V9 = "event";
+constexpr const char* PARAM_CLASS_NAME = "Param";
+constexpr const char* PARAM_CLASS_NAME_V9 = "param";
+constexpr const char* EVENT_TYPE_CLASS_NAME = "EventType";
+constexpr const char* DOMAIN_CLASS_NAME = "domain";
 
 napi_value ClassConstructor(napi_env env, napi_callback_info info)
 {

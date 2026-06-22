@@ -18,18 +18,13 @@
 #include <map>
 
 #include "ani_app_event_holder.h"
-#include "app_event_stat.h"
-#include "app_event_observer_mgr.h"
-#include "event_policy_mgr.h"
 #include "hiappevent_ani_error_code.h"
-#include "hiappevent_clean.h"
-#include "hiappevent_config.h"
+#include "hiappevent_ani_parameter_name.h"
+#include "hiappevent_ani_util.h"
+#include "hiappevent_facade.h"
 #include "hiappevent_param_builder.h"
-#include "hiappevent_verify.h"
 #include "hilog/log.h"
-#include "hilog/log_cpp.h"
 #include "processor_config_loader.h"
-#include "time_util.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -39,8 +34,9 @@
 
 using namespace OHOS::HiviewDFX;
 namespace {
-const char* const DEFAULT_CONFIG_NAME = "SDK_OCG";
-const std::string PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
+constexpr const char* DEFAULT_CONFIG_NAME = "SDK_OCG";
+constexpr const char* PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
+constexpr int WRITE_SUCCESS = 0;
 
 std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
 {
@@ -89,19 +85,19 @@ ani_long HiAppEventAni::AddProcessorFromConfigSync(ani_env *env, ani_string proc
         configNameTemp = HiAppEventAniUtil::ParseStringValue(env, configName);
     }
 
-    if (!IsValidProcessorName(processorNameTemp)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(processorNameTemp)) {
         HILOG_ERROR(LOG_CORE, "Invalid processor name.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
             "Invalid param value for add processor from config.");
         return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
     }
-    if (!IsValidProcessorName(configNameTemp)) {
+    if (!AppEventVerifyFacade::VerifyIsValidProcessorName(configNameTemp)) {
         HILOG_ERROR(LOG_CORE, "Invalid processorConfig name.");
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
             "Invalid param value for add processor from config.");
         return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
     }
-    if (AppEventObserverMgr::GetInstance().Load(processorNameTemp) != 0) {
+    if (AppEventObserverFacade::Load(processorNameTemp) != 0) {
         HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, name not found", processorNameTemp.c_str());
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_PARAM_VALUE,
             "Invalid param value for add processor from config.");
@@ -116,9 +112,9 @@ ani_long HiAppEventAni::AddProcessorFromConfigSync(ani_env *env, ani_string proc
         return static_cast<ani_long>(ERR_CODE_PARAM_INVALID);
     }
 
-    ReportConfig conf = loader.GetReportConfig();
+    HiAppEvent::ReportConfig conf = loader.GetReportConfig();
     conf.configName = "";  // Normalize processor config
-    int64_t processorId = AppEventObserverMgr::GetInstance().AddProcessor(processorNameTemp, conf);
+    int64_t processorId = AppEventObserverFacade::AddProcessor(processorNameTemp, conf);
     if (processorId <= 0) {
         HILOG_ERROR(LOG_CORE, "failed to add processor=%{public}s, register processor error",
             processorNameTemp.c_str());
@@ -148,7 +144,7 @@ ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
         HILOG_ERROR(LOG_CORE, "get eventType value failed");
         return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("eventType")});
     }
-    if (!IsValidEventType(enumValue)) {
+    if (!AppEventVerifyFacade::VerifyIsValidEventType(enumValue)) {
         HILOG_ERROR(LOG_CORE, "eventType value range error");
         return HiAppEventAniUtil::Result(env, {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("eventType")});
     }
@@ -168,12 +164,12 @@ ani_object HiAppEventAni::Write(ani_env *env, ani_object info)
 
     int32_t result = hiAppEventAniHelper.GetResult();
     if (result >= 0) {
-        if (auto ret = VerifyAppEvent(appEventPack); ret != 0) {
+        if (auto ret = AppEventVerifyFacade::VerifyTheAppEvent(appEventPack); ret != 0) {
             result = ret;
         }
     }
     if (result >= 0) {
-        WriteEvent(appEventPack);
+        AppEventWriteFacade::FacadeWriteEvent(appEventPack);
     }
     return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
 }
@@ -204,12 +200,12 @@ ani_object HiAppEventAni::SetEventParamSync(ani_env *env, ani_object params, ani
 
     int32_t result = hiAppEventParamBuilder.GetResult();
     if (result >= 0) {
-        if (auto retTemp = VerifyCustomEventParams(appEventPack); retTemp != 0) {
+        if (auto retTemp = AppEventVerifyFacade::VerifyTheCustomEventParams(appEventPack); retTemp != 0) {
             result = retTemp;
         }
     }
     if (result == 0) {
-        if (auto ret = SetEventParam(appEventPack); ret > 0) {
+        if (auto ret = AppEventWriteFacade::FacadeSetEventParam(appEventPack); ret > 0) {
             result = ret;
         }
     }
@@ -225,7 +221,7 @@ ani_object HiAppEventAni::SetEventConfigSync(ani_env *env, ani_string name, ani_
         HILOG_ERROR(LOG_CORE, "the param type is invalid or the config is empty.");
         return HiAppEventAniUtil::Result(env, {result, "the param type is invalid or the config is empty."});
     }
-    result = EventPolicyMgr::GetInstance().SetEventPolicy(nameString, eventConfigMap);
+    result = AppEventWriteFacade::SetEventPolicy(nameString, eventConfigMap);
     if (result == 0) {
         return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(result));
     } else {
@@ -254,7 +250,7 @@ ani_object HiAppEventAni::ConfigEventPolicySync(ani_env *env, ani_object policy)
 
     auto rtn = HiAppEventAniUtil::Result(env, {ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL, ""});
     for (const auto& configMap : policyStringMaps) {
-        int setResult = EventPolicyMgr::GetInstance().SetEventPolicy(configMap.first, configMap.second);
+        int setResult = AppEventWriteFacade::SetEventPolicy(configMap.first, configMap.second);
         if (setResult != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
             HILOG_ERROR(LOG_CORE, "Failed to config event(%{public}s) policy, ret=%{public}d", configMap.first.c_str(),
                 setResult);
@@ -266,9 +262,9 @@ ani_object HiAppEventAni::ConfigEventPolicySync(ani_env *env, ani_object policy)
 
 void HiAppEventAni::ClearData([[maybe_unused]] ani_env *env)
 {
-    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
-    HiAppEventClean::ClearData(HiAppEventConfig::GetInstance().GetStorageDir());
-    AppEventStat::WriteApiEndEventAsync("clearData", beginTime, AppEventStat::SUCCESS, ERR_CODE_SUCC);
+    uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
+    AppEventStoreFacade::ClearData(AppEventConfigFacade::GetStorageDir());
+    AppEventUtilityFacade::WriteApiEndEventAsync("clearData", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC);
 }
 
 void HiAppEventAni::SetUserId(ani_env *env, ani_string name, ani_string value)
@@ -317,14 +313,14 @@ void HiAppEventAni::RemoveProcessor(ani_env *env, ani_long id)
 
 ani_object HiAppEventAni::AddWatcher(ani_env *env, ani_object watcher)
 {
-    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     HiAppEventAniHelper hiAppEventAniHelper;
     return hiAppEventAniHelper.AddWatcher(env, watcher, beginTime);
 }
 
 void HiAppEventAni::RemoveWatcher(ani_env *env, ani_object watcher)
 {
-    uint64_t beginTime = static_cast<uint64_t>(TimeUtil::GetElapsedMilliSecondsSinceBoot());
+    uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     HiAppEventAniHelper hiAppEventAniHelper;
     hiAppEventAniHelper.RemoveWatcher(env, watcher, beginTime);
 }

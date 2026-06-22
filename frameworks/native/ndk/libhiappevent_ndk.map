@@ -1,0 +1,6 @@
+{
+  global:
+    OH_HiAppEvent_*;
+  local:
+    *;
+};

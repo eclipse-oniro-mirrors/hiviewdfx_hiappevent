@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 #include "napi_param_builder.h"
 
 #include "hiappevent_base.h"
-#include "hiappevent_verify.h"
+#include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_util.h"
@@ -34,7 +34,7 @@ constexpr int INDEX_OF_PARAMS = 0;
 constexpr int INDEX_OF_DOMAIN = 1;
 constexpr int INDEX_OF_NAME = 2;
 constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
-const std::string PARAM_VALUE_TYPE = "boolean|number|string|array[string]";
+constexpr const char* PARAM_VALUE_TYPE = "boolean|number|string|array[string]";
 }
 using namespace OHOS::HiviewDFX::ErrorCode;
 
@@ -117,7 +117,7 @@ std::shared_ptr<AppEventPack> NapiParamBuilder::BuildEventParam(const napi_env e
 
     // if the build is successful, the event verification is performed
     if (appEventPack_ != nullptr && result_ >= 0) {
-        if (auto ret = VerifyCustomEventParams(appEventPack_); ret != 0) {
+        if (auto ret = AppEventVerifyFacade::VerifyTheCustomEventParams(appEventPack_); ret != 0) {
             result_ = ret;
         }
     }

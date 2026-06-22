@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,22 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "hiappevent_ffi.h"
 
-#include <regex>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 #include "appevent_watcher_impl.h"
-#include "cj_ffi/cj_common_ffi.h"
 #include "ffi_remote_data.h"
-#include "hiappevent_ffi.h"
 #include "hiappevent_impl.h"
-#include "hiappevent_verify.h"
-#include "hiappevent_write.h"
+#include "hiappevent_facade.h"
 #include "log.h"
 #include "error.h"
 using namespace OHOS::HiviewDFX;
+using namespace OHOS::HiviewDFX::HiAppEvent;
 using namespace OHOS::CJSystemapi::HiAppEvent;
 
 namespace {
@@ -91,7 +89,7 @@ int ConvertConfigReportProp(const CAppEventReportConfig& config, EventConfig rep
         reportConf.name = config.name;
     }
     reportConf.isRealTime = config.isRealTime;
-    if (!IsValidEventConfig(reportConf)) {
+    if (!AppEventVerifyFacade::VerifyIsValidEventConfig(reportConf)) {
         return ERR_CODE_PARAM_INVALID;
     }
     return SUCCESS_CODE;
@@ -99,7 +97,7 @@ int ConvertConfigReportProp(const CAppEventReportConfig& config, EventConfig rep
 
 int ConvertReportConfig(const CProcessor& processor, ReportConfig& conf)
 {
-    if (processor.name != nullptr && IsValidProcessorName(std::string(processor.name))) {
+    if (processor.name != nullptr && AppEventVerifyFacade::VerifyIsValidProcessorName(std::string(processor.name))) {
         conf.name = processor.name;
     } else {
         return ERR_CODE_PARAM_FORMAT;
@@ -109,12 +107,12 @@ int ConvertReportConfig(const CProcessor& processor, ReportConfig& conf)
     conf.appId = processor.appId;
     conf.triggerCond.onStartup = processor.onStartReport;
     conf.triggerCond.onBackground = processor.onBackgroundReport;
-    if (!IsValidPeriodReport(processor.periodReport)) {
+    if (!AppEventVerifyFacade::VerifyIsValidPeriodReport(processor.periodReport)) {
         conf.triggerCond.timeout = 0;
     } else {
         conf.triggerCond.timeout = processor.periodReport;
     }
-    if (!IsValidBatchReport(processor.batchReport)) {
+    if (!AppEventVerifyFacade::VerifyIsValidBatchReport(processor.batchReport)) {
         conf.triggerCond.row = 0;
     } else {
         conf.triggerCond.row = processor.batchReport;
@@ -248,7 +246,7 @@ int FfiOHOSHiAppEventRemoveProcessor(int64_t id)
 
 int FfiOHOSHiAppEventSetUserId(const char* name, const char* value)
 {
-    if (!IsValidUserIdName(std::string(name))) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserIdName(std::string(name))) {
         return ERR_PARAM;
     }
     int res = HiAppEventImpl::SetUserId(std::string(name), std::string(value));
@@ -261,7 +259,7 @@ int FfiOHOSHiAppEventSetUserId(const char* name, const char* value)
 RetDataCString FfiOHOSHiAppEventGetUserId(const char* name)
 {
     RetDataCString ret = { .code = ERR_PARAM, .data = nullptr };
-    if (!IsValidUserIdName(std::string(name))) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserIdName(std::string(name))) {
         ret.code = ERR_PARAM;
         ret.data = nullptr;
         return ret;
@@ -280,10 +278,10 @@ RetDataCString FfiOHOSHiAppEventGetUserId(const char* name)
 
 int FfiOHOSHiAppEventSetUserProperty(const char* name, const char* value)
 {
-    if (!IsValidUserPropName(name)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropName(name)) {
         return ERR_PARAM;
     }
-    if (!IsValidUserPropValue(value)) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropValue(value)) {
         return ERR_PARAM;
     }
     int res = HiAppEventImpl::SetUserProperty(std::string(name), std::string(value));
@@ -296,7 +294,7 @@ int FfiOHOSHiAppEventSetUserProperty(const char* name, const char* value)
 RetDataCString FfiOHOSHiAppEventgetUserProperty(const char* name)
 {
     RetDataCString ret = { .code = ERR_PARAM, .data = nullptr };
-    if (!IsValidUserPropName(std::string(name))) {
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropName(std::string(name))) {
         ret.code = ERR_PARAM;
         ret.data = nullptr;
         return ret;
@@ -360,7 +358,7 @@ RetDataI64 FfiOHOSHiAppEventAddWatcher(CWatcher watcher)
     RetDataI64 ret = { .code = ERR_PARAM, .data = 0 };
     // check isValid
     std::string name = std::string(watcher.name);
-    if (!IsValidWatcherName(name)) {
+    if (!AppEventVerifyFacade::VerifyIsValidWatcherName(name)) {
         ret.code = ERR_INVALID_WATCHER_NAME;
         return ret;
     }
@@ -376,7 +374,7 @@ RetDataI64 FfiOHOSHiAppEventAddWatcher(CWatcher watcher)
             names.insert(std::string(watcher.appEventFilters.head[i].names.head[j]));
         }
         std::string domain = std::string(watcher.appEventFilters.head[i].domain);
-        if (!IsValidDomain(domain)) {
+        if (!AppEventVerifyFacade::VerifyIsValidDomain(domain)) {
             ret.code = ERR_INVALID_FILTER_DOMAIN;
             return ret;
         }
@@ -406,7 +404,7 @@ RetDataI64 FfiOHOSHiAppEventAddWatcher(CWatcher watcher)
 int FfiOHOSHiAppEventRemoveWatcher(CWatcher watcher)
 {
     std::string name = std::string(watcher.name);
-    if (!IsValidWatcherName(name)) {
+    if (!AppEventVerifyFacade::VerifyIsValidWatcherName(name)) {
         return ERR_INVALID_WATCHER_NAME;
     }
     HiAppEventImpl::removeWatcher(name);
@@ -420,11 +418,11 @@ int32_t FfiOHOSHiAppEventSetEventParam(CArrParameters eventParams, char* domain,
     std::string nameStr = std::string(name);
     auto appEventPack_ = std::make_shared<AppEventPack>(domainStr, nameStr);
     AddParams2EventPack(eventParams, appEventPack_);
-    ret = VerifyCustomEventParams(appEventPack_);
+    ret = AppEventVerifyFacade::VerifyTheCustomEventParams(appEventPack_);
     if (ret != 0) {
         return GetErrorCode(ret);
     }
-    int32_t err = SetEventParam(appEventPack_);
+    int32_t err = AppEventWriteFacade::FacadeSetEventParam(appEventPack_);
     if (err != 0) {
         return GetErrorCode(err);
     } else {

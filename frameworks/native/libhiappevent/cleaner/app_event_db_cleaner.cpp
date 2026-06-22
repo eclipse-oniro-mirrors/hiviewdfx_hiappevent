@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const std::string DATABASE_NAME = "databases/appevent.db";
+constexpr const char* DATABASE_NAME = "databases/appevent.db";
 constexpr int RESERVED_NUM = 1000;
 constexpr int RESERVED_NUM_OS = 150;
 
