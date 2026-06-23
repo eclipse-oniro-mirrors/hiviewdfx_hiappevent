@@ -187,6 +187,7 @@ ohos_unittest("HiAppEventInnerApiTest") {
     "bundle_framework:appexecfwk_core_headers",
     "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
+    "hilog:libhilog",
     "relational_store:native_rdb",
   ]
 }

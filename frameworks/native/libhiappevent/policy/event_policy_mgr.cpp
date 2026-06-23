@@ -22,7 +22,6 @@
 #include "app_crash_policy.h"
 #include "app_freeze_policy.h"
 #include "cpu_usage_high_policy.h"
-#include "file_util.h"
 #include "main_thread_jank_policy.h"
 #include "resource_overlimit_policy.h"
 

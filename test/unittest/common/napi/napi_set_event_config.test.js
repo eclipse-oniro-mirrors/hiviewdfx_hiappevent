@@ -889,7 +889,8 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest018_2', 0, async function (done) {
         console.info('ConfigEventPolicyTest018_2 start');
         let policy = {"appCrashPolicy":
-            {"extendPcLrPrinting": true, "logFileCutoffSzBytes": 1024, "simplifyVmaPrinting": true}};
+            {"extendPcLrPrinting": true, "logFileCutoffSzBytes": 1024, "simplifyVmaPrinting": true,
+             "collectMinidump": true}};
         hiAppEvent.configEventPolicy(policy).then(() => {
             expect(true).assertEqual(true);
             done();
@@ -909,7 +910,8 @@ describe('HiAppEventJsTest', function () {
     it('ConfigEventPolicyTest018_3', 0, async function (done) {
         console.info('ConfigEventPolicyTest018_3 start');
         let policy = {"appCrashPolicy":
-            {"extendPcLrPrinting": true, "logFileCutoffSzBytes": 5 * 1024 * 1024 + 1, "simplifyVmaPrinting": true}};
+            {"extendPcLrPrinting": true, "logFileCutoffSzBytes": 5 * 1024 * 1024 + 1, "simplifyVmaPrinting": true,
+             "collectMinidump": false}};
         hiAppEvent.configEventPolicy(policy).then(() => {
             expect(true).assertEqual(true);
             done();
