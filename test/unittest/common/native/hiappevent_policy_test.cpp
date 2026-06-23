@@ -146,11 +146,14 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_1, TestSize.Level0)
  */
 HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_2, TestSize.Level0)
 {
+    SetTestContext();
     int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extendPcLrPrinting", "true"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"logFileCutoffSzBytes", "1024"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplifyVmaPrinting", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collectMinidump", "true"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extend_pc_lr_printing", "true"}});
@@ -160,6 +163,8 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_2, TestSize.Level0)
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplify_vma_printing", "true"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"merge_cppcrash_app_log", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collect_minidump", "true"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
 }
 
@@ -171,11 +176,14 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_2, TestSize.Level0)
  */
 HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_3, TestSize.Level0)
 {
+    SetTestContext();
     int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extendPcLrPrinting", "!@#$"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"logFileCutoffSzBytes", "!@#$"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplifyVmaPrinting", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collectMinidump", "!@#$"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"extend_pc_lr_printing", "!@#$"}});
@@ -185,6 +193,8 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_3, TestSize.Level0)
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"simplify_vma_printing", "!@#$"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"merge_cppcrash_app_log", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collect_minidump", "!@#$"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"testKey", "!@#$"}});
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
@@ -211,10 +221,12 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_4, TestSize.Level0)
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
 
-    configMap = {{"extendPcLrPrinting", "!@#$"}, {"logFileCutoffSzBytes", "1024"}, {"simplifyVmaPrinting", "true"}};
+    configMap = {{"extendPcLrPrinting", "!@#$"}, {"logFileCutoffSzBytes", "1024"}, {"simplifyVmaPrinting", "true"},
+                 {"collectMinidump", "false"}};
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
-    configMap = {{"extendPcLrPrinting", "!@#$"}, {"logFileCutoffSzBytes", "!@#$"}, {"simplifyVmaPrinting", "!@#$"}};
+    configMap = {{"extendPcLrPrinting", "!@#$"}, {"logFileCutoffSzBytes", "!@#$"}, {"simplifyVmaPrinting", "!@#$"},
+                 {"collectMinidump", "!@#$"}};
     result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", configMap);
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
     configMap = {};
