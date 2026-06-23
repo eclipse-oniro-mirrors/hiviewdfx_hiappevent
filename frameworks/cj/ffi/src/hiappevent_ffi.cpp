@@ -82,7 +82,7 @@ std::unordered_set<std::string> genArrString2Set(const CArrString& str)
     return res;
 }
 
-int ConvertConfigReportProp(const CAppEventReportConfig& config, EventConfig reportConf)
+int ConvertConfigReportProp(const CAppEventReportConfig& config, EventConfig& reportConf)
 {
     if (config.domain != nullptr) {
         reportConf.domain = config.domain;
