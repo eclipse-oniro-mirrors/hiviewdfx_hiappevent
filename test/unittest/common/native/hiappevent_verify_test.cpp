@@ -313,3 +313,33 @@ HWTEST_F(HiAppEventVerifyTest, HiAppEventVerifyTest016, TestSize.Level0)
     EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidProcessorName("n_ame"));
     EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidProcessorName("n$ame"));
 }
+
+/**
+ * @tc.name: HiAppEventVerifyTest017
+ * @tc.desc: check the EventType param with extended range values.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventVerifyTest, HiAppEventVerifyTest017, TestSize.Level0)
+{
+    EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidEventType(2));
+    EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidEventType(3));
+    EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidEventType(4));
+    EXPECT_FALSE(AppEventVerifyFacade::VerifyIsValidEventType(5));
+    EXPECT_FALSE(AppEventVerifyFacade::VerifyIsValidEventType(-1));
+    EXPECT_FALSE(AppEventVerifyFacade::VerifyIsValidEventType(100));
+}
+
+/**
+ * @tc.name: HiAppEventVerifyTest018
+ * @tc.desc: check the IsValidDomain func with various patterns and boundary length.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventVerifyTest, HiAppEventVerifyTest018, TestSize.Level0)
+{
+    EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidDomain("test_domain"));
+    EXPECT_FALSE(AppEventVerifyFacade::VerifyIsValidDomain("123domain"));
+    EXPECT_FALSE(AppEventVerifyFacade::VerifyIsValidDomain("domain_"));
+    constexpr size_t maxLen = 32;
+    EXPECT_TRUE(AppEventVerifyFacade::VerifyIsValidDomain(std::string(maxLen, 'a')));
+    EXPECT_FALSE(AppEventVerifyFacade::VerifyIsValidDomain(std::string(maxLen + 1, 'a')));
+}

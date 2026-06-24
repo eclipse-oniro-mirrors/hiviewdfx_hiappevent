@@ -377,11 +377,22 @@ ohos_unittest("HiAppEventWatcherTest") {
   external_deps = [ "googletest:gtest_main" ]
 }
 
+ohos_unittest("HiAppEventBaseVariantTest") {
+  module_out_path = native_module_output_path
+
+  configs = [ ":hiappevent_config_test" ]
+
+  sources = [ "unittest/common/native/hiappevent_base_variant_test.cpp" ]
+
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
     ":HiAppEventApiMetricTest",
     ":HiAppEventAppEventTest",
+    ":HiAppEventBaseVariantTest",
     ":HiAppEventCacheTest",
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
