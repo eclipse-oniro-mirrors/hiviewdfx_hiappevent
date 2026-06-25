@@ -6,7 +6,7 @@
       OHOS::HiviewDFX::AppEventPack::AppEventPack*;
       OHOS::HiviewDFX::AppEventPack::Get*;
       OHOS::HiviewDFX::AppEventPack::Set*;
-      OHOS::HiviewDFX::AppEventParam::~AppEventParam*;
+      OHOS::HiviewDFX::AppEventParam*;
       OHOS::HiviewDFX::AppEventUtil::ReportAppEventReceive*;
       OHOS::HiviewDFX::AppEventWatcher::AppEventWatcher*;
       OHOS::HiviewDFX::HiAppEvent::AppEventFilter::AppEventFilter*;
