@@ -401,7 +401,7 @@ describe('HiAppEventJsTest', function () {
         for (var i = 1; i <= 33; i++) {
             params["key" + i] = "value" + i;
         }
-        let expectErr = createError(11101003, "Invalid number of event parameters. Possible caused by the number of " +
+        let expectErr = createError(11101003, "Invalid number of event parameters. Possibly caused by the number of " +
             "parameters is over 32.");
         writeParamsV9Test(params, expectErr, done);
     });
@@ -827,7 +827,7 @@ describe('HiAppEventJsTest', function () {
         }
         let invalidKey = 'a'.repeat(17);
         params[invalidKey] = 'value_invalid';
-        let expectErr = createError(11101003, "Invalid number of event parameters. Possible caused by the number of " +
+        let expectErr = createError(11101003, "Invalid number of event parameters. Possibly caused by the number of " +
             "parameters is over 32.");
         writeParamsV9Test(params, expectErr, done);
     });
@@ -848,7 +848,7 @@ describe('HiAppEventJsTest', function () {
             params["key" + i] = "value" + i;
         }
         params['a'.repeat(33)] = 'value_invalid'; // invalid param name
-        let expectErr = createError(11101003, "Invalid number of event parameters. Possible caused by the number of " +
+        let expectErr = createError(11101003, "Invalid number of event parameters. Possibly caused by the number of " +
             "parameters is over 32.");
         writeParamsV9Test(params, expectErr, done);
     });
@@ -932,7 +932,7 @@ describe('HiAppEventJsTest', function () {
             disable: true
         });
 
-        let expectErr = createError(11100001, "Function disabled. Possible caused by the param disable in " +
+        let expectErr = createError(11100001, "Function disabled. Possibly caused by the param disable in " +
             "ConfigOption is true.");
         writeNameV9Test("config_test", expectErr, done);
     });
@@ -1024,7 +1024,7 @@ describe('HiAppEventJsTest', function () {
         configureTest({ maxStorage: null }, expectErr)
 
         // invalid ConfigOption.maxStorage value
-        expectErr = createError(11103001, "Invalid max storage quota value. Possible caused by incorrectly formatted.")
+        expectErr = createError(11103001, "Invalid max storage quota value. Possibly caused by incorrectly formatted.")
         configureTest({ maxStorage: "**22" }, expectErr)
 
         console.info('HiAppEventConfigureTest003 end');

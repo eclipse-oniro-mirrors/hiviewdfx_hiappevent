@@ -271,7 +271,7 @@ describe('HiAppEventJsTest', function () {
         rowTest(true, expectErr);
 
         // invalid triggerCondition.row value
-        expectErr = createError(11102003, "Invalid row value. Possible caused by the row value is less than zero.");
+        expectErr = createError(11102003, "Invalid row value. Possibly caused by the row value is less than zero.");
         rowTest(-1, expectErr);
         rowTest(-100, expectErr);
     });
@@ -293,7 +293,7 @@ describe('HiAppEventJsTest', function () {
         sizeTest(true, expectErr);
 
         // invalid triggerCondition.size value
-        expectErr = createError(11102004, "Invalid size value. Possible caused by the size value is less than zero.");
+        expectErr = createError(11102004, "Invalid size value. Possibly caused by the size value is less than zero.");
         sizeTest(-1, expectErr);
         sizeTest(-100, expectErr);
     });
@@ -316,7 +316,7 @@ describe('HiAppEventJsTest', function () {
         timeoutTest({}, expectErr);
 
         // invalid triggerCondition.timeout value
-        expectErr = createError(11102005, "Invalid timeout value. Possible caused by the timeout value is less than " +
+        expectErr = createError(11102005, "Invalid timeout value. Possibly caused by the timeout value is less than " +
             "zero.");
         timeoutTest(-1, expectErr);
         timeoutTest(-100, expectErr);
@@ -708,7 +708,7 @@ describe('HiAppEventJsTest', function () {
 
         // invalid size value
         expectErr = createError(11104001,
-            "Invalid size value. Possible caused by the size value is less than or equal to zero.");
+            "Invalid size value. Possibly caused by the size value is less than or equal to zero.");
         holderSetSizeTest(holder, -1, expectErr);
         holderSetSizeTest(holder, -100, expectErr);
 
