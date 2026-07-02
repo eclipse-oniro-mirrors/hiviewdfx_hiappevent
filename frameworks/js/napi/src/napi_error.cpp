@@ -25,13 +25,13 @@ std::string GetErrorMsg(int errCode)
         { ERR_PARAM, "Parameter error. Possible causes: 1. Mandatory parameters are left unspecified; 2. Incorrect "\
             "parameter types; 3.Parameter verification failed." },
         // business error of write function
-        { ERR_DISABLE, "Function disabled. Possible caused by the param disable in ConfigOption is true." },
+        { ERR_DISABLE, "Function disabled. Possibly caused by the param disable in ConfigOption is true." },
         { ERR_INVALID_DOMAIN,
             "Invalid event domain. Possible causes: 1. Contain invalid characters; 2. Length is invalid." },
         { ERR_INVALID_NAME,
             "Invalid event name. Possible causes: 1. Contain invalid characters; 2. Length is invalid." },
         { ERR_INVALID_PARAM_NUM,
-            "Invalid number of event parameters. Possible caused by the number of parameters is over 32." },
+            "Invalid number of event parameters. Possibly caused by the number of parameters is over 32." },
         { ERR_INVALID_STR_LEN, "Invalid string length of the event parameter." },
         { ERR_INVALID_KEY,
             "Invalid event parameter name. Possible causes: 1. Contain invalid characters; 2. Length is invalid." },
@@ -42,13 +42,13 @@ std::string GetErrorMsg(int errCode)
             "Invalid watcher name. Possible causes: 1. Contain invalid characters; 2. Length is invalid." },
         { ERR_INVALID_FILTER_DOMAIN,
             "Invalid filtering event domain. Possible causes: 1. Contain invalid characters; 2. Length is invalid." },
-        { ERR_INVALID_COND_ROW, "Invalid row value. Possible caused by the row value is less than zero." },
-        { ERR_INVALID_COND_SIZE, "Invalid size value. Possible caused by the size value is less than zero." },
-        { ERR_INVALID_COND_TIMEOUT, "Invalid timeout value. Possible caused by the timeout value is less than zero." },
+        { ERR_INVALID_COND_ROW, "Invalid row value. Possibly caused by the row value is less than zero." },
+        { ERR_INVALID_COND_SIZE, "Invalid size value. Possibly caused by the size value is less than zero." },
+        { ERR_INVALID_COND_TIMEOUT, "Invalid timeout value. Possibly caused by the timeout value is less than zero." },
         // business error of configure function
-        { ERR_INVALID_MAX_STORAGE, "Invalid max storage quota value. Possible caused by incorrectly formatted." },
+        { ERR_INVALID_MAX_STORAGE, "Invalid max storage quota value. Possibly caused by incorrectly formatted." },
         // business error of AppEventPackageHolder.setSize function
-        { ERR_INVALID_SIZE, "Invalid size value. Possible caused by the size value is less than or equal to zero."},
+        { ERR_INVALID_SIZE, "Invalid size value. Possibly caused by the size value is less than or equal to zero."},
         // business error for incorrect parameter length or format
         { ERR_INVALID_PARAM_VALUE,
             "Invalid parameter value. Possible causes: 1. Incorrect parameter length; 2. Incorrect parameter format." }
