@@ -81,7 +81,7 @@ extern "C" {
 #define PARAM_DISTRIBUTED_SERVICE_INSTANCE_ID "ds_instance_id"
 
 /**
- * @brief Used in MAIN_THREAD_JANK_V2, type of the log that need to be collected when main thread jank happend.
+ * @brief Used in MAIN_THREAD_JANK_V2, type of the log that need to be collected when main thread jank happened.
  *
  * @since 22
  */
