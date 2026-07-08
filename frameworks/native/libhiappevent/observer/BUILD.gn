@@ -24,6 +24,7 @@ config("hiappevent_watcher_config") {
 }
 
 ohos_source_set("hiappevent_observer") {
+  branch_protector_ret = "pac_ret"
   public_configs = [ ":hiappevent_watcher_config" ]
 
   sources = [
