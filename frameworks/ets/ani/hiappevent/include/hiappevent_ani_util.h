@@ -24,7 +24,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-enum AniArgsType {
+enum AniArgsType : int8_t {
     ANI_UNKNOWN = -1,
     ANI_INT = 0,
     ANI_LONG = 1,
@@ -35,7 +35,7 @@ enum AniArgsType {
     ANI_UNDEFINED = 6,
 };
 
-enum EventTypeAni : int32_t {
+enum EventTypeAni : int8_t {
     FAULT = 1,
     STATISTIC = 2,
     SECURITY = 3,
