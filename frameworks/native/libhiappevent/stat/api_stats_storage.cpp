@@ -123,8 +123,8 @@ int ApiStatsStorage::QueryAll(ApiMetricsMap& apiMetrics)
                 HILOG_ERROR(LOG_CORE, "query all, duration param error");
                 continue;
             }
-            HILOG_DEBUG(LOG_CORE, "parse metric, kitName=%{public}s, apiName=%{public}s, errCode=%{public}d, \
-                duration=%{public}d, successful=%{public}d",
+            HILOG_DEBUG(LOG_CORE, "parse metric, kitName=%{public}s, apiName=%{public}s, errCode=%{public}d, "
+                "duration=%{public}d, successful=%{public}d",
                 kitName.c_str(), apiName.c_str(), errCode, duration, successful);
             metrics.emplace_back(ApiMetric{errCode, duration, successful});
         }
