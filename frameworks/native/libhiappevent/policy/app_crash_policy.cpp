@@ -165,8 +165,8 @@ int AppCrashPolicy::SetAppCrashLogPolicy(const std::map<std::string, std::string
         if ((it->second.func)(value, configValue)) {
             crashConfigMap[it->second.type] = configValue;
         } else {
-            HILOG_WARN(LOG_CORE, "failed to set crash config item. The value(%{public}s) is invalid or operation \
-                failed.", value.c_str());
+            HILOG_WARN(LOG_CORE, "failed to set crash config item. The value(%{public}s) is invalid or operation "
+                "failed.", value.c_str());
         }
     }
     if (crashConfigMap.empty()) {
