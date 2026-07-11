@@ -35,7 +35,7 @@ namespace {
 constexpr size_t PARAM_NUM = 1;
 constexpr int DEFAULT_ROW_NUM = 1;
 constexpr int DEFAULT_SIZE = 512 * 1024; // 512 * 1024: 512KB
-constexpr const char* HOLDER_CLASS_NAME = "AppEventPackageHolder";
+constexpr const char HOLDER_CLASS_NAME[] = "AppEventPackageHolder";
 
 int64_t GetObserverSeqByName(const std::string& name)
 {
