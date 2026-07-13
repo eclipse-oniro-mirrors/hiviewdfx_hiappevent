@@ -33,7 +33,9 @@ ohos_shared_library("hiappevent") {
     "c_utils:utils",
     "hilog:libhilog",
     "jsoncpp:jsoncpp",
+    "libuv:uv",
     "napi:ace_napi",
+    "node:node_header_notice",
   ]
 
   relative_install_dir = "module"
@@ -71,7 +73,9 @@ ohos_shared_library("hiappevent_v9") {
     "ffrt:libffrt",
     "hilog:libhilog",
     "jsoncpp:jsoncpp",
+    "libuv:uv",
     "napi:ace_napi",
+    "node:node_header_notice",
     "relational_store:native_rdb",
   ]
 
