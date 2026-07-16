@@ -65,7 +65,7 @@ public:
     static std::string ConvertToString(ani_env *env, ani_ref valueRef);
     static ani_ref CreateGlobalReference(ani_env *env, ani_ref func);
     static ani_object CreateInt(ani_env *env, int32_t num);
-    static ani_object CreateDouble(ani_env *env, int32_t num);
+    static ani_object CreateDouble(ani_env *env, double num);
     static ani_object CreateBool(ani_env *env, bool boolValue);
     static ani_string CreateAniString(ani_env *env, const std::string &str);
     static ani_ref CreateStrings(ani_env *env, const std::vector<std::string>& strs);
