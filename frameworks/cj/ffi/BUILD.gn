@@ -43,6 +43,7 @@ ohos_shared_library("cj_hiappevent_ffi") {
     "relational_store:native_rdb",
   ]
 
+  branch_protector_ret = "pac_ret"
   innerapi_tags = [ "platformsdk" ]
 
   part_name = "hiappevent"
