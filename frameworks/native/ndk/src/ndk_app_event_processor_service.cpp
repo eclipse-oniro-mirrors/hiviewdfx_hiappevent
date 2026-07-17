@@ -140,7 +140,7 @@ int SetConfigName(struct HiAppEvent_Processor* processor, const char* configName
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (!AppEventVerifyFacade::VerifyIsValidConfigNameLength(configName)) {
+    if (configName == nullptr || !AppEventVerifyFacade::VerifyIsValidConfigNameLength(configName)) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE_LENGTH;
     }
     if (!AppEventVerifyFacade::VerifyIsValidProcessorName(configName)) {

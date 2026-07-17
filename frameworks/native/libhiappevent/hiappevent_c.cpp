@@ -61,8 +61,8 @@ ParamList AddParamValue(ParamList list, const char* name, T value)
 template<typename T>
 ParamList AddParamArrayValue(ParamList list, const char* name, const T* arr, int len)
 {
-    if (list == nullptr || name == nullptr || arr == nullptr) {
-        HILOG_WARN(LOG_CORE, "ParamList is nullptr or name is nullptr or param array is nullptr.");
+    if (list == nullptr || name == nullptr || arr == nullptr || len < 0) {
+        HILOG_WARN(LOG_CORE, "ParamList is nullptr or name is nullptr or param array is nullptr or len is invalid.");
         return list;
     }
     // (arr + MAX_SIZE_OF_LIST_PARAM + 1) is used as invalid list param length in OH_HiAppEvent_Write
@@ -83,7 +83,14 @@ std::map<int, std::string> GetFrameworkTypes()
 
 void TruncateString(const char* src, std::string& destStr)
 {
-    destStr = src ? std::string(src, MAX_FWK_VER_SIZE) : "";
+    if (src == nullptr) {
+        destStr = "";
+        return;
+    }
+    destStr = std::string(src);
+    if (destStr.size() > MAX_FWK_VER_SIZE) {
+        destStr.resize(MAX_FWK_VER_SIZE);
+    }
 }
 
 int HiSysEventWriteFrameworkMemAnomaly(enum OH_HiAppEvent_FrameworkType frameworkType, std::string& frameworkVersionStr)

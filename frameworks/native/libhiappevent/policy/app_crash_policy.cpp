@@ -15,6 +15,7 @@
 #include "app_crash_policy.h"
  	 
 #include <cerrno>
+#include <cstdint>
 #include <hilog/log.h>
 #include "event_policy_utils.h"
 #include "file_util.h"
@@ -51,11 +52,12 @@ bool ChangeCrashConfigToUIntValue(const std::string& strValue, uint32_t& out)
 {
     const int decimal = 10;
     char* end;
-    out = strtoul(strValue.c_str(), &end, decimal);
-    if (strValue.empty() || *end != '\0' || errno == ERANGE) {
+    unsigned long result = strtoul(strValue.c_str(), &end, decimal);
+    if (strValue.empty() || *end != '\0' || errno == ERANGE || result > UINT32_MAX) {
         HILOG_ERROR(LOG_CORE, "Set crash config item failed, failed to convert str to int.");
         return false;
     }
+    out = static_cast<uint32_t>(result);
     if (out > MAX_CUTOFF_SZ_BYTES) {
         HILOG_ERROR(LOG_CORE, "Set crash config item failed, the value(%{public}s) is over range.", strValue.c_str());
         return false;

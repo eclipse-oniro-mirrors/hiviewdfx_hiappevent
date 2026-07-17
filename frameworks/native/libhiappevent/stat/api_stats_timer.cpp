@@ -15,6 +15,9 @@
 
 #include "api_stats_timer.h"
 
+#include <atomic>
+#include <mutex>
+
 #include "ffrt.h"
 #include "ffrt_inner.h"
 #include "hilog/log.h"
@@ -51,6 +54,7 @@ public:
     void Stop()
     {
         HILOG_DEBUG(LOG_CORE, "ApiStatsTimer Stop");
+        std::lock_guard<std::mutex> lock(mutex_);
         isRunning_ = false;
         backUpCallback_ = nullptr;
         reportCallback_ = nullptr;
@@ -58,28 +62,40 @@ public:
 
     void SetBackUpCallback(std::function<void()> callback)
     {
-        backUpCallback_ = callback;
+        std::lock_guard<std::mutex> lock(mutex_);
+        backUpCallback_ = std::move(callback);
     }
 
     void SetReportCallback(std::function<void()> callback)
     {
-        reportCallback_ = callback;
+        std::lock_guard<std::mutex> lock(mutex_);
+        reportCallback_ = std::move(callback);
     }
 
     void ExecuteBackUpCallback()
     {
+        std::function<void()> callback;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            callback = backUpCallback_;
+        }
         HILOG_DEBUG(LOG_CORE, "ScheduleBackUpTask executing");
-        if (backUpCallback_) {
-            backUpCallback_();
+        if (callback) {
+            callback();
             ScheduleBackUpTask();
         }
     }
 
     void ExecuteReportCallback()
     {
+        std::function<void()> callback;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            callback = reportCallback_;
+        }
         HILOG_DEBUG(LOG_CORE, "ScheduleReportTask executing");
-        if (reportCallback_) {
-            reportCallback_();
+        if (callback) {
+            callback();
             ScheduleReportTask();
         }
     }
@@ -111,7 +127,8 @@ private:
             }, ffrt::task_attr().name("flush_report").delay(REPORT_TIME_MS * MILLI_TO_MICRO));
     }
 
-    bool isRunning_ = false;
+    std::atomic<bool> isRunning_{false};
+    std::mutex mutex_;
     std::function<void()> backUpCallback_;
     std::function<void()> reportCallback_;
 };

@@ -521,7 +521,7 @@ ani_object HiAppEventAniUtil::CreateInt(ani_env *env, int32_t num)
     return obj;
 }
 
-ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, int32_t num)
+ani_object HiAppEventAniUtil::CreateDouble(ani_env *env, double num)
 {
     ani_class cls {};
     ani_object obj {};

@@ -263,7 +263,6 @@ bool HiAppEventConfig::IsFreeSizeOverLimit()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (!isInitFreeSize_) {
-        isInitFreeSize_ = true;
         auto storageMgr = GetStorageMgr();
         int64_t freeSize = -1;
         if (storageMgr == nullptr || storageMgr->GetFreeSize(freeSize) != 0) {
@@ -272,6 +271,7 @@ bool HiAppEventConfig::IsFreeSizeOverLimit()
         }
         HILOG_INFO(LOG_CORE, "get free size=%{public}" PRId64, freeSize);
         freeSize_ = freeSize;
+        isInitFreeSize_ = true;
     }
     return freeSize_ >= 0 && freeSize_ < FREE_SIZE_LIMIT;
 }
