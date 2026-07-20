@@ -25,15 +25,15 @@ namespace OHOS {
 namespace HiviewDFX {
 struct OnTriggerContext {
     ~OnTriggerContext();
-    ani_vm* vm = nullptr;
-    ani_ref onTrigger {};
-    ani_ref holder {};
+    ani_vm* vm{};
+    ani_ref onTrigger{};
+    ani_ref holder{};
 };
 
 struct OnReceiveContext {
     ~OnReceiveContext();
-    ani_vm* vm = nullptr;
-    ani_ref onReceive {};
+    ani_vm* vm{};
+    ani_ref onReceive{};
 };
 
 class AniAppEventWatcher : public AppEventWatcher {
@@ -53,9 +53,9 @@ protected:
     void OnTrigger(const TriggerCondition& triggerCond) override;
 
 private:
-    std::shared_ptr<OnTriggerContext> triggerContext_ = nullptr;
-    std::shared_ptr<OnReceiveContext> receiveContext_ = nullptr;
-    std::shared_ptr<OHOS::AppExecFwk::EventHandler> mainHandler_ = nullptr;
+    std::shared_ptr<OnTriggerContext> triggerContext_{};
+    std::shared_ptr<OnReceiveContext> receiveContext_{};
+    std::shared_ptr<OHOS::AppExecFwk::EventHandler> mainHandler_{};
     std::mutex mutex_;
 };
 } // namespace HiviewDFX
