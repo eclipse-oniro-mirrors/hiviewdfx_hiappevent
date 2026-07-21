@@ -18,33 +18,33 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-constexpr const char* PROCESSOR_NAME = "name";
-constexpr const char* DEBUG_MODE = "debugMode";
-constexpr const char* ROUTE_INFO = "routeInfo";
-constexpr const char* APP_ID = "appId";
-constexpr const char* START_REPORT = "onStartReport";
-constexpr const char* BACKGROUND_REPORT = "onBackgroundReport";
-constexpr const char* PERIOD_REPORT = "periodReport";
-constexpr const char* BATCH_REPORT = "batchReport";
-constexpr const char* USER_IDS = "userIds";
-constexpr const char* USER_PROPERTIES = "userProperties";
-constexpr const char* EVENT_CONFIGS = "eventConfigs";
-constexpr const char* EVENT_CONFIG_DOMAIN = "domain";
-constexpr const char* EVENT_CONFIG_NAME = "name";
-constexpr const char* EVENT_CONFIG_REALTIME = "isRealTime";
-constexpr const char* CONFIG_ID = "configId";
-constexpr const char* CUSTOM_CONFIG = "customConfigs";
-constexpr const char* WATCHER_NAME = "name";
-constexpr const char* APPEVENT_FILTERS = "appEventFilters";
-constexpr const char* FILTER_DOMAIN = "domain";
-constexpr const char* FILTER_NAMES = "names";
-constexpr const char* FILTER_TYPES = "eventTypes";
-constexpr const char* TRIGGER_CONDITION = "triggerCondition";
-constexpr const char* FUNCTION_ONTRIGGER = "onTrigger";
-constexpr const char* FUNCTION_ONRECEIVE = "onReceive";
-constexpr const char* EVENT_INFO_PARAMS = "params";
-constexpr const char* EVENT_INFO_EVENT_TYPE = "eventType";
-constexpr const char* EVENT_INFOS_PROPERTY = "appEventInfos";
+constexpr char PROCESSOR_NAME[] = "name";
+constexpr char DEBUG_MODE[] = "debugMode";
+constexpr char ROUTE_INFO[] = "routeInfo";
+constexpr char APP_ID[] = "appId";
+constexpr char START_REPORT[] = "onStartReport";
+constexpr char BACKGROUND_REPORT[] = "onBackgroundReport";
+constexpr char PERIOD_REPORT[] = "periodReport";
+constexpr char BATCH_REPORT[] = "batchReport";
+constexpr char USER_IDS[] = "userIds";
+constexpr char USER_PROPERTIES[] = "userProperties";
+constexpr char EVENT_CONFIGS[] = "eventConfigs";
+constexpr char EVENT_CONFIG_DOMAIN[] = "domain";
+constexpr char EVENT_CONFIG_NAME[] = "name";
+constexpr char EVENT_CONFIG_REALTIME[] = "isRealTime";
+constexpr char CONFIG_ID[] = "configId";
+constexpr char CUSTOM_CONFIG[] = "customConfigs";
+constexpr char WATCHER_NAME[] = "name";
+constexpr char APPEVENT_FILTERS[] = "appEventFilters";
+constexpr char FILTER_DOMAIN[] = "domain";
+constexpr char FILTER_NAMES[] = "names";
+constexpr char FILTER_TYPES[] = "eventTypes";
+constexpr char TRIGGER_CONDITION[] = "triggerCondition";
+constexpr char FUNCTION_ONTRIGGER[] = "onTrigger";
+constexpr char FUNCTION_ONRECEIVE[] = "onReceive";
+constexpr char EVENT_INFO_PARAMS[] = "params";
+constexpr char EVENT_INFO_EVENT_TYPE[] = "eventType";
+constexpr char EVENT_INFOS_PROPERTY[] = "appEventInfos";
 
 constexpr char NAMESPACE_NAME_HIAPPEVENT[] = "@ohos.hiviewdfx.hiAppEvent.hiAppEvent";
 constexpr char CLASS_NAME_RESULTS[] = "@ohos.hiviewdfx.hiAppEvent.ResultsInner";
@@ -70,8 +70,8 @@ constexpr char FUNC_NAME_TOBOOLEAN[] = "toBoolean";
 constexpr char FUNC_NAME_TODOUBLE[] = "toDouble";
 constexpr char FUNC_NAME_NEXT[] = "next";
 
-constexpr int BIT_MASK = 1;
-constexpr unsigned int BIT_ALL_TYPES = 0xff;
+constexpr int BIT_MASK{1};
+constexpr unsigned int BIT_ALL_TYPES{0xff};
 } // namespace HiviewDFX
 } // namespace OHOS
 

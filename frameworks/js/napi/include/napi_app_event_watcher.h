@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,15 +23,15 @@ namespace OHOS {
 namespace HiviewDFX {
 struct OnTriggerContext {
     ~OnTriggerContext();
-    napi_env env = nullptr;
-    napi_ref onTrigger = nullptr;
-    napi_ref holder = nullptr;
+    napi_env env{};
+    napi_ref onTrigger{};
+    napi_ref holder{};
 };
 
 struct OnReceiveContext {
     ~OnReceiveContext();
-    napi_env env = nullptr;
-    napi_ref onReceive = nullptr;
+    napi_env env{};
+    napi_ref onReceive{};
 };
 
 class NapiAppEventWatcher : public AppEventWatcher {
@@ -52,8 +52,8 @@ protected:
     void OnTrigger(const TriggerCondition& triggerCond) override;
 
 private:
-    std::shared_ptr<OnTriggerContext> triggerContext_ = nullptr;
-    std::shared_ptr<OnReceiveContext> receiveContext_ = nullptr;
+    std::shared_ptr<OnTriggerContext> triggerContext_{};
+    std::shared_ptr<OnReceiveContext> receiveContext_{};
     std::mutex mutex_;
 };
 } // namespace HiviewDFX

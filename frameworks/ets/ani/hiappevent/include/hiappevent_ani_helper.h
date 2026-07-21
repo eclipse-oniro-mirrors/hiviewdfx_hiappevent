@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
+constexpr size_t MAX_LENGTH_OF_PARAM_NAME{32};
 
 class HiAppEventAniHelper {
 public:

@@ -34,9 +34,9 @@
 
 using namespace OHOS::HiviewDFX;
 namespace {
-constexpr const char* DEFAULT_CONFIG_NAME = "SDK_OCG";
-constexpr const char* PARAM_VALUE_TYPE = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
-constexpr int WRITE_SUCCESS = 0;
+constexpr char DEFAULT_CONFIG_NAME[] = "SDK_OCG";
+constexpr char PARAM_VALUE_TYPE[] = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
+constexpr int WRITE_SUCCESS{0};
 
 std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
 {
