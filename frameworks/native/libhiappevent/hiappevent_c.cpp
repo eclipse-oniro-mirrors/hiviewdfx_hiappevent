@@ -366,6 +366,5 @@ void HiAppEventDestroyConfig(HiAppEvent_Config* config)
 {
     if (config != nullptr) {
         delete reinterpret_cast<std::map<std::string, std::string> *>(config);
-        config = nullptr;
     }
 }

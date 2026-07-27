@@ -80,7 +80,9 @@ std::vector<ApiStatsReport> ApiStatsAggregator::AggregateStats(const ApiMetricsM
         report.kitName = descriptor.KitName();
         report.apiName = descriptor.ApiName();
         report.beginTime = beginTime;
-        report.callTimes = static_cast<int>(metrics.size());
+        report.callTimes = metrics.size() <= static_cast<size_t>(std::numeric_limits<int>::max())
+            ? static_cast<int>(metrics.size())
+            : std::numeric_limits<int>::max();
         report.successTimes = 0;
         report.maxCostTime = 0;
         report.minCostTime = std::numeric_limits<int64_t>::max();

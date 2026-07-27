@@ -60,6 +60,7 @@ int NdkAppEventWatcherProxy::SetWatcherOnReceiver(OH_HiAppEvent_OnReceive onRece
 
 int NdkAppEventWatcherProxy::AddWatcher()
 {
+    std::lock_guard<std::mutex> lock(proxyMutex_);
     AppEventObserverFacade::AddWatcher(watcher_);
     return 0;
 }
@@ -92,6 +93,7 @@ int NdkAppEventWatcherProxy::TakeWatcherData(uint32_t size, OH_HiAppEvent_OnTake
 
 int NdkAppEventWatcherProxy::RemoveWatcher()
 {
+    std::lock_guard<std::mutex> lock(proxyMutex_);
     int64_t watcherSeq = watcher_->GetSeq();
     if (watcherSeq > 0) {
         AppEventObserverFacade::RemoveObserver(watcherSeq);

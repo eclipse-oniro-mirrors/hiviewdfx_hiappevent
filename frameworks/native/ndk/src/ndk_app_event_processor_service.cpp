@@ -157,7 +157,7 @@ int SetReportUserId(struct HiAppEvent_Processor* processor, const char* const * 
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (userIdNames == nullptr) {
+    if (userIdNames == nullptr || size < 0) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     for (int i = 0; i < size; ++i) {
@@ -178,7 +178,7 @@ int SetReportUserProperty(struct HiAppEvent_Processor* processor, const char* co
         return ErrorCode::ERROR_NOT_APP;
     }
     CHECK_PROCESSOR_PTR_AND_RETURN(processor, ErrorCode::ERROR_INVALID_PROCESSOR)
-    if (userPropertyNames == nullptr) {
+    if (userPropertyNames == nullptr || size < 0) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     for (int i = 0; i < size; ++i) {

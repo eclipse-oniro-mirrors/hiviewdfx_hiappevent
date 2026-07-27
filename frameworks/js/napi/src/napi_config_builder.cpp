@@ -40,10 +40,6 @@ struct crashConfig {
     uint8_t type;
     std::function<bool(const napi_env, const napi_value, const std::string&, uint32_t&)> func;
 };
-struct crashConfigVerify {
-    uint8_t type;
-    std::function<bool(const std::string&, uint32_t&)> func;
-};
 
 std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem()
 {
@@ -113,6 +109,10 @@ bool VerifyCrashConfigBoolValue(const std::string& value, uint32_t& out)
 
 bool VerifyCrashConfigUIntValue(const std::string& value, uint32_t& out)
 {
+    if (value.empty()) {
+        HILOG_ERROR(LOG_CORE, "the crash config value is invalid, the value is empty.");
+        return false;
+    }
     char* numEndIndex = nullptr;
     int64_t intValue = std::strtoll(value.c_str(), &numEndIndex, 10);
     if (*numEndIndex != '\0') {

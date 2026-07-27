@@ -42,6 +42,7 @@ public:
 
     void Start()
     {
+        std::lock_guard<std::mutex> lock(mutex_);
         if (isRunning_) {
             return;
         }

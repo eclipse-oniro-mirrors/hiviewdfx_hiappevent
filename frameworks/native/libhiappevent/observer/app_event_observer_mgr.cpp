@@ -544,6 +544,7 @@ bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatche
     if (listener_ == nullptr) {
         listener_ = std::make_shared<OsEventListener>();
         if (!listener_->StartListening()) {
+            listener_ = nullptr;
             return false;
         }
     }

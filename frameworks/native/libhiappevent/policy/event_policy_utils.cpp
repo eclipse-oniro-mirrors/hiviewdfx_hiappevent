@@ -16,6 +16,7 @@
 
 #include <application_context.h>
 #include <cerrno>
+#include <cstring>
 #include <hilog/log.h>
 #include "file_util.h"
 #include "hiappevent_base.h"
@@ -143,20 +144,25 @@ bool EventPolicyUtils::GetEventPageSwitchStatus(const std::string& eventName)
 int EventPolicyUtils::SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap,
     bool needRunningId)
 {
-    if (needRunningId && GetRunningId().empty()) {
-        SetRunningId(HiAppEventConfig::GetInstance().GetRunningId());
-        if (GetRunningId().empty()) {
+    std::string runningId = GetRunningId();
+    if (needRunningId && runningId.empty()) {
+        runningId = HiAppEventConfig::GetInstance().GetRunningId();
+        if (runningId.empty()) {
             return ErrorCode::ERROR_UNKNOWN;
         }
+        SetRunningId(runningId);
     }
 
     for (const auto& config : configMap) {
         std::string property = "user.event_config." + config.first;
-        std::string newValue =  needRunningId == true ? GetRunningId() + "," + config.second : config.second;
+        std::string newValue = needRunningId ? runningId + "," + config.second : config.second;
         if (!FileUtil::SetDirXattr(configDir, property, newValue)) {
+            int savedErrno = errno;
+            char errBuf[256] = {0};
+            (void)strerror_r(savedErrno, errBuf, sizeof(errBuf));
             HILOG_ERROR(LOG_CORE, "failed to SetDirXattr, dir: %{public}s, property: %{public}s, newValue: %{public}s,"
                 " err: %{public}s, errno: %{public}d", configDir.c_str(), property.c_str(), newValue.c_str(),
-                strerror(errno), errno);
+                errBuf, savedErrno);
             return ErrorCode::ERROR_UNKNOWN;
         } else {
             HILOG_INFO(LOG_CORE, "succeed to UpdateProperty, property: %{public}s, newValue: %{public}s",

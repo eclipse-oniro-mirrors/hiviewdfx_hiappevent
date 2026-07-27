@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #define HIAPPEVENT_NDK_APPEVENT_WATCHER_PROXY_H
 
 #include <memory>
+#include <mutex>
 
 #include "ndk_app_event_watcher.h"
 
@@ -39,6 +40,7 @@ public:
     int RemoveWatcher();
 private:
     std::shared_ptr<NdkAppEventWatcher> watcher_;
+    std::mutex proxyMutex_;
 };
 
 } // namespace HiviewDFX
