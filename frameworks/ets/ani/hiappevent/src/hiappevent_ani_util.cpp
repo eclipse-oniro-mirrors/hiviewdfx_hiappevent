@@ -840,14 +840,26 @@ ani_ref HiAppEventAniUtil::CreateEventGroups(ani_env *env, const std::vector<std
 
     ani_ref eventGroups = CreateArray(env, eventMap.size());
     ani_method setMethod = FindArrayMethodSet(env);
+    if (eventGroups == nullptr || setMethod == nullptr) {
+        HILOG_ERROR(LOG_CORE, "CreateEventGroups: failed to create array or find set method");
+        return nullptr;
+    }
     size_t index = 0;
     for (auto it = eventMap.begin(); it != eventMap.end(); ++it) {
         ani_ref eventInfos = CreateArray(env, it->second.size());
+        if (eventInfos == nullptr) {
+            HILOG_ERROR(LOG_CORE, "CreateEventGroups: failed to create eventInfos array");
+            continue;
+        }
         for (size_t i = 0; i < it->second.size(); ++i) {
             env->Object_CallMethod_Void(static_cast<ani_object>(eventInfos),
                 setMethod, i, CreateEventInfo(env, it->second[i]));
         }
         ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_GROUP);
+        if (obj == nullptr) {
+            HILOG_ERROR(LOG_CORE, "CreateEventGroups: failed to create EventGroup object");
+            continue;
+        }
         env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_NAME,
             HiAppEventAniUtil::CreateAniString(env, it->first));
         env->Object_SetPropertyByName_Ref(obj, EVENT_INFOS_PROPERTY, eventInfos);
