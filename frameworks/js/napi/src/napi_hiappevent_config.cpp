@@ -113,7 +113,7 @@ void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncCon
 {
     HiAppEventConfigAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventSetEventConfig");
-    napi_create_async_work(env, nullptr, resource,
+    auto createStatus = napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
             HiAppEventConfigAsyncContext* asyncContext = static_cast<HiAppEventConfigAsyncContext*>(data);
             asyncContext->result = asyncContext->eventConfigPack->isValid ? SetEventConfigSync(asyncContext) :
@@ -135,7 +135,7 @@ void SetEventConfig(const napi_env env, std::unique_ptr<HiAppEventConfigAsyncCon
             delete asyncContext;
         },
         data, &data->asyncWork);
-    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+    if (createStatus != napi_ok || napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
         delete data;
     }
 }
@@ -144,7 +144,7 @@ void ConfigEventPolicy(const napi_env env, std::unique_ptr<HiAppEventConfigAsync
 {
     HiAppEventConfigAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventConfigEventPolicy");
-    napi_create_async_work(env, nullptr, resource,
+    auto createStatus = napi_create_async_work(env, nullptr, resource,
         [](napi_env env, void* data) {
             HiAppEventConfigAsyncContext* asyncContext = static_cast<HiAppEventConfigAsyncContext*>(data);
             asyncContext->result = asyncContext->eventPolicyPack->isValid ? ConfigEventPolicySync(asyncContext) :
@@ -168,7 +168,7 @@ void ConfigEventPolicy(const napi_env env, std::unique_ptr<HiAppEventConfigAsync
             delete asyncContext;
         },
         data, &data->asyncWork);
-    if (napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+    if (createStatus != napi_ok || napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
         delete data;
     }
 }
