@@ -332,17 +332,20 @@ int HiAppEventReportFrameworkMemAnomaly(
         HILOG_ERROR(LOG_CORE, "Invalid framework type, framework type is %{public}d", frameworkType);
         return HIAPPEVENT_INVALID_PARAM_VALUE;
     }
-    int64_t curTime = TimeUtil::GetElapsedMilliSecondsSinceBoot();
-    int64_t lastTime = lastReportTime.load();
-    if (curTime < lastTime) {
-        HILOG_ERROR(LOG_CORE, "failed to get timestamp");
-        return HIAPPEVENT_OPERATE_FAILED;
-    }
-    if (curTime - lastTime < ONE_MINUTE && lastTime > 0) {
-        HILOG_WARN(LOG_CORE, "The FW_MEM_ANOMALY event can't be frequently reported, lastReportTimeStamp"
-            " is %{public}" PRId64 ", currentTimeStamp is %{public}" PRId64, lastTime, curTime);
-        return HIAPPEVENT_REPORT_FREQUENCY_EXCEEDED;
-    }
+    int64_t expectedTime = lastReportTime.load();
+    int64_t curTime;
+    do {
+        curTime = TimeUtil::GetElapsedMilliSecondsSinceBoot();
+        if (curTime < expectedTime) {
+            HILOG_ERROR(LOG_CORE, "failed to get timestamp");
+            return HIAPPEVENT_OPERATE_FAILED;
+        }
+        if (curTime - expectedTime < ONE_MINUTE && expectedTime > 0) {
+            HILOG_WARN(LOG_CORE, "The FW_MEM_ANOMALY event can't be frequently reported, lastReportTimeStamp"
+                " is %{public}" PRId64 ", currentTimeStamp is %{public}" PRId64, expectedTime, curTime);
+            return HIAPPEVENT_REPORT_FREQUENCY_EXCEEDED;
+        }
+    } while (!lastReportTime.compare_exchange_strong(expectedTime, curTime));
     std::string fwkVerStr;
     TruncateString(frameworkVersion, fwkVerStr);
     std::string descriptionStr;
@@ -353,7 +356,6 @@ int HiAppEventReportFrameworkMemAnomaly(
     list = AddStringParamValue(list, "description", descriptionStr.c_str());
     int ret = HiAppEventInnerWrite("HIVIEWDFX", "FW_MEM_ANOMALY", STATISTIC, list);
     HiAppEventDestroyParamList(list);
-    lastReportTime.store(curTime);
     if (ret < 0) {
         HILOG_WARN(LOG_CORE, "configuration item name is DISABLE, and the value is true; OH_HiAppEvent_Write is"
             " disabled");
