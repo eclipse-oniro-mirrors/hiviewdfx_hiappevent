@@ -194,8 +194,12 @@ ani_object HiAppEventAni::SetEventParamSync(ani_env *env, ani_object params, ani
     HiAppEventParamBuilder hiAppEventParamBuilder;
     if (!hiAppEventParamBuilder.ParseParamsInAppEventPack(env, params, appEventPack)) {
         HILOG_ERROR(LOG_CORE, "parse params appEventPack failed");
-        return HiAppEventAniUtil::Result(env,
-            HiAppEventAniUtil::BuildErrorByResult(hiAppEventParamBuilder.GetResult()));
+        auto parseResult = hiAppEventParamBuilder.GetResult();
+        if (parseResult != ERROR_INVALID_PARAM_NAME) {
+            return HiAppEventAniUtil::Result(env,
+                {ERR_PARAM, HiAppEventAniUtil::CreateErrMsg("params", PARAM_VALUE_TYPE)});
+        }
+        return HiAppEventAniUtil::Result(env, HiAppEventAniUtil::BuildErrorByResult(parseResult));
     }
 
     int32_t result = hiAppEventParamBuilder.GetResult();

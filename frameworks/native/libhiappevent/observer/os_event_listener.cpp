@@ -143,7 +143,7 @@ bool OsEventListener::StartListening()
 
 bool OsEventListener::RemoveOsEventDir()
 {
-    inotifyStopFlag_ = true;
+    inotifyStopFlag_.store(true);
     HILOG_INFO(LOG_CORE, "rm dir");
     return FileUtil::ForceRemoveDirectory(osEventPath_) && FileUtil::ForceRemoveDirectory(OS_LOG_PATH);
 }
@@ -194,7 +194,7 @@ bool OsEventListener::RegisterDirListener(const std::string& dirPath)
         }
         HILOG_INFO(LOG_CORE, "inotify add watch dir=%{public}s successfully", dirPath.c_str());
     }
-    inotifyStopFlag_ = false;
+    inotifyStopFlag_.store(false);
     if (inotifyThread_ == nullptr) {
         auto listenerPtr = shared_from_this();
         inotifyThread_ = std::make_unique<std::thread>([listenerPtr] { listenerPtr->HandleDirEvent(); });
@@ -208,7 +208,7 @@ void OsEventListener::HandleDirEvent()
     if (pthread_setname_np(pthread_self(), "OS_AppEvent_Ls") != 0) {
         HILOG_WARN(LOG_CORE, "Failed to set threadName, errno=%{public}d", errno);
     }
-    while (!inotifyStopFlag_) {
+    while (!inotifyStopFlag_.load()) {
         char buffer[BUF_SIZE] = {0};
         char* offset = buffer;
         struct inotify_event* event = reinterpret_cast<struct inotify_event*>(buffer);

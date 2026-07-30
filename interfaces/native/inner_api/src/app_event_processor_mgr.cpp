@@ -46,7 +46,9 @@ void AppEventProcessorMgr::AddProcessorAsync(const ReportConfig& config, std::fu
 {
     AppEventObserverFacade::SubmitTaskToFFRTQueue([config, cb] () {
         int64_t processorId = AddProcessor(config);
-        cb(processorId);
+        if (cb) {
+            cb(processorId);
+        }
         }, "AddProcessorAsync");
 }
 

@@ -52,6 +52,7 @@ bool ChangeCrashConfigToUIntValue(const std::string& strValue, uint32_t& out)
 {
     const int decimal = 10;
     char* end;
+    errno = 0;
     unsigned long result = strtoul(strValue.c_str(), &end, decimal);
     if (strValue.empty() || *end != '\0' || errno == ERANGE || result > UINT32_MAX) {
         HILOG_ERROR(LOG_CORE, "Set crash config item failed, failed to convert str to int.");

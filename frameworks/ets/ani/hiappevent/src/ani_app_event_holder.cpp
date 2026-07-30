@@ -16,6 +16,7 @@
 #include "ani_app_event_holder.h"
 
 #include <cinttypes>
+#include <limits>
 
 #include "hiappevent_ani_error_code.h"
 #include "hiappevent_ani_parameter_name.h"
@@ -193,7 +194,7 @@ std::shared_ptr<AppEventPackage> AniAppEventHolder::TakeNext()
     auto package = std::make_shared<AppEventPackage>();
     for (auto event : events) {
         std::string eventStr = event->GetEventStr();
-        if (shouldTakeSize && static_cast<int>(totalSize + eventStr.size()) > takeSize_) {
+        if (shouldTakeSize && totalSize + eventStr.size() > static_cast<size_t>(takeSize_)) {
             HILOG_INFO(LOG_CORE, "stop to take data, totalSize=%{public}zu, takeSize=%{public}d",
                 totalSize, takeSize_);
             break;
@@ -214,7 +215,9 @@ std::shared_ptr<AppEventPackage> AniAppEventHolder::TakeNext()
 
     package->packageId = packageId_++;
     package->row = static_cast<int>(eventStrs.size());
-    package->size = static_cast<int>(totalSize);
+    package->size = totalSize <= static_cast<size_t>(std::numeric_limits<int>::max())
+        ? static_cast<int>(totalSize)
+        : std::numeric_limits<int>::max();
     package->data = eventStrs;
     return package;
 }

@@ -662,7 +662,13 @@ static ani_method FindArrayMethodSet(ani_env *env)
 
 ani_ref HiAppEventAniUtil::CreateStrings(ani_env *env, const std::vector<std::string>& strs)
 {
+    if (env == nullptr) {
+        return {};
+    }
     ani_ref arr = CreateArray(env, CLASS_NAME_STRING, strs.size());
+    if (arr == nullptr) {
+        return arr;
+    }
     for (size_t i = 0; i < strs.size(); ++i) {
         ani_status status = env->Array_Set(static_cast<ani_array>(arr),
             static_cast<ani_size>(i), HiAppEventAniUtil::CreateAniString(env, strs[i]));
@@ -682,16 +688,19 @@ ani_object HiAppEventAniUtil::CreateObject(ani_env *env, const std::string &name
     ani_class cls {};
     if (env->FindClass(name.c_str(), &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", name.c_str());
+        return nullptr;
     }
 
     ani_method ctor {};
     if (env->Class_FindMethod(cls, "<ctor>", nullptr, &ctor) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get %{public}s ctor Failed", name.c_str());
+        return nullptr;
     }
 
     ani_object obj {};
     if (env->Object_New(cls, ctor, &obj) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Create Object Failed: %{public}s", name.c_str());
+        return nullptr;
     }
     return obj;
 }
@@ -802,10 +811,13 @@ static ani_ref CreateValueByJsonStr(ani_env *env, const std::string& jsonStr)
 
 static ani_object CreateEventInfo(ani_env *env, std::shared_ptr<AppEventPack> event)
 {
-    if (env == nullptr) {
+    if (env == nullptr || event == nullptr) {
         return nullptr;
     }
     ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_INFO);
+    if (obj == nullptr) {
+        return nullptr;
+    }
     env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_DOMAIN,
         HiAppEventAniUtil::CreateAniString(env, event->GetDomain()));
     env->Object_SetPropertyByName_Ref(obj, EVENT_CONFIG_NAME,

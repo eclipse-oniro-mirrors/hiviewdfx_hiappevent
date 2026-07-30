@@ -59,7 +59,10 @@ static napi_value Write(napi_env env, napi_callback_info info)
     // 3. set promise object if callback is null
     napi_value promise = NapiUtil::CreateUndefined(env);
     if (asyncContext->callback == nullptr) {
-        napi_create_promise(env, &asyncContext->deferred, &promise);
+        if (napi_create_promise(env, &asyncContext->deferred, &promise) != napi_ok) {
+            HILOG_ERROR(LOG_CORE, "failed to create promise");
+            return promise;
+        }
     }
 
     // 4. try to write the event to file

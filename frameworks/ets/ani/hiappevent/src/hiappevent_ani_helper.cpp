@@ -57,8 +57,21 @@ static bool AddParamToCustomConfigs(ani_env *env, ani_ref recordRef, HiAppEvent:
             return false;
         }
         for (const auto &CustomConfigsTemp : CustomConfigsRecord) {
-            conf.customConfigs[CustomConfigsTemp.first] =
-                HiAppEventAniUtil::ParseStringValue(env, CustomConfigsTemp.second);
+            const auto &key = CustomConfigsTemp.first;
+            ani_ref valueRef = CustomConfigsTemp.second;
+            if (valueRef == nullptr ||
+                HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(valueRef)) != AniArgsType::ANI_STRING) {
+                HILOG_WARN(LOG_CORE, "invalid custom config value type, key=%{public}s", key.c_str());
+                conf.customConfigs.clear();
+                return false;
+            }
+            std::string value = HiAppEventAniUtil::ParseStringValue(env, valueRef);
+            if (!AppEventVerifyFacade::VerifyIsValidCustomConfig(key, value)) {
+                HILOG_WARN(LOG_CORE, "invalid custom config, key=%{public}s", key.c_str());
+                conf.customConfigs.clear();
+                return false;
+            }
+            conf.customConfigs[key] = value;
         }
     }
     return true;
@@ -77,6 +90,10 @@ static int32_t GetRouteInfoRefValue(ani_env *env, ani_object processor, const st
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
+        if (ref == nullptr
+            || HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(ref)) != AniArgsType::ANI_STRING) {
+            return ERR_CODE_PARAM_INVALID;
+        }
         out.routeInfo = HiAppEventAniUtil::ParseStringValue(env, ref);
         if (!AppEventVerifyFacade::VerifyIsValidRouteInfo(out.routeInfo)) {
             return ERR_CODE_PARAM_INVALID;
@@ -89,6 +106,10 @@ static int32_t GetAppIdRefValue(ani_env *env, ani_object processor, const std::s
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
+        if (ref == nullptr
+            || HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(ref)) != AniArgsType::ANI_STRING) {
+            return ERR_CODE_PARAM_INVALID;
+        }
         out.appId = HiAppEventAniUtil::ParseStringValue(env, ref);
         if (!AppEventVerifyFacade::VerifyIsValidAppId(out.appId)) {
             return ERR_CODE_PARAM_INVALID;
@@ -142,6 +163,9 @@ static int32_t GetUserIdsRefValue(ani_env *env, ani_object processor, const std:
     std::unordered_set<std::string> userIdNames;
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
+        if (ref == nullptr || !HiAppEventAniUtil::IsArray(env, static_cast<ani_object>(ref))) {
+            return ERR_CODE_PARAM_INVALID;
+        }
         HiAppEventAniUtil::GetStringsToSet(env, ref, userIdNames);
         for (auto userId : userIdNames) {
             if (!AppEventVerifyFacade::VerifyIsValidUserIdName(userId)) {
@@ -158,6 +182,9 @@ static int32_t GetUserPropertyRefValue(ani_env *env, ani_object processor, const
     std::unordered_set<std::string> userPropertyNames;
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
+        if (ref == nullptr || !HiAppEventAniUtil::IsArray(env, static_cast<ani_object>(ref))) {
+            return ERR_CODE_PARAM_INVALID;
+        }
         HiAppEventAniUtil::GetStringsToSet(env, ref, userPropertyNames);
         for (auto userProperty : userPropertyNames) {
             if (!AppEventVerifyFacade::VerifyIsValidUserPropName(userProperty)) {
@@ -642,6 +669,16 @@ bool HiAppEventAniHelper::RemoveProcessor(ani_env *env, ani_long id)
 
 static bool IsValidName(ani_env *env, ani_ref nameRef, int32_t& errCode)
 {
+    if (nameRef == nullptr || HiAppEventAniUtil::IsRefUndefined(env, nameRef)) {
+        HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, HiAppEventAniUtil::CreateErrMsg(WATCHER_NAME));
+        errCode = ERR_INVALID_WATCHER_NAME;
+        return false;
+    }
+    if (HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(nameRef)) != AniArgsType::ANI_STRING) {
+        HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, HiAppEventAniUtil::CreateErrMsg(WATCHER_NAME, "string"));
+        errCode = ERR_INVALID_WATCHER_NAME;
+        return false;
+    }
     if (!AppEventVerifyFacade::VerifyIsValidWatcherName(HiAppEventAniUtil::ParseStringValue(env, nameRef))) {
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_WATCHER_NAME, "Invalid watcher name.");
         errCode = ERR_INVALID_WATCHER_NAME;
@@ -654,6 +691,16 @@ static bool IsValidFilter(ani_env *env, ani_ref filterValue, int32_t& errCode)
 {
     ani_ref domainRef =
         HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(filterValue), FILTER_DOMAIN);
+    if (domainRef == nullptr || HiAppEventAniUtil::IsRefUndefined(env, domainRef)) {
+        HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, HiAppEventAniUtil::CreateErrMsg(FILTER_DOMAIN));
+        errCode = ERR_INVALID_FILTER_DOMAIN;
+        return false;
+    }
+    if (HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(domainRef)) != AniArgsType::ANI_STRING) {
+        HiAppEventAniUtil::ThrowAniError(env, ERR_PARAM, HiAppEventAniUtil::CreateErrMsg(FILTER_DOMAIN, "string"));
+        errCode = ERR_INVALID_FILTER_DOMAIN;
+        return false;
+    }
     if (!AppEventVerifyFacade::VerifyIsValidDomain(HiAppEventAniUtil::ParseStringValue(env, domainRef))) {
         HiAppEventAniUtil::ThrowAniError(env, ERR_INVALID_FILTER_DOMAIN, "Invalid filtering event domain.");
         errCode = ERR_INVALID_FILTER_DOMAIN;
@@ -664,7 +711,7 @@ static bool IsValidFilter(ani_env *env, ani_ref filterValue, int32_t& errCode)
 
 static bool IsValidFilters(ani_env *env, ani_ref filtersRef, int32_t& errCode)
 {
-    if (HiAppEventAniUtil::IsRefUndefined(env, filtersRef)) {
+    if (filtersRef == nullptr || HiAppEventAniUtil::IsRefUndefined(env, filtersRef)) {
         return true;
     }
     ani_size length = 0;
@@ -727,6 +774,10 @@ static void GetFilters(ani_env *env, ani_object watcher, std::vector<AppEventFil
         HiAppEventAniUtil::GetIntValueToVector(env, typesValue, types);
         unsigned int filterType = 0;
         for (auto type : types) {
+            if (!AppEventVerifyFacade::VerifyIsValidEventType(type)) {
+                HILOG_WARN(LOG_CORE, "invalid event type=%{public}d, skipped", type);
+                continue;
+            }
             filterType |= (BIT_MASK << type);
         }
         filterType = filterType > 0 ? filterType : BIT_ALL_TYPES;
@@ -779,16 +830,19 @@ static ani_object CreateHolderObject(ani_env *env, ani_string watcherName)
     ani_class cls {};
     if (env->FindClass(CLASS_NAME_EVENT_PACKAGE_HOLDER, &cls) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_EVENT_PACKAGE_HOLDER);
+        return {};
     }
 
     ani_method ctor {};
     if (env->Class_FindMethod(cls, "<ctor>", nullptr, &ctor) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "get %{public}s ctor Failed", CLASS_NAME_EVENT_PACKAGE_HOLDER);
+        return {};
     }
 
     ani_object obj {};
     if (env->Object_New(cls, ctor, &obj, watcherName) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "Create Object Failed: %{public}s", CLASS_NAME_EVENT_PACKAGE_HOLDER);
+        return {};
     }
     return obj;
 }
