@@ -21,7 +21,7 @@ config("hiappevent_ndk_config") {
 }
 
 ohos_shared_library("hiappevent_ndk") {
-
+  branch_protector_ret = "pac_ret"
   public_configs = [ ":hiappevent_ndk_config" ]
 
   include_dirs = [

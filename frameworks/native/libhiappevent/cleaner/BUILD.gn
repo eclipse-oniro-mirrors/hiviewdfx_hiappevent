@@ -19,6 +19,7 @@ config("hiappevent_cleaner_config") {
 }
 
 ohos_source_set("hiappevent_cleaner") {
+  branch_protector_ret = "pac_ret"
   public_configs = [ ":hiappevent_cleaner_config" ]
 
   sources = [

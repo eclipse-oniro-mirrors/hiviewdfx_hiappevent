@@ -23,6 +23,7 @@ config("hiappevent_stat_config") {
 }
 
 ohos_source_set("hiappevent_stat") {
+  branch_protector_ret = "pac_ret"
   public_configs = [ ":hiappevent_stat_config" ]
 
   sources = [
