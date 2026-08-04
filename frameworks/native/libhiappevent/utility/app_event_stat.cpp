@@ -19,6 +19,7 @@
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
 #include "hiappevent_api_metric.h"
+#include "hilog/log.h"
 #include "time_util.h"
 #ifdef ENABLE_API_METRICS
 #include "histogram_plugin_macros.h"
@@ -50,10 +51,14 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
         HISTOGRAM_ENUMERATION("PerformanceAnalysisKit.ErrCode." + apiName, errCode, MAX_ERR);
     }
 #endif
+    if (beginTime == UINT64_MAX) {
+        HILOG_INFO(LOG_CORE, "beginTime is -1, get beginTime failed");
+        return;
+    }
     int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
     int64_t realEndTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
     int64_t realBeginTime = realEndTime - costTime;
-    if (realBeginTime < 0 || realEndTime < 0) {
+    if (costTime < 0 || realBeginTime < 0 || realEndTime < 0) {
         return;
     }
 #ifdef ENABLE_API_METRICS
@@ -72,10 +77,14 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
 
 int WriteApiEndMetric(const std::string& apiName, uint64_t beginTime, int result, int errCode)
 {
+    if (beginTime == UINT64_MAX) {
+        HILOG_INFO(LOG_CORE, "beginTime is -1, get beginTime failed");
+        return ErrorCode::ERROR_INVALID_PARAM_VALUE;
+    }
     int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
     int64_t realEndTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
     int64_t realBeginTime = realEndTime - costTime;
-    if (realBeginTime < 0) {
+    if (costTime < 0 || realEndTime < 0 || realBeginTime < 0) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     HiAppEvent::ApiInfo apiInfo = {

@@ -110,10 +110,11 @@ static int32_t GetAppIdRefValue(ani_env *env, ani_object processor, const std::s
             || HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(ref)) != AniArgsType::ANI_STRING) {
             return ERR_CODE_PARAM_INVALID;
         }
-        out.appId = HiAppEventAniUtil::ParseStringValue(env, ref);
-        if (!AppEventVerifyFacade::VerifyIsValidAppId(out.appId)) {
+        std::string appId = HiAppEventAniUtil::ParseStringValue(env, ref);
+        if (!AppEventVerifyFacade::VerifyIsValidAppId(appId)) {
             return ERR_CODE_PARAM_INVALID;
         }
+        out.appId = appId;
     }
     return ERR_CODE_SUCC;
 }
@@ -150,6 +151,9 @@ static int32_t GetBatchReportInt(ani_env *env, ani_object processor, const std::
 {
     ani_ref ref = HiAppEventAniUtil::GetProperty(env, processor, key);
     if (!HiAppEventAniUtil::IsRefUndefined(env, ref)) {
+        if (HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(ref)) != AniArgsType::ANI_INT) {
+            return ERR_CODE_PARAM_INVALID;
+        }
         out.triggerCond.row = HiAppEventAniUtil::ParseIntValue(env, ref);
         if (!AppEventVerifyFacade::VerifyIsValidBatchReport(out.triggerCond.row)) {
             return ERR_CODE_PARAM_INVALID;
@@ -212,10 +216,14 @@ static int32_t ParseEventConfigsValue(ani_env *env, ani_ref Ref, std::vector<Eve
         }
         ani_ref domainRef =
             HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_DOMAIN);
-        config.domain = HiAppEventAniUtil::ParseStringValue(env, domainRef);
+        if (!HiAppEventAniUtil::IsRefUndefined(env, domainRef)) {
+            config.domain = HiAppEventAniUtil::ParseStringValue(env, domainRef);
+        }
         ani_ref nameRef =
             HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_NAME);
-        config.name = HiAppEventAniUtil::ParseStringValue(env, nameRef);
+        if (!HiAppEventAniUtil::IsRefUndefined(env, nameRef)) {
+            config.name = HiAppEventAniUtil::ParseStringValue(env, nameRef);
+        }
         ani_ref isRealTimeBol =
             HiAppEventAniUtil::GetProperty(env, static_cast<ani_object>(value), EVENT_CONFIG_REALTIME);
         if (!HiAppEventAniUtil::IsRefUndefined(env, isRealTimeBol)) {
@@ -383,7 +391,14 @@ bool HiAppEventAniHelper::GetPropertyDomain(ani_object info, ani_env *env, std::
         HILOG_ERROR(LOG_CORE, "get property domain failed");
         return false;
     }
-
+    if (HiAppEventAniUtil::IsRefUndefined(env, domainResultTemp)) {
+        HILOG_ERROR(LOG_CORE, "property domain is undefined");
+        return false;
+    }
+    if (HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(domainResultTemp)) != AniArgsType::ANI_STRING) {
+        HILOG_ERROR(LOG_CORE, "property domain is not string type");
+        return false;
+    }
     domain = HiAppEventAniUtil::ParseStringValue(env, domainResultTemp);
     return true;
 }
@@ -395,7 +410,14 @@ bool HiAppEventAniHelper::GetPropertyName(ani_object info, ani_env *env, std::st
         HILOG_ERROR(LOG_CORE, "get property name failed");
         return false;
     }
-
+    if (HiAppEventAniUtil::IsRefUndefined(env, nameResultTemp)) {
+        HILOG_ERROR(LOG_CORE, "property name is undefined");
+        return false;
+    }
+    if (HiAppEventAniUtil::GetArgType(env, static_cast<ani_object>(nameResultTemp)) != AniArgsType::ANI_STRING) {
+        HILOG_ERROR(LOG_CORE, "property name is not string type");
+        return false;
+    }
     name = HiAppEventAniUtil::ParseStringValue(env, nameResultTemp);
     return true;
 }
@@ -407,7 +429,21 @@ bool HiAppEventAniHelper::GeteventTypeValue(ani_object info, ani_env *env, int32
         HILOG_ERROR(LOG_CORE, "get property eventType failed");
         return false;
     }
-
+    if (HiAppEventAniUtil::IsRefUndefined(env, eventTypeRef)) {
+        HILOG_ERROR(LOG_CORE, "property eventType is undefined");
+        return false;
+    }
+    ani_enum aniEnum {};
+    if (env->FindEnum(ENUM_NAME_EVENT_TYPE, &aniEnum) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "find enum EventType failed");
+        return false;
+    }
+    ani_boolean isInstance = ANI_FALSE;
+    if (env->Object_InstanceOf(static_cast<ani_object>(eventTypeRef), aniEnum, &isInstance) != ANI_OK
+        || !static_cast<bool>(isInstance)) {
+        HILOG_ERROR(LOG_CORE, "property eventType is not enum item type");
+        return false;
+    }
     ani_enum_item eventTypeItem = static_cast<ani_enum_item>(eventTypeRef);
     if (HiAppEventAniHelper::ParseEnumGetValueInt32(env, eventTypeItem, enumValue) != ANI_OK) {
         HILOG_ERROR(LOG_CORE, "fail to get 'enumValue'");
