@@ -26,11 +26,8 @@ namespace HiAppEvent {
 int64_t GetObserverSeqByName(const std::string& name);
 char* MallocCString(const std::string& origin);
 class AppEventPackageHolderImpl : public OHOS::FFI::FFIData {
+    DECL_TYPE(AppEventPackageHolderImpl, FFIData)
 public:
-    OHOS::FFI::RuntimeType* GetRuntimeType() override
-    {
-        return GetClassType();
-    }
     AppEventPackageHolderImpl(const std::string& name, int64_t observerSeq);
     void SetSize(int size);
     std::tuple<int32_t, RetAppEventPackage> TakeNext();
@@ -42,12 +39,6 @@ private:
     int64_t observerSeq_ = 0;
     friend class OHOS::FFI::RuntimeType;
     friend class OHOS::FFI::TypeBase;
-    static OHOS::FFI::RuntimeType* GetClassType()
-    {
-        static OHOS::FFI::RuntimeType runtimeType =
-            OHOS::FFI::RuntimeType::Create<OHOS::FFI::FFIData>("AppEventPackageHolderImpl");
-        return &runtimeType;
-    }
 };
 } // HiAppEvent
 } // CJSystemapi
