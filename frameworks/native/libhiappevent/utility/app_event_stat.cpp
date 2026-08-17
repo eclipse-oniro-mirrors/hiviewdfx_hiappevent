@@ -51,8 +51,7 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
         HISTOGRAM_ENUMERATION("PerformanceAnalysisKit.ErrCode." + apiName, errCode, MAX_ERR);
     }
 #endif
-    if (beginTime == UINT64_MAX) {
-        HILOG_INFO(LOG_CORE, "beginTime is -1, get beginTime failed");
+    if (beginTime == UINT64_MAX) { // get beginTime timestamp failed, beginTime is -1
         return;
     }
     int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
@@ -77,8 +76,7 @@ void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int r
 
 int WriteApiEndMetric(const std::string& apiName, uint64_t beginTime, int result, int errCode)
 {
-    if (beginTime == UINT64_MAX) {
-        HILOG_INFO(LOG_CORE, "beginTime is -1, get beginTime failed");
+    if (beginTime == UINT64_MAX) { // get beginTime timestamp failed, beginTime is -1
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     int64_t costTime = TimeUtil::GetElapsedMilliSecondsSinceBoot() - static_cast<int64_t>(beginTime);
