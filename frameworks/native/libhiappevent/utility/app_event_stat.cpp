@@ -19,7 +19,6 @@
 #include "hiappevent_base.h"
 #include "hiappevent_write.h"
 #include "hiappevent_api_metric.h"
-#include "hilog/log.h"
 #include "time_util.h"
 #ifdef ENABLE_API_METRICS
 #include "histogram_plugin_macros.h"
