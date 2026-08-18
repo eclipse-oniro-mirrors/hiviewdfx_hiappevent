@@ -139,12 +139,13 @@ bool HiAppEventConfig::SetDisableItem(const std::string& value)
 
 bool HiAppEventConfig::SetMaxStorageSizeItem(const std::string& value)
 {
-    if (!std::regex_match(value, std::regex("[0-9]+[k|m|g|t]?[b]?"))) {
+    if (!std::regex_match(value, std::regex("[0-9]+[kmgt]?[b]?"))) {
         HILOG_ERROR(LOG_CORE, "invalid value=%{public}s of the event file dir storage quota size.", value.c_str());
         return false;
     }
 
     char* numEndIndex = nullptr;
+    errno = 0;
     uint64_t numValue = std::strtoull(value.c_str(), &numEndIndex, DECIMAL_UNIT);
     if (errno == ERANGE) {
         HILOG_ERROR(LOG_CORE, "value: %{public}s overflow.", value.c_str());
@@ -204,6 +205,7 @@ void HiAppEventConfig::SetMaxStorageSize(uint64_t size)
 
 void HiAppEventConfig::SetStorageDir(const std::string& dir)
 {
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     storageDir_ = dir;
 }
 
@@ -236,7 +238,7 @@ std::string HiAppEventConfig::GetStorageDir()
         return "";
     }
     std::string dir = context->GetFilesDir() + APP_EVENT_DIR;
-    SetStorageDir(dir);
+    storageDir_ = dir;
     return storageDir_;
 }
 

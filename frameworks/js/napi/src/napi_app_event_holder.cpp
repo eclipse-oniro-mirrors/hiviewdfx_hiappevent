@@ -211,7 +211,7 @@ std::shared_ptr<AppEventPackage> NapiAppEventHolder::TakeNext()
     auto package = std::make_shared<AppEventPackage>();
     for (auto event : events) {
         std::string eventStr = event->GetEventStr();
-        if (shouldTakeSize && static_cast<int>(totalSize + eventStr.size()) > takeSize_) {
+        if (shouldTakeSize && totalSize + eventStr.size() > static_cast<size_t>(takeSize_)) {
             HILOG_INFO(LOG_CORE, "stop to take data, totalSize=%{public}zu, takeSize=%{public}d",
                 totalSize, takeSize_);
             break;

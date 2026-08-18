@@ -310,6 +310,7 @@ int64_t AppEventObserverMgr::AddWatcher(std::shared_ptr<AppEventWatcher> watcher
     }
     std::unique_lock<std::shared_mutex> lock(watcherMutex_);
     if (!InitWatcherFromListener(watcher, isExist)) {
+        AppEventStore::GetInstance().DeleteObserver(observerSeq);
         return -1;
     }
     watchers_[observerSeq] = watcher;

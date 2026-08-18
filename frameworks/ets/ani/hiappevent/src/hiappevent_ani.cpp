@@ -218,6 +218,10 @@ ani_object HiAppEventAni::SetEventParamSync(ani_env *env, ani_object params, ani
 
 ani_object HiAppEventAni::SetEventConfigSync(ani_env *env, ani_string name, ani_object config)
 {
+    if (HiAppEventAniUtil::IsRefUndefined(env, name) || HiAppEventAniUtil::IsRefUndefined(env, config)) {
+        HILOG_ERROR(LOG_CORE, "the param name or config is undefined.");
+        return HiAppEventAniUtil::Result(env, {ERR_PARAM, "the param name or config is undefined."});
+    }
     std::string nameString = HiAppEventAniUtil::ParseStringValue(env, name);
     std::map<std::string, std::string> eventConfigMap;
     int32_t result = BuildEventConfig(env, config, eventConfigMap);

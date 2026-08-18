@@ -465,6 +465,42 @@ HWTEST_F(HiAppEventCacheTest, SetConfigurationItem001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: SetConfigurationItem002
+ * @tc.desc: test the SetConfigurationItem func with name is max_storage.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventCacheTest, SetConfigurationItem002, TestSize.Level1)
+{
+    std::string name = "max_storage";
+    bool ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15K|MB");
+    EXPECT_FALSE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15KMTB");
+    EXPECT_FALSE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15M|");
+    EXPECT_FALSE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15|B");
+    EXPECT_FALSE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "GB");
+    EXPECT_FALSE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15mbasdf");
+    EXPECT_FALSE(ret);
+    string validRangeValue = std::string("1234567891123456789212345678931234567894123456789512345678961234567897") +
+    std::string("123456789812345678991234567890");
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, validRangeValue);
+    EXPECT_FALSE(ret);
+
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15kb");
+    EXPECT_TRUE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15t");
+    EXPECT_TRUE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "15");
+    EXPECT_TRUE(ret);
+    ret = HiAppEventConfig::GetInstance().SetConfigurationItem(name, "10MB");
+    EXPECT_TRUE(ret);
+}
+
+/**
  * @tc.name: HiAppEventDbOnUpgrade001
  * @tc.desc: test the OnUpgrade func of class AppEventStoreCallback.
  * @tc.type: FUNC
