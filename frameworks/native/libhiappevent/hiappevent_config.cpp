@@ -48,6 +48,8 @@ constexpr uint64_t STORAGE_UNIT_GB = STORAGE_UNIT_MB * 1024;
 constexpr uint64_t STORAGE_UNIT_TB = STORAGE_UNIT_GB * 1024;
 constexpr int DECIMAL_UNIT = 10;
 constexpr int64_t FREE_SIZE_LIMIT = STORAGE_UNIT_MB * 300;
+constexpr int VALUE_MOD = 200000;
+constexpr int STORAGE_DIR_BEGIN_LEN = 18;
 
 std::mutex g_mutex;
 
@@ -238,6 +240,12 @@ std::string HiAppEventConfig::GetStorageDir()
         return "";
     }
     std::string dir = context->GetFilesDir() + APP_EVENT_DIR;
+    int32_t userId = static_cast<int32_t>(getuid()) / VALUE_MOD;
+    if (userId == 0) {
+        if (dir.size() >= STORAGE_DIR_BEGIN_LEN && dir.substr(0, STORAGE_DIR_BEGIN_LEN) == "/data/storage/el2") {
+            dir.replace(0, STORAGE_DIR_BEGIN_LEN, "/data/storage/el1");
+        }
+    }
     storageDir_ = dir;
     return storageDir_;
 }
