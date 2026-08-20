@@ -242,8 +242,8 @@ std::string HiAppEventConfig::GetStorageDir()
     std::string dir = context->GetFilesDir() + APP_EVENT_DIR;
     int32_t userId = static_cast<int32_t>(getuid()) / VALUE_MOD;
     if (userId == 0) {
-        if (dir.size() >= STORAGE_DIR_BEGIN_LEN && dir.substr(0, STORAGE_DIR_BEGIN_LEN) == "/data/storage/el2") {
-            dir.replace(0, STORAGE_DIR_BEGIN_LEN, "/data/storage/el1");
+        if (dir.size() >= STORAGE_DIR_BEGIN_LEN && dir.substr(0, STORAGE_DIR_BEGIN_LEN) == "/data/storage/el2/") {
+            dir.replace(0, STORAGE_DIR_BEGIN_LEN, "/data/storage/el1/");
         }
     }
     storageDir_ = dir;
