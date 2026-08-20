@@ -66,6 +66,7 @@ ohos_shared_library("libhiappevent_base") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:libhitracechain",
+    "icu:shared_icuuc",
     "init:libbegetutil",
     "ipc:ipc_core",
     "jsoncpp:jsoncpp",

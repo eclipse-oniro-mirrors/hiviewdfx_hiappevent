@@ -87,6 +87,7 @@ ohos_unittest("HiAppEventApiMetricTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "icu:shared_icuuc",
     "ipc:ipc_core",
     "init:libbegetutil",
     "jsoncpp:jsoncpp",
@@ -113,6 +114,7 @@ ohos_unittest("HiAppEventAppEventTest") {
     "bundle_framework:appexecfwk_core_headers",
     "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
+    "icu:shared_icuuc",
   ]
 }
 
@@ -159,6 +161,7 @@ ohos_unittest("HiAppEventCacheTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "icu:shared_icuuc",
     "ipc:ipc_core",
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
@@ -188,6 +191,7 @@ ohos_unittest("HiAppEventInnerApiTest") {
     "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "icu:shared_icuuc",
     "relational_store:native_rdb",
   ]
 }
@@ -216,6 +220,7 @@ ohos_unittest("HiAppEventNativeTest") {
     "bundle_framework:appexecfwk_core_headers",
     "common_event_service:cesfwk_innerkits",
     "googletest:gtest_main",
+    "icu:shared_icuuc",
   ]
 }
 
@@ -269,6 +274,7 @@ ohos_unittest("HiAppEventObserverTest") {
     "hilog:libhilog",
     "hilog:libsandboxlog",
     "hisysevent:libhisysevent",
+    "icu:shared_icuuc",
     "init:libbegetutil",
     "ipc:ipc_core",
     "googletest:gmock_main",
@@ -314,6 +320,7 @@ ohos_unittest("HiAppEventPolicyTest") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hilog:libsandboxlog",
+    "icu:shared_icuuc",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
