@@ -44,6 +44,7 @@ ohos_source_set("hiappevent_policy") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hilog:libsandboxlog",
+    "icu:shared_icuuc",
     "ipc:ipc_single",
     "resource_management:global_resmgr",
     "storage_service:storage_manager_acl",

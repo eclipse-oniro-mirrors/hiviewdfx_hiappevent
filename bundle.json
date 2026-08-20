@@ -35,6 +35,7 @@
         "hilog",
         "hicollie",
         "hisysevent",
+        "icu",
         "init",
         "ipc",
         "libuv",
