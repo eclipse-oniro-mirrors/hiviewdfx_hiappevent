@@ -12,11 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "app_event_external_log_manager.h"
 #include "hiappevent_base.h"
 #include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_app_event_holder.h"
 #include "napi_config_builder.h"
+#include "napi_external_log_container.h"
+#include "napi_external_log_mgr.h"
+#include "napi_external_log_wrapper.h"
 #include "napi_error.h"
 #include "napi_hiappevent_builder.h"
 #include "napi_hiappevent_config.h"
@@ -332,6 +336,40 @@ static napi_value ConfigEventPolicy(napi_env env, napi_callback_info info)
     return promise;
 }
 
+static napi_value RegisterExternalLogManager(napi_env env, napi_callback_info info)
+{
+    napi_value params[MAX_PARAM_NUM] = { 0 };
+    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for RegisterExternalLogManager is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("logMngr"));
+        return nullptr;
+    }
+    if (!NapiUtil::IsObject(env, params[0])) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("logMngr", "object"));
+        return nullptr;
+    }
+    napi_value callback = NapiUtil::GetProperty(env, params[0], "onCapacityReached");
+    if (callback == nullptr || !NapiUtil::IsFunction(env, callback)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("onCapacityReached", "function"));
+        return nullptr;
+    }
+    if (AppEventExternalLogManager::GetInstance().IsRegistered()) {
+        NapiUtil::ThrowErrorMsg(env, NapiError::ERR_LOG_MANAGER_ALREADY_REGISTERED);
+        return nullptr;
+    }
+    auto logMgr = std::make_shared<NapiExternalLogMgr>();
+    logMgr->InitCallback(env, params[0]);
+    AppEventExternalLogManager::GetInstance().RegisterCallback(logMgr);
+    return NapiUtil::CreateUndefined(env);
+}
+ 
+static napi_value IsExternalLogManagerRegistered(napi_env env, napi_callback_info info)
+{
+    bool isRegistered = AppEventExternalLogManager::GetInstance().IsRegistered();
+    napi_value result = nullptr;
+    napi_get_boolean(env, isRegistered, &result);
+    return result;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
@@ -350,11 +388,15 @@ static napi_value Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("removeWatcher", RemoveWatcher),
         DECLARE_NAPI_FUNCTION("setEventParam", SetEventParam),
         DECLARE_NAPI_FUNCTION("setEventConfig", SetEventConfig),
-        DECLARE_NAPI_FUNCTION("configEventPolicy", ConfigEventPolicy)
+        DECLARE_NAPI_FUNCTION("configEventPolicy", ConfigEventPolicy),
+        DECLARE_NAPI_FUNCTION("registerExternalLogManager", RegisterExternalLogManager),
+        DECLARE_NAPI_FUNCTION("isExternalLogManagerRegistered", IsExternalLogManagerRegistered)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
     NapiHiAppEventInit::InitNapiClassV9(env, exports);
     NapiAppEventHolder::NapiExport(env, exports);
+    NapiExternalLogWrapper::NapiExport(env, exports);
+    NapiExternalLogContainer::NapiExport(env, exports);
     return exports;
 }
 EXTERN_C_END

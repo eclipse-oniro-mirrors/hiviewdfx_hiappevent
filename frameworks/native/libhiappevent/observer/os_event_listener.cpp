@@ -18,8 +18,10 @@
 #include <fstream>
 #include <sys/inotify.h>
 
+#include "app_event_external_log_manager.h"
 #include "app_event_observer_mgr.h"
 #include "app_event_store.h"
+#include "app_event_util.h"
 #include "application_context.h"
 #include "event_json_util.h"
 #include "event_policy_mgr.h"
@@ -106,25 +108,54 @@ void OsEventListener::Init()
     // read os events from dir files
     std::vector<std::string> files;
     FileUtil::GetDirFiles(osEventPath_, files);
-    GetEventsFromFiles(files, historyEvents_);
-    for (auto& event : historyEvents_) {
-        int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
-        if (eventSeq <= 0) {
-            HILOG_WARN(LOG_CORE, "failed to store event to db");
-            continue;
-        }
-        event->SetSeq(eventSeq);
-        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
+    std::vector<std::shared_ptr<AppEventPack>> historyEvents;
+    GetEventsFromFiles(files, historyEvents);
+    for (auto& event : historyEvents) {
+        InsertLinkEvents(event);
     }
     for (const auto& file : files) {
         (void)FileUtil::RemoveFile(file);
     }
+    AppEventExternalLogManager::GetInstance().CheckCapacity();
 }
 
-void OsEventListener::GetEvents(std::vector<std::shared_ptr<AppEventPack>>& events)
+void OsEventListener::InsertLinkEvents(std::shared_ptr<AppEventPack> event)
 {
-    events = historyEvents_;
-    historyEvents_.clear();
+    ExternalLogManager externalLogManager = event->GetExternalLogManager();
+    if (externalLogManager.linkExternalLogs.size() == 0) {
+        return;
+    }
+    std::vector<std::shared_ptr<AppEventPack>> linkEvents;
+    size_t observerNum = externalLogManager.linkExternalLogs[0].size();
+    for (size_t i = 0; i < observerNum; ++i) {
+        std::vector<std::string> linkExternalLogs;
+        for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
+            if (i >= externalLogManager.linkExternalLogs[j].size()) {
+                continue;
+            }
+            linkExternalLogs.push_back(externalLogManager.linkExternalLogs[j][i]);
+        }
+        auto linkEvent = std::make_shared<AppEventPack>(*event);
+        AppEventUtil::SaveExternalLogSolidLink(linkEvent, linkExternalLogs);
+        int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(linkEvent);
+        if (eventSeq <= 0) {
+            HILOG_WARN(LOG_CORE, "failed to store event to db");
+            continue;
+        }
+        linkEvent->SetSeq(eventSeq);
+        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(linkEvent);
+        linkEvents.push_back(linkEvent);
+    }
+    for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
+        (void)FileUtil::RemoveFile(externalLogManager.externalLogs[j]);
+    }
+    historyLinkEvents_.push_back(linkEvents);
+}
+
+void OsEventListener::GetLinkEvents(std::vector<std::vector<std::shared_ptr<AppEventPack>>>& linkEvents)
+{
+    linkEvents = historyLinkEvents_;
+    historyLinkEvents_.clear();
 }
 
 bool OsEventListener::StartListening()
@@ -241,6 +272,7 @@ void OsEventListener::HandleInotify(const std::string& file)
     GetEventsFromFiles({file}, events);
     AppEventObserverMgr::GetInstance().HandleEvents(events);
     (void)FileUtil::RemoveFile(file);
+    AppEventExternalLogManager::GetInstance().CheckCapacity();
 }
 
 void OsEventListener::GetEventsFromFiles(
@@ -259,6 +291,49 @@ void OsEventListener::GetEventsFromFiles(
             }
         }
     }
+}
+
+void ParseExternalLogs(const Json::Value& paramsJson, ExternalLogManager& externalLogManager)
+{
+    if (!paramsJson.isMember("external_log") || !paramsJson["external_log"].isArray()) {
+        return;
+    }
+    for (Json::ArrayIndex i = 0; i < paramsJson["external_log"].size(); ++i) {
+        if (paramsJson["external_log"][i].isString()) {
+            externalLogManager.externalLogs.push_back(paramsJson["external_log"][i].asString());
+        }
+    }
+}
+
+void ParseLinkExternalLogs(const Json::Value& eventJson, ExternalLogManager& externalLogManager)
+{
+    if (!eventJson.isMember("link_external_log") || !eventJson["link_external_log"].isArray()) {
+        return;
+    }
+    externalLogManager.linkExternalLogs.resize(eventJson["link_external_log"].size());
+    for (Json::ArrayIndex i = 0; i < eventJson["link_external_log"].size(); ++i) {
+        if (!eventJson["link_external_log"][i].isArray()) {
+            continue;
+        }
+        for (Json::ArrayIndex j = 0; j < eventJson["link_external_log"][i].size(); ++j) {
+            if (eventJson["link_external_log"][i][j].isString()) {
+                externalLogManager.linkExternalLogs[i].push_back(
+                    eventJson["link_external_log"][i][j].asString());
+            }
+        }
+    }
+}
+
+void GetExternalLogFromJson(const Json::Value& eventJson, std::shared_ptr<AppEventPack> appEventPack)
+{
+    ExternalLogManager externalLogManager;
+    Json::Value paramsJson = eventJson[HiAppEvent::PARAM_PROPERTY];
+    ParseExternalLogs(paramsJson, externalLogManager);
+    if (externalLogManager.externalLogs.empty()) {
+        return;
+    }
+    ParseLinkExternalLogs(eventJson, externalLogManager);
+    appEventPack->SetExternalLogManager(externalLogManager);
 }
 
 std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std::string& jsonStr)
@@ -283,7 +358,7 @@ std::shared_ptr<AppEventPack> OsEventListener::GetAppEventPackFromJson(const std
             HILOG_INFO(LOG_CORE, "get running id from %{public}s is an empty string", appEventPack->GetName().c_str());
         }
     }
- 
+    GetExternalLogFromJson(eventJson, appEventPack);
     if (EventPolicyMgr::GetInstance().GetEventPageSwitchStatus(appEventPack->GetName())) {
         uint64_t eventTime = EventJsonUtil::ParseUInt64(paramsJson, "time");
         if (eventTime == 0) {

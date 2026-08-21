@@ -21,6 +21,7 @@
 
 #include "ndk_app_event_processor_service.h"
 #include "ndk_app_event_watcher_service.h"
+#include "ndk_external_log_service.h"
 
 ParamList OH_HiAppEvent_CreateParamList(void)
 {
@@ -264,4 +265,9 @@ int OH_HiAppEvent_ReportFrameworkMemAnomaly(
 void OH_HiAppEvent_DestroyConfig(HiAppEvent_Config* config)
 {
     HiAppEventDestroyConfig(config);
+}
+
+int OH_HiAppEvent_RegExternalLogCapacityReachedCallback(OH_HiAppEvent_ExternalLogCapacityReachedCallback callback)
+{
+    return RegExternalLogCapacityReachedCallback(callback);
 }

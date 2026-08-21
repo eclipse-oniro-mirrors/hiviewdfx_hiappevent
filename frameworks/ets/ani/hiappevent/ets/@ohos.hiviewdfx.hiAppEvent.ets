@@ -372,4 +372,42 @@ export default namespace hiAppEvent {
     }
 
     export native function removeProcessor(id: long): void;
+
+    export class ExternalLogWrapper {
+        private nativeHolder: long;
+        private static native _finalize(nativeHolder: long): void;
+        private static _registry = new FinalizationRegistry<long>((nativeHolder: long) => {
+            ExternalLogWrapper._finalize(nativeHolder);
+        });
+        private native nativeConstructor(): void;
+        native getFilePath(): string;
+        native getGenerationTime(): long;
+        native getSizeInKb(): long;
+        native getSysEvent(): string;
+    }
+
+    export class ExternalLogContainer {
+        private nativeHolder: long;
+        private static native _finalize(nativeHolder: long): void;
+        private static _registry = new FinalizationRegistry<long>((nativeHolder: long) => {
+            ExternalLogContainer._finalize(nativeHolder);
+        });
+        private native nativeConstructor(): void;
+        native getAllLogs(): Array<ExternalLogWrapper>;
+        native getAllLogFiles(): Array<string>;
+        native getLogFilesOfSysEvent(event: string): Array<string>;
+        native getLogFilesGeneratedAfter(timePoint: long): Array<string>;
+        native getLogFilesGeneratedBefore(timePoint: long): Array<string>;
+        native getLogFilesLargerThan(sizeKb: long): Array<string>;
+        native getLogFilesSmallerThan(sizeKb: long): Array<string>;
+        native getLogNumber(): int;
+        native getFirstGeneratedLogFiles(num: int): Array<string>;
+    }
+
+    export interface ExternalLogManager {
+        onCapacityReached(container: ExternalLogContainer): void;
+    }
+
+    export native function registerExternalLogManager(logMngr: ExternalLogManager): void;
+    export native function isExternalLogManagerRegistered(): boolean;
 }

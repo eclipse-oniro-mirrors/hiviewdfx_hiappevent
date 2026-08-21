@@ -59,6 +59,7 @@ ohos_unittest("HiAppEventApiMetricTest") {
     "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_utils.cpp",
     "$native_hiappevent_path/libhiappevent/stat/api_stats_aggregator.cpp",
     "$native_hiappevent_path/libhiappevent/stat/api_stats_mgr.cpp",
     "$native_hiappevent_path/libhiappevent/stat/api_stats_storage.cpp",
@@ -86,6 +87,7 @@ ohos_unittest("HiAppEventApiMetricTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hilog:libsandboxlog",
     "hisysevent:libhisysevent",
     "icu:shared_icuuc",
     "ipc:ipc_core",
@@ -93,6 +95,7 @@ ohos_unittest("HiAppEventApiMetricTest") {
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
+    "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
 }
@@ -125,6 +128,7 @@ ohos_unittest("HiAppEventCacheTest") {
 
   sources = [ 
     "unittest/common/native/hiappevent_cache_test.cpp",
+    "$native_hiappevent_path/libhiappevent/app_event_util.cpp",
     "$native_hiappevent_path/libhiappevent/cache/api_stats_dao.cpp",
     "$native_hiappevent_path/libhiappevent/cache/app_event_dao.cpp",
     "$native_hiappevent_path/libhiappevent/cache/app_event_mapping_dao.cpp",
@@ -143,6 +147,7 @@ ohos_unittest("HiAppEventCacheTest") {
     "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/event_policy_utils.cpp",
     "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
@@ -161,11 +166,15 @@ ohos_unittest("HiAppEventCacheTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hilog:libsandboxlog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
     "icu:shared_icuuc",
     "ipc:ipc_core",
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
+    "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
 }
@@ -242,6 +251,7 @@ ohos_unittest("HiAppEventObserverTest") {
     "$native_hiappevent_path/libhiappevent/cache/user_property_dao.cpp",
     "$native_hiappevent_path/libhiappevent/hiappevent_config.cpp",
     "$native_hiappevent_path/libhiappevent/load/module_loader.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_external_log_manager.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",
@@ -395,6 +405,34 @@ ohos_unittest("HiAppEventBaseVariantTest") {
   deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
 }
 
+ohos_unittest("HiAppEventExternalLogTest") {
+  module_out_path = native_module_output_path
+ 
+  configs = [ ":hiappevent_config_test" ]
+ 
+  include_dirs = [ "$hiappevent_framework/js/napi/include" ]
+ 
+  sources = [
+    "unittest/common/native/hiappevent_external_log_test.cpp",
+    "$hiappevent_framework/js/napi/src/napi_error.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_external_log_manager.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
+    "$native_hiappevent_path/ndk/src/ndk_external_log_callback.cpp",
+    "$native_hiappevent_path/ndk/src/ndk_external_log_service.cpp",
+  ]
+ 
+  deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
+ 
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "jsoncpp:jsoncpp",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
@@ -402,6 +440,7 @@ group("unittest") {
     ":HiAppEventAppEventTest",
     ":HiAppEventBaseVariantTest",
     ":HiAppEventCacheTest",
+    ":HiAppEventExternalLogTest",
     ":HiAppEventInnerApiTest",
     ":HiAppEventNativeTest",
     ":HiAppEventObserverTest",

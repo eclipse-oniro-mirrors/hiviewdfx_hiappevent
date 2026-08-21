@@ -30,7 +30,7 @@ public:
     ~OsEventListener();
     bool StartListening();
     bool RemoveOsEventDir();
-    void GetEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
+    void GetLinkEvents(std::vector<std::vector<std::shared_ptr<AppEventPack>>>& linkEvents);
     bool AddListenedEvents(uint64_t eventsMask);
     bool SetListenedEvents(uint64_t eventsMask);
 
@@ -42,6 +42,7 @@ private:
     void HandleInotify(const std::string& files);
     void GetEventsFromFiles(const std::vector<std::string>& files, std::vector<std::shared_ptr<AppEventPack>>& events);
     std::shared_ptr<AppEventPack> GetAppEventPackFromJson(const std::string& jsonStr);
+    void InsertLinkEvents(std::shared_ptr<AppEventPack> event);
 
 private:
     int inotifyFd_ = -1;
@@ -49,7 +50,7 @@ private:
     std::atomic<bool> inotifyStopFlag_{true};
     std::string osEventPath_;
     std::unique_ptr<std::thread> inotifyThread_ = nullptr;
-    std::vector<std::shared_ptr<AppEventPack>> historyEvents_;
+    std::vector<std::vector<std::shared_ptr<AppEventPack>>> historyLinkEvents_;
     uint64_t osEventsMask_ = 0;
 };
 } // namespace HiviewDFX

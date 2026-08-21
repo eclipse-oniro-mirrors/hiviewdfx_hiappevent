@@ -37,6 +37,8 @@ public:
     static void RemoveProcessor(ani_env *env, ani_long id);
     static ani_object AddWatcher(ani_env *env, ani_object watcher);
     static void RemoveWatcher(ani_env *env, ani_object watcher);
+    static void RegisterExternalLogManager(ani_env *env, ani_object logManagerObj);
+    static ani_boolean IsExternalLogManagerRegistered(ani_env *env);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
