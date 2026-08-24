@@ -127,7 +127,7 @@ std::string GetParamValueStr(const AppEventParam& param)
 {
     switch (param.value.index()) {
         case AppEventParamType::EMPTY:
-            return "";
+            return "\"\"";
         case AppEventParamType::BOOL:
             return GetParamValueStrByType<bool>(param.value);
         case AppEventParamType::CHAR:
