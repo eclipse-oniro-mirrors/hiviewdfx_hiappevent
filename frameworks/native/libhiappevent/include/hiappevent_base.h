@@ -114,6 +114,20 @@ struct CustomEventParam {
 };
 using CustomEventParam = struct CustomEventParam;
 
+struct ExternalLogManager {
+    std::vector<std::string> externalLogs;
+    std::vector<std::vector<std::string>> linkExternalLogs;
+};
+using ExternalLogManager = struct ExternalLogManager;
+
+struct ExternalLogWrapperInfo {
+    std::string filePath;
+    int64_t generationTime = 0;
+    int64_t sizeInKb = 0;
+    std::string sysEvent;
+};
+using ExternalLogWrapperInfo = struct ExternalLogWrapperInfo;
+
 class AppEventPack {
 public:
     AppEventPack() = default;
@@ -162,6 +176,7 @@ public:
     std::string GetRunningId() const;
     std::list<AppEventParam> GetBaseParams() const;
     void GetCustomParams(std::vector<CustomEventParam>& customParams) const;
+    ExternalLogManager GetExternalLogManager() const;
 
     void SetSeq(int64_t seq);
     void SetDomain(const std::string& domain);
@@ -178,6 +193,7 @@ public:
     void SetRunningId(const std::string& runningId);
     void SetBaseParams(const std::list<AppEventParam>& baseParams);
     void SetParamStr(const std::string& paramStr);
+    void SetExternalLogManager(const ExternalLogManager& externalLogManager);
 
     friend int VerifyAppEvent(std::shared_ptr<AppEventPack> appEventPack);
     friend int VerifyCustomEventParams(std::shared_ptr<AppEventPack> event);
@@ -209,6 +225,7 @@ private:
     std::string runningId_;
     std::list<AppEventParam> baseParams_;
     std::string paramStr_;
+    ExternalLogManager externalLogManager_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

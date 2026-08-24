@@ -19,6 +19,8 @@
       OHOS::HiviewDFX::AppEventStoreFacade::*;
       OHOS::HiviewDFX::AppEventVerifyFacade::*;
       OHOS::HiviewDFX::AppEventUtilityFacade::*;
+      OHOS::HiviewDFX::AppEventExternalLogManager::*;
+      OHOS::HiviewDFX::ExternalLogManagerCallback::*;
     };
     Add*;
     ClearData;

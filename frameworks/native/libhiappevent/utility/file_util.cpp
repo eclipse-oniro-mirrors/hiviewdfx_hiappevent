@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 #include <unistd.h>
+#include <unordered_set>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -132,10 +133,12 @@ uint64_t GetDirSize(const std::string& dir)
     std::vector<std::string> files;
     GetDirFiles(dir, files);
     uint64_t totalSize = 0;
+    std::unordered_set<uint64_t> uniqueInodes;
     struct stat statBuf {};
     for (auto& file : files) {
-        if (stat(file.c_str(), &statBuf) == 0) {
+        if (stat(file.c_str(), &statBuf) == 0 && uniqueInodes.count(statBuf.st_ino) == 0) {
             totalSize += static_cast<uint64_t>(statBuf.st_size);
+            uniqueInodes.insert(statBuf.st_ino);
         }
     }
     return totalSize;

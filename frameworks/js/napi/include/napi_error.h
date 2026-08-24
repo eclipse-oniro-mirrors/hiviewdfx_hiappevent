@@ -51,6 +51,9 @@ constexpr int ERR_INVALID_SIZE = 11104001;
 // business error for incorrect parameter length or format
 constexpr int ERR_INVALID_PARAM_VALUE = 11105001;
 
+// business error of registerExternalLogManager function
+constexpr int ERR_LOG_MANAGER_ALREADY_REGISTERED = 11106001;
+
 std::string GetErrorMsg(int errCode);
 } // namespace NapiError
 } // namespace HiviewDFX

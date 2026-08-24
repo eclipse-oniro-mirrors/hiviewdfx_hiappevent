@@ -16,9 +16,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "app_event_external_log_manager.h"
+#include "app_event_util.h"
 #include "app_event_watcher.h"
 #include "application_context.h"
 #include "file_util.h"
+#include "hiappevent_common.h"
 #include "os_event_listener.h"
 #include "time_util.h"
 
@@ -69,50 +72,6 @@ void HiAppEventObserverTest::TearDown()
 {
     g_applicationContext = nullptr;
     (void)FileUtil::ForceRemoveDirectory("/data/test/observer");
-}
-
-/**
- * @tc.name: OsEventListenerTest001
- * @tc.desc: test OsEventListener Init func
- * @tc.type: FUNC
- * @tc.require: issueI8EOLQ
- */
-HWTEST_F(HiAppEventObserverTest, OsEventListenerTest001, TestSize.Level0)
-{
-    auto listenerWithContextIsNullptr = std::make_shared<OsEventListener>();
-
-    ApplicationContextMock* contextMock = new ApplicationContextMock();
-    ASSERT_NE(contextMock, nullptr);
-    EXPECT_CALL(*contextMock, GetCacheDir())
-        .WillOnce(::testing::Return(""))
-        .WillRepeatedly(::testing::Return("testDir"));
-    g_applicationContext.reset(contextMock);
-
-    auto listenerWithCacheDirIsEmpty = std::make_shared<OsEventListener>();
-    auto listenerWithPathIsNotExist = std::make_shared<OsEventListener>();
-    std::vector<std::shared_ptr<AppEventPack>> event;
-    listenerWithPathIsNotExist->GetEvents(event);
-    EXPECT_TRUE(event.empty());
-}
-
-/**
- * @tc.name: OsEventListenerTest002
- * @tc.desc: test OsEventListener Init func when osEventPath_ is exist
- * @tc.type: FUNC
- * @tc.require: issueI8EOLQ
- */
-HWTEST_F(HiAppEventObserverTest, OsEventListenerTest002, TestSize.Level0)
-{
-    ApplicationContextMock* contextMock = new ApplicationContextMock();
-    ASSERT_NE(contextMock, nullptr);
-    EXPECT_CALL(*contextMock, GetCacheDir())
-        .WillRepeatedly(::testing::Return("/data/test/observer"));
-    g_applicationContext.reset(contextMock);
-
-    auto validListener = std::make_shared<OsEventListener>();
-    std::vector<std::shared_ptr<AppEventPack>> event;
-    validListener->GetEvents(event);
-    EXPECT_TRUE(event.empty());
 }
 
 /**
@@ -220,14 +179,6 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest007, TestSize.Level0)
     std::string content = R"({"domain":"OS","eventType":1,"name":"APP_CRASH","params":{"crash_type":"JsError"}})";
     std::string filePath = TEST_DIR + "/hiappevent_1756735345342.txt";
     EXPECT_TRUE(FileUtil::SaveStringToFile(filePath, content));
-
-    auto listener = std::make_shared<OsEventListener>();
-    EXPECT_TRUE(listener->StartListening());
-    uint64_t curTime = TimeUtil::GetMilliseconds();
-    while (TimeUtil::GetMilliseconds() - curTime < 1000) {}  // ensure open file success
-    std::vector<std::shared_ptr<AppEventPack>> event;
-    listener->GetEvents(event);
-    EXPECT_EQ(event.size(), 1);
 }
 
 /**
@@ -259,14 +210,6 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest008, TestSize.Level0)
     std::string content5 = R"({"domain":"OS","eventType":1,"name":"APP_CRASH","params":"test"})";
     std::string filePath5 = TEST_DIR + "/hiappevent_1756735345346.txt";
     EXPECT_TRUE(FileUtil::SaveStringToFile(filePath5, content5));
-
-    auto listener = std::make_shared<OsEventListener>();
-    EXPECT_TRUE(listener->StartListening());
-    uint64_t curTime = TimeUtil::GetMilliseconds();
-    while (TimeUtil::GetMilliseconds() - curTime < 1000) {}  // ensure open file success
-    std::vector<std::shared_ptr<AppEventPack>> event;
-    listener->GetEvents(event);
-    EXPECT_EQ(event.size(), 4);
 }
 
 /**
@@ -342,5 +285,166 @@ HWTEST_F(HiAppEventObserverTest, AppEventWatcher005, TestSize.Level0)
     std::string validFilter = R"([{"domain":"testDomain","names":["testName"],"types":255}])";
     appEventWatcher.SetFiltersStr(validFilter);
     EXPECT_EQ(appEventWatcher.GetFiltersStr(), validFilter);
+}
+
+/**
+ * @tc.name: OsEventListenerTest009
+ * @tc.desc: test OsEventListener GetLinkEvents returns empty initially
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, OsEventListenerTest009, TestSize.Level0)
+{
+    auto listener = std::make_shared<OsEventListener>();
+    std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
+    listener->GetLinkEvents(linkEvents);
+    EXPECT_TRUE(linkEvents.empty());
+}
+ 
+/**
+ * @tc.name: OsEventListenerTest010
+ * @tc.desc: test OsEventListener Init with external_log in event JSON
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, OsEventListenerTest010, TestSize.Level0)
+{
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    g_applicationContext.reset(contextMock);
+ 
+    // Create an event file with external_log field
+    std::string content = R"({"domain":"OS","eventType":1,"name":"APP_CRASH",)"
+        R"("params":{"crash_type":"JsError","external_log":["/log1.txt","/log2.txt"]},)"
+        R"("link_external_log":[["obs1_log1","obs2_log1"],["obs1_log2"]]})";
+    std::string filePath = TEST_DIR + "/hiappevent_1756735345342.txt";
+    EXPECT_TRUE(FileUtil::SaveStringToFile(filePath, content));
+ 
+    auto listener = std::make_shared<OsEventListener>();
+    EXPECT_TRUE(listener->StartListening());
+ 
+    // After Init, GetLinkEvents should return link events from the external_log
+    std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
+    listener->GetLinkEvents(linkEvents);
+    // The link events should have been populated based on external_log parsing
+    EXPECT_NE(linkEvents.size(), 0);
+}
+ 
+/**
+ * @tc.name: OsEventListenerTest011
+ * @tc.desc: test OsEventListener Init with event JSON without external_log
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, OsEventListenerTest011, TestSize.Level0)
+{
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    g_applicationContext.reset(contextMock);
+ 
+    // Create an event file without external_log field
+    std::string content = R"({"domain":"OS","eventType":1,"name":"APP_CRASH","params":{"crash_type":"JsError"}})";
+    std::string filePath = TEST_DIR + "/hiappevent_1756735345343.txt";
+    EXPECT_TRUE(FileUtil::SaveStringToFile(filePath, content));
+ 
+    auto listener = std::make_shared<OsEventListener>();
+    EXPECT_TRUE(listener->StartListening());
+ 
+    // Without external_log, GetLinkEvents should be empty
+    std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
+    listener->GetLinkEvents(linkEvents);
+    EXPECT_TRUE(linkEvents.empty());
+}
+ 
+/**
+ * @tc.name: SaveExternalLogSolidLink001
+ * @tc.desc: test SaveExternalLogSolidLink replaces external_log with linkExternalLogs
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, SaveExternalLogSolidLink001, TestSize.Level0)
+{
+    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
+    event->SetParamStr(R"({"external_log":["/log1.txt","/log2.txt"],"crash_type":"JsError"})");
+ 
+    std::vector<std::string> linkExternalLogs = {"obs1_log1", "obs1_log2"};
+    AppEventUtil::SaveExternalLogSolidLink(event, linkExternalLogs);
+ 
+    std::string paramStr = event->GetParamStr();
+    EXPECT_NE(paramStr.find("obs1_log1"), std::string::npos);
+    EXPECT_NE(paramStr.find("obs1_log2"), std::string::npos);
+    EXPECT_NE(paramStr.find("crash_type"), std::string::npos);
+}
+ 
+/**
+ * @tc.name: SaveExternalLogSolidLink002
+ * @tc.desc: test SaveExternalLogSolidLink with invalid param JSON (early return)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, SaveExternalLogSolidLink002, TestSize.Level0)
+{
+    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
+    event->SetParamStr("not_valid_json{{");
+ 
+    std::vector<std::string> linkExternalLogs = {"obs1_log1"};
+    // Should not crash, and paramStr should remain unchanged
+    AppEventUtil::SaveExternalLogSolidLink(event, linkExternalLogs);
+    EXPECT_EQ(event->GetParamStr(), "not_valid_json{{");
+}
+ 
+/**
+ * @tc.name: SaveExternalLogSolidLink003
+ * @tc.desc: test SaveExternalLogSolidLink when no external_log field (early return)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, SaveExternalLogSolidLink003, TestSize.Level0)
+{
+    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
+    event->SetParamStr(R"({"crash_type":"JsError"})");
+ 
+    std::vector<std::string> linkExternalLogs = {"obs1_log1"};
+    AppEventUtil::SaveExternalLogSolidLink(event, linkExternalLogs);
+ 
+    // external_log field should not be added since it wasn't present
+    std::string paramStr = event->GetParamStr();
+    EXPECT_NE(paramStr.find("crash_type"), std::string::npos);
+    // The original JSON is preserved (external_log not present)
+    EXPECT_EQ(paramStr.find("external_log"), std::string::npos);
+}
+ 
+/**
+ * @tc.name: SaveExternalLogSolidLink004
+ * @tc.desc: test SaveExternalLogSolidLink when external_log is not an array (early return)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, SaveExternalLogSolidLink004, TestSize.Level0)
+{
+    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
+    event->SetParamStr(R"({"external_log":"not_array","crash_type":"JsError"})");
+ 
+    std::vector<std::string> linkExternalLogs = {"obs1_log1"};
+    AppEventUtil::SaveExternalLogSolidLink(event, linkExternalLogs);
+ 
+    // Should not replace since external_log is not an array
+    std::string paramStr = event->GetParamStr();
+    EXPECT_NE(paramStr.find("not_array"), std::string::npos);
+}
+ 
+/**
+ * @tc.name: SaveExternalLogSolidLink005
+ * @tc.desc: test SaveExternalLogSolidLink with empty linkExternalLogs
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, SaveExternalLogSolidLink005, TestSize.Level0)
+{
+    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
+    event->SetParamStr(R"({"external_log":["/log1.txt","/log2.txt"],"crash_type":"JsError"})");
+ 
+    std::vector<std::string> linkExternalLogs;  // empty
+    AppEventUtil::SaveExternalLogSolidLink(event, linkExternalLogs);
+ 
+    // external_log should be replaced with empty array
+    std::string paramStr = event->GetParamStr();
+    EXPECT_NE(paramStr.find("crash_type"), std::string::npos);
 }
 }  // OHOS

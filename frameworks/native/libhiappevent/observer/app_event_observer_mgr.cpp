@@ -15,12 +15,19 @@
 #include "app_event_observer_mgr.h"
 
 #include "app_state_callback.h"
+#include "app_event.h"
 #include "app_event_processor_proxy.h"
 #include "app_event_store.h"
+#include "app_event_util.h"
 #include "app_event_watcher.h"
 #include "application_context.h"
+#include "directory_ex.h"
+#include "event_json_util.h"
+#include "event_policy_utils.h"
 #include "ffrt_inner.h"
 #include "hiappevent_base.h"
+#include "hiappevent_common.h"
+#include "file_util.h"
 #include "hiappevent_config.h"
 #include "hilog/log.h"
 #include "os_event_listener.h"
@@ -42,17 +49,92 @@ constexpr int TIMEOUT_INTERVAL_MILLI = HiAppEvent::TIMEOUT_STEP * 1000; // 30s
 constexpr int MAX_SIZE_OF_INIT = 100;
 constexpr int TIMEOUT_LIMIT_FOR_ADDPROCESSOR = 500;
 constexpr int CHECK_DB_INTERVAL = 1;
+enum class UpdateOp {
+    ADD,
+    SUB
+};
 
-void StoreEventsToDb(std::vector<std::shared_ptr<AppEventPack>>& events)
+using namespace HiAppEvent;
+std::unordered_map<std::string, std::shared_ptr<AppEventPack>> externalLogEvents = {
+    { EVENT_APP_CRASH, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_APP_CRASH, FAULT) },
+    { EVENT_APP_FREEZE, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_APP_FREEZE, FAULT) },
+    { EVENT_ADDRESS_SANITIZER, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_ADDRESS_SANITIZER, FAULT) },
+    { EVENT_CPU_USAGE_HIGH, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_CPU_USAGE_HIGH, FAULT) },
+    { EVENT_APP_HICOLLIE, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_APP_HICOLLIE, FAULT) },
+
+    { EVENT_SCROLL_JANK, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_SCROLL_JANK, FAULT) },
+    { EVENT_MAIN_THREAD_JANK, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_MAIN_THREAD_JANK, FAULT) },
+
+    { EVENT_RESOURCE_OVERLIMIT, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_RESOURCE_OVERLIMIT, FAULT) },
+};
+std::unordered_map<std::string, int> eventObservers;
+
+void InsertLinkEvents(std::shared_ptr<AppEventPack> event,
+    std::vector<std::vector<std::shared_ptr<AppEventPack>>>& linkEvents)
 {
-    for (auto& event : events) {
+    ExternalLogManager externalLogManager = event->GetExternalLogManager();
+    if (externalLogManager.linkExternalLogs.size() == 0) {
         int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
+        if (eventSeq <= 0) {
+            HILOG_WARN(LOG_CORE, "failed to store event to db");
+            return;
+        }
+        event->SetSeq(eventSeq);
+        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
+        return;
+    }
+    std::vector<std::shared_ptr<AppEventPack>> events;
+    size_t observerNum = externalLogManager.linkExternalLogs[0].size();
+    for (size_t i = 0; i < observerNum; ++i) {
+        std::vector<std::string> linkExternalLogs;
+        for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
+            if (i >= externalLogManager.linkExternalLogs[j].size()) {
+                continue;
+            }
+            linkExternalLogs.push_back(externalLogManager.linkExternalLogs[j][i]);
+        }
+        auto linkEvent = std::make_shared<AppEventPack>(*event);
+        AppEventUtil::SaveExternalLogSolidLink(linkEvent, linkExternalLogs);
+        int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(linkEvent);
         if (eventSeq <= 0) {
             HILOG_WARN(LOG_CORE, "failed to store event to db");
             continue;
         }
-        event->SetSeq(eventSeq);
-        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
+        linkEvent->SetSeq(eventSeq);
+        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(linkEvent);
+        events.push_back(linkEvent);
+    }
+    for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
+        (void)FileUtil::RemoveFile(externalLogManager.externalLogs[j]);
+    }
+    linkEvents.push_back(events);
+}
+
+std::vector<std::vector<std::shared_ptr<AppEventPack>>> StoreEventsToDb(
+    std::vector<std::shared_ptr<AppEventPack>>& events)
+{
+    std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
+    for (auto& event : events) {
+        InsertLinkEvents(event, linkEvents);
+    }
+    return linkEvents;
+}
+
+void StoreLinkEventMappingToDb(const std::vector<std::vector<std::shared_ptr<AppEventPack>>>& linkEvents,
+    const std::vector<std::shared_ptr<AppEventObserver>>& observers)
+{
+    std::vector<EventObserverInfo> eventObserverInfos;
+    for (const auto& events : linkEvents) {
+        for (size_t i = 0, j = 0; i < observers.size() && j < events.size(); ++i) {
+            if (observers[i]->VerifyEvent(events[j])) {
+                eventObserverInfos.emplace_back(EventObserverInfo(events[j]->GetSeq(), observers[i]->GetSeq()));
+                ++j;
+            }
+        }
+    }
+
+    if (AppEventStore::GetInstance().InsertEventMapping(eventObserverInfos) < 0) {
+        HILOG_ERROR(LOG_CORE, "failed to add mapping record to db");
     }
 }
 
@@ -70,6 +152,40 @@ void StoreEventMappingToDb(const std::vector<std::shared_ptr<AppEventPack>>& eve
     if (AppEventStore::GetInstance().InsertEventMapping(eventObserverInfos) < 0) {
         HILOG_ERROR(LOG_CORE, "failed to add mapping record to db");
     }
+}
+
+void UpdateEventObservers(std::shared_ptr<AppEventObserver> observer, UpdateOp op, bool updateConfig = true)
+{
+    for (auto& [name, event] : externalLogEvents) {
+        if (!observer->VerifyEvent(event)) {
+            continue;
+        }
+        if (op == UpdateOp::ADD) {
+            ++eventObservers[name];
+        } else {
+            --eventObservers[name];
+            if (eventObservers[name] <= 0) {
+                eventObservers.erase(name);
+            }
+        }
+    }
+    if (!updateConfig) {
+        return;
+    }
+
+    std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir("/eventConfig");
+    if (configDir.empty()) {
+        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir");
+        return;
+    }
+    std::map<std::string, std::string> configMap;
+    for (const auto& [name, num] : eventObservers) {
+        configMap[name] = std::to_string(num);
+    }
+    AppEventObserverMgr::GetInstance().SubmitTaskToFFRTQueue(
+        [configDir, configMap]() {
+            EventPolicyUtils::GetInstance().SaveEventConfig(configDir, configMap, false);
+        }, "update_event_config");
 }
 
 void SendEventsToObserver(const std::vector<std::shared_ptr<AppEventPack>>& events,
@@ -100,6 +216,7 @@ int64_t StoreObserverToDb(std::shared_ptr<AppEventObserver> observer, const std:
         return -1;
     }
     observer->SetSeq(observerSeq);
+    UpdateEventObservers(observer, UpdateOp::ADD);
     return observerSeq;
 }
 
@@ -279,6 +396,7 @@ void AppEventObserverMgr::InitWatchers()
             watcherPtr->SetSeq(observer.seq);
             watcherPtr->SetFiltersStr(observer.filters);
             watchers_[observer.seq] = watcherPtr;
+            UpdateEventObservers(watcherPtr, UpdateOp::ADD, false);
         }
         HILOG_INFO(LOG_CORE, "init watchers");
     });
@@ -292,8 +410,14 @@ void AppEventObserverMgr::InitWatcherFromCache(std::shared_ptr<AppEventWatcher> 
     if (int64_t seq = GetSeqFromWatchers(name, historyFilters); seq > 0) {
         isExist = true;
         watcher->SetSeq(seq);
-        if (historyFilters != filters && AppEventStore::GetInstance().UpdateObserver(seq, filters) < 0) {
-            HILOG_ERROR(LOG_CORE, "failed to update watcher=%{public}s to db", name.c_str());
+        if (historyFilters != filters) {
+            std::shared_lock<std::shared_mutex> watcherLock(watcherMutex_);
+            if (AppEventStore::GetInstance().UpdateObserver(seq, filters) == 0) {
+                UpdateEventObservers(watchers_[seq], UpdateOp::SUB, false);
+                UpdateEventObservers(watcher, UpdateOp::ADD);
+            } else {
+                HILOG_ERROR(LOG_CORE, "failed to update watcher=%{public}s to db", name.c_str());
+            }
         }
     }
 }
@@ -308,11 +432,12 @@ int64_t AppEventObserverMgr::AddWatcher(std::shared_ptr<AppEventWatcher> watcher
     if (observerSeq <= 0) {
         return -1;
     }
-    std::unique_lock<std::shared_mutex> lock(watcherMutex_);
+
     if (!InitWatcherFromListener(watcher, isExist)) {
         AppEventStore::GetInstance().DeleteObserver(observerSeq);
         return -1;
     }
+    std::unique_lock<std::shared_mutex> lock(watcherMutex_);
     watchers_[observerSeq] = watcher;
     HILOG_INFO(LOG_CORE, "register watcher=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
@@ -398,6 +523,22 @@ int AppEventObserverMgr::RemoveObserver(int64_t observerSeq)
         HILOG_ERROR(LOG_CORE, "failed to unregister observer seq=%{public}" PRId64, observerSeq);
         return ret;
     }
+
+    {
+        std::shared_lock<std::shared_mutex> watcherLock(watcherMutex_);
+        auto it = watchers_.find(observerSeq);
+        if (it != watchers_.end() && it->second != nullptr) {
+            UpdateEventObservers(it->second, UpdateOp::SUB);
+        }
+    }
+    {
+        std::shared_lock<std::shared_mutex> processorLock(processorMutex_);
+        auto it = processors_.find(observerSeq);
+        if (it != processors_.end() && it->second != nullptr) {
+            UpdateEventObservers(it->second, UpdateOp::SUB);
+        }
+    }
+
     DeleteProcessor(observerSeq);
     DeleteWatcher(observerSeq);
     HILOG_INFO(LOG_CORE, "unregister observer seq=%{public}" PRId64 " successfully", observerSeq);
@@ -444,12 +585,26 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
         return;
     }
     HILOG_DEBUG(LOG_CORE, "start to handle events size=%{public}zu", events.size());
-    StoreEventsToDb(events);
-    StoreEventMappingToDb(events, observers);
+    auto linkEvents = StoreEventsToDb(events);
+    if (!linkEvents.empty()) {
+        StoreLinkEventMappingToDb(linkEvents, observers);
+    } else {
+        StoreEventMappingToDb(events, observers);
+    }
+
     bool isNeedSend = false;
     for (const auto& observer : observers) {
         // send events to observer, and then delete events not in event mapping
-        SendEventsToObserver(events, observer);
+        if (!linkEvents.empty()) {
+            std::vector<std::shared_ptr<AppEventPack>> sendEvents;
+            if (AppEventStore::GetInstance().QueryEvents(sendEvents, observer->GetSeq(), MAX_SIZE_OF_INIT) < 0) {
+                HILOG_ERROR(LOG_CORE, "failed to take events, seq=%{public}" PRId64, observer->GetSeq());
+                continue;
+            }
+            SendEventsToObserver(sendEvents, observer);
+        } else {
+            SendEventsToObserver(events, observer);
+        }
         isNeedSend |= observer->HasTimeoutCondition();
     }
     // timeout condition > 0 and the current event row > 0, send timeout task.
@@ -553,14 +708,20 @@ bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatche
         return false;
     }
     if (isExist) {
-        std::vector<std::shared_ptr<AppEventPack>> events;
-        listener_->GetEvents(events);
-        if (!events.empty()) {
+        std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
+        listener_->GetLinkEvents(linkEvents);
+        if (!linkEvents.empty()) {
             std::vector<std::shared_ptr<AppEventObserver>> curWatchers;
+            std::shared_lock<std::shared_mutex> watcherLock(watcherMutex_);
             for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
                 curWatchers.emplace_back(it->second);
             }
-            StoreEventMappingToDb(events, curWatchers);
+            StoreLinkEventMappingToDb(linkEvents, curWatchers);
+            std::vector<std::shared_ptr<AppEventPack>> events;
+            if (AppEventStore::GetInstance().QueryEvents(events, watcher->GetSeq(), MAX_SIZE_OF_INIT) < 0) {
+                HILOG_ERROR(LOG_CORE, "failed to take events, seq=%{public}" PRId64, watcher->GetSeq());
+                return false;
+            }
             SendEventsToObserver(events, watcher);  // send history events to current observer
         }
     }

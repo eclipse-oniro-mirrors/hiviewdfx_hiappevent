@@ -886,6 +886,71 @@ typedef enum OH_HiAppEvent_FrameworkType {
  */
 int OH_HiAppEvent_ReportFrameworkMemAnomaly(
     enum OH_HiAppEvent_FrameworkType frameworkType, const char* frameworkVersion, const char* description);
+
+/**
+ * @brief System event types.
+ *
+ * You are advised to select system event types based on their respective usage scenarios.
+ *
+ * @since 26.0.0
+ */
+typedef enum OH_HiAppEvent_SysEvent {
+    /** @error Application crash event. */
+    OH_APP_CRASH = 1,
+    /** @error Application freeze event. */
+    OH_APP_FREEZE = 2,
+    /** @error Resource overlimit event. */
+    OH_RESOURCE_OVERLIMIT = 3,
+    /** @error Address sanitizer event. */
+    OH_ADDRESS_SANITIZER = 4,
+    /** @error Main thread jank event. */
+    OH_MAIN_THREAD_JANK = 5,
+    /** @error Application hicollie event. */
+    OH_APP_HICOLLIE = 6,
+    /** @error Scroll jank event. */
+    OH_SCROLL_JANK = 7,
+    /** @error CPU usage high event. */
+    OH_CPU_USAGE_HIGH = 8
+} OH_HiAppEvent_SysEvent;
+ 
+/**
+ * @brief The OH_HiAppEvent_ExternalLog structure is used to describe external log information, including
+ * the file path, the generation timestamp, file size, and type of system event.
+ *
+ * @since 26.0.0
+ */
+typedef struct OH_HiAppEvent_ExternalLog {
+    /** The log file path. */
+    const char* filePath;
+    /** The timestamp of the file generation in ms. */
+    long long generationTs;
+    /** The file size in kb. */
+    long fileSize;
+    /** The system event type. */
+    OH_HiAppEvent_SysEvent event;
+} OH_HiAppEvent_ExternalLog;
+ 
+/**
+ * @brief The parameter of OH_HiAppEvent_RegExternalLogCapacityReachedCallback function
+ * which acts as the callback function when external log directory capacity is reached.
+ *
+ * @param externalLogArr The array of external log info.
+ * @param arrLen The length of externalLogArr.
+ * @since 26.0.0
+ */
+typedef void (*OH_HiAppEvent_ExternalLogCapacityReachedCallback)(
+    OH_HiAppEvent_ExternalLog* externalLogArr, uint32_t arrLen);
+ 
+/**
+ * @brief The interface to set the callback when external log directory capacity is reached.
+ *
+ * @param callback The callback function when external log directory capacity is reached.
+ * @return set callback result.
+ *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
+ *         {@link HIAPPEVENT_OPERATE_FAILED} The operation failed.
+ * @since 26.0.0
+ */
+int OH_HiAppEvent_RegExternalLogCapacityReachedCallback(OH_HiAppEvent_ExternalLogCapacityReachedCallback callback);
 #ifdef __cplusplus
 }
 #endif

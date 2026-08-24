@@ -43,6 +43,8 @@ constexpr int32_t ERR_INVALID_COND_TIMEOUT{11102005};
 
 constexpr int32_t ERR_INVALID_SIZE{11104001};
 constexpr int32_t ERR_INVALID_PARAM_VALUE{11105001};
+
+constexpr int32_t ERR_LOG_MANAGER_ALREADY_REGISTERED{11106001};
 } // namespace HiviewDFX
 } // namespace OHOS
 

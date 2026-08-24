@@ -25,6 +25,7 @@ bool IsBetaVersion();
 void ReportAppEventReceive(const std::vector<std::shared_ptr<AppEventPack>>& appEventInfos,
                            const std::string& watcherName, const std::string& callback);
 void GetApplicationInfo(std::string& bundleName, std::string& appVersion, std::string& runningId);
+void SaveExternalLogSolidLink(std::shared_ptr<AppEventPack> event, const std::vector<std::string> &linkExternalLogs);
 } // namespace AppEventUtil
 } // namespace HiviewDFX
 } // namespace OHOS

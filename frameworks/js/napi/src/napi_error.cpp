@@ -51,7 +51,10 @@ std::string GetErrorMsg(int errCode)
         { ERR_INVALID_SIZE, "Invalid size value. Possibly caused by the size value is less than or equal to zero."},
         // business error for incorrect parameter length or format
         { ERR_INVALID_PARAM_VALUE,
-            "Invalid parameter value. Possible causes: 1. Incorrect parameter length; 2. Incorrect parameter format." }
+            "Invalid parameter value. Possible causes: 1. Incorrect parameter length; 2. Incorrect parameter format." },
+        // bussiness error of registerExternalLogManager function
+        { ERR_LOG_MANAGER_ALREADY_REGISTERED,
+            "State error. Possible causes: 1. Log manager already registered." }
     };
     auto it = errMap.find(errCode);
     return it == errMap.end() ? "ErrorMsg undefined" : it->second;

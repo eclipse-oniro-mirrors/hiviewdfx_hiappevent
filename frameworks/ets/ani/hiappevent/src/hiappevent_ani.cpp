@@ -18,6 +18,10 @@
 #include <map>
 
 #include "ani_app_event_holder.h"
+#include "ani_external_log_container.h"
+#include "ani_external_log_mgr.h"
+#include "ani_external_log_wrapper.h"
+#include "app_event_external_log_manager.h"
 #include "hiappevent_ani_error_code.h"
 #include "hiappevent_ani_parameter_name.h"
 #include "hiappevent_ani_util.h"
@@ -333,6 +337,26 @@ void HiAppEventAni::RemoveWatcher(ani_env *env, ani_object watcher)
     hiAppEventAniHelper.RemoveWatcher(env, watcher, beginTime);
 }
 
+void HiAppEventAni::RegisterExternalLogManager(ani_env *env, ani_object logManagerObj)
+{
+    if (AppEventExternalLogManager::GetInstance().IsRegistered()) {
+        HiAppEventAniUtil::ThrowAniError(env, ERR_LOG_MANAGER_ALREADY_REGISTERED,
+            "State error. Log manager already registered.");
+        return;
+    }
+    auto logMgr = std::make_shared<AniExternalLogMgr>();
+    logMgr->InitCallback(env, logManagerObj);
+    if (!AppEventExternalLogManager::GetInstance().RegisterCallback(logMgr)) {
+        HiAppEventAniUtil::ThrowAniError(env, ERR_LOG_MANAGER_ALREADY_REGISTERED,
+            "State error. Log manager already registered.");
+    }
+}
+
+ani_boolean HiAppEventAni::IsExternalLogManagerRegistered(ani_env *env)
+{
+    return static_cast<ani_boolean>(AppEventExternalLogManager::GetInstance().IsRegistered());
+}
+
 static ani_status BindEventFunction(ani_env *env)
 {
     ani_namespace  ns {};
@@ -359,6 +383,10 @@ static ani_status BindEventFunction(ani_env *env)
         ani_native_function {"removeProcessor", nullptr, reinterpret_cast<void *>(HiAppEventAni::RemoveProcessor)},
         ani_native_function {"addWatcher", nullptr, reinterpret_cast<void *>(HiAppEventAni::AddWatcher)},
         ani_native_function {"removeWatcher", nullptr, reinterpret_cast<void *>(HiAppEventAni::RemoveWatcher)},
+        ani_native_function {"registerExternalLogManager", nullptr,
+            reinterpret_cast<void *>(HiAppEventAni::RegisterExternalLogManager)},
+        ani_native_function {"isExternalLogManagerRegistered", nullptr,
+            reinterpret_cast<void *>(HiAppEventAni::IsExternalLogManagerRegistered)},
     };
     if (env->Namespace_BindNativeFunctions(ns, methods.data(), methods.size()) != ANI_OK) {
         return ANI_ERROR;
@@ -391,6 +419,78 @@ static ani_status BindHolderFunction(ani_env *env)
     return ANI_OK;
 }
 
+static ani_status BindLogWrapperFunction(ani_env *env)
+{
+    ani_class cls {};
+    if (env->FindClass(CLASS_NAME_EXT_LOG_WRAPPER, &cls) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    std::array methods = {
+        ani_native_function {"nativeConstructor", nullptr,
+            reinterpret_cast<void *>(AniExternalLogWrapper::AniConstructor)},
+        ani_native_function {"getFilePath", nullptr,
+            reinterpret_cast<void *>(AniExternalLogWrapper::AniGetFilePath)},
+        ani_native_function {"getGenerationTime", nullptr,
+            reinterpret_cast<void *>(AniExternalLogWrapper::AniGetGenerationTime)},
+        ani_native_function {"getSizeInKb", nullptr,
+            reinterpret_cast<void *>(AniExternalLogWrapper::AniGetSizeInKb)},
+        ani_native_function {"getSysEvent", nullptr,
+            reinterpret_cast<void *>(AniExternalLogWrapper::AniGetSysEvent)},
+    };
+    if (env->Class_BindNativeMethods(cls, methods.data(), methods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    std::array staticMethods = {
+        ani_native_function {"_finalize", nullptr,
+            reinterpret_cast<void *>(AniExternalLogWrapper::AniFinalize)},
+    };
+    if (env->Class_BindStaticNativeMethods(cls, staticMethods.data(), staticMethods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    return ANI_OK;
+}
+
+static ani_status BindLogContainerFunction(ani_env *env)
+{
+    ani_class cls {};
+    if (env->FindClass(CLASS_NAME_EXT_LOG_CONTAINER, &cls) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    std::array methods = {
+        ani_native_function {"nativeConstructor", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniConstructor)},
+        ani_native_function {"getAllLogs", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetAllLogs)},
+        ani_native_function {"getAllLogFiles", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetAllLogFiles)},
+        ani_native_function {"getLogFilesOfSysEvent", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetLogFilesOfSysEvent)},
+        ani_native_function {"getLogFilesGeneratedAfter", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetLogFilesGeneratedAfter)},
+        ani_native_function {"getLogFilesGeneratedBefore", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetLogFilesGeneratedBefore)},
+        ani_native_function {"getLogFilesLargerThan", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetLogFilesLargerThan)},
+        ani_native_function {"getLogFilesSmallerThan", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetLogFilesSmallerThan)},
+        ani_native_function {"getLogNumber", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetLogNumber)},
+        ani_native_function {"getFirstGeneratedLogFiles", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniGetFirstGeneratedLogFiles)},
+    };
+    if (env->Class_BindNativeMethods(cls, methods.data(), methods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    std::array staticMethods = {
+        ani_native_function {"_finalize", nullptr,
+            reinterpret_cast<void *>(AniExternalLogContainer::AniFinalize)},
+    };
+    if (env->Class_BindStaticNativeMethods(cls, staticMethods.data(), staticMethods.size()) != ANI_OK) {
+        return ANI_ERROR;
+    }
+    return ANI_OK;
+}
+
 ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
 {
     ani_env *env = nullptr;
@@ -398,7 +498,8 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
         HILOG_ERROR(LOG_CORE, "Unsupported ANI_VERSION_1");
         return ANI_ERROR;
     }
-    if (BindEventFunction(env) || BindHolderFunction(env)) {
+    if (BindEventFunction(env) || BindHolderFunction(env) ||
+        BindLogWrapperFunction(env) || BindLogContainerFunction(env)) {
         return ANI_ERROR;
     }
     *result = ANI_VERSION_1;

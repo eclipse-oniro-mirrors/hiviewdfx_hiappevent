@@ -514,6 +514,11 @@ std::list<AppEventParam> AppEventPack::GetBaseParams() const
     return baseParams_;
 }
 
+ExternalLogManager AppEventPack::GetExternalLogManager() const
+{
+    return externalLogManager_;
+}
+
 void AppEventPack::SetSeq(int64_t seq)
 {
     seq_ = seq;
@@ -589,6 +594,11 @@ void AppEventPack::SetBaseParams(const std::list<AppEventParam>& baseParams)
 void AppEventPack::SetParamStr(const std::string& paramStr)
 {
     paramStr_ = paramStr;
+}
+
+void AppEventPack::SetExternalLogManager(const ExternalLogManager& externalLogManager)
+{
+    externalLogManager_ = externalLogManager;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

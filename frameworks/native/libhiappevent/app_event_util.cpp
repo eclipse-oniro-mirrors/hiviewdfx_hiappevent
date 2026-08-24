@@ -168,6 +168,27 @@ void GetApplicationInfo(std::string& bundleName, std::string& appVersion, std::s
     bundleName = bundleInfo->name;
     appVersion = bundleInfo->versionName;
 }
+
+void SaveExternalLogSolidLink(std::shared_ptr<AppEventPack> event, const std::vector<std::string> &linkExternalLogs)
+{
+    Json::Value paramsJson;
+    std::string paramString = event->GetParamStr();
+    if (!EventJsonUtil::GetJsonObjectFromJsonString(paramsJson, paramString)) {
+        HILOG_WARN(LOG_CORE, "hiappevent: parse param info failed, please check the style of json");
+        return;
+    }
+    if (!paramsJson.isMember("external_log") || !paramsJson["external_log"].isArray()) {
+        HILOG_INFO(LOG_CORE, "hiappevent: event %{public}s not have external_log.", event->GetName().c_str());
+        return;
+    }
+
+    paramsJson["external_log"].clear();
+    for (const std::string &linkExternalLog : linkExternalLogs) {
+        paramsJson["external_log"].append(linkExternalLog);
+    }
+
+    event->SetParamStr(Json::FastWriter().write(paramsJson));
+}
 } // namespace AppEventUtil
 } // namespace HiviewDFX
 } // namespace OHOS
