@@ -20,13 +20,15 @@
 #include <thread>
 #include <vector>
 
+#include "app_event_observer.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class AppEventPack;
 
 class OsEventListener : public std::enable_shared_from_this<OsEventListener> {
 public:
-    OsEventListener();
+    OsEventListener(std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers);
     ~OsEventListener();
     bool StartListening();
     bool RemoveOsEventDir();
@@ -35,14 +37,15 @@ public:
     bool SetListenedEvents(uint64_t eventsMask);
 
 private:
-    void Init();
+    void Init(std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers);
     bool InitDir(const std::string& dirPath);
     bool RegisterDirListener(const std::string& dirPath);
     void HandleDirEvent();
     void HandleInotify(const std::string& files);
     void GetEventsFromFiles(const std::vector<std::string>& files, std::vector<std::shared_ptr<AppEventPack>>& events);
     std::shared_ptr<AppEventPack> GetAppEventPackFromJson(const std::string& jsonStr);
-    void InsertLinkEvents(std::shared_ptr<AppEventPack> event);
+    void InsertLinkEvents(std::shared_ptr<AppEventPack> event,
+        std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers);
 
 private:
     int inotifyFd_ = -1;

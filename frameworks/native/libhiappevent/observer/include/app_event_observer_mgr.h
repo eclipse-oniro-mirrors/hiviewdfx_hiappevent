@@ -60,6 +60,7 @@ public:
     int SetReportConfig(int64_t observerSeq, const ReportConfig& config);
     int GetReportConfig(int64_t observerSeq, ReportConfig& config);
     void SubmitTaskToFFRTQueue(std::function<void()>&& task, const std::string& taskName);
+    std::vector<std::shared_ptr<AppEventObserver>> GetObservers();
 
 private:
     AppEventObserverMgr();
@@ -70,13 +71,13 @@ private:
     void SendRefreshFreeSizeTask();
     void RegisterAppStateCallback();
     void UnregisterAppStateCallback();
-    bool InitWatcherFromListener(std::shared_ptr<AppEventWatcher> watcher, bool sendFlag);
+    bool InitWatcherFromListener(std::shared_ptr<AppEventWatcher> watcher, bool sendFlag,
+        std::vector<std::shared_ptr<AppEventObserver>>& observers);
     void UnregisterOsEventListener();
     void InitWatchers();
     void InitWatcherFromCache(std::shared_ptr<AppEventWatcher> watcher, bool& isExist);
     int64_t GetSeqFromWatchers(const std::string& name, std::string& filters);
     int64_t GetSeqFromProcessors(const std::string& name, int64_t hashCode);
-    std::vector<std::shared_ptr<AppEventObserver>> GetObservers();
     void DeleteWatcher(int64_t observerSeq);
     void DeleteProcessor(int64_t observerSeq);
     bool IsExistInWatchers(int64_t observerSeq);

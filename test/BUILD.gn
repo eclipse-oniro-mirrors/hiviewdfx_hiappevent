@@ -238,6 +238,8 @@ ohos_unittest("HiAppEventObserverTest") {
 
   configs = [ ":hiappevent_config_test" ]
 
+  cflags_cc = [ "-Dprivate=public" ]
+
   sources = [
     "unittest/common/native/hiappevent_observer_test.cpp",
     "$native_hiappevent_path/libhiappevent/app_event_util.cpp",
@@ -252,6 +254,7 @@ ohos_unittest("HiAppEventObserverTest") {
     "$native_hiappevent_path/libhiappevent/hiappevent_config.cpp",
     "$native_hiappevent_path/libhiappevent/load/module_loader.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_external_log_manager.cpp",
+    "$native_hiappevent_path/libhiappevent/observer/app_event_observer.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_observer_mgr.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_event_watcher.cpp",
     "$native_hiappevent_path/libhiappevent/observer/app_state_callback.cpp",

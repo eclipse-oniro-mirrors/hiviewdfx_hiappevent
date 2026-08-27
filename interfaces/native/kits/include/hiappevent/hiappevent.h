@@ -903,14 +903,10 @@ typedef enum OH_HiAppEvent_SysEvent {
     OH_RESOURCE_OVERLIMIT = 3,
     /** @error Address sanitizer event. */
     OH_ADDRESS_SANITIZER = 4,
-    /** @error Main thread jank event. */
-    OH_MAIN_THREAD_JANK = 5,
     /** @error Application hicollie event. */
-    OH_APP_HICOLLIE = 6,
-    /** @error Scroll jank event. */
-    OH_SCROLL_JANK = 7,
+    OH_APP_HICOLLIE = 5,
     /** @error CPU usage high event. */
-    OH_CPU_USAGE_HIGH = 8
+    OH_CPU_USAGE_HIGH = 6
 } OH_HiAppEvent_SysEvent;
  
 /**
