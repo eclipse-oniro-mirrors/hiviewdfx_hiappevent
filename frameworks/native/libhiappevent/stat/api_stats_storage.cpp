@@ -133,7 +133,7 @@ int ApiStatsStorage::QueryAll(ApiMetricsMap& apiMetrics)
         apiMetrics[descriptor] = std::move(metrics);
     }
 
-    HILOG_INFO(LOG_CORE, "query all api stats success, count=%{public}zu", apiMetrics.size());
+    HILOG_DEBUG(LOG_CORE, "query all api stats success, count=%{public}zu", apiMetrics.size());
     return DB_SUCC;
 }
 
@@ -142,7 +142,9 @@ int ApiStatsStorage::Clear()
     HILOG_DEBUG(LOG_CORE, "Clear start");
     auto& appEventStore = AppEventStore::GetInstance();
     int ret = appEventStore.ClearApiMetricInfo();
-    HILOG_INFO(LOG_CORE, "clear api stats, ret=%{public}d", ret);
+    if (ret != NativeRdb::E_OK) {
+        HILOG_INFO(LOG_CORE, "clear api stats, ret=%{public}d", ret);
+    }
     return ret == NativeRdb::E_OK ? DB_SUCC : DB_FAILED;
 }
 

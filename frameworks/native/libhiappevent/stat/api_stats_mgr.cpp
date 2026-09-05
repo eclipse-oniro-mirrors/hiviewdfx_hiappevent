@@ -59,17 +59,17 @@ void ApiStatsManager::AddRecord(ApiDescriptor descriptor, ApiMetric metric)
 void ApiStatsManager::ScheduleBackUpInner()
 {
     if (!aggregator_.IsUpdatedAfterLastBackup()) {
-        HILOG_INFO(LOG_CORE, "ScheduleBackUpInner: no update, skip");
+        HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner: no update, skip");
         return;
     }
 
     auto apiMetrics = aggregator_.GetApiMetrics();
-    HILOG_INFO(LOG_CORE, "ScheduleBackUpInner: backup count=%{public}zu", apiMetrics.size());
+    HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner: backup count=%{public}zu", apiMetrics.size());
     if (ApiStatsStorage::GetInstance().Backup(apiMetrics) == 0) {
         aggregator_.ClearRecord();
         HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner success");
     } else {
-        HILOG_ERROR(LOG_CORE, "ScheduleBackUpInner failed to backup api stats");
+        HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner failed to backup api stats");
     }
 }
 
