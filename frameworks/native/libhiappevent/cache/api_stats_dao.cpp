@@ -61,7 +61,7 @@ int MetricInsert(std::shared_ptr<NativeRdb::RdbStore> dbStore, const std::string
 
     int64_t seq = 0;
     int ret = dbStore->Insert(seq, TABLE, bucket);
-    HILOG_INFO(LOG_CORE, "insert api stats, kitName=%{public}s, apiName=%{public}s, ret=%{public}d",
+    HILOG_DEBUG(LOG_CORE, "insert api stats, kitName=%{public}s, apiName=%{public}s, ret=%{public}d",
         kitName.c_str(), apiName.c_str(), ret);
     return ret;
 }
@@ -96,7 +96,7 @@ int MetricQueryAll(std::shared_ptr<NativeRdb::RdbStore> dbStore,
     } while (ret == NativeRdb::E_OK);
 
     resultSet->Close();
-    HILOG_INFO(LOG_CORE, "query all api stats, group count=%{public}zu, ret=%{public}d", out.size(), ret);
+    HILOG_DEBUG(LOG_CORE, "query all api stats, group count=%{public}zu, ret=%{public}d", out.size(), ret);
     return ret == NativeRdb::E_SQLITE_CORRUPT ? ret : NativeRdb::E_OK;
 }
 
@@ -105,7 +105,7 @@ int MetricClear(std::shared_ptr<NativeRdb::RdbStore> dbStore)
     NativeRdb::AbsRdbPredicates predicates(TABLE);
     int deleteRows = 0;
     int ret = dbStore->Delete(deleteRows, predicates);
-    HILOG_INFO(LOG_CORE, "clear all api stats(%{public}d records), ret=%{public}d", deleteRows, ret);
+    HILOG_DEBUG(LOG_CORE, "clear all api stats(%{public}d records), ret=%{public}d", deleteRows, ret);
     return ret;
 }
 } // namespace ApiStatsDao

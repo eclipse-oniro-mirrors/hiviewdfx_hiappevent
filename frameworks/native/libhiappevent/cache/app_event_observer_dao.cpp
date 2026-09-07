@@ -90,7 +90,7 @@ int QuerySeqAndFilters(std::shared_ptr<NativeRdb::RdbStore> dbStore, const Obser
     int ret = resultSet->GoToNextRow();
     if (ret == NativeRdb::E_OK && resultSet->GetLong(0, seq) == NativeRdb::E_OK
         && resultSet->GetString(1, filters) == NativeRdb::E_OK) {
-        HILOG_INFO(LOG_CORE, "succ to query observer seq=%{public}" PRId64 ", name=%{public}s, hash=%{public}" PRId64,
+        HILOG_DEBUG(LOG_CORE, "succ to query observer seq=%{public}" PRId64 ", name=%{public}s, hash=%{public}" PRId64,
             seq, observer.name.c_str(), observer.hashCode);
     }
     resultSet->Close();
