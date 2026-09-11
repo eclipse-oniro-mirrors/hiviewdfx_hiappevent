@@ -70,9 +70,9 @@ uint64_t GetMaskFromDirXattr(const std::string& path)
 }
 }
 
-OsEventListener::OsEventListener()
+OsEventListener::OsEventListener(std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers)
 {
-    Init();
+    Init(observers);
 }
 
 OsEventListener::~OsEventListener()
@@ -86,7 +86,7 @@ OsEventListener::~OsEventListener()
     }
 }
 
-void OsEventListener::Init()
+void OsEventListener::Init(std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers)
 {
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
@@ -111,7 +111,7 @@ void OsEventListener::Init()
     std::vector<std::shared_ptr<AppEventPack>> historyEvents;
     GetEventsFromFiles(files, historyEvents);
     for (auto& event : historyEvents) {
-        InsertLinkEvents(event);
+        InsertLinkEvents(event, observers);
     }
     for (const auto& file : files) {
         (void)FileUtil::RemoveFile(file);
@@ -119,22 +119,32 @@ void OsEventListener::Init()
     AppEventExternalLogManager::GetInstance().CheckCapacity();
 }
 
-void OsEventListener::InsertLinkEvents(std::shared_ptr<AppEventPack> event)
+void OsEventListener::InsertLinkEvents(std::shared_ptr<AppEventPack> event,
+    std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers)
 {
     ExternalLogManager externalLogManager = event->GetExternalLogManager();
-    if (externalLogManager.linkExternalLogs.size() == 0) {
+    if (externalLogManager.externalLogs.size() == 0) {
         return;
     }
     std::vector<std::shared_ptr<AppEventPack>> linkEvents;
-    size_t observerNum = externalLogManager.linkExternalLogs[0].size();
-    for (size_t i = 0; i < observerNum; ++i) {
+
+    size_t i = 0;
+    for (const auto& observer : observers) {
+        if (!observer->VerifyEvent(event)) {
+            continue;
+        }
         std::vector<std::string> linkExternalLogs;
         for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
-            if (i >= externalLogManager.linkExternalLogs[j].size()) {
-                continue;
+            if (j >= externalLogManager.linkExternalLogs.size() ||
+                i >= externalLogManager.linkExternalLogs[j].size()) {
+                linkExternalLogs.push_back(externalLogManager.externalLogs[j].file);
+                externalLogManager.externalLogs[j].isUsed = true;
+            } else {
+                linkExternalLogs.push_back(externalLogManager.linkExternalLogs[j][i].file);
+                externalLogManager.linkExternalLogs[j][i].isUsed = true;
             }
-            linkExternalLogs.push_back(externalLogManager.linkExternalLogs[j][i]);
         }
+        ++i;
         auto linkEvent = std::make_shared<AppEventPack>(*event);
         AppEventUtil::SaveExternalLogSolidLink(linkEvent, linkExternalLogs);
         int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(linkEvent);
@@ -147,7 +157,16 @@ void OsEventListener::InsertLinkEvents(std::shared_ptr<AppEventPack> event)
         linkEvents.push_back(linkEvent);
     }
     for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
-        (void)FileUtil::RemoveFile(externalLogManager.externalLogs[j]);
+        if (!externalLogManager.externalLogs[j].isUsed) {
+            (void)FileUtil::RemoveFile(externalLogManager.externalLogs[j].file);
+        }
+    }
+    for (size_t j = 0; j < externalLogManager.linkExternalLogs.size(); ++j) {
+        for (size_t i = 0; i < externalLogManager.linkExternalLogs[j].size(); ++i) {
+            if (!externalLogManager.linkExternalLogs[j][i].isUsed) {
+                (void)FileUtil::RemoveFile(externalLogManager.linkExternalLogs[j][i].file);
+            }
+        }
     }
     historyLinkEvents_.push_back(linkEvents);
 }
@@ -300,7 +319,7 @@ void ParseExternalLogs(const Json::Value& paramsJson, ExternalLogManager& extern
     }
     for (Json::ArrayIndex i = 0; i < paramsJson["external_log"].size(); ++i) {
         if (paramsJson["external_log"][i].isString()) {
-            externalLogManager.externalLogs.push_back(paramsJson["external_log"][i].asString());
+            externalLogManager.externalLogs.push_back({paramsJson["external_log"][i].asString(), false});
         }
     }
 }
@@ -318,7 +337,7 @@ void ParseLinkExternalLogs(const Json::Value& eventJson, ExternalLogManager& ext
         for (Json::ArrayIndex j = 0; j < eventJson["link_external_log"][i].size(); ++j) {
             if (eventJson["link_external_log"][i][j].isString()) {
                 externalLogManager.linkExternalLogs[i].push_back(
-                    eventJson["link_external_log"][i][j].asString());
+                    {eventJson["link_external_log"][i][j].asString(), false});
             }
         }
     }

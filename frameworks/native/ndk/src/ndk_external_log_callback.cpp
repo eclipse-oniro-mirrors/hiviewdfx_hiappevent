@@ -45,18 +45,13 @@ enum OH_HiAppEvent_SysEvent NdkExternalLogCallback::ConvertSysEvent(const std::s
     if (sysEvent == EVENT_ADDRESS_SANITIZER) {
         return OH_ADDRESS_SANITIZER;
     }
-    if (sysEvent == EVENT_MAIN_THREAD_JANK) {
-        return OH_MAIN_THREAD_JANK;
-    }
     if (sysEvent == EVENT_APP_HICOLLIE) {
         return OH_APP_HICOLLIE;
-    }
-    if (sysEvent == EVENT_SCROLL_JANK) {
-        return OH_SCROLL_JANK;
     }
     if (sysEvent == EVENT_CPU_USAGE_HIGH) {
         return OH_CPU_USAGE_HIGH;
     }
+    HILOG_WARN(LOG_CORE, "unkown sysEvent=%{public}s, fallback to OH_APP_CRASH", sysEvent.c_str());
     return OH_APP_CRASH; // default fallback
 }
 

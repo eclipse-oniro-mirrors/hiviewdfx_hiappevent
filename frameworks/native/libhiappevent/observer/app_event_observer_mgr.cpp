@@ -69,53 +69,69 @@ std::unordered_map<std::string, std::shared_ptr<AppEventPack>> externalLogEvents
 };
 std::unordered_map<std::string, int> eventObservers;
 
-void InsertLinkEvents(std::shared_ptr<AppEventPack> event,
+void InsertEvent(std::shared_ptr<AppEventPack> event)
+{
+    int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
+    if (eventSeq <= 0) {
+        HILOG_WARN(LOG_CORE, "failed to store event to db");
+        return;
+    }
+    event->SetSeq(eventSeq);
+    AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
+}
+
+void InsertLinkEvents(std::shared_ptr<AppEventPack> event, std::vector<std::shared_ptr<AppEventObserver>>& observers,
     std::vector<std::vector<std::shared_ptr<AppEventPack>>>& linkEvents)
 {
     ExternalLogManager externalLogManager = event->GetExternalLogManager();
     if (externalLogManager.linkExternalLogs.size() == 0) {
-        int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(event);
-        if (eventSeq <= 0) {
-            HILOG_WARN(LOG_CORE, "failed to store event to db");
-            return;
-        }
-        event->SetSeq(eventSeq);
-        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(event);
+        InsertEvent(event);
         return;
     }
     std::vector<std::shared_ptr<AppEventPack>> events;
-    size_t observerNum = externalLogManager.linkExternalLogs[0].size();
-    for (size_t i = 0; i < observerNum; ++i) {
-        std::vector<std::string> linkExternalLogs;
-        for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
-            if (i >= externalLogManager.linkExternalLogs[j].size()) {
-                continue;
-            }
-            linkExternalLogs.push_back(externalLogManager.linkExternalLogs[j][i]);
-        }
-        auto linkEvent = std::make_shared<AppEventPack>(*event);
-        AppEventUtil::SaveExternalLogSolidLink(linkEvent, linkExternalLogs);
-        int64_t eventSeq = AppEventStore::GetInstance().InsertEvent(linkEvent);
-        if (eventSeq <= 0) {
-            HILOG_WARN(LOG_CORE, "failed to store event to db");
+    size_t i = 0;
+    for (const auto& observer : observers) {
+        if (!observer->VerifyEvent(event)) {
             continue;
         }
-        linkEvent->SetSeq(eventSeq);
-        AppEventStore::GetInstance().QueryCustomParamsAdd2EventPack(linkEvent);
+        std::vector<std::string> linkExternalLogs;
+        for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
+            if (j >= externalLogManager.linkExternalLogs.size() ||
+                i >= externalLogManager.linkExternalLogs[j].size()) {
+                linkExternalLogs.push_back(externalLogManager.externalLogs[j].file);
+                externalLogManager.externalLogs[j].isUsed = true;
+            } else {
+                linkExternalLogs.push_back(externalLogManager.linkExternalLogs[j][i].file);
+                externalLogManager.linkExternalLogs[j][i].isUsed = true;
+            }
+        }
+        ++i;
+        auto linkEvent = std::make_shared<AppEventPack>(*event);
+        AppEventUtil::SaveExternalLogSolidLink(linkEvent, linkExternalLogs);
+        InsertEvent(linkEvent);
         events.push_back(linkEvent);
     }
     for (size_t j = 0; j < externalLogManager.externalLogs.size(); ++j) {
-        (void)FileUtil::RemoveFile(externalLogManager.externalLogs[j]);
+        if (!externalLogManager.externalLogs[j].isUsed) {
+            (void)FileUtil::RemoveFile(externalLogManager.externalLogs[j].file);
+        }
+    }
+    for (size_t j = 0; j < externalLogManager.linkExternalLogs.size(); ++j) {
+        for (size_t i = 0; i < externalLogManager.linkExternalLogs[j].size(); ++i) {
+            if (!externalLogManager.linkExternalLogs[j][i].isUsed) {
+                (void)FileUtil::RemoveFile(externalLogManager.linkExternalLogs[j][i].file);
+            }
+        }
     }
     linkEvents.push_back(events);
 }
 
 std::vector<std::vector<std::shared_ptr<AppEventPack>>> StoreEventsToDb(
-    std::vector<std::shared_ptr<AppEventPack>>& events)
+    std::vector<std::shared_ptr<AppEventPack>>& events, std::vector<std::shared_ptr<AppEventObserver>>& observers)
 {
     std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
     for (auto& event : events) {
-        InsertLinkEvents(event, linkEvents);
+        InsertLinkEvents(event, observers, linkEvents);
     }
     return linkEvents;
 }
@@ -432,12 +448,13 @@ int64_t AppEventObserverMgr::AddWatcher(std::shared_ptr<AppEventWatcher> watcher
     if (observerSeq <= 0) {
         return -1;
     }
-
-    if (!InitWatcherFromListener(watcher, isExist)) {
+    auto observers = GetObservers();
+    std::unique_lock<std::shared_mutex> lock(watcherMutex_);
+    if (!InitWatcherFromListener(watcher, isExist, observers)) {
         AppEventStore::GetInstance().DeleteObserver(observerSeq);
         return -1;
     }
-    std::unique_lock<std::shared_mutex> lock(watcherMutex_);
+
     watchers_[observerSeq] = watcher;
     HILOG_INFO(LOG_CORE, "register watcher=%{public}" PRId64 " successfully", observerSeq);
     return observerSeq;
@@ -585,7 +602,7 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
         return;
     }
     HILOG_DEBUG(LOG_CORE, "start to handle events size=%{public}zu", events.size());
-    auto linkEvents = StoreEventsToDb(events);
+    auto linkEvents = StoreEventsToDb(events, observers);
     if (!linkEvents.empty()) {
         StoreLinkEventMappingToDb(linkEvents, observers);
     } else {
@@ -691,14 +708,15 @@ int AppEventObserverMgr::GetReportConfig(int64_t observerSeq, ReportConfig& conf
     return 0;
 }
 
-bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatcher> watcher, bool isExist)
+bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatcher> watcher, bool isExist,
+    std::vector<std::shared_ptr<AppEventObserver>>& observers)
 {
     uint64_t mask = watcher->GetOsEventsMask();
     if (mask == 0) {
         return true;
     }
     if (listener_ == nullptr) {
-        listener_ = std::make_shared<OsEventListener>();
+        listener_ = std::make_shared<OsEventListener>(observers);
         if (!listener_->StartListening()) {
             listener_ = nullptr;
             return false;
@@ -712,7 +730,6 @@ bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatche
         listener_->GetLinkEvents(linkEvents);
         if (!linkEvents.empty()) {
             std::vector<std::shared_ptr<AppEventObserver>> curWatchers;
-            std::shared_lock<std::shared_mutex> watcherLock(watcherMutex_);
             for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
                 curWatchers.emplace_back(it->second);
             }

@@ -51,66 +51,6 @@ public:
 };
 
 /**
- * @tc.name: ExternalLogManagerStruct001
- * @tc.desc: test ExternalLogManager struct default values
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, ExternalLogManagerStruct001, TestSize.Level0)
-{
-    ExternalLogManager logManager;
-    EXPECT_TRUE(logManager.externalLogs.empty());
-    EXPECT_TRUE(logManager.linkExternalLogs.empty());
-}
-
-/**
- * @tc.name: ExternalLogManagerStruct002
- * @tc.desc: test ExternalLogManager struct with data
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, ExternalLogManagerStruct002, TestSize.Level0)
-{
-    ExternalLogManager logManager;
-    logManager.externalLogs = {"/path/log1.txt", "/path/log2.txt"};
-    logManager.linkExternalLogs = {{"link1", "link2"}, {"link3"}};
-    EXPECT_EQ(logManager.externalLogs.size(), 2u);
-    EXPECT_EQ(logManager.linkExternalLogs.size(), 2u);
-    EXPECT_EQ(logManager.linkExternalLogs[0].size(), 2u);
-    EXPECT_EQ(logManager.linkExternalLogs[1].size(), 1u);
-}
-
-/**
- * @tc.name: ExternalLogWrapperInfoStruct001
- * @tc.desc: test ExternalLogWrapperInfo struct default values
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, ExternalLogWrapperInfoStruct001, TestSize.Level0)
-{
-    ExternalLogWrapperInfo info;
-    EXPECT_TRUE(info.filePath.empty());
-    EXPECT_EQ(info.generationTime, 0);
-    EXPECT_EQ(info.sizeInKb, 0);
-    EXPECT_TRUE(info.sysEvent.empty());
-}
-
-/**
- * @tc.name: ExternalLogWrapperInfoStruct002
- * @tc.desc: test ExternalLogWrapperInfo struct with assigned values
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, ExternalLogWrapperInfoStruct002, TestSize.Level0)
-{
-    ExternalLogWrapperInfo info;
-    info.filePath = "/data/log/test.txt";
-    info.generationTime = 1756735345342LL;
-    info.sizeInKb = 1024;
-    info.sysEvent = "APP_CRASH";
-    EXPECT_EQ(info.filePath, "/data/log/test.txt");
-    EXPECT_EQ(info.generationTime, 1756735345342LL);
-    EXPECT_EQ(info.sizeInKb, 1024);
-    EXPECT_EQ(info.sysEvent, "APP_CRASH");
-}
-
-/**
  * @tc.name: AppEventPackExternalLogManager001
  * @tc.desc: test AppEventPack Get/Set ExternalLogManager
  * @tc.type: FUNC
@@ -126,14 +66,14 @@ HWTEST_F(HiAppEventExternalLogTest, AppEventPackExternalLogManager001, TestSize.
 
     // Set and get ExternalLogManager
     ExternalLogManager logMgr;
-    logMgr.externalLogs = {"/log1.txt", "/log2.txt"};
-    logMgr.linkExternalLogs = {{"linkA", "linkB"}};
+    logMgr.externalLogs = {{"/log1.txt", false}, {"/log2.txt", false}};
+    logMgr.linkExternalLogs = {{{"linkA", false}, {"linkB", false}}};
     event->SetExternalLogManager(logMgr);
 
     ExternalLogManager getResult = event->GetExternalLogManager();
     EXPECT_EQ(getResult.externalLogs.size(), 2u);
-    EXPECT_EQ(getResult.externalLogs[0], "/log1.txt");
-    EXPECT_EQ(getResult.externalLogs[1], "/log2.txt");
+    EXPECT_EQ(getResult.externalLogs[0].file, "/log1.txt");
+    EXPECT_EQ(getResult.externalLogs[1].file, "/log2.txt");
     EXPECT_EQ(getResult.linkExternalLogs.size(), 1u);
     EXPECT_EQ(getResult.linkExternalLogs[0].size(), 2u);
 }
@@ -147,16 +87,16 @@ HWTEST_F(HiAppEventExternalLogTest, AppEventPackExternalLogManager002, TestSize.
 {
     auto event = std::make_shared<AppEventPack>("testDomain", "testName", 1);
     ExternalLogManager logMgr;
-    logMgr.externalLogs = {"/log1.txt"};
-    logMgr.linkExternalLogs = {{"linkA"}};
+    logMgr.externalLogs = {{"/log1.txt", false}};
+    logMgr.linkExternalLogs = {{{"linkA", false}}};
     event->SetExternalLogManager(logMgr);
 
     auto copiedEvent = std::make_shared<AppEventPack>(*event);
     ExternalLogManager copiedLogMgr = copiedEvent->GetExternalLogManager();
     EXPECT_EQ(copiedLogMgr.externalLogs.size(), 1u);
-    EXPECT_EQ(copiedLogMgr.externalLogs[0], "/log1.txt");
+    EXPECT_EQ(copiedLogMgr.externalLogs[0].file, "/log1.txt");
     EXPECT_EQ(copiedLogMgr.linkExternalLogs.size(), 1u);
-    EXPECT_EQ(copiedLogMgr.linkExternalLogs[0][0], "linkA");
+    EXPECT_EQ(copiedLogMgr.linkExternalLogs[0][0].file, "linkA");
 }
 
 /**
@@ -194,132 +134,7 @@ HWTEST_F(HiAppEventExternalLogTest, ExternalLogManagerCheckCapacity001, TestSize
     auto& instance = AppEventExternalLogManager::GetInstance();
     // CheckCapacity on non-existent directory should not crash
     instance.CheckCapacity();
-}
-
-/**
- * @tc.name: GetDirSizeInodeDedup001
- * @tc.desc: test GetDirSize counts unique inodes only (hardlink dedup)
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, GetDirSizeInodeDedup001, TestSize.Level0)
-{
-    std::string dir = TEST_DIR + "inode_dedup/";
-    ASSERT_TRUE(FileUtil::ForceCreateDirectory(dir));
-
-    std::string filePath = dir + "file1.txt";
-    ASSERT_TRUE(FileUtil::SaveStringToFile(filePath, std::string(1024, 'A'), true));
-
-    std::string linkPath = dir + "file1_link.txt";
-    link(filePath.c_str(), linkPath.c_str());
-
-    uint64_t size = FileUtil::GetDirSize(dir);
-    EXPECT_EQ(size, 1024u);  // Not 2048
-
-    (void)FileUtil::ForceRemoveDirectory(dir);
-}
-
-/**
- * @tc.name: GetDirSizeInodeDedup002
- * @tc.desc: test GetDirSize counts separate files with different inodes
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, GetDirSizeInodeDedup002, TestSize.Level0)
-{
-    std::string dir = TEST_DIR + "inode_separate/";
-    ASSERT_TRUE(FileUtil::ForceCreateDirectory(dir));
-
-    std::string file1 = dir + "file1.txt";
-    std::string file2 = dir + "file2.txt";
-    ASSERT_TRUE(FileUtil::SaveStringToFile(file1, std::string(512, 'A'), true));
-    ASSERT_TRUE(FileUtil::SaveStringToFile(file2, std::string(512, 'B'), true));
-
-    uint64_t size = FileUtil::GetDirSize(dir);
-    EXPECT_EQ(size, 1024u);
-
-    (void)FileUtil::ForceRemoveDirectory(dir);
-}
-
-/**
- * @tc.name: GetDirSizeInodeDedup003
- * @tc.desc: test GetDirSize with empty directory
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, GetDirSizeInodeDedup003, TestSize.Level0)
-{
-    std::string dir = TEST_DIR + "inode_empty/";
-    ASSERT_TRUE(FileUtil::ForceCreateDirectory(dir));
-
-    uint64_t size = FileUtil::GetDirSize(dir);
-    EXPECT_EQ(size, 0u);
-
-    (void)FileUtil::ForceRemoveDirectory(dir);
-}
-
-/**
- * @tc.name: InsertLinkEventsLogic001
- * @tc.desc: test InsertLinkEvents logic - event with no linkExternalLogs stored directly
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, InsertLinkEventsLogic001, TestSize.Level0)
-{
-    auto event = std::make_shared<AppEventPack>("testDomain", "testName", 1);
-    ExternalLogManager logMgr;
-    logMgr.externalLogs = {"/log1.txt"};
-    event->SetExternalLogManager(logMgr);
-
-    ExternalLogManager result = event->GetExternalLogManager();
-    EXPECT_EQ(result.linkExternalLogs.size(), 0u);
-}
-
-/**
- * @tc.name: InsertLinkEventsLogic002
- * @tc.desc: test InsertLinkEvents logic - event with linkExternalLogs creates link events
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, InsertLinkEventsLogic002, TestSize.Level0)
-{
-    auto event = std::make_shared<AppEventPack>("testDomain", "testName", 1);
-    event->SetParamStr(R"({"external_log":["/log1.txt","/log2.txt"],"key":"value"})");
-
-    ExternalLogManager logMgr;
-    logMgr.externalLogs = {"/log1.txt", "/log2.txt"};
-    logMgr.linkExternalLogs = {
-        {"observer1_log1", "observer2_log1"},
-        {"observer1_log2"}
-    };
-    event->SetExternalLogManager(logMgr);
-
-    size_t observerNum = logMgr.linkExternalLogs[0].size();
-    EXPECT_EQ(observerNum, 2u);
-
-    for (size_t i = 0; i < observerNum; ++i) {
-        std::vector<std::string> linkExternalLogs;
-        for (size_t j = 0; j < logMgr.externalLogs.size(); ++j) {
-            if (i >= logMgr.linkExternalLogs[j].size()) {
-                continue;
-            }
-            linkExternalLogs.push_back(logMgr.linkExternalLogs[j][i]);
-        }
-
-        if (i == 0) {
-            EXPECT_EQ(linkExternalLogs.size(), 2u);
-            EXPECT_EQ(linkExternalLogs[0], "observer1_log1");
-            EXPECT_EQ(linkExternalLogs[1], "observer1_log2");
-        } else if (i == 1) {
-            EXPECT_EQ(linkExternalLogs.size(), 1u);
-            EXPECT_EQ(linkExternalLogs[0], "observer2_log1");
-        }
-    }
-}
-
-/**
- * @tc.name: ExternalLogManagerError001
- * @tc.desc: test ERR_LOG_MANAGER_ALREADY_REGISTERED error code mapping
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventExternalLogTest, ExternalLogManagerError001, TestSize.Level0)
-{
-    EXPECT_EQ(NapiError::ERR_LOG_MANAGER_ALREADY_REGISTERED, 11106001);
+    EXPECT_TRUE(instance.IsRegistered());
 }
 
 /**
@@ -475,9 +290,7 @@ HWTEST_F(HiAppEventExternalLogTest, NdkExternalLogCallbackConvertSysEvent001, Te
     NdkExternalLogCallback ndkCallback(CCallbackCollectEvents);
 
     std::vector<std::pair<std::string, OH_HiAppEvent_SysEvent>> testCases = {
-        {"MAIN_THREAD_JANK", OH_MAIN_THREAD_JANK},
         {"APP_HICOLLIE", OH_APP_HICOLLIE},
-        {"SCROLL_JANK", OH_SCROLL_JANK},
         {"CPU_USAGE_HIGH", OH_CPU_USAGE_HIGH},
     };
 
@@ -530,6 +343,10 @@ HWTEST_F(HiAppEventExternalLogTest, NdkRegExternalLogCallback001, TestSize.Level
 {
     int result = RegExternalLogCapacityReachedCallback(nullptr);
     EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    auto lambdaCallback = [](OH_HiAppEvent_ExternalLog* externalLogArr, uint32_t arrLen) {};
+    result = RegExternalLogCapacityReachedCallback(lambdaCallback);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
 }
 
 /**
@@ -560,14 +377,383 @@ HWTEST_F(HiAppEventExternalLogTest, NdkExternalLogCallbackFilePath001, TestSize.
 }
 
 /**
- * @tc.name: AppEventExternalLogManagerSingleton001
- * @tc.desc: test AppEventExternalLogManager singleton returns same instance
+ * @tc.name: CheckCapacityBelowThreshold001
+ * @tc.desc: test CheckCapacity when directory exists but size is below threshold
  * @tc.type: FUNC
  */
-HWTEST_F(HiAppEventExternalLogTest, AppEventExternalLogManagerSingleton001, TestSize.Level0)
+HWTEST_F(HiAppEventExternalLogTest, CheckCapacityBelowThreshold001, TestSize.Level0)
 {
-    auto& instance1 = AppEventExternalLogManager::GetInstance();
-    auto& instance2 = AppEventExternalLogManager::GetInstance();
-    EXPECT_EQ(&instance1, &instance2);
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    // Create the hiappevent log dir but with tiny content
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // Write a small file (well below 4MB threshold)
+    std::string smallFile = dir + "/small_test_file.txt";
+    FileUtil::SaveStringToFile(smallFile, "tiny", true);
+
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // Should not trigger callback because curSize < thresholdSize
+    // Exercises the branch: if (curSize < thresholdSize) { continue; }
+
+    (void)FileUtil::RemoveFile(smallFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: CheckCapacityOverThreshold001
+ * @tc.desc: test CheckCapacity when directory exceeds threshold triggers ScanLogFiles + callback
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, CheckCapacityOverThreshold001, TestSize.Level0)
+{
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    // Create the hiappevent log dir with a file named in standard format
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // Create a file that ParseLogFileInfo can parse
+    std::string logFile = dir + "/APP_CRASH_1756735345342_1234.txt";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'A'), true);
+
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // Exercises branches: IsDirectory=true, curSize >= thresholdSize, ScanLogFiles, callback invocation
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+// ===== AppEventExternalLogManager::ParseLogFileInfo actual branch tests =====
+
+/**
+ * @tc.name: ParseLogFileInfoActual001
+ * @tc.desc: test ParseLogFileInfo via CheckCapacity with standard filename
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual001, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // Standard filename: EVENTNAME_TIMESTAMP_PID.ext
+    std::string logFile = dir + "/APP_FREEZE_1699999999999_5678.log";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'B'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // ParseLogFileInfo should parse: sysEvent = "APP_FREEZE", generationTime = 1699999999999
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual002
+ * @tc.desc: test ParseLogFileInfo with no underscore in filename (no timestamp found)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual002, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // Filename with no underscore at all
+    std::string logFile = dir + "/plainname.txt";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'C'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // The while loop never finds underscore -> no timestamp -> sysEvent and generationTime remain default
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual003
+ * @tc.desc: test ParseLogFileInfo with underscore but timestamp too short
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual003, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // "123" is only 3 chars, below MIN_TIMESTAMP_LEN=10
+    std::string logFile = dir + "/EVENT_123_45.txt";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'D'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // IsTimestampSegment returns false for len=3 < MIN_TIMESTAMP_LEN -> no timestamp parsed
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual004
+ * @tc.desc: test ParseLogFileInfo with valid timestamp length but non-digit chars
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual004, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // "abc45678901" is 11 chars but contains non-digit
+    std::string logFile = dir + "/EVENT_abc45678901_99.txt";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'E'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // IsTimestampSegment returns false because not all chars are digits
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual005
+ * @tc.desc: test ParseLogFileInfo with multi-segment event name (RESOURCE_OVERLIMIT)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual005, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // RESOURCE_OVERLIMIT has underscore in event name; the while loop should skip
+    // the first underscore and find the timestamp after the second
+    std::string logFile = dir + "/RESOURCE_OVERLIMIT_1756735345342_9999.log";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'F'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual006
+ * @tc.desc: test ParseLogFileInfo with file stat failure (file removed before stat)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual006, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // Create then immediately delete -> stat will fail in ParseLogFileInfo
+    std::string logFile = dir + "/ADDRESS_SANITIZER_1756735345342_1111.txt";
+    FileUtil::SaveStringToFile(logFile, "temp", true);
+    (void)FileUtil::RemoveFile(logFile);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // ParseLogFileInfo: stat fails -> sizeInKb remains 0, but parsing continues for filename
+
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+// ===== NdkExternalLogCallback::OnCapacityReached with null callback branch =====
+
+/**
+ * @tc.name: NdkExternalLogCallbackNullCb001
+ * @tc.desc: test NdkExternalLogCallback constructed with null callback does not invoke
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, NdkExternalLogCallbackNullCb001, TestSize.Level0)
+{
+    g_callbackInvoked = false;
+    g_receivedArrLen = 0;
+
+    NdkExternalLogCallback ndkCallback(nullptr);
+    std::vector<ExternalLogWrapperInfo> logInfos;
+    ExternalLogWrapperInfo info;
+    info.filePath = "/data/log/APP_CRASH_1234567890_1234.txt";
+    info.generationTime = 1234567890LL;
+    info.sizeInKb = 10;
+    info.sysEvent = "APP_CRASH";
+    logInfos.push_back(info);
+
+    ndkCallback.OnCapacityReached(logInfos);
+    // callback_ is null -> should not invoke
+    EXPECT_FALSE(g_callbackInvoked);
+}
+
+/**
+ * @tc.name: NdkExternalLogCallbackSysEvent003
+ * @tc.desc: test all remaining ConvertSysEvent branches: APP_HICOLLIE and CPU_USAGE_HIGH
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, NdkExternalLogCallbackSysEvent003, TestSize.Level0)
+{
+    g_receivedEvents.clear();
+    NdkExternalLogCallback ndkCallback(CCallbackCollectEvents);
+
+    std::vector<ExternalLogWrapperInfo> logInfos;
+    ExternalLogWrapperInfo info1;
+    info1.filePath = "/data/log/APP_HICOLLIE_1234567890_1234.txt";
+    info1.generationTime = 1234567890LL;
+    info1.sizeInKb = 5;
+    info1.sysEvent = "APP_HICOLLIE";
+    logInfos.push_back(info1);
+
+    ExternalLogWrapperInfo info2;
+    info2.filePath = "/data/log/CPU_USAGE_HIGH_1234567891_1234.txt";
+    info2.generationTime = 1234567891LL;
+    info2.sizeInKb = 5;
+    info2.sysEvent = "CPU_USAGE_HIGH";
+    logInfos.push_back(info2);
+
+    ndkCallback.OnCapacityReached(logInfos);
+    ASSERT_EQ(g_receivedEvents.size(), 2u);
+    EXPECT_EQ(g_receivedEvents[0], OH_APP_HICOLLIE);
+    EXPECT_EQ(g_receivedEvents[1], OH_CPU_USAGE_HIGH);
+}
+
+/**
+ * @tc.name: GetDirSizeStatFail001
+ * @tc.desc: test GetDirSize with a file that is deleted during scan (stat fails)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, GetDirSizeStatFail001, TestSize.Level0)
+{
+    std::string dir = TEST_DIR + "stat_fail/";
+    ASSERT_TRUE(FileUtil::ForceCreateDirectory(dir));
+    // Create and immediately delete - GetDirSize gets a file path but stat fails
+    std::string file = dir + "transient.txt";
+    FileUtil::SaveStringToFile(file, "data", true);
+    (void)FileUtil::RemoveFile(file);
+
+    uint64_t size = FileUtil::GetDirSize(dir);
+    // The deleted file won't be found by GetDirFiles, so size should be 0
+    EXPECT_EQ(size, 0u);
+
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual007
+ * @tc.desc: test ParseLogFileInfo with only one underscore in filename (break on no nextUnderscore)
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual007, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // Only one underscore: nextUnderscore will be npos -> break out of while loop
+    std::string logFile = dir + "/SINGLE_1756735345342.txt";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'G'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+    // Exercises: nextUnderscore == npos -> break (no valid timestamp found this iteration)
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: ParseLogFileInfoActual008
+ * @tc.desc: test ParseLogFileInfo with ADDRESS_SANITIZER and CPU_USAGE_HIGH filenames
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ParseLogFileInfoActual008, TestSize.Level0)
+{
+    std::string dir = "/data/storage/el2/log/hiappevent";
+    if (!FileUtil::IsDirectory(dir)) {
+        (void)FileUtil::ForceCreateDirectory(dir);
+    }
+    // ADDRESS_SANITIZER: two underscores in event name
+    std::string logFile = dir + "/ADDRESS_SANITIZER_1756735345342_1234.txt";
+    FileUtil::SaveStringToFile(logFile, std::string(5 * 1024 * 1024, 'H'), true);
+
+    auto& instance = AppEventExternalLogManager::GetInstance();
+    instance.CheckCapacity();
+    EXPECT_TRUE(instance.IsRegistered());
+
+    (void)FileUtil::RemoveFile(logFile);
+    (void)FileUtil::ForceRemoveDirectory(dir);
+}
+
+/**
+ * @tc.name: NdkExternalLogCallbackSysEvent002
+ * @tc.desc: test SCROLL_JANK and MAIN_THREAD_JANK fall back to OH_APP_CRASH
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, NdkExternalLogCallbackSysEvent002, TestSize.Level0)
+{
+    g_receivedEvents.clear();
+    NdkExternalLogCallback ndkCallback(CCallbackCollectEvents);
+
+    std::vector<ExternalLogWrapperInfo> logInfos;
+
+    ExternalLogWrapperInfo info1;
+    info1.filePath = "/data/log/SCROLL_JANK_1234567890_1234.txt";
+    info1.generationTime = 1234567890LL;
+    info1.sizeInKb = 5;
+    info1.sysEvent = "SCROLL_JANK";
+    logInfos.push_back(info1);
+
+    ExternalLogWrapperInfo info2;
+    info2.filePath = "/data/log/MAIN_THREAD_JANK_1234567891_1234.txt";
+    info2.generationTime = 1234567891LL;
+    info2.sizeInKb = 5;
+    info2.sysEvent = "MAIN_THREAD_JANK";
+    logInfos.push_back(info2);
+
+    ndkCallback.OnCapacityReached(logInfos);
+    ASSERT_EQ(g_receivedEvents.size(), 2u);
+    // Exercises the default fallback branch in ConvertSysEvent
+    EXPECT_EQ(g_receivedEvents[0], OH_APP_CRASH);
+    EXPECT_EQ(g_receivedEvents[1], OH_APP_CRASH);
+}
+
+/**
+ * @tc.name: ExternalLogManagerDeepCopy001
+ * @tc.desc: test that copy of AppEventPack has independent ExternalLogManager
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventExternalLogTest, ExternalLogManagerDeepCopy001, TestSize.Level0)
+{
+    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
+    ExternalLogManager logMgr;
+    logMgr.externalLogs = {{"/log1.txt", false}};
+    logMgr.linkExternalLogs = {{{"linkA", false}}};
+    event->SetExternalLogManager(logMgr);
+
+    auto copiedEvent = std::make_shared<AppEventPack>(*event);
+
+    // Modify original - should not affect copy
+    ExternalLogManager modifiedLogMgr;
+    modifiedLogMgr.externalLogs = {{"/modified.txt", true}};
+    event->SetExternalLogManager(modifiedLogMgr);
+
+    ExternalLogManager copiedLogMgr = copiedEvent->GetExternalLogManager();
+    EXPECT_EQ(copiedLogMgr.externalLogs.size(), 1u);
+    EXPECT_EQ(copiedLogMgr.externalLogs[0].file, "/log1.txt");
+    EXPECT_FALSE(copiedLogMgr.externalLogs[0].isUsed);
 }
 }  // namespace

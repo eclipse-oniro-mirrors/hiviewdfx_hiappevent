@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <sys/stat.h>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "file_util.h"
 #include "hiappevent_common.h"
@@ -37,6 +38,22 @@ std::unordered_map<std::string, uint64_t> externalLogSize = {
 };
 constexpr size_t MIN_TIMESTAMP_LEN = 10;
 constexpr size_t MAX_TIMESTAMP_LEN = 13;
+
+uint64_t GetDirSize(const std::string& dir)
+{
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(dir, files);
+    uint64_t totalSize = 0;
+    std::unordered_set<uint64_t> uniqueInodes;
+    struct stat statBuf {};
+    for (auto& file : files) {
+        if (stat(file.c_str(), &statBuf) == 0 && uniqueInodes.count(statBuf.st_ino) == 0) {
+            totalSize += static_cast<uint64_t>(statBuf.st_size);
+            uniqueInodes.insert(statBuf.st_ino);
+        }
+    }
+    return totalSize;
+}
 }
 
 AppEventExternalLogManager& AppEventExternalLogManager::GetInstance()
@@ -63,8 +80,12 @@ bool AppEventExternalLogManager::IsRegistered()
 
 void AppEventExternalLogManager::CheckCapacity()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    if (callback_ == nullptr) {
+    std::shared_ptr<ExternalLogManagerCallback> callback;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        callback = callback_;
+    }
+    if (callback == nullptr) {
         return;
     }
 
@@ -72,7 +93,7 @@ void AppEventExternalLogManager::CheckCapacity()
         if (!FileUtil::IsDirectory(dir)) {
             continue;
         }
-        uint64_t curSize = FileUtil::GetDirSize(dir);
+        uint64_t curSize = GetDirSize(dir);
         if (curSize < thresholdSize) {
             continue;
         }
@@ -80,7 +101,7 @@ void AppEventExternalLogManager::CheckCapacity()
         std::vector<ExternalLogWrapperInfo> logInfos;
         ScanLogFiles(dir, logInfos);
         if (!logInfos.empty()) {
-            callback_->OnCapacityReached(logInfos);
+            callback->OnCapacityReached(logInfos);
         }
     }
 }
@@ -109,7 +130,6 @@ ExternalLogWrapperInfo AppEventExternalLogManager::ParseLogFileInfo(const std::s
 {
     ExternalLogWrapperInfo info;
     info.filePath = filePath;
-
     struct stat statBuf = {};
     if (stat(filePath.c_str(), &statBuf) == 0) {
         info.sizeInKb = static_cast<int64_t>(statBuf.st_size / 1024); // 1KB = 1024B

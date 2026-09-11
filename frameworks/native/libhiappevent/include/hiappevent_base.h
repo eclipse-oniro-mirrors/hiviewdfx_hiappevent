@@ -114,9 +114,14 @@ struct CustomEventParam {
 };
 using CustomEventParam = struct CustomEventParam;
 
+struct FileItem {
+    std::string file;
+    bool isUsed = false;
+};
+using FileItem = struct FileItem;
 struct ExternalLogManager {
-    std::vector<std::string> externalLogs;
-    std::vector<std::vector<std::string>> linkExternalLogs;
+    std::vector<FileItem> externalLogs;
+    std::vector<std::vector<FileItem>> linkExternalLogs;
 };
 using ExternalLogManager = struct ExternalLogManager;
 
