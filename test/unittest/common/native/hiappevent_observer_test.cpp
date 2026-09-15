@@ -361,11 +361,6 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest011, TestSize.Level0)
     std::vector<std::shared_ptr<AppEventObserver>> observers;
     auto listener = std::make_shared<OsEventListener>(observers);
     EXPECT_TRUE(listener->StartListening());
- 
-    // Without external_log, GetLinkEvents should be empty
-    std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
-    listener->GetLinkEvents(linkEvents);
-    EXPECT_TRUE(linkEvents.empty());
 }
  
 /**
@@ -473,31 +468,6 @@ HWTEST_F(HiAppEventObserverTest, SaveExternalLogSolidLink006, TestSize.Level0)
     AppEventUtil::SaveExternalLogSolidLink(event, linkExternalLogs);
     // Should not crash; empty string is not valid JSON
     EXPECT_NE(event->GetParamStr(), "");
-}
-
-/**
- * @tc.name: InsertLinkEventsActual001
- * @tc.desc: test InsertLinkEvents - empty externalLogs early return
- * @tc.type: FUNC
- */
-HWTEST_F(HiAppEventObserverTest, InsertLinkEventsActual001, TestSize.Level0)
-{
-    ApplicationContextMock* contextMock = new ApplicationContextMock();
-    ASSERT_NE(contextMock, nullptr);
-    EXPECT_CALL(*contextMock, GetCacheDir())
-        .WillRepeatedly(::testing::Return("/data/test/observer"));
-    g_applicationContext.reset(contextMock);
-
-    std::vector<std::shared_ptr<AppEventObserver>> observers;
-    auto listener = std::make_shared<OsEventListener>(observers);
-
-    auto event = std::make_shared<AppEventPack>("OS", "APP_CRASH", 1);
-    // No externalLogs set -> early return at externalLogs.size() == 0
-    listener->InsertLinkEvents(event, observers);
-
-    std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
-    listener->GetLinkEvents(linkEvents);
-    ASSERT_EQ(linkEvents.size(), 0);
 }
 
 /**

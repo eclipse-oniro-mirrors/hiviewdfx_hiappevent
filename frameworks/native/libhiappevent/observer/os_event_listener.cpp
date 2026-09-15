@@ -123,9 +123,6 @@ void OsEventListener::InsertLinkEvents(std::shared_ptr<AppEventPack> event,
     std::vector<std::shared_ptr<HiAppEvent::AppEventObserver>>& observers)
 {
     ExternalLogManager externalLogManager = event->GetExternalLogManager();
-    if (externalLogManager.externalLogs.size() == 0) {
-        return;
-    }
     std::vector<std::shared_ptr<AppEventPack>> linkEvents;
 
     size_t i = 0;
