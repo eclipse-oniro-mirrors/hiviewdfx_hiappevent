@@ -393,7 +393,7 @@ int VerifyCustomConfigsOfReportConfig(ReportConfig& config)
 
 int VerifyConfigNameOfReportConfig(ReportConfig& config)
 {
-    if (!IsValidProcessorName(config.configName)) {
+    if (!config.configName.empty() && !IsValidProcessorName(config.configName)) {
         HILOG_WARN(LOG_CORE, "invalid configName=%{public}s", config.configName.c_str());
         config.configName = "";
     }
