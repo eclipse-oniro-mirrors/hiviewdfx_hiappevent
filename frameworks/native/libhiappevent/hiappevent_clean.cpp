@@ -15,7 +15,9 @@
 
 #include "hiappevent_clean.h"
 
+#include <array>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "app_event_db_cleaner.h"
@@ -38,7 +40,9 @@ namespace HiAppEventClean {
 namespace {
 constexpr int EVENT_COUNT_OF_CHECK_SPACE = 1000;
 
-static std::atomic<int> g_eventCount = -1;
+static int g_eventCount = -1;
+std::mutex g_cleanMutex;
+const int CLEANERS_LEN = 2;
 
 void CreateCleaners(const std::string& dir, std::vector<std::shared_ptr<AppEventCleaner>>& cleaners)
 {
@@ -48,12 +52,10 @@ void CreateCleaners(const std::string& dir, std::vector<std::shared_ptr<AppEvent
 
 uint64_t GetCurStorageSize(const std::string& dir)
 {
-    std::vector<std::shared_ptr<AppEventCleaner>> cleaners;
-    CreateCleaners(dir, cleaners);
+    AppEventDbCleaner dbCleaner(dir);
+    AppEventLogCleaner logCleaner(dir);
     uint64_t curSize = 0;
-    for (auto& cleaner : cleaners) {
-        curSize += cleaner->GetFilesSize();
-    }
+    curSize = dbCleaner.GetFilesSize() + logCleaner.GetFilesSize();
     return curSize;
 }
 }
@@ -65,8 +67,9 @@ bool IsStorageSpaceFull(const std::string& dir, uint64_t maxSize)
 bool ReleaseSomeStorageSpace(const std::string& dir, uint64_t maxSize)
 {
     HILOG_INFO(LOG_CORE, "start to clear the storage space");
-    std::vector<std::shared_ptr<AppEventCleaner>> cleaners;
-    CreateCleaners(dir, cleaners);
+    AppEventDbCleaner dbCleaner(dir);
+    AppEventLogCleaner logCleaner(dir);
+    std::array<AppEventCleaner*, CLEANERS_LEN> cleaners = { &dbCleaner, &logCleaner };
     auto curSize = GetCurStorageSize(dir);
     for (auto it = cleaners.rbegin(); it != cleaners.rend(); ++it) { // clear the log space first
         curSize = (*it)->ClearSpace(curSize, maxSize);
@@ -95,7 +98,13 @@ void ClearData(const std::string& dir)
 
 void CheckStorageSpace()
 {
-    if (g_eventCount == -1 || g_eventCount >= (EVENT_COUNT_OF_CHECK_SPACE - 1)) {
+    bool needCheck = false;
+    {
+        std::lock_guard<std::mutex> lock(g_cleanMutex);
+        g_eventCount = (++g_eventCount) % EVENT_COUNT_OF_CHECK_SPACE;
+        needCheck = (g_eventCount == 0);
+    }
+    if (needCheck) {
         std::string dir = HiAppEventConfig::GetInstance().GetStorageDir();
         auto maxSize = HiAppEventConfig::GetInstance().GetMaxStorageSize();
         if (!IsStorageSpaceFull(dir, maxSize)) {
@@ -104,7 +113,6 @@ void CheckStorageSpace()
         HILOG_INFO(LOG_CORE, "hiappevent dir space is full, start to clean");
         ReleaseSomeStorageSpace(dir, maxSize);
     }
-    g_eventCount = (++g_eventCount) % EVENT_COUNT_OF_CHECK_SPACE;
 }
 } // namespace HiAppEventClean
 } // namespace HiviewDFX
