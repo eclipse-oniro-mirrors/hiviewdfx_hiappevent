@@ -53,8 +53,8 @@ public:
     };
     
 private:
-    const std::string kitName_;
-    const std::string apiName_;
+    std::string kitName_;
+    std::string apiName_;
 };
 
 using ApiMetricsMap = std::map<ApiDescriptor, std::vector<ApiMetric>, ApiDescriptor::ApiDescriptorComparator>;

@@ -56,17 +56,17 @@ void ApiStatsManager::AddRecord(ApiDescriptor descriptor, ApiMetric metric)
     aggregator_.Record(descriptor, metric);
 }
 
-void ApiStatsManager::ScheduleBackUpInner()
+void ApiStatsManager::ScheduleBackUpInner(ApiStatsAggregator& tmpAggregator)
 {
-    if (!aggregator_.IsUpdatedAfterLastBackup()) {
+    if (!tmpAggregator.IsUpdatedAfterLastBackup()) {
         HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner: no update, skip");
         return;
     }
 
-    auto apiMetrics = aggregator_.GetApiMetrics();
+    auto apiMetrics = tmpAggregator.GetApiMetrics();
     HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner: backup count=%{public}zu", apiMetrics.size());
     if (ApiStatsStorage::GetInstance().Backup(apiMetrics) == 0) {
-        aggregator_.ClearRecord();
+        tmpAggregator.ClearRecord();
         HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner success");
     } else {
         HILOG_DEBUG(LOG_CORE, "ScheduleBackUpInner failed to backup api stats");
@@ -76,15 +76,25 @@ void ApiStatsManager::ScheduleBackUpInner()
 void ApiStatsManager::ScheduleBackUp()
 {
     HILOG_DEBUG(LOG_CORE, "ScheduleBackUp start");
-    std::lock_guard<std::mutex> lock(mut_);
-    ApiStatsManager::ScheduleBackUpInner();
+    ApiStatsAggregator tmpAggregator;
+    {
+        std::lock_guard<std::mutex> lock(mut_);
+        tmpAggregator = aggregator_;
+        aggregator_.ClearRecord();
+    }
+    ApiStatsManager::ScheduleBackUpInner(tmpAggregator);
 }
 
 void ApiStatsManager::ScheduleReport()
 {
     HILOG_DEBUG(LOG_CORE, "ScheduleReport start");
-    std::lock_guard<std::mutex> lock(mut_);
-    ApiStatsManager::ScheduleBackUpInner();
+    ApiStatsAggregator tmpAggregator;
+    {
+        std::lock_guard<std::mutex> lock(mut_);
+        tmpAggregator = aggregator_;
+        aggregator_.ClearRecord();
+    }
+    ApiStatsManager::ScheduleBackUpInner(tmpAggregator);
     
     ApiMetricsMap apiMetrics;
     if (ApiStatsStorage::GetInstance().QueryAll(apiMetrics) != 0) {

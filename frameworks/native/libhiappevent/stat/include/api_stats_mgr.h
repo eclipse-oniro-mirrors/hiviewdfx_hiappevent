@@ -38,7 +38,7 @@ public:
 
 private:
     void ScheduleBackUp();
-    void ScheduleBackUpInner();
+    void ScheduleBackUpInner(ApiStatsAggregator& tmpAggregator);
     void ScheduleReport();
     void ReportStats(const std::vector<ApiStatsReport>& reports);
     std::shared_ptr<AppEventPack> ConvertReportToEventPack(const ApiStatsReport& report);
