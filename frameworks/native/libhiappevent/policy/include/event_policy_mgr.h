@@ -26,6 +26,7 @@ public:
     EventPolicyMgr& operator=(const EventPolicyMgr&) = delete;
 
     bool GetEventPageSwitchStatus(const std::string& name) const;
+    bool GetPublishOnNextLaunchStatus() const;
     int SetEventPolicy(const std::string& name, const std::map<std::string, std::string>& configMap) const;
     int SetEventPolicy(const std::string& name, const std::map<uint8_t, uint32_t>& configMap) const;
 

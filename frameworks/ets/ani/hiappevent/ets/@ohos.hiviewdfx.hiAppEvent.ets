@@ -150,6 +150,7 @@ export default namespace hiAppEvent {
         logFileCutoffSzBytes?: int;
         simplifyVmaPrinting?: boolean;
         collectMinidump?: boolean;
+        publishOnNextLaunch?: boolean;
     }
 
     export interface AppFreezePolicy {

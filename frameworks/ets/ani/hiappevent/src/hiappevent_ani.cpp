@@ -52,7 +52,7 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
              "threadLoadInterval"}},
         {"appCrashPolicy",
             {"pageSwitchLogEnable", "extendPcLrPrinting", "logFileCutoffSzBytes", "simplifyVmaPrinting",
-             "collectMinidump"}},
+             "collectMinidump", "publishOnNextLaunch"}},
         {"appFreezePolicy", {"pageSwitchLogEnable"}},
         {"resourceOverlimitPolicy", {"pageSwitchLogEnable", "jsHeapLogtype", "useRefinedLogFileName"}},
         {"addressSanitizerPolicy", {"pageSwitchLogEnable"}}

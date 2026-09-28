@@ -633,6 +633,26 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
     }
 }
 
+void AppEventObserverMgr::StoreEventsWithoutNotify(std::vector<std::shared_ptr<AppEventPack>>& events)
+{
+    if (events.empty()) {
+        return;
+    }
+    InitWatchers();
+    auto observers = GetObservers();
+    if (observers.empty()) {
+        HILOG_WARN(LOG_CORE, "no observer exists, drop delayed events size=%{public}zu", events.size());
+        return;
+    }
+    HILOG_INFO(LOG_CORE, "store delayed events to db without notify, size=%{public}zu", events.size());
+    auto linkEvents = StoreEventsToDb(events, observers);
+    if (!linkEvents.empty()) {
+        StoreLinkEventMappingToDb(linkEvents, observers);
+    } else {
+        StoreEventMappingToDb(events, observers);
+    }
+}
+
 void AppEventObserverMgr::HandleTimeout()
 {
     auto observers = GetObservers();

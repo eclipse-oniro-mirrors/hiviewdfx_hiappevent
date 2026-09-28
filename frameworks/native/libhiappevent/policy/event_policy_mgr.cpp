@@ -90,5 +90,10 @@ bool EventPolicyMgr::GetEventPageSwitchStatus(const std::string& name) const
 {
     return EventPolicyUtils::GetInstance().GetEventPageSwitchStatus(name);
 }
+
+bool EventPolicyMgr::GetPublishOnNextLaunchStatus() const
+{
+    return EventPolicyUtils::GetInstance().GetPublishOnNextLaunchStatus();
+}
 }  // HiviewDFX
 }  // OHOS
