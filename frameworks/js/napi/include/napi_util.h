@@ -76,6 +76,8 @@ std::string ConvertToString(const napi_env env, const napi_value value);
 
 void ThrowErrorMsg(napi_env env, int code, bool isThrow = true);
 void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow = true);
+void ThrowErrorMsgWithIntCode(napi_env env, int code, bool isThrow = true);
+void ThrowErrorWithIntCode(napi_env env, int code, const std::string& msg, bool isThrow = true);
 napi_value CreateError(napi_env env, int code, const std::string& msg);
 std::string CreateErrMsg(const std::string& name);
 std::string CreateErrMsg(const std::string& name, const std::string& type);

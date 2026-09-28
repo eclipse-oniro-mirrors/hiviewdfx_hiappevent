@@ -148,7 +148,12 @@ ExternalLogWrapperInfo AppEventExternalLogManager::ParseLogFileInfo(const std::s
         if (len >= MIN_TIMESTAMP_LEN && len <= MAX_TIMESTAMP_LEN &&
             IsTimestampSegment(fileName, end + 1, nextUnderscore)) {
             info.sysEvent = fileName.substr(0, end);
-            info.generationTime = std::stoll(fileName.substr(end + 1, len));
+            char* numEndIndex = nullptr;
+            std::string value = fileName.substr(end + 1, len);
+            info.generationTime = std::strtoll(value.c_str(), &numEndIndex, 10); // 10 - decimal
+            if (*numEndIndex != '\0') {
+                HILOG_ERROR(LOG_CORE, "value is invalid. it(%{public}s) should be a number.", value.c_str());
+            }
             break;
         }
         start = end + 1;
