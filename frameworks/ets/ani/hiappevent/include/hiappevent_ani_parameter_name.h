@@ -75,7 +75,7 @@ constexpr char FUNC_NAME_TOBOOLEAN[] = "toBoolean";
 constexpr char FUNC_NAME_TODOUBLE[] = "toDouble";
 constexpr char FUNC_NAME_NEXT[] = "next";
 
-constexpr int BIT_MASK{1};
+constexpr unsigned int BIT_MASK{1};
 constexpr unsigned int BIT_ALL_TYPES{0xff};
 } // namespace HiviewDFX
 } // namespace OHOS
