@@ -513,6 +513,23 @@ void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow)
     }
 }
 
+void ThrowErrorMsgWithIntCode(napi_env env, int code, bool isThrow)
+{
+    ThrowErrorWithIntCode(env, code, NapiError::GetErrorMsg(code), isThrow);
+}
+
+void ThrowErrorWithIntCode(napi_env env, int code, const std::string& msg, bool isThrow)
+{
+    // no error needs to be thrown before api 9
+    if (!isThrow) {
+        return;
+    }
+
+    if (napi_throw_business_error(env, code, msg.c_str()) != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to throw error, code=%{public}d, msg=%{public}s", code, msg.c_str());
+    }
+}
+
 napi_value CreateError(napi_env env, int code, const std::string& msg)
 {
     napi_value err = nullptr;

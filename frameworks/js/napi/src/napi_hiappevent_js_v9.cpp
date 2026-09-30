@@ -353,7 +353,7 @@ static napi_value RegisterExternalLogManager(napi_env env, napi_callback_info in
         return nullptr;
     }
     if (AppEventExternalLogManager::GetInstance().IsRegistered()) {
-        NapiUtil::ThrowErrorMsg(env, NapiError::ERR_LOG_MANAGER_ALREADY_REGISTERED);
+        NapiUtil::ThrowErrorMsgWithIntCode(env, NapiError::ERR_LOG_MANAGER_ALREADY_REGISTERED);
         return nullptr;
     }
     auto logMgr = std::make_shared<NapiExternalLogMgr>();
