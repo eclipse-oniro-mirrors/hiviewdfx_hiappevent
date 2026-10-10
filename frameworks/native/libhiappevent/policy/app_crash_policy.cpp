@@ -34,6 +34,7 @@ namespace {
 constexpr uint32_t MAX_CUTOFF_SZ_BYTES = 5 * 1024 * 1024; // 5M: 5242880
 constexpr const char* DMP_INFO_PATH = "/data/storage/el2/log/hiappevent/info";
 constexpr const char* APP_EVENT_DIR = "/eventConfig";
+constexpr const char* PUBLISH_ON_NEXT_LAUNCH_CONFIG = "publishOnNextLaunch";
 enum CrashLogConfigType : uint8_t {
     EXTEND_PC_LR_PRINTING = 0,
     LOG_FILE_CUTOFF_SZ_BYTES,
@@ -89,7 +90,7 @@ bool SetMinidumpConfig(const std::string& strValue, uint32_t& out)
     bool ret = false;
     std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir(APP_EVENT_DIR);
     if (configDir.empty()) {
-        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir");
+        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir in SetMinidumpConfig");
         return false;
     }
 
@@ -107,6 +108,42 @@ void RemoveInfoDir(const std::string& dirPath)
         HILOG_ERROR(LOG_CORE, "failed to remove dir=%{public}s", dirPath.c_str());
     }
 }
+
+bool SetPublishOnNextLaunchConfig(std::map<std::string, std::string>& configMap)
+{
+    std::vector<std::string> whiteList = {"publishOnNextLaunch", "publish_on_next_launch"};
+    std::string strValue;
+    bool isSet = false;
+    for (const auto& item : whiteList) {
+        if (configMap.find(item) != configMap.end()) {
+            strValue = configMap[item];
+            isSet = true;
+            configMap.erase(item);
+            break;
+        }
+    }
+
+    if (!isSet) {
+        HILOG_DEBUG(LOG_CORE, "the app crash event is not set publish on next launch");
+        return true;
+    }
+    if (strValue != "true" && strValue != "false") {
+        HILOG_ERROR(LOG_CORE, "failed to set publish on next launch config, the value(%{public}s) should be bool type.",
+            strValue.c_str());
+        return false;
+    }
+    std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir(APP_EVENT_DIR);
+    if (configDir.empty()) {
+        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir in SetPublishOnNextLaunchConfig");
+        return false;
+    }
+    if (EventPolicyUtils::GetInstance().SaveEventConfig(configDir, {{PUBLISH_ON_NEXT_LAUNCH_CONFIG, strValue}},
+        false) != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+        HILOG_ERROR(LOG_CORE, "failed to save publish on next launch config.");
+        return false;
+    }
+    return true;
+}
 }
 
 int AppCrashPolicy::SetEventPolicy(const std::map<std::string, std::string>& configMap)
@@ -117,6 +154,9 @@ int AppCrashPolicy::SetEventPolicy(const std::map<std::string, std::string>& con
         if (conf.size() == 0 || res != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
             return res;
         }
+    }
+    if (!SetPublishOnNextLaunchConfig(conf)) {
+        return ErrorCode::ERROR_UNKNOWN;
     }
     return SetAppCrashLogPolicy(conf);
 }
@@ -183,7 +223,7 @@ void AppCrashPolicy::InitMiniDumpConfig()
 {
     std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir(APP_EVENT_DIR);
     if (configDir.empty()) {
-        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir");
+        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir in InitMiniDumpConfig");
         return;
     }
     std::string property = std::string("user.event_config.minidump");

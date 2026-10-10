@@ -235,6 +235,33 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_4, TestSize.Level0)
 }
 
 /**
+ * @tc.name: HiAppEventPolicyTest003_5
+ * @tc.desc: test the SetEventPolicy func for appCrash with publishOnNextLaunch.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest003_5, TestSize.Level0)
+{
+    SetTestContext();
+
+    bool status = EventPolicyMgr::GetInstance().GetPublishOnNextLaunchStatus();
+    EXPECT_FALSE(status);
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"publishOnNextLaunch", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    status = EventPolicyMgr::GetInstance().GetPublishOnNextLaunchStatus();
+    EXPECT_TRUE(status);
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("APP_CRASH", {{"publish_on_next_launch", "false"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    status = EventPolicyMgr::GetInstance().GetPublishOnNextLaunchStatus();
+    EXPECT_FALSE(status);
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"publishOnNextLaunch", "!@#$"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+}
+
+/**
  * @tc.name: HiAppEventPolicyTest004
  * @tc.desc: test the SetEventPolicy func for appFreeze with pageSwitchLogEnable.
  * @tc.type: FUNC

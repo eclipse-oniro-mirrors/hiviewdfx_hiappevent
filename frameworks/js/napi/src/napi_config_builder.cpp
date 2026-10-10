@@ -56,7 +56,7 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
         {"appCrashPolicy", {
             {"pageSwitchLogEnable", napi_boolean}, {"extendPcLrPrinting", napi_boolean},
             {"logFileCutoffSzBytes", napi_number}, {"simplifyVmaPrinting", napi_boolean},
-            {"collectMinidump", napi_boolean}
+            {"collectMinidump", napi_boolean}, {"publishOnNextLaunch", napi_boolean}
         }},
         {"appFreezePolicy", {{"pageSwitchLogEnable", napi_boolean}}},
         {"resourceOverlimitPolicy", {

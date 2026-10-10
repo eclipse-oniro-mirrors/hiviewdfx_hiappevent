@@ -28,6 +28,7 @@
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_common.h"
+#include "hiappevent_config.h"
 #include "hilog/log.h"
 #include "page_switch_log.h"
 #include "parameters.h"
@@ -67,6 +68,50 @@ uint64_t GetMaskFromDirXattr(const std::string& path)
     }
     HILOG_INFO(LOG_CORE, "getxattr success value=%{public}s.", value.c_str());
     return static_cast<uint64_t>(std::strtoull(value.c_str(), nullptr, 0));
+}
+
+bool IsDelayedAppCrashEvent(const std::shared_ptr<AppEventPack>& event)
+{
+    return event != nullptr && event->GetName() == HiAppEvent::EVENT_APP_CRASH && !event->GetRunningId().empty();
+}
+
+bool LoadDelayedPublishConfig(std::string& curRunningId)
+{
+    if (!EventPolicyMgr::GetInstance().GetPublishOnNextLaunchStatus()) {
+        return false;
+    }
+    curRunningId = HiAppEventConfig::GetInstance().GetRunningId();
+    if (curRunningId.empty()) {
+        HILOG_WARN(LOG_CORE, "current running id is empty, publish the appcrash event directly.");
+        return false;
+    }
+    return true;
+}
+
+void SplitDelayedAppCrashEvents(std::vector<std::shared_ptr<AppEventPack>>& events,
+    std::vector<std::shared_ptr<AppEventPack>>& delayedEvents)
+{
+    bool configLoaded = false;
+    bool publishOnNextLaunch = false;
+    std::string curRunningId;
+    for (auto it = events.begin(); it != events.end();) {
+        if (!IsDelayedAppCrashEvent(*it)) {
+            ++it;
+            continue;
+        }
+        if (!configLoaded) {
+            configLoaded = true;
+            publishOnNextLaunch = LoadDelayedPublishConfig(curRunningId);
+        }
+        if (publishOnNextLaunch && (*it)->GetRunningId() == curRunningId) {
+            HILOG_INFO(LOG_CORE, "the %{public}s event is delayed to publish on next launch.",
+                (*it)->GetName().c_str());
+            delayedEvents.emplace_back(*it);
+            it = events.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 }
 
@@ -286,7 +331,10 @@ void OsEventListener::HandleInotify(const std::string& file)
 {
     std::vector<std::shared_ptr<AppEventPack>> events;
     GetEventsFromFiles({file}, events);
+    std::vector<std::shared_ptr<AppEventPack>> delayedEvents;
+    SplitDelayedAppCrashEvents(events, delayedEvents);
     AppEventObserverMgr::GetInstance().HandleEvents(events);
+    AppEventObserverMgr::GetInstance().StoreEventsWithoutNotify(delayedEvents);
     (void)FileUtil::RemoveFile(file);
     AppEventExternalLogManager::GetInstance().CheckCapacity();
 }

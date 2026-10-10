@@ -1018,6 +1018,25 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.name: ConfigEventPolicyTest018_9
+     * @tc.desc: Test the ConfigEventPolicy interface for appcrash
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest018_9', 0, async function (done) {
+        console.info('ConfigEventPolicyTest018_9 start');
+        let policy = { "appCrashPolicy": { "publishOnNextLaunch": true } };
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest018_9 end');
+    });
+
+    /**
      * @tc.name: ConfigEventPolicyTest019
      * @tc.desc: Test the ConfigEventPolicy interface for appFreeze
      * @tc.type: FUNC

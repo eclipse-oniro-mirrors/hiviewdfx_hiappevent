@@ -54,6 +54,7 @@ public:
     int RegisterProcessor(const std::string& name, std::shared_ptr<AppEventProcessor> processor);
     int UnregisterProcessor(const std::string& name);
     void HandleEvents(std::vector<std::shared_ptr<AppEventPack>>& events);
+    void StoreEventsWithoutNotify(std::vector<std::shared_ptr<AppEventPack>>& events);
     void HandleTimeout();
     void HandleBackground();
     void HandleClearUp();

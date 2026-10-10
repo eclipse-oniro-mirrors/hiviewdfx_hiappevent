@@ -35,6 +35,7 @@ namespace HiviewDFX {
 namespace {
 constexpr const char* APP_EVENT_DIR = "/eventConfig";
 constexpr const char* PAGE_SWITCH_CONFIG = "pageSwitchLogEnable";
+constexpr const char* PUBLISH_ON_NEXT_LAUNCH_CONFIG = "publishOnNextLaunch";
 enum PageSwitchLogEnableCode : int {
     ADDRESS_SANITIZER_ENABLE = 0,
     APP_CRASH_ENABLE = 1,
@@ -139,6 +140,22 @@ bool EventPolicyUtils::GetEventPageSwitchStatus(const std::string& eventName)
         return false;
     }
     return value.substr(pos + 1) == "true";
+}
+
+bool EventPolicyUtils::GetPublishOnNextLaunchStatus()
+{
+    std::string configDir = GetConfigDir(APP_EVENT_DIR);
+    if (configDir.empty()) {
+        HILOG_ERROR(LOG_CORE, "failed to get sandbox config dir");
+        return false;
+    }
+    std::string property = std::string("user.event_config.") + PUBLISH_ON_NEXT_LAUNCH_CONFIG;
+    std::string value;
+    if (!FileUtil::GetDirXattr(configDir, property, value)) {
+        HILOG_INFO(LOG_CORE, "failed to get dir cfg xattr about publish on next launch.");
+        return false;
+    }
+    return value == "true";
 }
 
 int EventPolicyUtils::SaveEventConfig(const std::string& configDir, const std::map<std::string, std::string>& configMap,
