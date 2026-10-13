@@ -121,9 +121,9 @@ void AniExternalLogMgr::OnCapacityReached(const std::vector<ExternalLogWrapperIn
             HILOG_ERROR(LOG_CORE, "failed to create local scope from OnCapacityReached context");
             return;
         }
-        auto callback = context->onCapacityReached;
-        if (HiAppEventAniUtil::IsRefUndefined(env, callback)) {
-            HILOG_ERROR(LOG_CORE, "onCapacityReached callback is undefined");
+        ani_object mgrObj = static_cast<ani_object>(context->logManagerRef);
+        if (HiAppEventAniUtil::IsRefUndefined(env, mgrObj)) {
+            HILOG_ERROR(LOG_CORE, "logManagerRef is undefined");
             env->DestroyLocalScope();
             return;
         }
@@ -134,11 +134,9 @@ void AniExternalLogMgr::OnCapacityReached(const std::vector<ExternalLogWrapperIn
             env->DestroyLocalScope();
             return;
         }
-        // Call onCapacityReached(container)
-        std::vector<ani_ref> args = { containerObj };
-        ani_ref ret {};
-        if (env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(callback),
-            args.size(), args.data(), &ret) != ANI_OK) {
+
+        if (env->Object_CallMethodByName_Void(mgrObj, "onCapacityReached",
+            "C{@ohos.hiviewdfx.hiAppEvent.hiAppEvent.ExternalLogContainer}:", containerObj) != ANI_OK) {
             HILOG_ERROR(LOG_CORE, "failed to call onCapacityReached function");
         }
         env->DestroyLocalScope();

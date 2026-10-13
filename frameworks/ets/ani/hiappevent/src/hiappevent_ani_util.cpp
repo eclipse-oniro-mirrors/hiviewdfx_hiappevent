@@ -679,6 +679,44 @@ ani_ref HiAppEventAniUtil::CreateStrings(ani_env *env, const std::vector<std::st
     return arr;
 }
 
+ani_ref HiAppEventAniUtil::CreateStringSet(ani_env *env, const std::vector<std::string>& strs)
+{
+    if (env == nullptr) {
+        return {};
+    }
+    ani_class cls {};
+    if (env->FindClass(CLASS_NAME_SET, &cls) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "FindClass %{public}s Failed", CLASS_NAME_SET);
+        return {};
+    }
+    ani_method ctor {};
+    if (env->Class_FindMethod(cls, "<ctor>", "i:", &ctor) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "%{public}s Find Method <ctor> Failed", CLASS_NAME_SET);
+        return {};
+    }
+ 
+    ani_object setObj {};
+    if (env->Object_New(cls, ctor, &setObj, strs.size()) != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "%{public}s Object_New Failed", CLASS_NAME_SET);
+        return {};
+    }
+ 
+    ani_method addMethod {};
+    ani_status status = env->Class_FindMethod(cls, "add", nullptr, &addMethod);
+    if (status != ANI_OK) {
+        HILOG_ERROR(LOG_CORE, "Class_FindMethod failed, status: %{public}d", status);
+    }
+    for (const auto& str : strs) {
+        ani_ref result = nullptr;
+        status = env->Object_CallMethod_Ref(setObj, addMethod, &result,
+            static_cast<ani_object>(HiAppEventAniUtil::CreateAniString(env, str)));
+        if (status != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "Object_CallMethod_Ref failed, status: %{public}d", status);
+        }
+    }
+    return setObj;
+}
+
 ani_object HiAppEventAniUtil::CreateObject(ani_env *env, const std::string &name)
 {
     if (env == nullptr) {

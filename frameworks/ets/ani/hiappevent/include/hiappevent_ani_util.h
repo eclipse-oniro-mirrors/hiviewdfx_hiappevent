@@ -69,6 +69,7 @@ public:
     static ani_object CreateBool(ani_env *env, bool boolValue);
     static ani_string CreateAniString(ani_env *env, const std::string &str);
     static ani_ref CreateStrings(ani_env *env, const std::vector<std::string>& strs);
+    static ani_ref CreateStringSet(ani_env *env, const std::vector<std::string>& strs);
     static ani_object CreateObject(ani_env *env, const std::string &name);
     static ani_ref CreateEventInfoArray(ani_env *env, const std::vector<std::shared_ptr<AppEventPack>>& events);
     static ani_ref CreateEventGroups(ani_env *env, const std::vector<std::shared_ptr<AppEventPack>>& events);

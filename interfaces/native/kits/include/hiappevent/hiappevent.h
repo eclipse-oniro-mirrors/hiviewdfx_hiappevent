@@ -892,7 +892,7 @@ int OH_HiAppEvent_ReportFrameworkMemAnomaly(
  *
  * You are advised to select system event types based on their respective usage scenarios.
  *
- * @since 26.0.0
+ * @since 26.0.1
  */
 typedef enum OH_HiAppEvent_SysEvent {
     /** @error Application crash event. */
@@ -913,7 +913,7 @@ typedef enum OH_HiAppEvent_SysEvent {
  * @brief The OH_HiAppEvent_ExternalLog structure is used to describe external log information, including
  * the file path, the generation timestamp, file size, and type of system event.
  *
- * @since 26.0.0
+ * @since 26.0.1
  */
 typedef struct OH_HiAppEvent_ExternalLog {
     /** The log file path. */
@@ -932,7 +932,7 @@ typedef struct OH_HiAppEvent_ExternalLog {
  *
  * @param externalLogArr The array of external log info.
  * @param arrLen The length of externalLogArr.
- * @since 26.0.0
+ * @since 26.0.1
  */
 typedef void (*OH_HiAppEvent_ExternalLogCapacityReachedCallback)(
     OH_HiAppEvent_ExternalLog* externalLogArr, uint32_t arrLen);
@@ -944,7 +944,7 @@ typedef void (*OH_HiAppEvent_ExternalLogCapacityReachedCallback)(
  * @return set callback result.
  *         {@link HIAPPEVENT_SUCCESS} The operation is successful.
  *         {@link HIAPPEVENT_OPERATE_FAILED} The operation failed.
- * @since 26.0.0
+ * @since 26.0.1
  */
 int OH_HiAppEvent_RegExternalLogCapacityReachedCallback(OH_HiAppEvent_ExternalLogCapacityReachedCallback callback);
 #ifdef __cplusplus
