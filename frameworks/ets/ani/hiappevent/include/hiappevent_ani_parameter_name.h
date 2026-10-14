@@ -58,6 +58,7 @@ constexpr char CLASS_NAME_BOOLEAN[] = "std.core.Boolean";
 constexpr char CLASS_NAME_DOUBLE[] = "std.core.Double";
 constexpr char CLASS_NAME_STRING[] = "std.core.String";
 constexpr char CLASS_NAME_ARRAY[] = "std.core.Array";
+constexpr char CLASS_NAME_SET[] = "std.core.Set";
 constexpr char FUNC_NAME_GETLONG[] = "getLong";
 constexpr char CLASS_NAME_ITERATOR[] = "std.core.Iterator";
 constexpr char CLASS_NAME_RECORD[] = "std.core.Record";

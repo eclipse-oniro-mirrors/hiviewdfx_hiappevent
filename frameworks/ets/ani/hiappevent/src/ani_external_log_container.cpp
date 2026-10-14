@@ -48,9 +48,9 @@ static AniExternalLogContainer* Unwrap(ani_env *env, ani_object obj)
     return reinterpret_cast<AniExternalLogContainer*>(context);
 }
 
-static ani_ref CreateStringArray(ani_env *env, const std::vector<std::string>& strs)
+static ani_ref CreateStringSet(ani_env *env, const std::vector<std::string>& strs)
 {
-    return HiAppEventAniUtil::CreateStrings(env, strs);
+    return HiAppEventAniUtil::CreateStringSet(env, strs);
 }
 }
 
@@ -123,7 +123,7 @@ ani_object AniExternalLogContainer::AniGetAllLogFiles(ani_env *env, ani_object o
     for (const auto& info : logInfos) {
         files.push_back(info.filePath);
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 
@@ -141,7 +141,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesOfSysEvent(ani_env *env, ani_o
             files.push_back(info.filePath);
         }
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 
@@ -159,7 +159,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesGeneratedAfter(ani_env *env, a
             files.push_back(info.filePath);
         }
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 
@@ -177,7 +177,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesGeneratedBefore(ani_env *env, 
             files.push_back(info.filePath);
         }
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 
@@ -195,7 +195,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesLargerThan(ani_env *env, ani_o
             files.push_back(info.filePath);
         }
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 
@@ -213,7 +213,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesSmallerThan(ani_env *env, ani_
             files.push_back(info.filePath);
         }
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 
@@ -234,7 +234,7 @@ ani_object AniExternalLogContainer::AniGetFirstGeneratedLogFiles(ani_env *env, a
     }
     int n = static_cast<int>(num);
     if (n <= 0) {
-        ani_ref arr = CreateStringArray(env, std::vector<std::string>());
+        ani_ref arr = CreateStringSet(env, std::vector<std::string>());
         return static_cast<ani_object>(arr);
     }
     auto logInfos = container->GetLogInfos();
@@ -246,7 +246,7 @@ ani_object AniExternalLogContainer::AniGetFirstGeneratedLogFiles(ani_env *env, a
     for (int i = 0; i < n && i < static_cast<int>(logInfos.size()); ++i) {
         files.push_back(logInfos[i].filePath);
     }
-    ani_ref arr = CreateStringArray(env, files);
+    ani_ref arr = CreateStringSet(env, files);
     return static_cast<ani_object>(arr);
 }
 

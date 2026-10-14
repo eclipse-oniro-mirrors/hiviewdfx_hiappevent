@@ -394,19 +394,19 @@ export default namespace hiAppEvent {
             ExternalLogContainer._finalize(nativeHolder);
         });
         private native nativeConstructor(): void;
-        native getAllLogs(): Array<ExternalLogWrapper>;
-        native getAllLogFiles(): Array<string>;
-        native getLogFilesOfSysEvent(event: string): Array<string>;
-        native getLogFilesGeneratedAfter(timePoint: long): Array<string>;
-        native getLogFilesGeneratedBefore(timePoint: long): Array<string>;
-        native getLogFilesLargerThan(sizeKb: long): Array<string>;
-        native getLogFilesSmallerThan(sizeKb: long): Array<string>;
+        native getAllLogs(): Set<ExternalLogWrapper>;
+        native getAllLogFiles(): Set<string>;
+        native getLogFilesOfSysEvent(event: string): Set<string>;
+        native getLogFilesGeneratedAfter(timePoint: long): Set<string>;
+        native getLogFilesGeneratedBefore(timePoint: long): Set<string>;
+        native getLogFilesLargerThan(sizeKb: long): Set<string>;
+        native getLogFilesSmallerThan(sizeKb: long): Set<string>;
         native getLogNumber(): int;
-        native getFirstGeneratedLogFiles(num: int): Array<string>;
+        native getFirstGeneratedLogFiles(num: int): Set<string>;
     }
 
-    export interface ExternalLogManager {
-        onCapacityReached(container: ExternalLogContainer): void;
+    export class ExternalLogManager {
+        native onCapacityReached(container: ExternalLogContainer): void;
     }
 
     export native function registerExternalLogManager(logMngr: ExternalLogManager): void;
