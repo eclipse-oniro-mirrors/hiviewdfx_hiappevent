@@ -45,6 +45,12 @@ ohos_shared_library("cj_hiappevent_ffi") {
 
   branch_protector_ret = "pac_ret"
 
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   version_script = "libcj_hiappevent_ffi.map"
 
   innerapi_tags = [ "platformsdk" ]
