@@ -1,0 +1,6 @@
+#ifndef HIAPPEVENTINNERPROCESSOR_FUZZER_H
+#define HIAPPEVENTINNERPROCESSOR_FUZZER_H
+
+#define FUZZ_PROJECT_NAME "hiappeventinnerprocessor_fuzzer"
+
+#endif
