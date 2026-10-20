@@ -136,19 +136,31 @@ std::vector<std::vector<std::shared_ptr<AppEventPack>>> StoreEventsToDb(
     return linkEvents;
 }
 
+void CollectLinkEventMappings(const std::vector<std::shared_ptr<AppEventPack>>& events,
+    const std::vector<std::shared_ptr<AppEventObserver>>& observers,
+    std::vector<EventObserverInfo>& eventObserverInfos,
+    std::map<int64_t, std::vector<std::shared_ptr<AppEventPack>>>* targetEvents)
+{
+    for (size_t i = 0, j = 0; i < observers.size() && j < events.size(); ++i) {
+        if (!observers[i]->VerifyEvent(events[j])) {
+            continue;
+        }
+        eventObserverInfos.emplace_back(EventObserverInfo(events[j]->GetSeq(), observers[i]->GetSeq()));
+        if (targetEvents != nullptr) {
+            (*targetEvents)[observers[i]->GetSeq()].emplace_back(events[j]);
+        }
+        ++j;
+    }
+}
+
 void StoreLinkEventMappingToDb(const std::vector<std::vector<std::shared_ptr<AppEventPack>>>& linkEvents,
-    const std::vector<std::shared_ptr<AppEventObserver>>& observers)
+    const std::vector<std::shared_ptr<AppEventObserver>>& observers,
+    std::map<int64_t, std::vector<std::shared_ptr<AppEventPack>>>* targetEvents = nullptr)
 {
     std::vector<EventObserverInfo> eventObserverInfos;
     for (const auto& events : linkEvents) {
-        for (size_t i = 0, j = 0; i < observers.size() && j < events.size(); ++i) {
-            if (observers[i]->VerifyEvent(events[j])) {
-                eventObserverInfos.emplace_back(EventObserverInfo(events[j]->GetSeq(), observers[i]->GetSeq()));
-                ++j;
-            }
-        }
+        CollectLinkEventMappings(events, observers, eventObserverInfos, targetEvents);
     }
-
     if (AppEventStore::GetInstance().InsertEventMapping(eventObserverInfos) < 0) {
         HILOG_ERROR(LOG_CORE, "failed to add mapping record to db");
     }
@@ -602,23 +614,23 @@ void AppEventObserverMgr::HandleEvents(std::vector<std::shared_ptr<AppEventPack>
         return;
     }
     HILOG_DEBUG(LOG_CORE, "start to handle events size=%{public}zu", events.size());
+    std::map<int64_t, std::vector<std::shared_ptr<AppEventPack>>> sendEvents;
     auto linkEvents = StoreEventsToDb(events, observers);
     if (!linkEvents.empty()) {
-        StoreLinkEventMappingToDb(linkEvents, observers);
+        // send the events newly stored this time to observer, and then delete events not in event mapping
+        StoreLinkEventMappingToDb(linkEvents, observers, &sendEvents);
     } else {
         StoreEventMappingToDb(events, observers);
     }
 
     bool isNeedSend = false;
     for (const auto& observer : observers) {
-        // send events to observer, and then delete events not in event mapping
         if (!linkEvents.empty()) {
-            std::vector<std::shared_ptr<AppEventPack>> sendEvents;
-            if (AppEventStore::GetInstance().QueryEvents(sendEvents, observer->GetSeq(), MAX_SIZE_OF_INIT) < 0) {
-                HILOG_ERROR(LOG_CORE, "failed to take events, seq=%{public}" PRId64, observer->GetSeq());
-                continue;
+            // send only the events newly stored this time to observer, avoid duplicate hit of mapping
+            auto it = sendEvents.find(observer->GetSeq());
+            if (it != sendEvents.end()) {
+                SendEventsToObserver(it->second, observer);
             }
-            SendEventsToObserver(sendEvents, observer);
         } else {
             SendEventsToObserver(events, observer);
         }
@@ -753,13 +765,12 @@ bool AppEventObserverMgr::InitWatcherFromListener(std::shared_ptr<AppEventWatche
             for (auto it = watchers_.cbegin(); it != watchers_.cend(); ++it) {
                 curWatchers.emplace_back(it->second);
             }
-            StoreLinkEventMappingToDb(linkEvents, curWatchers);
-            std::vector<std::shared_ptr<AppEventPack>> events;
-            if (AppEventStore::GetInstance().QueryEvents(events, watcher->GetSeq(), MAX_SIZE_OF_INIT) < 0) {
-                HILOG_ERROR(LOG_CORE, "failed to take events, seq=%{public}" PRId64, watcher->GetSeq());
-                return false;
+            std::map<int64_t, std::vector<std::shared_ptr<AppEventPack>>> targetEvents;
+            StoreLinkEventMappingToDb(linkEvents, curWatchers, &targetEvents);
+            auto it = targetEvents.find(watcher->GetSeq());
+            if (it != targetEvents.end()) {
+                SendEventsToObserver(it->second, watcher);  // send history link events to current observer
             }
-            SendEventsToObserver(events, watcher);  // send history events to current observer
         }
     }
     return true;
