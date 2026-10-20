@@ -182,6 +182,9 @@ int HiAppEventImpl::SetUserProperty(const std::string& name, const std::string& 
         }
         return SUCCESS_CODE;
     }
+    if (!AppEventVerifyFacade::VerifyIsValidUserPropValue(value)) {
+        return ERR_PARAM;
+    }
     if (AppEventUserInfoFacade::SetUserProperty(name, value) != 0) {
         LOGE("failed to set user property");
         return ERR_CODE_PARAM_INVALID;

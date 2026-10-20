@@ -281,9 +281,6 @@ int FfiOHOSHiAppEventSetUserProperty(const char* name, const char* value)
     if (!AppEventVerifyFacade::VerifyIsValidUserPropName(name)) {
         return ERR_PARAM;
     }
-    if (!AppEventVerifyFacade::VerifyIsValidUserPropValue(value)) {
-        return ERR_PARAM;
-    }
     int res = HiAppEventImpl::SetUserProperty(std::string(name), std::string(value));
     if (res != 0) {
         return ERR_PARAM;
