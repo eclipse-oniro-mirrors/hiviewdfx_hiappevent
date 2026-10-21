@@ -55,7 +55,7 @@ enum class UpdateOp {
 };
 
 using namespace HiAppEvent;
-std::unordered_map<std::string, std::shared_ptr<AppEventPack>> externalLogEvents = {
+std::unordered_map<std::string, std::shared_ptr<AppEventPack>> g_externalLogEvents = {
     { EVENT_APP_CRASH, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_APP_CRASH, FAULT) },
     { EVENT_APP_FREEZE, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_APP_FREEZE, FAULT) },
     { EVENT_ADDRESS_SANITIZER, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_ADDRESS_SANITIZER, FAULT) },
@@ -67,7 +67,8 @@ std::unordered_map<std::string, std::shared_ptr<AppEventPack>> externalLogEvents
 
     { EVENT_RESOURCE_OVERLIMIT, std::make_shared<AppEventPack>(DOMAIN_OS, EVENT_RESOURCE_OVERLIMIT, FAULT) },
 };
-std::unordered_map<std::string, int> eventObservers;
+std::unordered_map<std::string, int> g_eventObservers;
+std::mutex g_eventObserversMutex;
 
 void InsertEvent(std::shared_ptr<AppEventPack> event)
 {
@@ -172,16 +173,17 @@ void StoreEventMappingToDb(const std::vector<std::shared_ptr<AppEventPack>>& eve
 
 void UpdateEventObservers(std::shared_ptr<AppEventObserver> observer, UpdateOp op, bool updateConfig = true)
 {
-    for (auto& [name, event] : externalLogEvents) {
+    std::lock_guard<std::mutex> lock(g_eventObserversMutex);
+    for (auto& [name, event] : g_externalLogEvents) {
         if (!observer->VerifyEvent(event)) {
             continue;
         }
         if (op == UpdateOp::ADD) {
-            ++eventObservers[name];
+            ++g_eventObservers[name];
         } else {
-            --eventObservers[name];
-            if (eventObservers[name] <= 0) {
-                eventObservers.erase(name);
+            --g_eventObservers[name];
+            if (g_eventObservers[name] <= 0) {
+                g_eventObservers.erase(name);
             }
         }
     }
@@ -195,7 +197,7 @@ void UpdateEventObservers(std::shared_ptr<AppEventObserver> observer, UpdateOp o
         return;
     }
     std::map<std::string, std::string> configMap;
-    for (const auto& [name, num] : eventObservers) {
+    for (const auto& [name, num] : g_eventObservers) {
         configMap[name] = std::to_string(num);
     }
     AppEventObserverMgr::GetInstance().SubmitTaskToFFRTQueue(
