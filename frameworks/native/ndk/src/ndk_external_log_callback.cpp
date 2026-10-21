@@ -83,11 +83,11 @@ void NdkExternalLogCallback::OnCapacityReached(const std::vector<ExternalLogWrap
     for (uint32_t i = 0; i < arrLen; ++i) {
         const auto& info = logInfos[i];
         size_t len = info.filePath.size();
-        filePaths[i] = new (std::nothrow) char[len + 1];
-        if (filePaths[i] != nullptr) {
-            (void)memcpy_s(filePaths[i], len, info.filePath.c_str(), len);
-            filePaths[i][len] = '\0';
+        filePaths[i] = new char[len + 1];
+        if (memcpy_s(filePaths[i], len, info.filePath.c_str(), len) != 0) {
+            HILOG_ERROR(LOG_CORE, "failed to memcpy_s filePaths");
         }
+        filePaths[i][len] = '\0';
         logArr[i].filePath = filePaths[i];
         logArr[i].generationTs = info.generationTime;
         logArr[i].fileSize = static_cast<long>(info.sizeInKb);
