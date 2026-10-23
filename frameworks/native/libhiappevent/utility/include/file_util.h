@@ -41,6 +41,7 @@ bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& li
 bool SetDirXattr(const std::string& dir, const std::string& name, const std::string& value);
 bool GetDirXattr(const std::string& dir, const std::string& name, std::string& value);
 bool RemoveDirXattr(const std::string& dir, const std::string& name);
+int RenameFile(const std::string& src, const std::string& dest);
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

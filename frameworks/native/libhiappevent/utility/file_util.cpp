@@ -14,6 +14,7 @@
  */
 #include "file_util.h"
 
+#include <cstdio>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
@@ -239,6 +240,11 @@ bool GetDirXattr(const std::string& dir, const std::string& name, std::string& v
 bool RemoveDirXattr(const std::string& dir, const std::string& name)
 {
     return removexattr(dir.c_str(), name.c_str()) == 0;
+}
+
+int RenameFile(const std::string& src, const std::string& dest)
+{
+    return std::rename(src.c_str(), dest.c_str());
 }
 } // namespace FileUtil
 } // namespace HiviewDFX

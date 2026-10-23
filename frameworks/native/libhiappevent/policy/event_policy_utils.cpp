@@ -44,6 +44,18 @@ enum PageSwitchLogEnableCode : int {
     UNKNOWN = 4
 };
 
+void MigrateConfigDir(const std::string& oldDir, const std::string& newDir)
+{
+    if (!FileUtil::IsFileExists(oldDir) || oldDir == newDir) {
+        return;
+    }
+    errno = 0;
+    if (FileUtil::RenameFile(oldDir, newDir) != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to migrate config dir from %{public}s to %{public}s, err:%{public}d",
+            oldDir.c_str(), newDir.c_str(), errno);
+    }
+}
+
 PageSwitchLogEnableCode GetPageSwitchLogEnableCode(const std::string& eventName)
 {
     static const std::map<std::string, PageSwitchLogEnableCode> typeMap = {
@@ -97,20 +109,30 @@ int EventPolicyUtils::ConfigPageSwitch(const std::string& eventName, std::map<st
 std::string EventPolicyUtils::GetConfigDir(const std::string& subDir)
 {
     auto context = OHOS::AbilityRuntime::Context::GetApplicationContext();
-    if (!context || context->GetCacheDir().empty()) {
-        HILOG_ERROR(LOG_CORE, "Context is null or cache dir is empty.");
+    if (!context || context->GetFilesDir().empty()) {
+        HILOG_ERROR(LOG_CORE, "Context is null or files dir is empty.");
         return "";
     }
-    std::string configDir = context->GetCacheDir() + subDir;
-    if (!FileUtil::IsFileExists(configDir) && !FileUtil::ForceCreateDirectory(configDir)) {
-        HILOG_ERROR(LOG_CORE, "failed to create dir=%{public}s", configDir.c_str());
+    std::string filesDir = context->GetFilesDir();
+    std::string cacheDir = context->GetCacheDir();
+    std::string newConfigDir = filesDir + subDir;
+    if (!FileUtil::IsFileExists(newConfigDir) && !FileUtil::ForceCreateDirectory(newConfigDir)) {
+        HILOG_ERROR(LOG_CORE, "failed to create dir=%{public}s", newConfigDir.c_str());
         return "";
     }
-    if (OHOS::StorageDaemon::AclSetAccess(configDir, "u:1201:rwx") != 0) {
-        HILOG_ERROR(LOG_CORE, "failed to set acl access dir=%{public}s", configDir.c_str());
+#ifndef HIAPPEVENT_TEST
+    static std::once_flag onceConfig;
+    std::call_once(onceConfig, [&filesDir, &cacheDir]() {
+        MigrateConfigDir(cacheDir + APP_EVENT_DIR, filesDir + APP_EVENT_DIR);
+    });
+#else
+    MigrateConfigDir(cacheDir + APP_EVENT_DIR, filesDir + APP_EVENT_DIR);
+#endif
+    if (OHOS::StorageDaemon::AclSetAccess(newConfigDir, "u:1201:rwx") != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to set acl access dir=%{public}s", newConfigDir.c_str());
         return "";
     }
-    return configDir;
+    return newConfigDir;
 }
 
 bool EventPolicyUtils::GetEventPageSwitchStatus(const std::string& eventName)

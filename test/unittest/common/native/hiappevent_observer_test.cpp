@@ -34,14 +34,15 @@ using namespace OHOS::AbilityRuntime;
 
 namespace OHOS {
 namespace {
-const std::string TEST_DIR = "/data/test/observer/hiappevent";
-const std::string TEST_STORAGE_DIR = "/data/test/observer/hiappevent/storage";
+const std::string TEST_DIR = "/data/test/observer/watcherConfig";
+const std::string TEST_STORAGE_DIR = "/data/test/observer/watcherConfig/storage";
 const std::string XATTR_NAME = "user.appevent";
 std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> g_applicationContext = nullptr;
 
 class ApplicationContextMock : public ApplicationContext {
 public:
     MOCK_METHOD0(GetCacheDir, std::string());
+    MOCK_METHOD0(GetFilesDir, std::string());
 };
 
 uint64_t GetMaskFromDirXattr(const std::string& path)
@@ -90,6 +91,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest003, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     std::vector<std::shared_ptr<AppEventObserver>> observers;
@@ -113,6 +116,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest004, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     std::vector<std::shared_ptr<AppEventObserver>> observers;
@@ -135,6 +140,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest005, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     std::vector<std::shared_ptr<AppEventObserver>> observers;
@@ -154,6 +161,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest006, TestSize.Level0)
     ApplicationContextMock* contextMock = new ApplicationContextMock();
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
@@ -182,6 +191,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest007, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     std::string content = R"({"domain":"OS","eventType":1,"name":"APP_CRASH","params":{"crash_type":"JsError"}})";
@@ -200,6 +211,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest008, TestSize.Level0)
     ApplicationContextMock* contextMock = new ApplicationContextMock();
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
@@ -320,6 +333,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest010, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
  
     // Create an event file with external_log field
@@ -350,6 +365,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest011, TestSize.Level0)
     ApplicationContextMock* contextMock = new ApplicationContextMock();
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
  
@@ -481,6 +498,8 @@ HWTEST_F(HiAppEventObserverTest, InsertLinkEventsActual002, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     // Create real log files for unused-file-cleanup
@@ -510,9 +529,9 @@ HWTEST_F(HiAppEventObserverTest, InsertLinkEventsActual002, TestSize.Level0)
     std::vector<std::vector<std::shared_ptr<AppEventPack>>> linkEvents;
     listener->GetLinkEvents(linkEvents);
     ASSERT_EQ(linkEvents.size(), 1u);
-    // DB insert fails in test env, so linkEvents[0] is empty
-    EXPECT_EQ(linkEvents[0].size(), 0u);
-    // linkExternalLogs[0][0] and linkExternalLogs[1][0] are used -> isUsed=true -> not removed
+    // Storage dir is derived from the mocked GetFilesDir(), so the DB initializes
+    // and InsertEvent succeeds; one observer -> one link event inserted
+    EXPECT_EQ(linkEvents[0].size(), 1u);
     // externalLogs[0] and [1] isUsed stays false -> RemoveFile called
     EXPECT_FALSE(FileUtil::IsFileExists(logFile1));  // unused externalLogFile removed
     EXPECT_FALSE(FileUtil::IsFileExists(logFile2));
@@ -530,6 +549,8 @@ HWTEST_F(HiAppEventObserverTest, InsertLinkEventsActual003, TestSize.Level0)
     ApplicationContextMock* contextMock = new ApplicationContextMock();
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
@@ -578,6 +599,8 @@ HWTEST_F(HiAppEventObserverTest, InsertLinkEventsActual004, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     std::string dir = TEST_DIR + "link_fallback_i/";
@@ -618,6 +641,8 @@ HWTEST_F(HiAppEventObserverTest, InsertLinkEventsActual005, TestSize.Level0)
     ApplicationContextMock* contextMock = new ApplicationContextMock();
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
@@ -858,6 +883,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest012, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     // Event with external_log but no link_external_log
@@ -889,6 +916,8 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest013, TestSize.Level0)
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
         .WillRepeatedly(::testing::Return("/data/test/observer"));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return("/data/test/observer"));
     g_applicationContext.reset(contextMock);
 
     // link_external_log contains non-string elements (123, true) which should be skipped
@@ -902,6 +931,49 @@ HWTEST_F(HiAppEventObserverTest, OsEventListenerTest013, TestSize.Level0)
     auto listener = std::make_shared<OsEventListener>(observers);
     EXPECT_TRUE(listener->StartListening());
     // Should not crash even with non-string elements in link_external_log
+}
+
+/**
+ * @tc.name: OsEventListenerTest014
+ * @tc.desc: test OsEventListener migration from cache/hiappevent to files/watcherConfig
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventObserverTest, OsEventListenerTest014, TestSize.Level0)
+{
+    const std::string cacheDir = "/data/test/mig/cache";
+    const std::string filesDir = "/data/test/mig/files";
+    const std::string oldDir = cacheDir + "/hiappevent";
+    const std::string newDir = filesDir + "/watcherConfig";
+
+    ASSERT_TRUE(FileUtil::ForceCreateDirectory(oldDir));
+    ASSERT_TRUE(FileUtil::ForceCreateDirectory(filesDir));
+    std::string content = R"({"domain":"OS","eventType":1,"name":"APP_CRASH","params":{"crash_type":"JsError"}})";
+    std::string oldFile = oldDir + "/hiappevent_1756735345342.txt";
+    ASSERT_TRUE(FileUtil::SaveStringToFile(oldFile, content));
+    ASSERT_TRUE(FileUtil::SetDirXattr(oldDir, XATTR_NAME, "5"));
+
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return(cacheDir));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return(filesDir));
+    g_applicationContext.reset(contextMock);
+
+    std::vector<std::shared_ptr<AppEventObserver>> observers;
+    auto listener = std::make_shared<OsEventListener>(observers);
+    // Init processes and removes migrated history event files from osEventPath_
+
+    EXPECT_FALSE(FileUtil::IsFileExists(oldDir));
+    EXPECT_TRUE(FileUtil::IsFileExists(newDir));
+    std::string newFile = newDir + "/hiappevent_1756735345342.txt";
+    EXPECT_FALSE(FileUtil::IsFileExists(newFile));
+    std::string value;
+    EXPECT_TRUE(FileUtil::GetDirXattr(newDir, XATTR_NAME, value));
+    EXPECT_EQ(value, "5");
+
+    g_applicationContext = nullptr;
+    (void)FileUtil::ForceRemoveDirectory("/data/test/mig");
 }
 
 /**

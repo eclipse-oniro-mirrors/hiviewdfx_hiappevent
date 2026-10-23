@@ -37,6 +37,7 @@ std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> g_applicationContext =
 class ApplicationContextMock : public ApplicationContext {
 public:
     MOCK_METHOD0(GetCacheDir, std::string());
+    MOCK_METHOD0(GetFilesDir, std::string());
 };
 }
 
@@ -52,6 +53,8 @@ void SetTestContext()
     ApplicationContextMock* contextMock = new ApplicationContextMock();
     ASSERT_NE(contextMock, nullptr);
     EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return(TEST_DIR));
+    EXPECT_CALL(*contextMock, GetFilesDir())
         .WillRepeatedly(::testing::Return(TEST_DIR));
     g_applicationContext.reset(contextMock);
 }
@@ -529,5 +532,87 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest013, TestSize.Level0)
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     status = EventPolicyMgr::GetInstance().GetEventPageSwitchStatus("APP_CRASH");
     EXPECT_TRUE(status);
+}
+/**
+ * @tc.name: HiAppEventPolicyTest014
+ * @tc.desc: test migration from cache/eventConfig to files/eventConfig
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest014, TestSize.Level0)
+{
+    const std::string cacheDir = "/data/test/mig_policy/cache";
+    const std::string filesDir = "/data/test/mig_policy/files";
+    const std::string oldDir = cacheDir + "/eventConfig";
+    const std::string newDir = filesDir + "/eventConfig";
+
+    ASSERT_TRUE(FileUtil::ForceCreateDirectory(oldDir));
+    ASSERT_TRUE(FileUtil::SetDirXattr(oldDir, "user.event_config.test_key", "test_value"));
+
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return(cacheDir));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return(filesDir));
+    g_applicationContext.reset(contextMock);
+
+    std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir("/eventConfig");
+    EXPECT_EQ(configDir, newDir);
+
+    EXPECT_FALSE(FileUtil::IsFileExists(oldDir));
+    EXPECT_TRUE(FileUtil::IsFileExists(newDir));
+    std::string value;
+    EXPECT_TRUE(FileUtil::GetDirXattr(newDir, "user.event_config.test_key", value));
+    EXPECT_EQ(value, "test_value");
+
+    g_applicationContext = nullptr;
+    (void)FileUtil::ForceRemoveDirectory("/data/test/mig_policy");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest015
+ * @tc.desc: test migration of cache/eventConfig to files/eventConfig on first config call,
+ *           not migrate cache/rawheap to files/rawheap.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest015, TestSize.Level0)
+{
+    const std::string cacheDir = "/data/test/mig_policy2/cache";
+    const std::string filesDir = "/data/test/mig_policy2/files";
+    const std::string oldRawheapDir = cacheDir + "/rawheap";
+    const std::string newRawheapDir = filesDir + "/rawheap";
+    const std::string oldEventConfigDir = cacheDir + "/eventConfig";
+    const std::string newEventConfigDir = filesDir + "/eventConfig";
+
+    ASSERT_TRUE(FileUtil::ForceCreateDirectory(oldRawheapDir));
+    ASSERT_TRUE(FileUtil::SetDirXattr(oldRawheapDir, "user.event_config.rawheap_key", "rawheap_value"));
+    ASSERT_TRUE(FileUtil::ForceCreateDirectory(oldEventConfigDir));
+    ASSERT_TRUE(FileUtil::SetDirXattr(oldEventConfigDir, "user.event_config.ec_key", "ec_value"));
+
+    ApplicationContextMock* contextMock = new ApplicationContextMock();
+    ASSERT_NE(contextMock, nullptr);
+    EXPECT_CALL(*contextMock, GetCacheDir())
+        .WillRepeatedly(::testing::Return(cacheDir));
+    EXPECT_CALL(*contextMock, GetFilesDir())
+        .WillRepeatedly(::testing::Return(filesDir));
+    g_applicationContext.reset(contextMock);
+
+    std::string configDir = EventPolicyUtils::GetInstance().GetConfigDir("/eventConfig");
+    EXPECT_EQ(configDir, newEventConfigDir);
+
+    EXPECT_FALSE(FileUtil::IsFileExists(newRawheapDir));
+    EXPECT_TRUE(FileUtil::IsFileExists(oldRawheapDir));
+    std::string rawheapValue;
+    EXPECT_FALSE(FileUtil::GetDirXattr(newRawheapDir, "user.event_config.rawheap_key", rawheapValue));
+    EXPECT_NE(rawheapValue, "rawheap_value");
+
+    EXPECT_FALSE(FileUtil::IsFileExists(oldEventConfigDir));
+    EXPECT_TRUE(FileUtil::IsFileExists(newEventConfigDir));
+    std::string ecValue;
+    EXPECT_TRUE(FileUtil::GetDirXattr(newEventConfigDir, "user.event_config.ec_key", ecValue));
+    EXPECT_EQ(ecValue, "ec_value");
+
+    g_applicationContext = nullptr;
+    (void)FileUtil::ForceRemoveDirectory("/data/test/mig_policy2");
 }
 }  // OHOS

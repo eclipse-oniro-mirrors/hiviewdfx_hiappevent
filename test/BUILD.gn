@@ -32,6 +32,10 @@ config("hiappevent_config_test") {
     "$native_hiappevent_path/libhiappevent/utility/include",
     "$native_hiappevent_path/ndk/include",
   ]
+
+  defines = [
+    "HIAPPEVENT_TEST",
+  ]
 }
 
 ohos_unittest("HiAppEventApiMetricTest") {
