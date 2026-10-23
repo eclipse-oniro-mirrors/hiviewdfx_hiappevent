@@ -44,11 +44,28 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr int BUF_SIZE = 2048;
-constexpr const char* APP_EVENT_DIR = "/hiappevent";
+constexpr const char* APP_EVENT_DIR = "/watcherConfig";
+constexpr const char* OLD_APP_EVENT_DIR = "/hiappevent";
 constexpr const char* RUNNING_ID_PROPERTY = "app_running_unique_id";
 constexpr const char* OS_LOG_PATH = "/data/storage/el2/log/hiappevent";
 constexpr const char* XATTR_NAME = "user.appevent";
 constexpr const char* KEY_HIAPPEVENT_ENABLE = "hiviewdfx.hiappevent.enable";
+
+void MigrateOsEventDir(const std::string& oldDir, const std::string& newDir)
+{
+    if (oldDir == newDir || !FileUtil::IsFileExists(oldDir)) {
+        return;
+    }
+    errno = 0;
+    if (FileUtil::RenameFile(oldDir, newDir) != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to migrate OsEvent dir from %{public}s to %{public}s, err:%{public}d",
+            oldDir.c_str(), newDir.c_str(), errno);
+        return;
+    }
+    if (OHOS::StorageDaemon::AclSetAccess(newDir, "u:1201:rwx") != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to set acl access dir=%{public}s", newDir.c_str());
+    }
+}
 
 bool UpdateListenedEvents(const std::string& dir, uint64_t eventsMask)
 {
@@ -139,11 +156,20 @@ void OsEventListener::Init(std::vector<std::shared_ptr<HiAppEvent::AppEventObser
         HILOG_ERROR(LOG_CORE, "Context is null.");
         return;
     }
-    if (context->GetCacheDir().empty()) {
+    if (context->GetFilesDir().empty()) {
         HILOG_ERROR(LOG_CORE, "The files dir obtained from context is empty.");
         return;
     }
-    osEventPath_ = context->GetCacheDir() + APP_EVENT_DIR;
+    std::string oldEventPath = context->GetCacheDir() + OLD_APP_EVENT_DIR;
+    osEventPath_ = context->GetFilesDir() + APP_EVENT_DIR;
+#ifndef HIAPPEVENT_TEST
+    static std::once_flag onceWatcherConfig;
+    std::call_once(onceWatcherConfig, [this, &oldEventPath]() {
+        MigrateOsEventDir(oldEventPath, osEventPath_);
+    });
+#else
+    MigrateOsEventDir(oldEventPath, osEventPath_);
+#endif
     if (!FileUtil::IsFileExists(osEventPath_)) {
         return;
     }
