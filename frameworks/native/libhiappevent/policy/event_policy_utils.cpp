@@ -33,6 +33,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+constexpr const char* RAW_HEAP = "/rawheap";
 constexpr const char* APP_EVENT_DIR = "/eventConfig";
 constexpr const char* PAGE_SWITCH_CONFIG = "pageSwitchLogEnable";
 constexpr const char* PUBLISH_ON_NEXT_LAUNCH_CONFIG = "publishOnNextLaunch";
@@ -116,6 +117,9 @@ std::string EventPolicyUtils::GetConfigDir(const std::string& subDir)
     std::string filesDir = context->GetFilesDir();
     std::string cacheDir = context->GetCacheDir();
     std::string newConfigDir = filesDir + subDir;
+    if (subDir == RAW_HEAP) {
+        newConfigDir = cacheDir + subDir;
+    }
     if (!FileUtil::IsFileExists(newConfigDir) && !FileUtil::ForceCreateDirectory(newConfigDir)) {
         HILOG_ERROR(LOG_CORE, "failed to create dir=%{public}s", newConfigDir.c_str());
         return "";
