@@ -72,17 +72,16 @@ napi_value NapiAppEventHolder::NapiConstructor(napi_env env, napi_callback_info 
         HILOG_ERROR(LOG_CORE, "hodler failed to construct: invalid param num");
         return thisVar;
     }
-    auto holder = new(std::nothrow) NapiAppEventHolder(NapiUtil::GetString(env, params[0]));
-    if (holder == nullptr) {
-        return thisVar;
-    }
-    napi_wrap(
-        env, thisVar, holder,
+    auto holder = std::make_unique<NapiAppEventHolder>(NapiUtil::GetString(env, params[0]));
+    napi_status status = napi_wrap(
+        env, thisVar, holder.get(),
         [](napi_env env, void* data, void* hint) {
-            NapiAppEventHolder* holder = (NapiAppEventHolder*)data;
-            delete holder;
+            delete static_cast<NapiAppEventHolder*>(data);
         },
         nullptr, nullptr);
+    if (status == napi_ok) {
+        holder.release();
+    }
     return thisVar;
 }
 
