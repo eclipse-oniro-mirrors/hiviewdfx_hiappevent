@@ -88,12 +88,15 @@ void NapiExternalLogMgr::OnCapacityReached(const std::vector<ExternalLogWrapperI
             napi_close_handle_scope(context->env, scope);
             return;
         }
-        auto* container = new NapiExternalLogContainer(logInfos);
-        napi_wrap(context->env, containerObj, container,
+        auto container = std::make_unique<NapiExternalLogContainer>(logInfos);
+        napi_status status = napi_wrap(context->env, containerObj, container.get(),
             [](napi_env env, void* data, void* hint) {
                 delete static_cast<NapiExternalLogContainer*>(data);
             },
             nullptr, nullptr);
+        if (status == napi_ok) {
+            container.release();
+        }
 
         // Call onCapacityReached(container)
         napi_value callback = NapiUtil::GetReferenceValue(context->env, context->onCapacityReached);

@@ -15,6 +15,8 @@
 
 #include "ani_external_log_wrapper.h"
 
+#include <memory>
+
 #include "hiappevent_ani_parameter_name.h"
 #include "hiappevent_ani_util.h"
 #include "hilog/log.h"
@@ -132,9 +134,9 @@ ani_object AniExternalLogWrapper::CreateAniObject(ani_env *env, const ExternalLo
         HILOG_ERROR(LOG_CORE, "Create Object Failed: %{public}s", CLASS_NAME_EXT_LOG_WRAPPER);
         return nullptr;
     }
-    auto* wrapper = new(std::nothrow) AniExternalLogWrapper(info);
-    if (wrapper != nullptr) {
-        Wrap(env, obj, wrapper);
+    auto wrapper = std::make_unique<AniExternalLogWrapper>(info);
+    if (Wrap(env, obj, wrapper.get()) != nullptr) {
+        wrapper.release();
     }
     return obj;
 }

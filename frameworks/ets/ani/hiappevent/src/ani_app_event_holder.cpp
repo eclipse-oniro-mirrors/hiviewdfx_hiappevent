@@ -82,11 +82,10 @@ static AniAppEventHolder* Unwrap(ani_env *env, ani_object aniObject)
 
 void AniAppEventHolder::AniConstructor(ani_env *env, ani_object aniObject, ani_string watcherName)
 {
-    auto holder = new(std::nothrow) AniAppEventHolder(HiAppEventAniUtil::ParseStringValue(env, watcherName));
-    if (holder == nullptr) {
-        HILOG_INFO(LOG_CORE, "AniConstructor  holder nullptr");
+    auto holder = std::make_unique<AniAppEventHolder>(HiAppEventAniUtil::ParseStringValue(env, watcherName));
+    if (Wrap(env, aniObject, holder.get()) != nullptr) {
+        holder.release();
     }
-    Wrap(env, aniObject, holder);
 }
 
 void AniAppEventHolder::AniFinalize(ani_env *env, ani_object object, ani_long nativeHolder)

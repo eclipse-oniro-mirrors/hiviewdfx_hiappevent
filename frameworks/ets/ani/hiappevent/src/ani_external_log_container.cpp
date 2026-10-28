@@ -16,6 +16,7 @@
 #include "ani_external_log_container.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ani_external_log_wrapper.h"
 #include "hiappevent_ani_parameter_name.h"
@@ -268,9 +269,9 @@ ani_object AniExternalLogContainer::CreateAniObject(ani_env *env,
         HILOG_ERROR(LOG_CORE, "Create Object Failed: %{public}s", CLASS_NAME_EXT_LOG_CONTAINER);
         return nullptr;
     }
-    auto* container = new(std::nothrow) AniExternalLogContainer(logInfos);
-    if (container != nullptr) {
-        Wrap(env, obj, container);
+    auto container = std::make_unique<AniExternalLogContainer>(logInfos);
+    if (Wrap(env, obj, container.get()) != nullptr) {
+        container.release();
     }
     return obj;
 }

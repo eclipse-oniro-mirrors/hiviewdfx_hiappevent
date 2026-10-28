@@ -15,6 +15,7 @@
 #include "napi_external_log_container.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "hilog/log.h"
 #include "napi_error.h"
@@ -88,12 +89,15 @@ napi_value NapiExternalLogContainer::NapiGetAllLogs(napi_env env, napi_callback_
         if (constructor == nullptr || napi_new_instance(env, constructor, 0, nullptr, &wrapperObj) != napi_ok) {
             continue;
         }
-        auto* wrapper = new NapiExternalLogWrapper(logInfo);
-        napi_wrap(env, wrapperObj, wrapper,
+        auto wrapper = std::make_unique<NapiExternalLogWrapper>(logInfo);
+        napi_status status = napi_wrap(env, wrapperObj, wrapper.get(),
             [](napi_env env, void* data, void* hint) {
                 delete static_cast<NapiExternalLogWrapper*>(data);
             },
             nullptr, nullptr);
+        if (status == napi_ok) {
+            wrapper.release();
+        }
         NapiUtil::SetElement(env, result, index++, wrapperObj);
     }
     return result;
