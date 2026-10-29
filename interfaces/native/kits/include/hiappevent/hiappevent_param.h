@@ -161,7 +161,7 @@ extern "C" {
 /**
  * @brief Publish the APP_CRASH event when the application starts next time.
  *
- * @since 26.2.0
+ * @since 26.1.0
  */
 #define OH_APP_CRASH_PARAM_PUBLISH_ON_NEXT_LAUNCH "publish_on_next_launch"
 
