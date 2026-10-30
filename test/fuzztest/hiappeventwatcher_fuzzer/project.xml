@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<max_len>400</max_len>
+<fuzz_config>
   <fuzztest>
-    <max_len>200</max_len>
+    <max_len>512</max_len>
     <max_total_time>120</max_total_time>
     <rss_limit_mb>4096</rss_limit_mb>
   </fuzztest>
