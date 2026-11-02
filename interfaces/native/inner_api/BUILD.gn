@@ -41,3 +41,25 @@ ohos_shared_library("hiappevent_innerapi") {
   innerapi_tags = [ "platformsdk" ]
   subsystem_name = "hiviewdfx"
 }
+
+ohos_static_library("hiappevent_innerapi_static") {
+  public_configs = [ ":hiappevent_innerapi_config" ]
+
+  sources = [
+    "src/app_event.cpp",
+    "src/app_event_processor_mgr.cpp",
+    "src/app_api_metric.cpp",
+  ]
+
+  deps = [ "../../../frameworks/native/libhiappevent:libhiappevent_base_static" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
+
+  part_name = "hiappevent"
+  subsystem_name = "hiviewdfx"
+}

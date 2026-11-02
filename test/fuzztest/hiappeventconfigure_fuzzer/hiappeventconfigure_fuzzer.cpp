@@ -42,6 +42,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         return 0;
     }
     FuzzData fuzzData = *reinterpret_cast<const FuzzData*>(data);
+    fuzzData.nameStr[MAX_STR_LEN - 1] = '\0';
+    fuzzData.valueStr[MAX_STR_LEN - 1] = '\0';
     FuzzConfigure(fuzzData);
     FuzzConfigureNull();
     FuzzClearData();

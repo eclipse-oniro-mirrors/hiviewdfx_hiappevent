@@ -80,6 +80,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         return 0;
     }
     FuzzData fuzzData = *reinterpret_cast<const FuzzData*>(data);
+    fuzzData.processorName[MAX_STR_LEN - 1] = '\0';
+    fuzzData.appId[MAX_STR_LEN - 1] = '\0';
+    fuzzData.routeInfo[MAX_STR_LEN - 1] = '\0';
+    fuzzData.domain[MAX_STR_LEN - 1] = '\0';
+    fuzzData.eventName[MAX_STR_LEN - 1] = '\0';
+    fuzzData.customKey[MAX_STR_LEN - 1] = '\0';
+    fuzzData.customValue[MAX_STR_LEN - 1] = '\0';
+    fuzzData.configName[MAX_STR_LEN - 1] = '\0';
     FuzzProcessorOps(fuzzData);
     FuzzProcessorNullOps();
     return 0;

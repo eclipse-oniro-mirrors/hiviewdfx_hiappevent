@@ -617,6 +617,9 @@ int VerifyReportConfig(ReportConfig& config)
 
 bool IsApp()
 {
+#ifdef FUZZ_TEST
+    return true;
+#endif
     if (getuid() < MIN_APP_UID) {
         return false;
     }

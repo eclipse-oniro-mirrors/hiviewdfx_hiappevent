@@ -80,6 +80,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         return 0;
     }
     FuzzData fuzzData = *reinterpret_cast<const FuzzData*>(data);
+    fuzzData.domainStr[MAX_STR_LEN - 1] = '\0';
+    fuzzData.nameStr[MAX_STR_LEN - 1] = '\0';
+    fuzzData.keyStr[MAX_STR_LEN - 1] = '\0';
+    fuzzData.valStr[MAX_STR_LEN - 1] = '\0';
     FuzzEventWrite(fuzzData);
     FuzzEventEmptyWrite(fuzzData);
     FuzzEventNullDomainName();
