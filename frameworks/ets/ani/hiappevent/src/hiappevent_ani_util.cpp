@@ -742,6 +742,43 @@ static ani_method GetRecordSetMethod(ani_env *env)
     return set;
 }
 
+static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue);
+
+static ani_ref CreateJsonArray(ani_env *env, const Json::Value& jsonValue, const std::string &name)
+{
+    ani_ref arr = CreateArray(env, name, jsonValue.size());
+    if (arr == nullptr) {
+        return nullptr;
+    }
+    for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
+        if (env->Array_Set(static_cast<ani_array>(arr), static_cast<ani_size>(i),
+            CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "create %{public}s array failed, Array_Set failed", name.c_str());
+        }
+    }
+    return arr;
+}
+
+static ani_ref CreateJsonRecord(ani_env *env, const Json::Value& jsonValue)
+{
+    ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_RECORD);
+    ani_method set = GetRecordSetMethod(env);
+    if (obj == nullptr || set == nullptr) {
+        HILOG_ERROR(LOG_CORE, "CreateJsonRecord: failed to create record object or find set method");
+        return nullptr;
+    }
+    auto eventNameList = jsonValue.getMemberNames();
+    for (auto it = eventNameList.cbegin(); it != eventNameList.cend(); ++it) {
+        auto propertyName = *it;
+        if (env->Object_CallMethod_Void(obj, set, HiAppEventAniUtil::CreateAniString(env, propertyName),
+            CreateValueByJson(env, jsonValue[propertyName])) != ANI_OK) {
+            HILOG_ERROR(LOG_CORE, "set record params Fail: %{public}s", CLASS_NAME_RECORD);
+            return obj;
+        }
+    }
+    return obj;
+}
+
 static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
 {
     if (env == nullptr) {
@@ -749,48 +786,16 @@ static ani_ref CreateValueByJson(ani_env *env, const Json::Value& jsonValue)
     }
 
     if (jsonValue.isArray() && jsonValue[0].isBool()) {
-        ani_ref boolArray = CreateArray(env, CLASS_NAME_BOOLEAN, jsonValue.size());
-        for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-            if (env->Array_Set(static_cast<ani_array>(boolArray), static_cast<ani_size>(i),
-                CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
-                HILOG_ERROR(LOG_CORE, "create boolArray failed, Array_Set failed");
-            }
-        }
-        return boolArray;
+        return CreateJsonArray(env, jsonValue, CLASS_NAME_BOOLEAN);
     }
     if (jsonValue.isArray() && jsonValue[0].isDouble()) {
-        ani_ref doubleArray = CreateArray(env, CLASS_NAME_DOUBLE, jsonValue.size());
-        for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-            if (env->Array_Set(static_cast<ani_array>(doubleArray), static_cast<ani_size>(i),
-                CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
-                HILOG_ERROR(LOG_CORE, "create doubleArray failed, Array_Set failed");
-            }
-        }
-        return doubleArray;
+        return CreateJsonArray(env, jsonValue, CLASS_NAME_DOUBLE);
     }
     if (jsonValue.isArray() && jsonValue[0].isString()) {
-        ani_ref stringArray = CreateArray(env, CLASS_NAME_STRING, jsonValue.size());
-        for (Json::ArrayIndex i = 0; i < jsonValue.size(); ++i) {
-            if (env->Array_Set(static_cast<ani_array>(stringArray), static_cast<ani_size>(i),
-                CreateValueByJson(env, jsonValue[static_cast<int>(i)])) != ANI_OK) {
-                    HILOG_ERROR(LOG_CORE, "create stringArray failed, Array_Set failed");
-            }
-        }
-        return stringArray;
+        return CreateJsonArray(env, jsonValue, CLASS_NAME_STRING);
     }
     if (jsonValue.isObject()) {
-        ani_object obj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_RECORD);
-        ani_method set = GetRecordSetMethod(env);
-        auto eventNameList = jsonValue.getMemberNames();
-        for (auto it = eventNameList.cbegin(); it != eventNameList.cend(); ++it) {
-            auto propertyName = *it;
-            if (env->Object_CallMethod_Void(obj, set, HiAppEventAniUtil::CreateAniString(env, propertyName),
-                CreateValueByJson(env, jsonValue[propertyName])) != ANI_OK) {
-                HILOG_ERROR(LOG_CORE, "set record params Fail: %{public}s", CLASS_NAME_RECORD);
-                return obj;
-            }
-        }
-        return obj;
+        return CreateJsonRecord(env, jsonValue);
     }
     return CreateBaseValueByJson(env, jsonValue);
 }
@@ -833,6 +838,10 @@ ani_ref HiAppEventAniUtil::CreateEventInfoArray(ani_env *env, const std::vector<
 {
     ani_ref arr = CreateArray(env, events.size());
     ani_method setMethod = FindArrayMethodSet(env);
+    if (arr == nullptr || setMethod == nullptr) {
+        HILOG_ERROR(LOG_CORE, "CreateEventInfoArray: failed to create array or find set method");
+        return nullptr;
+    }
     for (size_t i = 0; i < events.size(); ++i) {
         ani_status status = env->Object_CallMethod_Void(static_cast<ani_object>(arr), setMethod, i,
             CreateEventInfo(env, events[i]));
