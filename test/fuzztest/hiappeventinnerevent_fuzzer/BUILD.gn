@@ -21,9 +21,10 @@ ohos_fuzztest("HiAppEventInnerEventFuzzTest") {
   module_out_path = module_output_path
   fuzz_config_file = "$hiappevent_path/test/fuzztest/hiappeventinnerevent_fuzzer"
   sources = [ "hiappeventinnerevent_fuzzer.cpp" ]
+  defines = [ "FUZZ_TEST" ]
   deps = [
-    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi",
-    "$hiappevent_framework/native/libhiappevent:libhiappevent_base",
+    "$hiappevent_interfaces/native/inner_api:hiappevent_innerapi_static",
+    "$hiappevent_framework/native/libhiappevent:libhiappevent_base_static",
   ]
   external_deps = [
     "c_utils:utils",

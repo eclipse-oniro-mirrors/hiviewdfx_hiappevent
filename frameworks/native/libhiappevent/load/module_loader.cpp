@@ -54,7 +54,9 @@ ModuleLoader::~ModuleLoader()
     processors_.clear();
 
     for (auto it = modules_.begin(); it != modules_.end(); ++it) {
-        dlclose(it->second);
+        if (it->second != nullptr) {
+            dlclose(it->second);
+        }
         HILOG_INFO(LOG_CORE, "succ to unload module=%{public}s", it->first.c_str());
     }
     modules_.clear();
@@ -67,6 +69,12 @@ int ModuleLoader::Load(const std::string& moduleName)
         HILOG_DEBUG(LOG_CORE, "the module=%{public}s already exists", moduleName.c_str());
         return 0;
     }
+
+#ifdef FUZZ_TEST
+    HILOG_INFO(LOG_CORE, "fuzz mode: skip dlopen for module=%{public}s.", moduleName.c_str());
+    modules_[moduleName] = nullptr;
+    return 0;
+#endif
 
     std::string modulePath = GetModulePath(moduleName);
     if (modulePath.empty()) {
@@ -90,7 +98,9 @@ int ModuleLoader::Unload(const std::string& moduleName)
         HILOG_WARN(LOG_CORE, "the module=%{public}s does not exists", moduleName.c_str());
         return -1;
     }
-    dlclose(modules_[moduleName]);
+    if (modules_[moduleName] != nullptr) {
+        dlclose(modules_[moduleName]);
+    }
     modules_.erase(moduleName);
     HILOG_INFO(LOG_CORE, "succ to unload module=%{public}s", moduleName.c_str());
     return 0;

@@ -229,6 +229,10 @@ std::string HiAppEventConfig::GetStorageDir()
     if (!storageDir_.empty()) {
         return storageDir_;
     }
+#ifdef FUZZ_TEST
+    storageDir_ = "/data/fuzz/hiappevent/";
+    return storageDir_;
+#endif
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
@@ -256,6 +260,10 @@ std::string HiAppEventConfig::GetRunningId()
     if (!runningId_.empty()) {
         return runningId_;
     }
+#ifdef FUZZ_TEST
+    runningId_ = "fuzz_running_id";
+    return runningId_;
+#endif
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
         OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
@@ -272,6 +280,9 @@ std::string HiAppEventConfig::GetRunningId()
 bool HiAppEventConfig::IsFreeSizeOverLimit()
 {
     std::lock_guard<std::mutex> lockGuard(g_mutex);
+#ifdef FUZZ_TEST
+    return false;
+#endif
     if (!isInitFreeSize_) {
         auto storageMgr = GetStorageMgr();
         int64_t freeSize = -1;
