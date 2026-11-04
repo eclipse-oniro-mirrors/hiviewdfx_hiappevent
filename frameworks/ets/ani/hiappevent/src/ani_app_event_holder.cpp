@@ -124,14 +124,18 @@ void AniAppEventHolder::AniSetSize(ani_env *env, ani_object object, ani_int size
 
 ani_object AniAppEventHolder::AniTakeNext(ani_env *env, ani_object object)
 {
-    ani_object packageObj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_PACKAGE);
-    AniAppEventHolder* holder = Unwrap(env, object);
     ani_ref result = nullptr;
     ani_status status = env->GetNull(&result);
     if (status != ANI_OK) {
         HILOG_INFO(LOG_CORE, "GetNull failed %{public}d", status);
         return static_cast<ani_object>(result);
     }
+    ani_object packageObj = HiAppEventAniUtil::CreateObject(env, CLASS_NAME_EVENT_PACKAGE);
+    if (packageObj == nullptr) {
+        HILOG_INFO(LOG_CORE, "AniTakeNext failed to create EventPackage object");
+        return static_cast<ani_object>(result);
+    }
+    AniAppEventHolder* holder = Unwrap(env, object);
     if (holder == nullptr) {
         return static_cast<ani_object>(result);
     }
