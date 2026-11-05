@@ -399,6 +399,190 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_4, TestSize.Level0)
 }
 
 /**
+ * @tc.name: HiAppEventPolicyTest005_5
+ * @tc.desc: test the SetEventPolicy func for resourceOverlimit with v8/jsvm heap log enable.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_5, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {
+        {"jsHeapLogtype", "event"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"js_heap_logtype", "event_rawheap"}, {"v8HeapLogEnable", "false"},
+        {"jsvmHeapLogEnable", "false"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event"}, {"v8HeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event"}, {"v8HeapLogEnable", "invalid"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest005_6
+ * @tc.desc: test v8/jsvm heap log enable with various value conversions and key combinations.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_6, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {
+        {"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "false"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", ""}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "TRUE"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "1"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"jsvmHeapLogEnable", "false"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"jsvmHeapLogEnable", ""}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"jsvmHeapLogEnable", "invalid_value"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest005_7
+ * @tc.desc: test v8/jsvm heap log enable combined with pageSwitchLogEnable and useRefinedLogFileName.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_7, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {
+        {"pageSwitchLogEnable", "true"}, {"jsHeapLogtype", "event_rawheap"},
+        {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {
+        {"pageSwitchLogEnable", "true"}, {"jsHeapLogtype", "event_rawheap"},
+        {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}, {"useRefinedLogFileName", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {
+        {"pageSwitchLogEnable", "false"}, {"jsHeapLogtype", "event_rawheap"},
+        {"v8HeapLogEnable", "false"}, {"jsvmHeapLogEnable", "false"}, {"useRefinedLogFileName", "false"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"pageSwitchLogEnable", "true"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"useRefinedLogFileName", "true"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest005_8
+ * @tc.desc: test v8/jsvm heap log enable with unknown keys, empty map, and no context.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_8, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {
+        {"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "true"},
+        {"unknownKey", "value"}, {"jsvmHeapLogEnable", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"unknownKey1", "value1"}, {"unknownKey2", "value2"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    configMap = {{"v8HeapLogEnable", "true"}, {"unknownKey", "value"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    g_applicationContext = nullptr;
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest005_9
+ * @tc.desc: test v8/jsvm heap log enable with invalid jsHeapLogtype value combinations.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest005_9, TestSize.Level0)
+{
+    SetTestContext();
+
+    std::map<std::string, std::string> configMap = {
+        {"jsHeapLogtype", "invalid"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    configMap = {{"js_heap_logtype", "invalid"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    configMap = {{"jsHeapLogtype", ""}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+
+    configMap = {{"jsHeapLogtype", "event_rawheap"}, {"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "true"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    configMap = {{"js_heap_logtype", "event_rawheap"}, {"v8HeapLogEnable", "false"}, {"jsvmHeapLogEnable", "false"}};
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", configMap);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+}
+
+/**
  * @tc.name: HiAppEventPolicyTest006
  * @tc.desc: test the SetEventPolicy func for addressSanitizer with pageSwitchLogEnable.
  * @tc.type: FUNC
@@ -614,5 +798,193 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest015, TestSize.Level0)
 
     g_applicationContext = nullptr;
     (void)FileUtil::ForceRemoveDirectory("/data/test/mig_policy2");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest016
+ * @tc.desc: verify pageSwitchLogEnable is persisted to xattr with runningId prefix for each policy.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest016, TestSize.Level0)
+{
+    SetTestContext();
+    const std::string configDir = TEST_DIR + "/eventConfig";
+    std::string value;
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable1", value));
+    EXPECT_EQ(value, "123456,true");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"pageSwitchLogEnable", "false"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable1", value));
+    EXPECT_EQ(value, "123456,false");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appFreezePolicy", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable2", value));
+    EXPECT_EQ(value, "123456,true");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("addressSanitizerPolicy", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable0", value));
+    EXPECT_EQ(value, "123456,true");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable3", value));
+    EXPECT_EQ(value, "123456,true");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest017
+ * @tc.desc: verify appCrash publishOnNextLaunch and collectMinidump are persisted to xattr without runningId prefix.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest017, TestSize.Level0)
+{
+    SetTestContext();
+    const std::string configDir = TEST_DIR + "/eventConfig";
+    std::string value;
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"publishOnNextLaunch", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.publishOnNextLaunch", value));
+    EXPECT_EQ(value, "true");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("APP_CRASH", {{"publish_on_next_launch", "false"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.publishOnNextLaunch", value));
+    EXPECT_EQ(value, "false");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collectMinidump", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.minidump", value));
+    EXPECT_EQ(value, "true");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"collect_minidump", "false"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.minidump", value));
+    EXPECT_EQ(value, "false");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest018
+ * @tc.desc: verify cpuUsageHigh config is persisted to xattr with original values.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest018, TestSize.Level0)
+{
+    SetTestContext();
+    const std::string configDir = TEST_DIR + "/eventConfig";
+    std::string value;
+
+    std::map<std::string, std::string> cfg = {{"foregroundLoadThreshold", "11"}, {"backgroundLoadThreshold", "22"},
+        {"threadLoadThreshold", "33"}, {"perfLogCaptureCount", "44"}, {"threadLoadInterval", "55"}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("cpuUsageHighPolicy", cfg);
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.foregroundLoadThreshold", value));
+    EXPECT_EQ(value, "11");
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.backgroundLoadThreshold", value));
+    EXPECT_EQ(value, "22");
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.threadLoadThreshold", value));
+    EXPECT_EQ(value, "33");
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.perfLogCaptureCount", value));
+    EXPECT_EQ(value, "44");
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.threadLoadInterval", value));
+    EXPECT_EQ(value, "55");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest019
+ * @tc.desc: verify resourceOverlimit config persisted to rawheap/eventConfig xattr with correct value format.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest019, TestSize.Level0)
+{
+    SetTestContext();
+    const std::string rawheapDir = TEST_DIR + "/rawheap";
+    const std::string configDir = TEST_DIR + "/eventConfig";
+    std::string value;
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy",
+        {{"jsHeapLogtype", "event_rawheap"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(rawheapDir, "user.event_config.js_heap_logtype", value));
+    EXPECT_EQ(value, "123456,event_rawheap");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy",
+        {{"v8HeapLogEnable", "true"}, {"jsvmHeapLogEnable", "false"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(rawheapDir, "user.event_config.v8_heap_log_enable", value));
+    EXPECT_EQ(value, "123456,1");
+    EXPECT_TRUE(FileUtil::GetDirXattr(rawheapDir, "user.event_config.jsvm_heap_log_enable", value));
+    EXPECT_EQ(value, "123456,0");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy",
+        {{"useRefinedLogFileName", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.useRefinedLogFileName", value));
+    EXPECT_EQ(value, "true");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest020
+ * @tc.desc: verify page-tab event names that are not registered keys fail and leave no xattr side effect.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest020, TestSize.Level0)
+{
+    SetTestContext();
+    const std::string configDir = TEST_DIR + "/eventConfig";
+    std::string value;
+
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("ADDRESS_SANITIZER", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("APP_FREEZE", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    EXPECT_FALSE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable0", value));
+    EXPECT_FALSE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable2", value));
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("APP_CRASH", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable1", value));
+    EXPECT_EQ(value, "123456,true");
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("RESOURCE_OVERLIMIT", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::GetDirXattr(configDir, "user.event_config.pageSwitchLogEnable3", value));
+    EXPECT_EQ(value, "123456,true");
+}
+
+/**
+ * @tc.name: HiAppEventPolicyTest021
+ * @tc.desc: verify config dir is created only when context is available.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest021, TestSize.Level0)
+{
+    g_applicationContext = nullptr;
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_UNKNOWN);
+    EXPECT_FALSE(FileUtil::IsFileExists(TEST_DIR + "/eventConfig"));
+
+    SetTestContext();
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("appCrashPolicy", {{"pageSwitchLogEnable", "true"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::IsFileExists(TEST_DIR + "/eventConfig"));
+
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("resourceOverlimitPolicy",
+        {{"jsHeapLogtype", "event_rawheap"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_TRUE(FileUtil::IsFileExists(TEST_DIR + "/rawheap"));
 }
 }  // OHOS

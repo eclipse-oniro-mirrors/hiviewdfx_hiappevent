@@ -1187,4 +1187,43 @@ describe('HiAppEventJsTest', function () {
         });
         console.info('ConfigEventPolicyTest021 end');
     });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest022
+     * @tc.desc: Test the ConfigEventPolicy interface for v8HeapLogEnable
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest022', 0, async function (done) {
+        console.info('ConfigEventPolicyTest022 start');
+        let policy = {"resourceOverlimitPolicy":{"v8HeapLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest022 end');
+    });
+
+
+    /**
+     * @tc.name: ConfigEventPolicyTest023
+     * @tc.desc: Test the ConfigEventPolicy interface for jsvmHeapLogEnable
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest023', 0, async function (done) {
+        console.info('ConfigEventPolicyTest023 start');
+        let policy = {"resourceOverlimitPolicy":{"jsvmHeapLogEnable": true}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest023 end');
+    });
 });

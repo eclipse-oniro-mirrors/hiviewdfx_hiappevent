@@ -178,6 +178,8 @@ export default namespace hiAppEvent {
         pageSwitchLogEnable?: boolean;
         jsHeapLogtype?: string;
         useRefinedLogFileName?: boolean;
+        v8HeapLogEnable?: boolean;
+        jsvmHeapLogEnable?: boolean;
     }
 
     export interface EventPolicy {
