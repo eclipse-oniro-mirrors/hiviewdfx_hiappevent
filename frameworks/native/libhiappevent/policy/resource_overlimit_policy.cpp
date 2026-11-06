@@ -14,8 +14,8 @@
  */
 #include "resource_overlimit_policy.h"
 
+#include <cctype>
 #include <hilog/log.h>
-#include <set>
 #include "event_policy_utils.h"
 #include "hiappevent_base.h"
 
@@ -31,24 +31,45 @@ namespace {
 inline constexpr const char* const RAWHEAP = "/rawheap";
 constexpr const char* const APP_EVENT_DIR = "/eventConfig";
 constexpr int INVALID_PARAM = -1;
+constexpr size_t CAMEL_SNAKE_RESERVE_DIVISOR = 2;
 
-bool IsValid(const std::string& key, const std::string& value)
+/**
+ * @brief Determines whether an underscore should be inserted before the uppercase
+ *        letter at position i in a camelCase string.
+ *
+ * An underscore is inserted when any of the following conditions is met:
+ * 1. The previous character is a lowercase letter (e.g., 'p' before 'L' in "HeapLog");
+ * 2. The previous character is a digit (e.g., '8' before 'H' in "v8Heap");
+ * 3. The previous character is uppercase and the next character is lowercase
+ *    (e.g., 'P' before 'S' and 'e' after 'S' in "HTTPServer"; the underscore is
+ *    inserted before the last uppercase in a consecutive uppercase run, yielding
+ *    "http_server").
+ *
+ * @param s The camelCase string to convert.
+ * @param i The position of the current character.
+ * @return true if an underscore should be inserted before the current character; false otherwise.
+ */
+bool NeedUnderscoreBefore(const std::string& s, size_t i)
 {
-    const std::map<std::string, std::set<std::string>> whiteList = {
-        {"js_heap_logtype", {"event", "event_rawheap"}},
-        {"jsHeapLogtype", {"event", "event_rawheap"}}
-    };
+    if (i == 0 || !std::isupper(static_cast<unsigned char>(s[i]))) {
+        return false;
+    }
+    unsigned char prev = static_cast<unsigned char>(s[i - 1]);
+    unsigned char next = (i + 1 < s.size()) ? static_cast<unsigned char>(s[i + 1]) : '\0';
+    return std::islower(prev) || std::isdigit(prev) || (std::isupper(prev) && std::islower(next));
+}
 
-    auto it = whiteList.find(key);
-    if (it == whiteList.end()) {
-        HILOG_ERROR(LOG_CORE, "invalid config key: %{public}s", key.c_str());
-        return false;
+std::string CamelToSnake(const std::string& camel)
+{
+    std::string snake;
+    snake.reserve(camel.size() + camel.size() / CAMEL_SNAKE_RESERVE_DIVISOR);
+    for (size_t i = 0; i < camel.size(); ++i) {
+        if (NeedUnderscoreBefore(camel, i)) {
+            snake += '_';
+        }
+        snake += static_cast<char>(std::tolower(static_cast<unsigned char>(camel[i])));
     }
-    if (it->second.find(value) == it->second.end()) {
-        HILOG_ERROR(LOG_CORE, "invalid value for key %{public}s: %{public}s", key.c_str(), value.c_str());
-        return false;
-    }
-    return true;
+    return snake;
 }
 
 int SetEventConfig(const std::map<std::string, std::string>& configMap)
@@ -59,17 +80,26 @@ int SetEventConfig(const std::map<std::string, std::string>& configMap)
         HILOG_ERROR(LOG_CORE, "failed to get rawheap config dir");
         return rtn;
     }
-
+    std::map<std::string, std::string> validConfigMap;
     for (const auto& [key, value] : configMap) {
-        if (!IsValid(key, value)) {
-            HILOG_WARN(LOG_CORE, "failed SetEventConfig, invalid key %{public}s, value: %{public}s",
-                       key.c_str(), value.c_str());
+        if (key == "v8HeapLogEnable" || key == "jsvmHeapLogEnable") {
+            validConfigMap.insert({CamelToSnake(key), value == "true" ? "1" : "0"});
             continue;
         }
         if (key == "js_heap_logtype" || key == "jsHeapLogtype") {
-            std::map<std::string, std::string> curMap = {{"js_heap_logtype", value}};
-            rtn = EventPolicyUtils::GetInstance().SaveEventConfig(configDir, curMap);
+            if (value != "event" && value != "event_rawheap") {
+                HILOG_WARN(LOG_CORE, "failed SetEventConfig, invalid key %{public}s, value: %{public}s",
+                    key.c_str(), value.c_str());
+                return rtn;
+            }
+            validConfigMap.insert({"js_heap_logtype", value});
+            continue;
         }
+        HILOG_WARN(LOG_CORE, "failed SetEventConfig, invalid key %{public}s, value: %{public}s",
+            key.c_str(), value.c_str());
+    }
+    if (!validConfigMap.empty()) {
+        rtn = EventPolicyUtils::GetInstance().SaveEventConfig(configDir, validConfigMap);
     }
     return rtn;
 }

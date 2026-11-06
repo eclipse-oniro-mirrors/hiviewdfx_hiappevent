@@ -61,7 +61,8 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
         {"appFreezePolicy", {{"pageSwitchLogEnable", napi_boolean}}},
         {"resourceOverlimitPolicy", {
             {"pageSwitchLogEnable", napi_boolean}, {"jsHeapLogtype", napi_string},
-            {"useRefinedLogFileName", napi_boolean}}},
+            {"useRefinedLogFileName", napi_boolean}, {"v8HeapLogEnable", napi_boolean},
+            {"jsvmHeapLogEnable", napi_boolean}}},
         {"addressSanitizerPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
     };
     return eventPolicyItem;
