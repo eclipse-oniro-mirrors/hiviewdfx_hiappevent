@@ -58,6 +58,7 @@ int ApiStatsStorage::Backup(const ApiMetricsMap& apiMetrics)
         return DB_SUCC;
     }
 
+    std::lock_guard<std::mutex> lock(statsMutex_);
     auto& appEventStore = AppEventStore::GetInstance();
     for (const auto& [descriptor, metrics] : apiMetrics) {
         std::string kitName = descriptor.KitName();
@@ -146,6 +147,16 @@ int ApiStatsStorage::Clear()
         HILOG_INFO(LOG_CORE, "clear api stats, ret=%{public}d", ret);
     }
     return ret == NativeRdb::E_OK ? DB_SUCC : DB_FAILED;
+}
+
+int ApiStatsStorage::QueryAndClear(ApiMetricsMap& apiMetrics)
+{
+    std::lock_guard<std::mutex> lock(statsMutex_);
+    if (QueryAll(apiMetrics) != 0) {
+        return DB_FAILED;
+    }
+    Clear();
+    return DB_SUCC;
 }
 
 } // namespace HiAppEvent

@@ -16,6 +16,8 @@
 #ifndef HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_STAT_INCLUDE_API_STATS_STORAGE_H
 #define HIAPPEVENT_FRAMEWORKS_NATIVE_LIB_HIAPPEVENT_STAT_INCLUDE_API_STATS_STORAGE_H
 
+#include <mutex>
+
 #include "api_stats_types.h"
 #include "nocopyable.h"
 
@@ -30,10 +32,13 @@ public:
     int Backup(const ApiMetricsMap& apiMetrics);
     int QueryAll(ApiMetricsMap& apiMetrics);
     int Clear();
+    int QueryAndClear(ApiMetricsMap& apiMetrics);
 
 private:
     ApiStatsStorage();
     ~ApiStatsStorage();
+
+    std::mutex statsMutex_;
 };
 
 } // namespace HiAppEvent

@@ -54,7 +54,7 @@ UserInfo::UserInfo() : userIdVersion_(0), userPropertyVersion_(0)
 int UserInfo::SetUserId(const std::string& name, const std::string& value)
 {
     HILOG_DEBUG(LOG_CORE, "start to set userId.");
-
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     std::string out;
     if (AppEventStore::GetInstance().QueryUserId(name, out) == DB_FAILED) {
         HILOG_WARN(LOG_CORE, "failed to query user id.");
@@ -71,7 +71,6 @@ int UserInfo::SetUserId(const std::string& name, const std::string& value)
             return -1;
         }
     }
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
     userIds_[name] = value;
     userIdVersion_++;
 
@@ -95,12 +94,11 @@ int UserInfo::GetUserId(const std::string& name, std::string& out)
 int UserInfo::RemoveUserId(const std::string& name)
 {
     HILOG_DEBUG(LOG_CORE, "start to remove userId.");
-
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (AppEventStore::GetInstance().DeleteUserId(name) == DB_FAILED) {
         HILOG_WARN(LOG_CORE, "failed to remove userid.");
         return -1;
     }
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (userIds_.find(name) != userIds_.end()) {
         userIds_.erase(name);
         userIdVersion_++;
@@ -112,7 +110,7 @@ int UserInfo::RemoveUserId(const std::string& name)
 int UserInfo::SetUserProperty(const std::string& name, const std::string& value)
 {
     HILOG_DEBUG(LOG_CORE, "start to set userProperty.");
-
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     std::string out;
     if (AppEventStore::GetInstance().QueryUserProperty(name, out) == DB_FAILED) {
         HILOG_WARN(LOG_CORE, "failed to query user property.");
@@ -129,7 +127,6 @@ int UserInfo::SetUserProperty(const std::string& name, const std::string& value)
             return -1;
         }
     }
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
     userProperties_[name] = value;
     userPropertyVersion_++;
 
@@ -153,12 +150,12 @@ int UserInfo::GetUserProperty(const std::string& name, std::string& out)
 int UserInfo::RemoveUserProperty(const std::string& name)
 {
     HILOG_DEBUG(LOG_CORE, "start to remove userProperty.");
-
+    std::lock_guard<std::mutex> lockGuard(g_mutex);
     if (AppEventStore::GetInstance().DeleteUserProperty(name) == DB_FAILED) {
         HILOG_WARN(LOG_CORE, "failed to remove user property.");
         return -1;
     }
-    std::lock_guard<std::mutex> lockGuard(g_mutex);
+
     if (userProperties_.find(name) != userProperties_.end()) {
         userProperties_.erase(name);
         userPropertyVersion_++;

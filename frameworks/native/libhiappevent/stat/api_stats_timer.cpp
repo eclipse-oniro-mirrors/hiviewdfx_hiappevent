@@ -75,30 +75,24 @@ public:
 
     void ExecuteBackUpCallback()
     {
-        std::function<void()> callback;
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            callback = backUpCallback_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!isRunning_ || !backUpCallback_) {
+            return;
         }
         HILOG_DEBUG(LOG_CORE, "ScheduleBackUpTask executing");
-        if (callback) {
-            callback();
-            ScheduleBackUpTask();
-        }
+        backUpCallback_();
+        ScheduleBackUpTask();
     }
 
     void ExecuteReportCallback()
     {
-        std::function<void()> callback;
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            callback = reportCallback_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!isRunning_ || !reportCallback_) {
+            return;
         }
         HILOG_DEBUG(LOG_CORE, "ScheduleReportTask executing");
-        if (callback) {
-            callback();
-            ScheduleReportTask();
-        }
+        reportCallback_();
+        ScheduleReportTask();
     }
 
 private:
