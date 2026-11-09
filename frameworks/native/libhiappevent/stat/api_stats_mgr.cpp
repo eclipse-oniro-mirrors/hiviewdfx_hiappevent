@@ -97,8 +97,8 @@ void ApiStatsManager::ScheduleReport()
     ApiStatsManager::ScheduleBackUpInner(tmpAggregator);
     
     ApiMetricsMap apiMetrics;
-    if (ApiStatsStorage::GetInstance().QueryAll(apiMetrics) != 0) {
-        HILOG_ERROR(LOG_CORE, "failed to query api stats for report");
+    if (ApiStatsStorage::GetInstance().QueryAndClear(apiMetrics) != 0) {
+        HILOG_ERROR(LOG_CORE, "failed to query and clear api stats for report");
         return;
     }
     
@@ -106,12 +106,6 @@ void ApiStatsManager::ScheduleReport()
     auto reports = ApiStatsAggregator::AggregateStats(apiMetrics);
     
     ReportStats(reports);
-    
-    if (ApiStatsStorage::GetInstance().Clear() != 0) {
-        HILOG_ERROR(LOG_CORE, "failed to clear api stats after report");
-    } else {
-        HILOG_DEBUG(LOG_CORE, "ScheduleReport: clear success");
-    }
 }
 
 std::shared_ptr<AppEventPack> ApiStatsManager::ConvertReportToEventPack(const ApiStatsReport& report)
