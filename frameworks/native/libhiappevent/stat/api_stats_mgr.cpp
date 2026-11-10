@@ -40,7 +40,11 @@ ApiStatsManager::ApiStatsManager()
     timer_.SetReportCallback([this]() {
         this->ScheduleReport();
     });
+#ifndef FUZZ_TEST
+    // fuzz env: delayed FFRT tasks referencing 'this' outlive the singleton
+    // destructor at process exit, causing SIGSEGV in the callback lambda
     timer_.Start();
+#endif
 }
 
 ApiStatsManager::~ApiStatsManager()

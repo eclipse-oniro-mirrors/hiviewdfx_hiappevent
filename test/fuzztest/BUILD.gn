@@ -14,12 +14,15 @@
 group("hiappevent_fuzztest") {
   testonly = true
   deps = [
-    "hiappeventwrite_fuzzer:HiAppEventWriteFuzzTest",
-    "hiappeventconfigure_fuzzer:HiAppEventConfigureFuzzTest",
-    "hiappeventwatcher_fuzzer:HiAppEventWatcherFuzzTest",
-    "hiappeventprocessor_fuzzer:HiAppEventProcessorFuzzTest",
-    "hiappeventconfig_fuzzer:HiAppEventConfigFuzzTest",
-    "hiappeventinnerevent_fuzzer:HiAppEventInnerEventFuzzTest",
-    "hiappeventinnerprocessor_fuzzer:HiAppEventInnerProcessorFuzzTest",
+    "cache_fuzzer:CacheFuzzTest",
+    "hiappevent_fuzzer:HiAppEventFuzzTest",
+    "load_fuzzer:LoadFuzzTest",
+    "ndk_fuzzer:NdkFuzzTest",
+    "innerapi_fuzzer:InnerapiFuzzTest",
+    "cleaner_fuzzer:CleanerFuzzTest",
+    "observer_fuzzer:ObserverFuzzTest",
+    "policy_fuzzer:PolicyFuzzTest",
+    "stat_fuzzer:StatFuzzTest",
+    "utility_fuzzer:UtilityFuzzTest",
   ]
 }

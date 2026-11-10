@@ -230,7 +230,7 @@ std::string HiAppEventConfig::GetStorageDir()
         return storageDir_;
     }
 #ifdef FUZZ_TEST
-    storageDir_ = "/data/fuzz/hiappevent/";
+    storageDir_ = "/data/test/fuzz/hiappevent/";
     return storageDir_;
 #endif
     std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =

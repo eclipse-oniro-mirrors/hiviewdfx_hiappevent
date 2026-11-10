@@ -109,6 +109,9 @@ int EventPolicyUtils::ConfigPageSwitch(const std::string& eventName, std::map<st
 
 std::string EventPolicyUtils::GetConfigDir(const std::string& subDir)
 {
+#ifdef FUZZ_TEST
+    return "/data/test/fuzz/hiappevent"; // valid path without IPC, unblocks policy paths
+#else
     auto context = OHOS::AbilityRuntime::Context::GetApplicationContext();
     if (!context || context->GetFilesDir().empty()) {
         HILOG_ERROR(LOG_CORE, "Context is null or files dir is empty.");
@@ -137,6 +140,7 @@ std::string EventPolicyUtils::GetConfigDir(const std::string& subDir)
         return "";
     }
     return newConfigDir;
+#endif
 }
 
 bool EventPolicyUtils::GetEventPageSwitchStatus(const std::string& eventName)
