@@ -20,15 +20,13 @@
 
 void FuzzApiStatsTimer(const uint8_t* data, size_t size)
 {
-    // static timer avoids rapid create/destroy cycles: stack timers submit
-    // delayed FFRT tasks on each Start() that reference destroyed impls
-    static OHOS::HiviewDFX::HiAppEvent::ApiStatsTimer t;
-    t.SetBackUpCallback([]() {});
-    t.SetReportCallback([]() {});
-    // restrict Start() frequency via fuzz data to bound delayed task count,
-    // otherwise each iteration submits 2 tasks and floods the FFRT queue
-    if (size > 0 && data[0] == 0) {
+    static OHOS::HiviewDFX::HiAppEvent::ApiStatsTimer t = []() {
+        OHOS::HiviewDFX::HiAppEvent::ApiStatsTimer t;
         t.Start();
-    }
-    t.Stop();
+        t.SetBackUpCallback(nullptr);
+        t.SetBackUpCallback([]() {});
+        t.SetReportCallback(nullptr);
+        t.SetReportCallback([]() {});
+        return t;
+    } ();
 }
