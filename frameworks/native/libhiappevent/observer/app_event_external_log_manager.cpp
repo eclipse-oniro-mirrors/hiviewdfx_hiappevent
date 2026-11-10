@@ -32,10 +32,18 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+#ifdef FUZZ_TEST
+std::unordered_map<std::string, uint64_t> externalLogSize = {
+    { "/data/test/fuzz/hiappevent/", 4 * 1024 * 1024 },
+    { "/data/test/fuzz/hiappevent/resourcelimit", 1500 * 1024 * 1024 },
+};
+#else
 std::unordered_map<std::string, uint64_t> externalLogSize = {
     { "/data/storage/el2/log/hiappevent", 4 * 1024 * 1024 },
     { "/data/storage/el2/log/resourcelimit", 1500 * 1024 * 1024 },
 };
+#endif
+
 constexpr size_t MIN_TIMESTAMP_LEN = 10;
 constexpr size_t MAX_TIMESTAMP_LEN = 13;
 

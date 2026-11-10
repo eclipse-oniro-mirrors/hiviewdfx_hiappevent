@@ -51,7 +51,11 @@ const char* const EVENT_CONFIG_REALTIME = "isRealTime";
 const char* const CONFIG_ID = "configId";
 const char* const CUSTOM_CONFIG = "customConfigs";
 
+#ifdef FUZZ_TEST
+const char* const PROCESSOR_CONFIG_PATH = "/data/test/fuzz/hiappevent/processor.json";
+#else
 const char* const PROCESSOR_CONFIG_PATH = "/system/etc/hiappevent/processor.json";
+#endif
 
 struct ConfigProp {
     const char* const key;

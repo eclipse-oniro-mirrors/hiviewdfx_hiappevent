@@ -440,6 +440,13 @@ ohos_unittest("HiAppEventExternalLogTest") {
   ]
 }
 
+group("fuzztest") {
+  testonly = true
+  deps = [
+    "fuzztest:hiappevent_fuzztest",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = [
@@ -457,6 +464,5 @@ group("unittest") {
     ":HiAppEventVerifyTest",
     ":HiAppEventWatcherTest",
     "unittest/common/napi:unittest",
-    "fuzztest:hiappevent_fuzztest",
   ]
 }

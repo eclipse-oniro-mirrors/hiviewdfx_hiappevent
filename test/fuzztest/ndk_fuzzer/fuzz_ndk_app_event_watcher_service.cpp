@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <cstdint>
+#include <string>
+#include "hiappevent_base.h"
+#include "ndk_app_event_watcher_service.h"
+#include "fuzz_cases.h"
+
+namespace {
+constexpr size_t FUZZ_KEY_MAX_LEN = 32;
+constexpr size_t MIN_FUZZ_DATA_SIZE = 2;
+constexpr int EVENT_TYPE_COUNT = 4;
+constexpr int EVENT_TYPE_FIRST = 1;
+constexpr int EVENT_SIZE_FACTOR = 100;
+constexpr size_t FUZZ_NAME_MAX_LEN = 48;
+constexpr size_t DEFAULT_STR_MAX_LEN = 64;
+constexpr int EVENT_NAME_COUNT = 1;
+constexpr size_t HALF_DIVISOR = 2;
+}
+
+static std::string FuzzStr(const uint8_t* data, size_t size, size_t maxLen = DEFAULT_STR_MAX_LEN)
+{
+    return std::string(reinterpret_cast<const char*>(data), std::min(size, maxLen));
+}
+
+static std::string FuzzStr2(const uint8_t* data, size_t size, size_t maxLen = FUZZ_NAME_MAX_LEN)
+{
+    if (size < MIN_FUZZ_DATA_SIZE) {
+        return "x";
+    }
+    size_t half = size / HALF_DIVISOR;
+    return std::string(reinterpret_cast<const char*>(data + half), std::min(size - half, maxLen));
+}
+
+void FuzzNdkAppEventWatcherService(const uint8_t* data, size_t size)
+{
+    if (size < MIN_FUZZ_DATA_SIZE) {
+        return;
+    }
+    std::string n = FuzzStr(data, size, FUZZ_KEY_MAX_LEN);
+    std::string d = FuzzStr2(data, size, FUZZ_KEY_MAX_LEN);
+    HiAppEvent_Watcher* w = CreateWatcher(n.c_str());
+    if (w) {
+        const char* names[] = {"APP_CRASH"};
+        SetAppEventFilter(w, d.c_str(), data[0] % EVENT_TYPE_COUNT + EVENT_TYPE_FIRST, names, EVENT_NAME_COUNT);
+        SetTriggerCondition(w, data[0], data[0] * EVENT_SIZE_FACTOR, data[1]);
+        SetWatcherOnTrigger(w, nullptr);
+        SetWatcherOnReceiver(w, nullptr);
+        AddWatcher(w);
+        TakeWatcherData(w, EVENT_SIZE_FACTOR, nullptr);
+        RemoveWatcher(w);
+        DestroyWatcher(w);
+    }
+}

@@ -1,0 +1,131 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//base/hiviewdfx/hiappevent/hiappevent.gni")
+import("//build/config/features.gni")
+import("//build/test.gni")
+
+module_output_path = "hiappevent/hiappevent"
+
+ohos_fuzztest("PolicyFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "$hiappevent_path/test/fuzztest/policy_fuzzer"
+
+  sources = [
+    "policy_fuzzer.cpp",
+    "fuzz_address_sanitizer_policy.cpp",
+    "fuzz_app_crash_policy.cpp",
+    "fuzz_app_freeze_policy.cpp",
+    "fuzz_cpu_usage_high_policy.cpp",
+    "fuzz_event_policy_mgr.cpp",
+    "fuzz_event_policy_utils.cpp",
+    "fuzz_main_thread_jank_policy.cpp",
+    "fuzz_resource_overlimit_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_facade.cpp",
+    "$hiappevent_framework/native/libhiappevent/app_event_util.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_base.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_c.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_clean.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_config.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_userinfo.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_verify.cpp",
+    "$hiappevent_framework/native/libhiappevent/hiappevent_write.cpp",
+    "$hiappevent_framework/native/libhiappevent/load/module_loader.cpp",
+    "$hiappevent_framework/native/libhiappevent/load/processor_config_loader.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/app_event_observer.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/app_event_observer_mgr.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/app_event_external_log_manager.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/app_event_processor_proxy.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/app_event_watcher.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/app_state_callback.cpp",
+    "$hiappevent_framework/native/libhiappevent/observer/os_event_listener.cpp",
+    "$hiappevent_test_fuzz/init/appevent_store_init.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/api_stats_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/app_event_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/app_event_mapping_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/app_event_observer_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/app_event_store.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/custom_event_param_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/user_id_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cache/user_property_dao.cpp",
+    "$hiappevent_framework/native/libhiappevent/cleaner/app_event_db_cleaner.cpp",
+    "$hiappevent_framework/native/libhiappevent/cleaner/app_event_log_cleaner.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/address_sanitizer_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/app_crash_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/app_freeze_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/cpu_usage_high_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/event_policy_mgr.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/event_policy_utils.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/main_thread_jank_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/policy/resource_overlimit_policy.cpp",
+    "$hiappevent_framework/native/libhiappevent/stat/api_stats_aggregator.cpp",
+    "$hiappevent_framework/native/libhiappevent/stat/api_stats_mgr.cpp",
+    "$hiappevent_framework/native/libhiappevent/stat/api_stats_storage.cpp",
+    "$hiappevent_framework/native/libhiappevent/stat/api_stats_timer.cpp",
+    "$hiappevent_framework/native/libhiappevent/stat/hiappevent_api_metric.cpp",
+    "$hiappevent_framework/native/libhiappevent/utility/app_event_stat.cpp",
+    "$hiappevent_framework/native/libhiappevent/utility/event_json_util.cpp",
+    "$hiappevent_framework/native/libhiappevent/utility/file_util.cpp",
+    "$hiappevent_framework/native/libhiappevent/utility/sql_util.cpp",
+    "$hiappevent_framework/native/libhiappevent/utility/time_util.cpp",
+  ]
+
+  defines = [ "FUZZ_TEST" ]
+
+  cflags_cc = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
+
+  include_dirs = [
+    "$hiappevent_framework/native/libhiappevent/include",
+    "$hiappevent_framework/native/libhiappevent/cache/include",
+    "$hiappevent_framework/native/libhiappevent/cleaner/include",
+    "$hiappevent_framework/native/libhiappevent/observer/include",
+    "$hiappevent_framework/native/libhiappevent/policy/include",
+    "$hiappevent_framework/native/libhiappevent/stat/include",
+    "$hiappevent_framework/native/libhiappevent/utility/include",
+    "$hiappevent_framework/native/libhiappevent/load/include",
+    "$hiappevent_framework/native/libhiappevent",
+    "$hiappevent_interfaces/native/inner_api/include",
+    "$hiappevent_interfaces/native/kits/include",
+    "$hiappevent_test_fuzz/init/",
+  ]
+
+
+
+  external_deps = [
+    "ability_base:configuration",
+    "ability_runtime:app_context",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hilog:libsandboxlog",
+    "hitrace:libhitracechain",
+    "hisysevent:libhisysevent",
+    "icu:shared_icuuc",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "ipc:ipc_core",
+    "jsoncpp:jsoncpp",
+    "relational_store:native_rdb",
+    "resource_management:global_resmgr",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_acl",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+
+  part_name = "hiappevent"
+  subsystem_name = "hiviewdfx"
+}

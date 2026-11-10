@@ -152,6 +152,7 @@ void ApiStatsTimer::SetReportCallback(std::function<void()> callback)
     impl_->SetReportCallback(callback);
 }
 
+#ifndef FUZZ_TEST
 void ApiStatsTimer::ExecuteBackUpCallback()
 {
     impl_->ExecuteBackUpCallback();
@@ -161,6 +162,7 @@ void ApiStatsTimer::ExecuteReportCallback()
 {
     impl_->ExecuteReportCallback();
 }
+#endif
 
 } // namespace HiAppEvent
 } // namespace HiviewDFX

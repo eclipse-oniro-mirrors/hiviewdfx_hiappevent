@@ -99,6 +99,7 @@ void ReportAppEventReceive(const std::vector<std::shared_ptr<AppEventPack>>& app
     }
 }
 
+#ifndef FUZZ_TEST
 sptr<AppExecFwk::IBundleMgr> GetBundleManager()
 {
     auto systemManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -114,6 +115,12 @@ sptr<AppExecFwk::IBundleMgr> GetBundleManager()
     sptr<AppExecFwk::IBundleMgr> bundleMgrProxy = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
     return bundleMgrProxy;
 }
+#else
+sptr<AppExecFwk::IBundleMgr> GetBundleManager()
+{
+    return nullptr; // bundle manager service unavailable in fuzz env
+}
+#endif
 
 AppExecFwk::BundleInfo* GetBundleInfo()
 {
