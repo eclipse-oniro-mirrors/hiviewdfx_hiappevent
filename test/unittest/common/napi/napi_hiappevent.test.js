@@ -854,6 +854,73 @@ describe('HiAppEventJsTest', function () {
     });
 
     /**
+     * @tc.number HiAppEventJsTest015
+     * @tc.name: HiAppEventJsTest015
+     * @tc.desc: Test the dollar sign rule of the event name and the event domain.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest015', 0, async function (done) {
+        console.info('HiAppEventJsTest015 start');
+
+        // the dollar sign is only allowed as the first char of the event name
+        let nameErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
+        writeNameV9Test("$dollar_name", null, done);
+        writeNameV9Test("dollar_name$", nameErr, done);
+        writeNameV9Test("dollar_$name", nameErr, done);
+        writeNameTest("$dollar_name", 0, done);
+
+        // the dollar sign is not allowed in the event domain
+        let domainErr = createError(11101001, "Invalid event domain. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
+        writeDomainV9Test("$dollar_domain", domainErr, done);
+    });
+
+    /**
+     * @tc.number HiAppEventJsTest016
+     * @tc.name: HiAppEventJsTest016
+     * @tc.desc: Test the length boundary of the event name with the hiappevent. prefix.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest016', 0, async function (done) {
+        console.info('HiAppEventJsTest016 start');
+        const MAX_LENGTH_OF_EVENT_NAME = 48;
+        const EVENT_NAME_PREFIX = "hiappevent.";
+        const MAX_LEN_OF_PREFIXED_NAME = MAX_LENGTH_OF_EVENT_NAME - EVENT_NAME_PREFIX.length;
+
+        let expectErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
+            "2. Length is invalid.");
+        writeNameV9Test(EVENT_NAME_PREFIX + "a".repeat(MAX_LEN_OF_PREFIXED_NAME), null, done);
+        writeNameV9Test(EVENT_NAME_PREFIX + "a".repeat(MAX_LEN_OF_PREFIXED_NAME - 1), null, done);
+        writeNameV9Test(EVENT_NAME_PREFIX + "a".repeat(MAX_LEN_OF_PREFIXED_NAME + 1), expectErr, done);
+    });
+
+    /**
+     * @tc.number HiAppEventJsTest017
+     * @tc.name: HiAppEventJsTest017
+     * @tc.desc: Test the special string length limit of the crash/anr event param.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsTest017', 0, async function (done) {
+        console.info('HiAppEventJsTest017 start');
+        const MAX_LENGTH_OF_STR_PARAM = 8 * 1024;
+        const MAX_LENGTH_OF_SPECIAL_STR_PARAM = 1024 * 1024;
+
+        // the param named crash or anr supports a larger string length
+        writeParamsV9Test({"crash": "a".repeat(MAX_LENGTH_OF_STR_PARAM + 1)}, null, done);
+        writeParamsV9Test({"anr": "a".repeat(MAX_LENGTH_OF_SPECIAL_STR_PARAM)}, null, done);
+        writeParamsTest({"crash": "a".repeat(MAX_LENGTH_OF_STR_PARAM + 1)}, 0, done);
+
+        // the string length of the special param exceeds the limit
+        let expectErr = createError(11101004, "Invalid string length of the event parameter.");
+        writeParamsV9Test({"crash": "a".repeat(MAX_LENGTH_OF_SPECIAL_STR_PARAM + 1)}, expectErr, done);
+        writeParamsTest({"anr": "a".repeat(MAX_LENGTH_OF_SPECIAL_STR_PARAM + 1)}, 4, done);
+    });
+
+    /**
      * @tc.number HiAppEventJsPresetTest001_1
      * @tc.name: HiAppEventJsPresetTest001_1
      * @tc.desc: Test preset events and preset parameters.
@@ -900,6 +967,64 @@ describe('HiAppEventJsTest', function () {
             },
         };
         writeV9Test(eventInfo, null, done);
+    });
+
+    /**
+     * @tc.number HiAppEventJsEnumTest001
+     * @tc.name: HiAppEventJsEnumTest001
+     * @tc.desc: Test the values of the preset enums.
+     * @tc.type: FUNC
+     * @tc.require: issueI4BY0R
+     */
+    it('HiAppEventJsEnumTest001', 0, function () {
+        console.info('HiAppEventJsEnumTest001 start');
+
+        // test the values of the EventType enum
+        expect(hiAppEvent.EventType.FAULT).assertEqual(1);
+        expect(hiAppEvent.EventType.STATISTIC).assertEqual(2);
+        expect(hiAppEvent.EventType.SECURITY).assertEqual(3);
+        expect(hiAppEvent.EventType.BEHAVIOR).assertEqual(4);
+        expect(hiAppEventV9.EventType.FAULT).assertEqual(1);
+        expect(hiAppEventV9.EventType.STATISTIC).assertEqual(2);
+        expect(hiAppEventV9.EventType.SECURITY).assertEqual(3);
+        expect(hiAppEventV9.EventType.BEHAVIOR).assertEqual(4);
+
+        // test the values of the preset events
+        expect(hiAppEvent.Event.USER_LOGIN).assertEqual("hiappevent.user_login");
+        expect(hiAppEvent.Event.USER_LOGOUT).assertEqual("hiappevent.user_logout");
+        expect(hiAppEvent.Event.DISTRIBUTED_SERVICE_START).assertEqual("hiappevent.distributed_service_start");
+        expect(hiAppEventV9.event.USER_LOGIN).assertEqual("hiappevent.user_login");
+        expect(hiAppEventV9.event.USER_LOGOUT).assertEqual("hiappevent.user_logout");
+        expect(hiAppEventV9.event.DISTRIBUTED_SERVICE_START).assertEqual("hiappevent.distributed_service_start");
+
+        // test the values of the preset OS events
+        expect(hiAppEventV9.event.APP_CRASH).assertEqual("APP_CRASH");
+        expect(hiAppEventV9.event.APP_FREEZE).assertEqual("APP_FREEZE");
+        expect(hiAppEventV9.event.appFreezeWarning).assertEqual("APPFREEZE_WARNING");
+        expect(hiAppEventV9.event.APP_LAUNCH).assertEqual("APP_LAUNCH");
+        expect(hiAppEventV9.event.APP_KILLED).assertEqual("APP_KILLED");
+        expect(hiAppEventV9.event.SCROLL_JANK).assertEqual("SCROLL_JANK");
+        expect(hiAppEventV9.event.CPU_USAGE_HIGH).assertEqual("CPU_USAGE_HIGH");
+        expect(hiAppEventV9.event.BATTERY_USAGE).assertEqual("BATTERY_USAGE");
+        expect(hiAppEventV9.event.RESOURCE_OVERLIMIT).assertEqual("RESOURCE_OVERLIMIT");
+        expect(hiAppEventV9.event.ADDRESS_SANITIZER).assertEqual("ADDRESS_SANITIZER");
+        expect(hiAppEventV9.event.MAIN_THREAD_JANK).assertEqual("MAIN_THREAD_JANK");
+        expect(hiAppEventV9.event.AUDIO_JANK_FRAME).assertEqual("AUDIO_JANK_FRAME");
+        expect(hiAppEventV9.event.APP_HICOLLIE).assertEqual("APP_HICOLLIE");
+        expect(hiAppEventV9.event.SCROLL_ARKWEB_FLING_JANK).assertEqual("SCROLL_ARKWEB_FLING_JANK");
+
+        // test the values of the preset params
+        expect(hiAppEvent.Param.USER_ID).assertEqual("user_id");
+        expect(hiAppEvent.Param.DISTRIBUTED_SERVICE_NAME).assertEqual("ds_name");
+        expect(hiAppEvent.Param.DISTRIBUTED_SERVICE_INSTANCE_ID).assertEqual("ds_instance_id");
+        expect(hiAppEventV9.param.USER_ID).assertEqual("user_id");
+        expect(hiAppEventV9.param.DISTRIBUTED_SERVICE_NAME).assertEqual("ds_name");
+        expect(hiAppEventV9.param.DISTRIBUTED_SERVICE_INSTANCE_ID).assertEqual("ds_instance_id");
+
+        // test the values of the preset domain
+        expect(hiAppEventV9.domain.OS).assertEqual("OS");
+
+        console.info('HiAppEventJsEnumTest001 end');
     });
 
     /**

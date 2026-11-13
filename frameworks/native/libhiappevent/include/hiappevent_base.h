@@ -16,8 +16,11 @@
 #ifndef HI_APP_EVENT_BASE_H
 #define HI_APP_EVENT_BASE_H
 
+#include <cstdint>
 #include <list>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -51,6 +54,44 @@ const int ERROR_HIAPPEVENT_DISABLE = -99;
 const int ERROR_UNKNOWN = -100;
 const int ERROR_NOT_APP = -200;
 } // namespace ErrorCode
+
+/**
+ * HiAppEvent js error code
+ */
+namespace JsErrorCode {
+constexpr int ERR_OK = 0;
+// common api error
+constexpr int ERR_PARAM = 401;
+
+// business error of write function
+constexpr int ERR_DISABLE = 11100001;
+constexpr int ERR_INVALID_DOMAIN = 11101001;
+constexpr int ERR_INVALID_NAME = 11101002;
+constexpr int ERR_INVALID_PARAM_NUM = 11101003;
+constexpr int ERR_INVALID_STR_LEN = 11101004;
+constexpr int ERR_INVALID_KEY = 11101005;
+constexpr int ERR_INVALID_ARR_LEN = 11101006;
+constexpr int ERR_INVALID_CUSTOM_PARAM_NUM = 11101007;
+
+// business error of addWatcher function
+constexpr int ERR_INVALID_WATCHER_NAME = 11102001;
+constexpr int ERR_INVALID_FILTER_DOMAIN = 11102002;
+constexpr int ERR_INVALID_COND_ROW = 11102003;
+constexpr int ERR_INVALID_COND_SIZE = 11102004;
+constexpr int ERR_INVALID_COND_TIMEOUT = 11102005;
+
+// business error of configure function
+constexpr int ERR_INVALID_MAX_STORAGE = 11103001;
+
+// business error of AppEventPackageHolder.setSize function
+constexpr int ERR_INVALID_SIZE = 11104001;
+
+// business error for incorrect parameter length or format
+constexpr int ERR_INVALID_PARAM_VALUE = 11105001;
+
+// business error of registerExternalLogManager function
+constexpr int ERR_LOG_MANAGER_ALREADY_REGISTERED = 11106001;
+} // namespace JsErrorCode
 
 /**
  * HiLog hiappevent domain code

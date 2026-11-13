@@ -21,6 +21,7 @@
 
 #include "application_context.h"
 #include "hiappevent/hiappevent.h"
+#include "hiappevent/hiappevent_event.h"
 #include "hiappevent_base.h"
 #include "hiappevent_facade.h"
 #include "hiappevent_test_common.h"
@@ -1050,11 +1051,81 @@ HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest036, TestSize.Level0)
                 frameworkVersion.c_str(), description.c_str());
     ASSERT_EQ(res, HIAPPEVENT_INVALID_PARAM_VALUE);
     description = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
-        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, length bigger than 128";
+        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, length bigger than 128";
     res = OH_HiAppEvent_ReportFrameworkMemAnomaly(OH_FLUTTER_DART, frameworkVersion.c_str(), description.c_str());
     sleep(4); // wait 4s for hiappevent.write and hisysevent.write complete
     ASSERT_EQ(res, HIAPPEVENT_SUCCESS);
     description = "";
     res = OH_HiAppEvent_ReportFrameworkMemAnomaly(OH_KMP_KOTLIN, frameworkVersion.c_str(), description.c_str());
     ASSERT_EQ(res, HIAPPEVENT_REPORT_FREQUENCY_EXCEEDED);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest037
+ * @tc.desc: check the interface of OH_HiAppEvent_SetEventConfig with APP_CRASH full configs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest037, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. create event config and set all crash config items.
+     * @tc.steps: step2. call OH_HiAppEvent_SetEventConfig with APP_CRASH.
+     * @tc.steps: step3. check the result is successful.
+     */
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    ASSERT_NE(config, nullptr);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "extend_pc_lr_printing", "true"), HIAPPEVENT_SUCCESS);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "log_file_cutoff_sz_bytes", "1024"), HIAPPEVENT_SUCCESS);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "simplify_vma_printing", "true"), HIAPPEVENT_SUCCESS);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "merge_cppcrash_app_log", "true"), HIAPPEVENT_SUCCESS);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "collect_minidump", "true"), HIAPPEVENT_SUCCESS);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "publishOnNextLaunch", "true"), HIAPPEVENT_SUCCESS);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "pageSwitchLogEnable", "true"), HIAPPEVENT_SUCCESS);
+    int res = OH_HiAppEvent_SetEventConfig("APP_CRASH", config);
+    // pageSwitchLogEnable and publishOnNextLaunch depend on the application context sandbox dir,
+    // which is unavailable in the native test env, so the result is an invalid param value here.
+    EXPECT_EQ(res, HIAPPEVENT_INVALID_PARAM_VALUE);
+    OH_HiAppEvent_DestroyConfig(config);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest038
+ * @tc.desc: check the interface of OH_HiAppEvent_SetEventConfig with RESOURCE_OVERLIMIT configs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest038, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. create event config and set resource overlimit config items.
+     * @tc.steps: step2. call OH_HiAppEvent_SetEventConfig with RESOURCE_OVERLIMIT.
+     * @tc.steps: step3. check the result is successful.
+     */
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    ASSERT_NE(config, nullptr);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "useRefinedLogFileName", "true"), HIAPPEVENT_SUCCESS);
+    int res = OH_HiAppEvent_SetEventConfig("RESOURCE_OVERLIMIT", config);
+    EXPECT_EQ(res, HIAPPEVENT_SUCCESS);
+    OH_HiAppEvent_DestroyConfig(config);
+}
+
+/**
+ * @tc.name: HiAppEventNDKTest039
+ * @tc.desc: check the interface of OH_HiAppEvent_SetEventConfig with invalid params.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventNativeTest, HiAppEventNDKTest039, TestSize.Level0)
+{
+    /**
+     * @tc.steps: step1. create event config with invalid value.
+     * @tc.steps: step2. call OH_HiAppEvent_SetEventConfig with APP_CRASH.
+     * @tc.steps: step3. check the result is failed.
+     */
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    ASSERT_NE(config, nullptr);
+    EXPECT_EQ(OH_HiAppEvent_SetConfigItem(config, "log_file_cutoff_sz_bytes", "abc"), HIAPPEVENT_SUCCESS);
+    int res = OH_HiAppEvent_SetEventConfig("APP_CRASH", config);
+    EXPECT_EQ(res, HIAPPEVENT_INVALID_PARAM_VALUE);
+    OH_HiAppEvent_DestroyConfig(config);
+    res = OH_HiAppEvent_SetEventConfig(nullptr, nullptr);
+    EXPECT_EQ(res, HIAPPEVENT_INVALID_PARAM_VALUE);
 }

@@ -888,7 +888,7 @@ ani_object HiAppEventAniHelper::AddWatcher(ani_env *env, ani_object watcher, uin
     int32_t errCode = ERR_CODE_SUCC;
     if (!IsValidWatcher(env, watcher, errCode)) {
         HILOG_ERROR(LOG_CORE, "invalid watcher");
-        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, errCode);
+        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, errCode, ApiType::ANI);
         return {};
     }
     std::vector<AppEventFilter> filters;
@@ -918,13 +918,14 @@ ani_object HiAppEventAniHelper::AddWatcher(ani_env *env, ani_object watcher, uin
     int64_t observerSeq = AppEventObserverFacade::AddWatcher(watcherPtr);
     if (observerSeq <= 0) {
         HILOG_ERROR(LOG_CORE, "invalid observer sequence");
-        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, ERR_CODE_SUCC);
+        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, ERR_CODE_SUCC,
+            ApiType::ANI);
         return {};
     }
 
     ani_object holder = CreateHolderObject(env, HiAppEventAniUtil::CreateAniString(env, name));
     watcherPtr->InitHolder(env, holder);
-    AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC);
+    AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC, ApiType::ANI);
     return static_cast<ani_object>(holder);
 }
 
@@ -933,10 +934,10 @@ void HiAppEventAniHelper::RemoveWatcher(ani_env *env, ani_object watcher, uint64
     ani_ref nameRef = HiAppEventAniUtil::GetProperty(env, watcher, WATCHER_NAME);
     int32_t errCode = ERR_CODE_SUCC;
     if (!IsValidName(env, nameRef, errCode)) {
-        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, errCode);
+        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, errCode, ApiType::ANI);
         return;
     }
     (void)AppEventObserverFacade::RemoveObserver(HiAppEventAniUtil::ParseStringValue(env, nameRef));
-    AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC);
-    return;
+    AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC,
+        ApiType::ANI);
 }

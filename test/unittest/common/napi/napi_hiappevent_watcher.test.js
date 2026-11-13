@@ -1108,4 +1108,126 @@ describe('HiAppEventJsTest', function () {
             })
         });
     });
+
+    /**
+     * @tc.name: HiAppEventWatcherTest028
+     * @tc.desc: test the addWatcher func with invalid watcher appEventFilter.names.
+     * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
+     */
+    it('HiAppEventWatcherTest028', 0, function () {
+        function namesTest(names, expectErr) {
+            appEventFiltersTest([{domain: TEST_DOMAIN, names: names}], expectErr);
+        }
+        // invalid appEventFilter.names type
+        let expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].names type mismatch. " +
+            "Expected: string[], Actual: null.")
+        namesTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].names type mismatch. " +
+            "Expected: string[], Actual: string.")
+        namesTest("invalid", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].names type mismatch. " +
+            "Expected: string[], Actual: number.")
+        namesTest(123, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].names type mismatch. " +
+            "Expected: string[], Actual: boolean.")
+        namesTest(true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].names type mismatch. " +
+            "Expected: string[], Actual: array.")
+        namesTest([123, 456], expectErr);
+        namesTest([TEST_NAME, 123], expectErr);
+
+        // valid appEventFilter.names
+        namesTest([], null);
+        namesTest([TEST_NAME], null);
+        namesTest([TEST_NAME, "name_1"], null);
+    });
+
+    /**
+     * @tc.name: HiAppEventWatcherTest029
+     * @tc.desc: test the addWatcher func with invalid watcher onReceive.
+     * @tc.type: FUNC
+     * @tc.require: issueI5LB4N
+     */
+    it('HiAppEventWatcherTest029', 0, function () {
+        function onReceiveTest(onReceive, expectErr) {
+            try {
+                hiAppEventV9.addWatcher({
+                    name: "watcher029",
+                    onReceive: onReceive
+                });
+                hiAppEventV9.removeWatcher({name: "watcher029"});
+            } catch (err) {
+                assertErrorEqual(err, expectErr);
+            }
+        }
+        // invalid onReceive type
+        let expectErr = createError(401, "Parameter error. Param[0].onReceive type mismatch. " +
+            "Expected: function, Actual: null.")
+        onReceiveTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].onReceive type mismatch. " +
+            "Expected: function, Actual: string.")
+        onReceiveTest("invalid", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].onReceive type mismatch. " +
+            "Expected: function, Actual: number.")
+        onReceiveTest(123, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].onReceive type mismatch. " +
+            "Expected: function, Actual: boolean.")
+        onReceiveTest(true, expectErr);
+
+        // valid onReceive type
+        onReceiveTest(simpleReceive, null);
+    });
+
+    /**
+     * @tc.name: HiAppEventWatcherTest030
+     * @tc.desc: test the holder.setRow func.
+     * @tc.type: FUNC
+     * @tc.require: issueI5NTOD
+     */
+    it('HiAppEventWatcherTest030', 0, function () {
+        let watcher = {
+            name: "watcher030",
+        };
+        let holder = hiAppEventV9.addWatcher(watcher);
+        expect(holder != null).assertTrue();
+
+        // row not passed in
+        try {
+            holder.setRow();
+        } catch (err) {
+            let expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 1, Actual: 0.")
+            assertErrorEqual(err, expectErr);
+        }
+
+        // invalid row type
+        function holderSetRowTest(holder, row, expectErr) {
+            try {
+                holder.setRow(row);
+            } catch (err) {
+                assertErrorEqual(err, expectErr);
+            }
+        }
+        let expectErr = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
+        holderSetRowTest(holder, null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: number, Actual: string.")
+        holderSetRowTest(holder, "str", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: number, Actual: boolean.")
+        holderSetRowTest(holder, true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: number, Actual: object.")
+        holderSetRowTest(holder, {}, expectErr);
+
+        // invalid row value, both zero and negative values are invalid
+        expectErr = createError(11104001,
+            "Invalid size value. Possibly caused by the size value is less than or equal to zero.");
+        holderSetRowTest(holder, -1, expectErr);
+        holderSetRowTest(holder, 0, expectErr);
+
+        // valid row value
+        holder.setRow(1);
+        // zero is a valid size value
+        holder.setSize(0);
+
+        hiAppEventV9.removeWatcher(watcher);
+    });
 });

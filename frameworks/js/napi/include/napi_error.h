@@ -18,41 +18,43 @@
 
 #include <string>
 
+#include "hiappevent_base.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace NapiError {
-constexpr int ERR_OK = 0;
+constexpr int ERR_OK = JsErrorCode::ERR_OK;
 // common api error
-constexpr int ERR_PARAM = 401;
+constexpr int ERR_PARAM = JsErrorCode::ERR_PARAM;
 
 // business error of write function
-constexpr int ERR_DISABLE = 11100001;
-constexpr int ERR_INVALID_DOMAIN = 11101001;
-constexpr int ERR_INVALID_NAME = 11101002;
-constexpr int ERR_INVALID_PARAM_NUM = 11101003;
-constexpr int ERR_INVALID_STR_LEN = 11101004;
-constexpr int ERR_INVALID_KEY = 11101005;
-constexpr int ERR_INVALID_ARR_LEN = 11101006;
-constexpr int ERR_INVALID_CUSTOM_PARAM_NUM = 11101007;
+constexpr int ERR_DISABLE = JsErrorCode::ERR_DISABLE;
+constexpr int ERR_INVALID_DOMAIN = JsErrorCode::ERR_INVALID_DOMAIN;
+constexpr int ERR_INVALID_NAME = JsErrorCode::ERR_INVALID_NAME;
+constexpr int ERR_INVALID_PARAM_NUM = JsErrorCode::ERR_INVALID_PARAM_NUM;
+constexpr int ERR_INVALID_STR_LEN = JsErrorCode::ERR_INVALID_STR_LEN;
+constexpr int ERR_INVALID_KEY = JsErrorCode::ERR_INVALID_KEY;
+constexpr int ERR_INVALID_ARR_LEN = JsErrorCode::ERR_INVALID_ARR_LEN;
+constexpr int ERR_INVALID_CUSTOM_PARAM_NUM = JsErrorCode::ERR_INVALID_CUSTOM_PARAM_NUM;
 
 // business error of addWatcher function
-constexpr int ERR_INVALID_WATCHER_NAME = 11102001;
-constexpr int ERR_INVALID_FILTER_DOMAIN = 11102002;
-constexpr int ERR_INVALID_COND_ROW = 11102003;
-constexpr int ERR_INVALID_COND_SIZE = 11102004;
-constexpr int ERR_INVALID_COND_TIMEOUT = 11102005;
+constexpr int ERR_INVALID_WATCHER_NAME = JsErrorCode::ERR_INVALID_WATCHER_NAME;
+constexpr int ERR_INVALID_FILTER_DOMAIN = JsErrorCode::ERR_INVALID_FILTER_DOMAIN;
+constexpr int ERR_INVALID_COND_ROW = JsErrorCode::ERR_INVALID_COND_ROW;
+constexpr int ERR_INVALID_COND_SIZE = JsErrorCode::ERR_INVALID_COND_SIZE;
+constexpr int ERR_INVALID_COND_TIMEOUT = JsErrorCode::ERR_INVALID_COND_TIMEOUT;
 
 // business error of configure function
-constexpr int ERR_INVALID_MAX_STORAGE = 11103001;
+constexpr int ERR_INVALID_MAX_STORAGE = JsErrorCode::ERR_INVALID_MAX_STORAGE;
 
 // business error of AppEventPackageHolder.setSize function
-constexpr int ERR_INVALID_SIZE = 11104001;
+constexpr int ERR_INVALID_SIZE = JsErrorCode::ERR_INVALID_SIZE;
 
 // business error for incorrect parameter length or format
-constexpr int ERR_INVALID_PARAM_VALUE = 11105001;
+constexpr int ERR_INVALID_PARAM_VALUE = JsErrorCode::ERR_INVALID_PARAM_VALUE;
 
 // business error of registerExternalLogManager function
-constexpr int ERR_LOG_MANAGER_ALREADY_REGISTERED = 11106001;
+constexpr int ERR_LOG_MANAGER_ALREADY_REGISTERED = JsErrorCode::ERR_LOG_MANAGER_ALREADY_REGISTERED;
 
 std::string GetErrorMsg(int errCode);
 } // namespace NapiError

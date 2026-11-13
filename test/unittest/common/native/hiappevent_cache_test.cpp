@@ -421,8 +421,10 @@ HWTEST_F(HiAppEventCacheTest, HiAppEventStat001, TestSize.Level1)
 {
     std::string apiName = "testApi";
     uint64_t beginTime = TimeUtil::GetMilliSecondsTimestamp(CLOCK_REALTIME);
-    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, beginTime, WRITE_SUCCESS, WRITE_SUCCESS);
-    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, -beginTime, WRITE_SUCCESS, WRITE_SUCCESS);
+    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, beginTime, WRITE_SUCCESS, WRITE_SUCCESS, ApiType::NAPI);
+    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, -beginTime, WRITE_SUCCESS, WRITE_SUCCESS, ApiType::NAPI);
+    AppEventUtilityFacade::WriteApiEndEventAsync(apiName, beginTime, AppEventStat::FAILED,
+        JsErrorCode::ERR_PARAM, ApiType::NAPI);
     EXPECT_GT(beginTime, 0);
 }
 

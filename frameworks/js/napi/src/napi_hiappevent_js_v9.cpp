@@ -14,6 +14,7 @@
  */
 #include "app_event_external_log_manager.h"
 #include "hiappevent_base.h"
+#include "app_event_stat.h"
 #include "hiappevent_facade.h"
 #include "hilog/log.h"
 #include "napi_app_event_holder.h"
@@ -44,6 +45,9 @@ namespace {
 constexpr size_t MAX_PARAM_NUM = 4;
 constexpr int WRITE_SUCCESS = 0;
 constexpr int WRITE_FAILED = 1;
+constexpr int32_t REG_LOG_MGR_RETCODE_INVALID_PARAM = 1;
+constexpr int32_t REG_LOG_MGR_RETCODE_ALREADY_REGISTERED = 2;
+constexpr int32_t MAX_REG_LOG_MGR_RETCODE = REG_LOG_MGR_RETCODE_ALREADY_REGISTERED;
 }
 
 static napi_value AddProcessor(napi_env env, napi_callback_info info)
@@ -247,7 +251,8 @@ static napi_value AddWatcher(napi_env env, napi_callback_info info)
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
     if (paramNum < 1) { // The min num of params for addWatcher is 1
-        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
+        AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM,
+            ApiType::NAPI);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
@@ -260,7 +265,8 @@ static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
     if (paramNum < 1) { // The min num of params for removeWatcher is 1
-        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
+        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM,
+            ApiType::NAPI);
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
@@ -353,43 +359,54 @@ static napi_value ConfigEventPolicy(napi_env env, napi_callback_info info)
     return promise;
 }
 
-static napi_value RegisterExternalLogManager(napi_env env, napi_callback_info info)
+static bool IsValidLogMgrParam(napi_env env, napi_value params[], size_t paramNum)
 {
-    napi_value params[MAX_PARAM_NUM] = { 0 };
-    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
     if (paramNum < 1) { // The min num of params for RegisterExternalLogManager is 1
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
-        return nullptr;
+        return false;
     }
     napi_valuetype mgrType = NapiUtil::GetType(env, params[0]);
     if (mgrType == napi_null || mgrType == napi_undefined) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
-        return nullptr;
+        return false;
     }
     if (!NapiUtil::IsObject(env, params[0])) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
             NapiUtil::CreateParamTypeErrMsg(0, "object", NapiUtil::GetTypeName(mgrType)));
-        return nullptr;
+        return false;
     }
     napi_value callback = NapiUtil::GetProperty(env, params[0], "onCapacityReached");
     if (callback == nullptr) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
             NapiUtil::CreatePropertyRequiredErrMsg(0, "onCapacityReached"));
-        return nullptr;
+        return false;
     }
     napi_valuetype callbackType = NapiUtil::GetType(env, callback);
     if (callbackType == napi_null || callbackType == napi_undefined) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
             NapiUtil::CreatePropertyRequiredErrMsg(0, "onCapacityReached"));
-        return nullptr;
+        return false;
     }
     if (!NapiUtil::IsFunction(env, callback)) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
             NapiUtil::CreatePropertyTypeErrMsg(0, "onCapacityReached", "function",
                 NapiUtil::GetTypeName(callbackType)));
+        return false;
+    }
+    return true;
+}
+
+static napi_value RegisterExternalLogManager(napi_env env, napi_callback_info info)
+{
+    ApiCallScopedStat stat("registerExternalLogManager", ApiType::NAPI, MAX_REG_LOG_MGR_RETCODE);
+    napi_value params[MAX_PARAM_NUM] = { 0 };
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (!IsValidLogMgrParam(env, params, paramNum)) {
+        stat.SetErrorCode(REG_LOG_MGR_RETCODE_INVALID_PARAM);
         return nullptr;
     }
     if (AppEventExternalLogManager::GetInstance().IsRegistered()) {
+        stat.SetErrorCode(REG_LOG_MGR_RETCODE_ALREADY_REGISTERED);
         NapiUtil::ThrowErrorMsgWithIntCode(env, NapiError::ERR_LOG_MANAGER_ALREADY_REGISTERED);
         return nullptr;
     }
@@ -401,6 +418,7 @@ static napi_value RegisterExternalLogManager(napi_env env, napi_callback_info in
  
 static napi_value IsExternalLogManagerRegistered(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat("isExternalLogManagerRegistered", ApiType::NAPI);
     bool isRegistered = AppEventExternalLogManager::GetInstance().IsRegistered();
     napi_value result = nullptr;
     napi_get_boolean(env, isRegistered, &result);

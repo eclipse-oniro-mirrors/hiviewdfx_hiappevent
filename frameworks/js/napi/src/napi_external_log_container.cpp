@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "app_event_stat.h"
 #include "hilog/log.h"
 #include "napi_error.h"
 #include "napi_external_log_wrapper.h"
@@ -32,6 +33,15 @@ namespace HiviewDFX {
 namespace {
 constexpr char CONTAINER_CLASS_NAME[] = "ExternalLogContainer";
 constexpr size_t PARAM_NUM_ONE = 1;
+constexpr char GET_ALL_LOGS_API_NAME[] = "ExternalLogContainer.getAllLogs";
+constexpr char GET_ALL_LOG_FILES_API_NAME[] = "ExternalLogContainer.getAllLogFiles";
+constexpr char GET_LOG_FILES_OF_SYS_EVENT_API_NAME[] = "ExternalLogContainer.getLogFilesOfSysEvent";
+constexpr char GET_LOG_FILES_GENERATED_AFTER_API_NAME[] = "ExternalLogContainer.getLogFilesGeneratedAfter";
+constexpr char GET_LOG_FILES_GENERATED_BEFORE_API_NAME[] = "ExternalLogContainer.getLogFilesGeneratedBefore";
+constexpr char GET_LOG_FILES_LARGER_THAN_API_NAME[] = "ExternalLogContainer.getLogFilesLargerThan";
+constexpr char GET_LOG_FILES_SMALLER_THAN_API_NAME[] = "ExternalLogContainer.getLogFilesSmallerThan";
+constexpr char GET_LOG_NUMBER_API_NAME[] = "ExternalLogContainer.getLogNumber";
+constexpr char GET_FIRST_GENERATED_LOG_FILES_API_NAME[] = "ExternalLogContainer.getFirstGeneratedLogFiles";
 
 bool IsValidParam(const napi_env env, const napi_value param, size_t paramNum, const std::string& expectedType)
 {
@@ -94,6 +104,7 @@ napi_value NapiExternalLogContainer::NapiExport(napi_env env, napi_value exports
 
 napi_value NapiExternalLogContainer::NapiGetAllLogs(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_ALL_LOGS_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogContainer* container = nullptr;
@@ -125,6 +136,7 @@ napi_value NapiExternalLogContainer::NapiGetAllLogs(napi_env env, napi_callback_
 
 napi_value NapiExternalLogContainer::NapiGetAllLogFiles(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_ALL_LOG_FILES_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogContainer* container = nullptr;
@@ -141,6 +153,7 @@ napi_value NapiExternalLogContainer::NapiGetAllLogFiles(napi_env env, napi_callb
 
 napi_value NapiExternalLogContainer::NapiGetLogFilesOfSysEvent(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_OF_SYS_EVENT_API_NAME, ApiType::NAPI);
     size_t paramNum = PARAM_NUM_ONE;
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
@@ -166,6 +179,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesOfSysEvent(napi_env env, nap
 
 napi_value NapiExternalLogContainer::NapiGetLogFilesGeneratedAfter(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_GENERATED_AFTER_API_NAME, ApiType::NAPI);
     size_t paramNum = PARAM_NUM_ONE;
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
@@ -191,6 +205,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesGeneratedAfter(napi_env env,
 
 napi_value NapiExternalLogContainer::NapiGetLogFilesGeneratedBefore(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_GENERATED_BEFORE_API_NAME, ApiType::NAPI);
     size_t paramNum = PARAM_NUM_ONE;
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
@@ -216,6 +231,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesGeneratedBefore(napi_env env
 
 napi_value NapiExternalLogContainer::NapiGetLogFilesLargerThan(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_LARGER_THAN_API_NAME, ApiType::NAPI);
     size_t paramNum = PARAM_NUM_ONE;
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
@@ -241,6 +257,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesLargerThan(napi_env env, nap
 
 napi_value NapiExternalLogContainer::NapiGetLogFilesSmallerThan(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_SMALLER_THAN_API_NAME, ApiType::NAPI);
     size_t paramNum = PARAM_NUM_ONE;
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
@@ -266,6 +283,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesSmallerThan(napi_env env, na
 
 napi_value NapiExternalLogContainer::NapiGetLogNumber(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_LOG_NUMBER_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogContainer* container = nullptr;
@@ -277,6 +295,7 @@ napi_value NapiExternalLogContainer::NapiGetLogNumber(napi_env env, napi_callbac
 
 napi_value NapiExternalLogContainer::NapiGetFirstGeneratedLogFiles(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_FIRST_GENERATED_LOG_FILES_API_NAME, ApiType::NAPI);
     size_t paramNum = PARAM_NUM_ONE;
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;

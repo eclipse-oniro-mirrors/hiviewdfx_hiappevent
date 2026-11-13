@@ -15,13 +15,28 @@
 
 #include "ndk_external_log_service.h"
 
+#include "app_event_stat.h"
 #include "app_event_external_log_manager.h"
 #include "hiappevent_base.h"
 #include "ndk_external_log_callback.h"
 
 using namespace OHOS::HiviewDFX;
 
-int RegExternalLogCapacityReachedCallback(OH_HiAppEvent_ExternalLogCapacityReachedCallback callback)
+namespace {
+constexpr uint32_t REG_CALLBACK_RETCODE_UNKNOWN = 0;
+constexpr uint32_t REG_CALLBACK_RETCODE_INVALID_PARAM = 1;
+constexpr uint32_t MAX_REG_CALLBACK_RETCODE = REG_CALLBACK_RETCODE_INVALID_PARAM;
+constexpr const char* REG_CALLBACK_API_NAME = "RegExternalLogCapacityReachedCallback";
+
+uint32_t MapRegCallbackRetCode(int ret)
+{
+    if (ret == ErrorCode::ERROR_INVALID_PARAM_VALUE) {
+        return REG_CALLBACK_RETCODE_INVALID_PARAM;
+    }
+    return REG_CALLBACK_RETCODE_UNKNOWN;
+}
+
+int RegCapacityReachedCallbackImpl(OH_HiAppEvent_ExternalLogCapacityReachedCallback callback)
 {
     if (callback == nullptr) {
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
@@ -31,4 +46,15 @@ int RegExternalLogCapacityReachedCallback(OH_HiAppEvent_ExternalLogCapacityReach
         return ErrorCode::ERROR_UNKNOWN;
     }
     return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
+}
+}
+
+int RegExternalLogCapacityReachedCallback(OH_HiAppEvent_ExternalLogCapacityReachedCallback callback)
+{
+    ApiCallScopedStat stat(REG_CALLBACK_API_NAME, ApiType::NATIVE, MAX_REG_CALLBACK_RETCODE);
+    int result = RegCapacityReachedCallbackImpl(callback);
+    if (result != ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+        stat.SetErrorCode(MapRegCallbackRetCode(result));
+    }
+    return result;
 }

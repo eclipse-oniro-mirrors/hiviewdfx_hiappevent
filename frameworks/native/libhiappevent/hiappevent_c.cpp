@@ -20,10 +20,12 @@
 #include <vector>
 
 #include "app_event_util.h"
+#include "app_event_stat.h"
 #include "event_policy_mgr.h"
 #include "hiappevent_base.h"
 #include "hiappevent_clean.h"
 #include "hiappevent_config.h"
+#include "hiappevent_facade.h"
 #include "hiappevent_verify.h"
 #include "hiappevent_write.h"
 #include "hilog/log.h"
@@ -125,6 +127,70 @@ int HiSysEventWriteFrameworkMemAnomaly(enum OH_HiAppEvent_FrameworkType framewor
         return HIAPPEVENT_OPERATE_FAILED;
     }
     return HIAPPEVENT_SUCCESS;
+}
+
+constexpr int32_t MAX_FRAMEWORK_TYPE_CODE = 2;
+constexpr uint32_t MEM_ANOMALY_RETCODE_UNKNOWN = 0;
+constexpr uint32_t MEM_ANOMALY_RETCODE_INVALID_PARAM = 1;
+constexpr uint32_t MEM_ANOMALY_RETCODE_OPERATE_FAILED = 2;
+constexpr uint32_t MEM_ANOMALY_RETCODE_FREQ_EXCEEDED = 3;
+constexpr uint32_t MAX_MEM_ANOMALY_RETCODE = MEM_ANOMALY_RETCODE_FREQ_EXCEEDED;
+constexpr const char* FRAMEWORK_TYPE_ENUM_NAME = "FrameworkType";
+constexpr const char* REPORT_MEM_ANOMALY_API_NAME = "ReportFrameworkMemAnomaly";
+
+uint32_t MapMemAnomalyRetCode(int ret)
+{
+    if (ret == HIAPPEVENT_INVALID_PARAM_VALUE) {
+        return MEM_ANOMALY_RETCODE_INVALID_PARAM;
+    }
+    if (ret == HIAPPEVENT_OPERATE_FAILED) {
+        return MEM_ANOMALY_RETCODE_OPERATE_FAILED;
+    }
+    if (ret == HIAPPEVENT_REPORT_FREQUENCY_EXCEEDED) {
+        return MEM_ANOMALY_RETCODE_FREQ_EXCEEDED;
+    }
+    return MEM_ANOMALY_RETCODE_UNKNOWN;
+}
+
+int ReportMemAnomalyImpl(enum OH_HiAppEvent_FrameworkType frameworkType, const char* frameworkVersion,
+    const char* description)
+{
+    static std::atomic<int64_t> lastReportTime {0};
+    auto fwkTypeMaps = GetFrameworkTypes();
+    if (fwkTypeMaps.count(frameworkType) == 0) {
+        HILOG_ERROR(LOG_CORE, "Invalid framework type, framework type is %{public}d", frameworkType);
+        return HIAPPEVENT_INVALID_PARAM_VALUE;
+    }
+    int64_t expectedTime = lastReportTime.load();
+    int64_t curTime;
+    do {
+        curTime = TimeUtil::GetElapsedMilliSecondsSinceBoot();
+        if (curTime < expectedTime) {
+            HILOG_ERROR(LOG_CORE, "failed to get timestamp");
+            return HIAPPEVENT_OPERATE_FAILED;
+        }
+        if (curTime - expectedTime < ONE_MINUTE && expectedTime > 0) {
+            HILOG_WARN(LOG_CORE, "The FW_MEM_ANOMALY event can't be frequently reported, lastReportTimeStamp"
+                " is %{public}" PRId64 ", currentTimeStamp is %{public}" PRId64, expectedTime, curTime);
+            return HIAPPEVENT_REPORT_FREQUENCY_EXCEEDED;
+        }
+    } while (!lastReportTime.compare_exchange_strong(expectedTime, curTime));
+    std::string fwkVerStr;
+    TruncateString(frameworkVersion, fwkVerStr);
+    std::string descriptionStr;
+    TruncateString(description, descriptionStr);
+    ParamList list = HiAppEventCreateParamList();
+    list = AddInt32ParamValue(list, "frameworkType", static_cast<int32_t>(frameworkType));
+    list = AddStringParamValue(list, "frameworkVersion", fwkVerStr.c_str());
+    list = AddStringParamValue(list, "description", descriptionStr.c_str());
+    int ret = HiAppEventInnerWrite("HIVIEWDFX", "FW_MEM_ANOMALY", STATISTIC, list);
+    HiAppEventDestroyParamList(list);
+    if (ret < 0) {
+        HILOG_WARN(LOG_CORE, "configuration item name is DISABLE, and the value is true; OH_HiAppEvent_Write is"
+            " disabled");
+        return HIAPPEVENT_OPERATE_FAILED;
+    }
+    return HiSysEventWriteFrameworkMemAnomaly(frameworkType, fwkVerStr);
 }
 }
 
@@ -326,42 +392,14 @@ int HiAppEventSetEventConfig(const char* name, HiAppEvent_Config* config)
 int HiAppEventReportFrameworkMemAnomaly(
     enum OH_HiAppEvent_FrameworkType frameworkType, const char* frameworkVersion, const char* description)
 {
-    static std::atomic<int64_t> lastReportTime {0};
-    auto fwkTypeMaps = GetFrameworkTypes();
-    if (fwkTypeMaps.count(frameworkType) == 0) {
-        HILOG_ERROR(LOG_CORE, "Invalid framework type, framework type is %{public}d", frameworkType);
-        return HIAPPEVENT_INVALID_PARAM_VALUE;
+    ApiCallScopedStat stat(REPORT_MEM_ANOMALY_API_NAME, ApiType::NATIVE, MAX_MEM_ANOMALY_RETCODE);
+    RecordApiParamEnumStat(REPORT_MEM_ANOMALY_API_NAME, FRAMEWORK_TYPE_ENUM_NAME,
+        static_cast<int32_t>(frameworkType), MAX_FRAMEWORK_TYPE_CODE, ApiType::NATIVE);
+    int result = ReportMemAnomalyImpl(frameworkType, frameworkVersion, description);
+    if (result != HIAPPEVENT_SUCCESS) {
+        stat.SetErrorCode(MapMemAnomalyRetCode(result));
     }
-    int64_t expectedTime = lastReportTime.load();
-    int64_t curTime;
-    do {
-        curTime = TimeUtil::GetElapsedMilliSecondsSinceBoot();
-        if (curTime < expectedTime) {
-            HILOG_ERROR(LOG_CORE, "failed to get timestamp");
-            return HIAPPEVENT_OPERATE_FAILED;
-        }
-        if (curTime - expectedTime < ONE_MINUTE && expectedTime > 0) {
-            HILOG_WARN(LOG_CORE, "The FW_MEM_ANOMALY event can't be frequently reported, lastReportTimeStamp"
-                " is %{public}" PRId64 ", currentTimeStamp is %{public}" PRId64, expectedTime, curTime);
-            return HIAPPEVENT_REPORT_FREQUENCY_EXCEEDED;
-        }
-    } while (!lastReportTime.compare_exchange_strong(expectedTime, curTime));
-    std::string fwkVerStr;
-    TruncateString(frameworkVersion, fwkVerStr);
-    std::string descriptionStr;
-    TruncateString(description, descriptionStr);
-    ParamList list = HiAppEventCreateParamList();
-    list = AddInt32ParamValue(list, "frameworkType", (int32_t)frameworkType);
-    list = AddStringParamValue(list, "frameworkVersion", fwkVerStr.c_str());
-    list = AddStringParamValue(list, "description", descriptionStr.c_str());
-    int ret = HiAppEventInnerWrite("HIVIEWDFX", "FW_MEM_ANOMALY", STATISTIC, list);
-    HiAppEventDestroyParamList(list);
-    if (ret < 0) {
-        HILOG_WARN(LOG_CORE, "configuration item name is DISABLE, and the value is true; OH_HiAppEvent_Write is"
-            " disabled");
-        return HIAPPEVENT_OPERATE_FAILED;
-    }
-    return HiSysEventWriteFrameworkMemAnomaly(frameworkType, fwkVerStr);
+    return result;
 }
 
 void HiAppEventDestroyConfig(HiAppEvent_Config* config)

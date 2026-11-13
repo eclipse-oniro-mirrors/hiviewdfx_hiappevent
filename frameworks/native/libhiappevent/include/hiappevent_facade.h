@@ -26,6 +26,7 @@
 
 #include "hiappevent_base.h"
 #include "app_event_processor.h"
+#include "app_event_stat.h"
 #include "app_event_watcher.h"
 
 namespace OHOS {
@@ -123,7 +124,8 @@ public:
 
 class AppEventUtilityFacade {
 public:
-    static void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int result, int errCode);
+    static void WriteApiEndEventAsync(const std::string& apiName, uint64_t beginTime, int result, int errCode,
+        ApiType apiType);
     static int WriteApiEndMetric(const std::string& apiName, uint64_t beginTime, int result, int errCode);
     static std::string GetDate();
     static uint64_t GetElapsedMilliSecondsSinceBoot();

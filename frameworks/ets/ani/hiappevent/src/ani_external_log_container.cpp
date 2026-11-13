@@ -21,6 +21,7 @@
 #include "ani_external_log_wrapper.h"
 #include "hiappevent_ani_parameter_name.h"
 #include "hiappevent_ani_util.h"
+#include "app_event_stat.h"
 #include "hilog/log.h"
 
 #undef LOG_DOMAIN
@@ -31,6 +32,16 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+constexpr char GET_ALL_LOGS_API_NAME[] = "ExternalLogContainer.getAllLogs";
+constexpr char GET_ALL_LOG_FILES_API_NAME[] = "ExternalLogContainer.getAllLogFiles";
+constexpr char GET_LOG_FILES_OF_SYS_EVENT_API_NAME[] = "ExternalLogContainer.getLogFilesOfSysEvent";
+constexpr char GET_LOG_FILES_GENERATED_AFTER_API_NAME[] = "ExternalLogContainer.getLogFilesGeneratedAfter";
+constexpr char GET_LOG_FILES_GENERATED_BEFORE_API_NAME[] = "ExternalLogContainer.getLogFilesGeneratedBefore";
+constexpr char GET_LOG_FILES_LARGER_THAN_API_NAME[] = "ExternalLogContainer.getLogFilesLargerThan";
+constexpr char GET_LOG_FILES_SMALLER_THAN_API_NAME[] = "ExternalLogContainer.getLogFilesSmallerThan";
+constexpr char GET_LOG_NUMBER_API_NAME[] = "ExternalLogContainer.getLogNumber";
+constexpr char GET_FIRST_GENERATED_LOG_FILES_API_NAME[] = "ExternalLogContainer.getFirstGeneratedLogFiles";
+
 static ani_object Wrap(ani_env *env, ani_object obj, AniExternalLogContainer *container)
 {
     if (env->Object_SetFieldByName_Long(obj, "nativeHolder", reinterpret_cast<ani_long>(container)) != ANI_OK) {
@@ -76,6 +87,7 @@ void AniExternalLogContainer::AniFinalize(ani_env *env, ani_object object, ani_l
 
 ani_object AniExternalLogContainer::AniGetAllLogs(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_ALL_LOGS_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -114,6 +126,7 @@ ani_object AniExternalLogContainer::AniGetAllLogs(ani_env *env, ani_object obj)
 
 ani_object AniExternalLogContainer::AniGetAllLogFiles(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_ALL_LOG_FILES_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -130,6 +143,7 @@ ani_object AniExternalLogContainer::AniGetAllLogFiles(ani_env *env, ani_object o
 
 ani_object AniExternalLogContainer::AniGetLogFilesOfSysEvent(ani_env *env, ani_object obj, ani_string event)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_OF_SYS_EVENT_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -148,6 +162,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesOfSysEvent(ani_env *env, ani_o
 
 ani_object AniExternalLogContainer::AniGetLogFilesGeneratedAfter(ani_env *env, ani_object obj, ani_long timePoint)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_GENERATED_AFTER_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -166,6 +181,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesGeneratedAfter(ani_env *env, a
 
 ani_object AniExternalLogContainer::AniGetLogFilesGeneratedBefore(ani_env *env, ani_object obj, ani_long timePoint)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_GENERATED_BEFORE_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -184,6 +200,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesGeneratedBefore(ani_env *env, 
 
 ani_object AniExternalLogContainer::AniGetLogFilesLargerThan(ani_env *env, ani_object obj, ani_long sizeKb)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_LARGER_THAN_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -202,6 +219,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesLargerThan(ani_env *env, ani_o
 
 ani_object AniExternalLogContainer::AniGetLogFilesSmallerThan(ani_env *env, ani_object obj, ani_long sizeKb)
 {
+    ApiCallScopedStat stat(GET_LOG_FILES_SMALLER_THAN_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
@@ -220,6 +238,7 @@ ani_object AniExternalLogContainer::AniGetLogFilesSmallerThan(ani_env *env, ani_
 
 ani_int AniExternalLogContainer::AniGetLogNumber(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_LOG_NUMBER_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return 0;
@@ -229,6 +248,7 @@ ani_int AniExternalLogContainer::AniGetLogNumber(ani_env *env, ani_object obj)
 
 ani_object AniExternalLogContainer::AniGetFirstGeneratedLogFiles(ani_env *env, ani_object obj, ani_int num)
 {
+    ApiCallScopedStat stat(GET_FIRST_GENERATED_LOG_FILES_API_NAME, ApiType::ANI);
     auto* container = Unwrap(env, obj);
     if (container == nullptr) {
         return nullptr;
