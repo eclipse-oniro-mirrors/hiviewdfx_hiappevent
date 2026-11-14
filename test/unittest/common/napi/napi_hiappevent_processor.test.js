@@ -49,10 +49,6 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest afterEach called')
     })
 
-    function createError1(name, type) {
-        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
-    }
-
     function createError2(message) {
         return { code: "401", message: message };
     }
@@ -140,10 +136,14 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('AddProcessorTest002', 0, function () {
-        let expectErr = createError1("config", "Processor");
+        let expectErr = createError2("Parameter error. Param[0] type mismatch. Expected: object, " +
+            "Actual: string.");
         invalidProcessorTest("str", expectErr);
+        expectErr = createError2("Parameter error. Param[0] type mismatch. Expected: object, Actual: number.");
         invalidProcessorTest(0, expectErr);
+        expectErr = createError2("Parameter error. Param[0] type mismatch. Expected: object, Actual: boolean.");
         invalidProcessorTest(true, expectErr);
+        expectErr = createError2("Parameter error. Param[0] is required, cannot be null or undefined.");
         invalidProcessorTest(null, expectErr);
         invalidProcessorTest(undefined, expectErr);
     });
@@ -155,22 +155,28 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('AddProcessorTest003_1', 0, function () {
-        let expectErr1 = createError1("name", "string");
+        let expectErr1 = createError2("Parameter error. Param[0].name type mismatch. Expected: string, " +
+            "Actual: number.");
         let processor1 = {
             name: 0,
         };
         invalidProcessorTest(processor1, expectErr1);
 
+        expectErr1 = createError2("Parameter error. Param[0].name type mismatch. Expected: string, " +
+            "Actual: boolean.");
         let processor2 = {
             name: true,
         };
         invalidProcessorTest(processor2, expectErr1);
 
+        expectErr1 = createError2("Parameter error. Param[0].name type mismatch. Expected: string, " +
+            "Actual: object.");
         let processor3 = {
             name: {},
         };
         invalidProcessorTest(processor3, expectErr1);
 
+        expectErr1 = createError2("Parameter error. Param[0].name is required, cannot be null or undefined.");
         let processor4 = {
             name: null,
         };
@@ -1068,7 +1074,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('AddProcessorFromConfigTest003_3', 0, function () {
         if (isConfigFileExist) {
-            let expectErr = "Parameter error. The type of processorName must be string.";
+            let expectErr = "Parameter error. Param[0] is required, cannot be null or undefined.";
             try {
                 hiAppEvent.addProcessorFromConfig(null).then((processorId) => {
                     expect(processorId).assertLarger(0);
@@ -1092,7 +1098,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('AddProcessorFromConfigTest003_4', 0, function () {
         if (isConfigFileExist) {
-            let expectErr = "Parameter error. The type of processorName must be string.";
+            let expectErr = "Parameter error. Param[0] type mismatch. Expected: string, Actual: number.";
             try {
                 hiAppEvent.addProcessorFromConfig(0).then((processorId) => {
                     expect(processorId).assertLarger(0);
@@ -1217,7 +1223,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('AddProcessorFromConfigTest004_3', 0, function () {
         if (isConfigFileExist) {
-            let expectErr = "Parameter error. The type of configName must be string.";
+            let expectErr = "Parameter error. Param[1] type mismatch. Expected: string, Actual: null.";
             try {
                 hiAppEvent.addProcessorFromConfig("ha_app_event", null).then((processorId) => {
                     expect(processorId).assertLarger(0);
@@ -1241,7 +1247,7 @@ describe('HiAppEventJsTest', function () {
      */
     it('AddProcessorFromConfigTest004_4', 0, function () {
         if (isConfigFileExist) {
-            let expectErr = "Parameter error. The type of configName must be string.";
+            let expectErr = "Parameter error. Param[1] type mismatch. Expected: string, Actual: number.";
             try {
                 hiAppEvent.addProcessorFromConfig("ha_app_event", 0).then((processorId) => {
                     expect(processorId).assertLarger(0);

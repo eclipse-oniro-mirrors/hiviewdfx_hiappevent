@@ -57,14 +57,6 @@ describe('HiAppEventJsTest', function () {
         return { code: code.toString(), message: message };
     }
 
-    function createError1(name, type) {
-        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
-    }
-
-    function createError2(name) {
-        return { code: "401", message: "Parameter error. The " + name + " parameter is mandatory." };
-    }
-
     function assertErrorEqual(actualErr, expectErr) {
         expect(actualErr.code).assertEqual(expectErr.code)
         expect(actualErr.message).assertEqual(expectErr.message)
@@ -137,7 +129,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventSetEventParamTest002', 0, async function (done) {
-        let expectErr = createError2("setEventParam");
+        let expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 2, Actual: 0.")
         try {
             hiAppEvent.setEventParam();
         } catch (err) {
@@ -145,6 +137,7 @@ describe('HiAppEventJsTest', function () {
             done();
         }
 
+        expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 2, Actual: 1.")
         try {
             hiAppEvent.setEventParam("test");
         } catch (err) {
@@ -161,8 +154,11 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventSetEventParamTest003', 0, async function (done) {
-        let expectErr = createError1("domain", "string");
+        let expectErr = createError(401, "Parameter error. Param[1] type mismatch. Expected: string, " +
+            "Actual: number.")
         setEventParamTestCatch(TEST_PARAMS, 0, expectErr, done);
+
+        expectErr = createError(401, "Parameter error. Param[1] is required, cannot be null or undefined.")
         setEventParamTestCatch(TEST_PARAMS, null, expectErr, done);
         setEventParamTestCatch(TEST_PARAMS, undefined, expectErr, done);
 
@@ -185,9 +181,14 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventSetEventParamTest004', 0, async function (done) {
-        let expectErr = createError1("name", "string");
+        let expectErr = createError(401, "Parameter error. Param[2] type mismatch. Expected: string, " +
+            "Actual: number.")
         setEventParamTestWithNameTestCatch(TEST_PARAMS, TEST_DOMAIN, 0, expectErr, done);
+
+        expectErr = createError(401, "Parameter error. Param[2] type mismatch. Expected: string, Actual: null.")
         setEventParamTestWithNameTestCatch(TEST_PARAMS, TEST_DOMAIN, null, expectErr, done);
+
+        expectErr = createError(401, "Parameter error. Param[2] type mismatch. Expected: string, Actual: undefined.")
         setEventParamTestWithNameTestCatch(TEST_PARAMS, TEST_DOMAIN, undefined, expectErr, done);
 
         expectErr = createError(11101002, "Invalid event name. Possible causes: 1. Contain invalid characters; " +
@@ -209,10 +210,19 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI8U2VO
      */
     it('HiAppEventSetEventParamTest005', 0, async function (done) {
-        let expectErr = createError1("params", "object");
+        let expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, " +
+            "Actual: number.")
         setEventParamTestCatch(0, TEST_DOMAIN, expectErr, done);
+
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, " +
+            "Actual: boolean.")
         setEventParamTestCatch(true, TEST_DOMAIN, expectErr, done);
+
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, " +
+            "Actual: string.")
         setEventParamTestCatch("params_test", TEST_DOMAIN, expectErr, done);
+
+        expectErr = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
         setEventParamTestCatch(null, TEST_DOMAIN, expectErr, done);
         setEventParamTestCatch(undefined, TEST_DOMAIN, expectErr, done);
 

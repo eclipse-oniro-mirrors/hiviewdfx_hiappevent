@@ -74,8 +74,14 @@ int ConfigEventPolicySync(HiAppEventConfigAsyncContext* asyncContext)
 }
 bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
 {
-    if (!NapiUtil::IsObject(env, configObj)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("config", "ConfigOption"), isThrow);
+    napi_valuetype type = NapiUtil::GetType(env, configObj);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0), isThrow);
+        return false;
+    }
+    if (type != napi_object) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamTypeErrMsg(0, "object",
+            NapiUtil::GetTypeName(type)), isThrow);
         return false;
     }
 
@@ -86,8 +92,10 @@ bool Configure(const napi_env env, const napi_value configObj, bool isThrow)
             continue;
         }
         napi_value value = NapiUtil::GetProperty(env, configObj, key);
-        if (CONFIG_OPTION_MAP.at(key) != NapiUtil::GetType(env, value)) {
-            std::string errMsg = NapiUtil::CreateErrMsg(key, CONFIG_OPTION_MAP.at(key));
+        napi_valuetype valueType = NapiUtil::GetType(env, value);
+        if (CONFIG_OPTION_MAP.at(key) != valueType) {
+            std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(0, key,
+                NapiUtil::GetTypeName(CONFIG_OPTION_MAP.at(key)), NapiUtil::GetTypeName(valueType));
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isThrow);
             return false;
         }

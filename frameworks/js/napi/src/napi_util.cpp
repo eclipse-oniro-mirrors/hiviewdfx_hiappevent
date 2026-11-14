@@ -540,37 +540,73 @@ napi_value CreateError(napi_env env, int code, const std::string& msg)
     return err;
 }
 
-std::string CreateErrMsg(const std::string& name)
+std::string CreateParamCntErrMsg(size_t expectedCnt, size_t actualCnt)
 {
-    return "Parameter error. The " + name + " parameter is mandatory.";
+    return "Parameter error. Incorrect parameter count. Expected: " + std::to_string(expectedCnt) + ", Actual: " +
+        std::to_string(actualCnt) + ".";
 }
-
-std::string CreateErrMsg(const std::string& name, const std::string& type)
+std::string CreateParamTypeErrMsg(size_t index, const std::string& expectedType, const std::string& actualType)
 {
-    return "Parameter error. The type of " + name + " must be " + type + ".";
+    return "Parameter error. Param[" + std::to_string(index) + "] type mismatch. Expected: " + expectedType +
+        ", Actual: " + actualType + ".";
 }
-std::string CreateErrMsg(const std::string& name, const napi_valuetype type)
+std::string CreateParamRequiredErrMsg(size_t index)
 {
-    std::string typeStr = "";
-    switch (type) {
-        case napi_boolean:
-            typeStr = "boolean";
-            break;
-        case napi_number:
-            typeStr = "number";
-            break;
-        case napi_string:
-            typeStr = "string";
-            break;
-        case napi_object:
-            typeStr = "object";
-            break;
-        default:
-            break;
+    return "Parameter error. Param[" + std::to_string(index) + "] is required, cannot be null or undefined.";
+}
+std::string CreatePropertyTypeErrMsg(size_t index, const std::string& propertyName, const std::string& expectedType,
+    const std::string& actualType)
+{
+    return "Parameter error. Param[" + std::to_string(index) + "]." + propertyName + " type mismatch. Expected: " +
+        expectedType + ", Actual: " + actualType + ".";
+}
+std::string CreatePropertyRequiredErrMsg(size_t index, const std::string& propertyName)
+{
+    return "Parameter error. Param[" + std::to_string(index) + "]." + propertyName +
+        " is required, cannot be null or undefined.";
+}
+std::string GetTypeName(napi_env env, napi_value value)
+{
+    napi_valuetype valueType = napi_undefined;
+    if (napi_typeof(env, value, &valueType) != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to get value type");
+        return "unknown";
     }
-    return CreateErrMsg(name, typeStr);
+    if (valueType == napi_object) {
+        bool isArray = false;
+        if (napi_is_array(env, value, &isArray) == napi_ok && isArray) {
+            return "array";
+        }
+    }
+    return GetTypeName(valueType);
 }
-
+std::string GetTypeName(napi_valuetype type)
+{
+    switch (type) {
+        case napi_undefined:
+            return "undefined";
+        case napi_null:
+            return "null";
+        case napi_boolean:
+            return "boolean";
+        case napi_number:
+            return "number";
+        case napi_string:
+            return "string";
+        case napi_symbol:
+            return "symbol";
+        case napi_object:
+            return "object";
+        case napi_function:
+            return "function";
+        case napi_external:
+            return "external";
+        case napi_bigint:
+            return "bigint";
+        default:
+            return "unknown";
+    }
+}
 napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValue)
 {
     if (jsonValue.isBool()) {

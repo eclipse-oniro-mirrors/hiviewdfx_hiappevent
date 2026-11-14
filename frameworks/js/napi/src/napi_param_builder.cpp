@@ -40,12 +40,12 @@ using namespace OHOS::HiviewDFX::ErrorCode;
 
 bool NapiParamBuilder::IsValidParams(const napi_env env, const napi_value params[], size_t len)
 {
-    if (!NapiHiAppEventBuilder::IsValidEventParam(env, params[INDEX_OF_PARAMS])
-        || !NapiHiAppEventBuilder::IsValidEventDomain(env, params[INDEX_OF_DOMAIN])) {
+    if (!NapiHiAppEventBuilder::IsValidEventParam(env, params[INDEX_OF_PARAMS], INDEX_OF_PARAMS)
+        || !NapiHiAppEventBuilder::IsValidEventDomain(env, params[INDEX_OF_DOMAIN], INDEX_OF_DOMAIN)) {
         return false;
     }
     return (len > MIN_NUM_PARAMETERS)
-        ? NapiHiAppEventBuilder::IsValidEventName(env, params[INDEX_OF_NAME])
+        ? NapiHiAppEventBuilder::IsValidEventName(env, params[INDEX_OF_NAME], INDEX_OF_NAME, "", false)
         : true;
 }
 
@@ -56,7 +56,8 @@ bool NapiParamBuilder::AddArrayParam2EventPack(napi_env env, const std::string &
     if (type != napi_string) {
         HILOG_ERROR(LOG_CORE, "array param value type is invalid");
         result_ = ERROR_INVALID_LIST_PARAM_TYPE;
-        std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
+        std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(INDEX_OF_PARAMS, key, PARAM_VALUE_TYPE,
+            NapiUtil::GetTypeName(env, arr));
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
         return false;
     }
@@ -79,7 +80,8 @@ bool NapiParamBuilder::AddParams2EventPack(napi_env env, const napi_value paramO
         napi_value value = NapiUtil::GetProperty(env, paramObj, key);
         if (value == nullptr) {
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
-            std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
+            std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(INDEX_OF_PARAMS, key, PARAM_VALUE_TYPE,
+                "unknown");
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
             return false;
         }
@@ -105,7 +107,8 @@ std::shared_ptr<AppEventPack> NapiParamBuilder::BuildEventParam(const napi_env e
     const napi_value params[], size_t len)
 {
     if (len < MIN_NUM_PARAMETERS) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("setEventParam"), isV9_);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamCntErrMsg(MIN_NUM_PARAMETERS, len), isV9_);
         return nullptr;
     }
     if (!IsValidParams(env, params, len)) {

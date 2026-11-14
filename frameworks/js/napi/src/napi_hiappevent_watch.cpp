@@ -52,12 +52,21 @@ constexpr unsigned int BIT_ALL_TYPES = 0xff;
 bool IsValidName(const napi_env env, const napi_value name, int& errCode)
 {
     if (name == nullptr) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(NAME_PROPERTY));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreatePropertyRequiredErrMsg(0, NAME_PROPERTY));
+        errCode = NapiError::ERR_PARAM;
+        return false;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, name);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreatePropertyRequiredErrMsg(0, NAME_PROPERTY));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
     if (!NapiUtil::IsString(env, name)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(NAME_PROPERTY, "string"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0, NAME_PROPERTY,
+            "string", NapiUtil::GetTypeName(env, name)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -75,7 +84,8 @@ bool IsValidCondition(const napi_env env, const napi_value cond, int& errCode)
         return true;
     }
     if (!NapiUtil::IsObject(env, cond)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(COND_PROPERTY, "TriggerCondition"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0, COND_PROPERTY,
+            "TriggerCondition", NapiUtil::GetTypeName(env, cond)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -85,7 +95,8 @@ bool IsValidCondition(const napi_env env, const napi_value cond, int& errCode)
             continue;
         }
         if (!NapiUtil::IsNumber(env, propValue)) {
-            NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(propName, "number"));
+            NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0,
+                std::string(COND_PROPERTY) + "." + propName, "number", NapiUtil::GetTypeName(env, propValue)));
             errCode = NapiError::ERR_PARAM;
             return false;
         }
@@ -93,16 +104,26 @@ bool IsValidCondition(const napi_env env, const napi_value cond, int& errCode)
     return true;
 }
 
-bool IsValidFilter(const napi_env env, const napi_value filter, int& errCode)
+bool IsValidFilter(const napi_env env, const napi_value filter, size_t filterIndex, int& errCode)
 {
+    std::string filterPropPrefix = std::string(FILTERS_PROPERTY) + "[" + std::to_string(filterIndex) + "]";
     napi_value domain = NapiUtil::GetProperty(env, filter, FILTERS_DOMAIN_PROP);
     if (domain == nullptr) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_DOMAIN_PROP));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyRequiredErrMsg(0,
+            filterPropPrefix + "." + FILTERS_DOMAIN_PROP));
+        errCode = NapiError::ERR_PARAM;
+        return false;
+    }
+    napi_valuetype domainType = NapiUtil::GetType(env, domain);
+    if (domainType == napi_null || domainType == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyRequiredErrMsg(0,
+            filterPropPrefix + "." + FILTERS_DOMAIN_PROP));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
     if (!NapiUtil::IsString(env, domain)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_DOMAIN_PROP, "string"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0,
+            filterPropPrefix + "." + FILTERS_DOMAIN_PROP, "string", NapiUtil::GetTypeName(domainType)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -113,13 +134,15 @@ bool IsValidFilter(const napi_env env, const napi_value filter, int& errCode)
     }
     napi_value types = NapiUtil::GetProperty(env, filter, FILTERS_TYPES_PROP);
     if (types != nullptr && !NapiUtil::IsArrayType(env, types, napi_number)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_TYPES_PROP, "EventType[]"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0,
+            filterPropPrefix + "." + FILTERS_TYPES_PROP, "EventType[]", NapiUtil::GetTypeName(env, types)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
     napi_value names = NapiUtil::GetProperty(env, filter, FILTERS_NAMES_PROP);
     if (names != nullptr && !NapiUtil::IsArrayType(env, names, napi_string)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_NAMES_PROP, "string[]"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0,
+            filterPropPrefix + "." + FILTERS_NAMES_PROP, "string[]", NapiUtil::GetTypeName(env, names)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -132,7 +155,8 @@ bool IsValidFilters(const napi_env env, const napi_value filters, int& errCode)
         return true;
     }
     if (!NapiUtil::IsArrayType(env, filters, napi_object)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(FILTERS_PROPERTY, "AppEventFilter[]"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0, FILTERS_PROPERTY,
+            "AppEventFilter[]", NapiUtil::GetTypeName(env, filters)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -140,7 +164,7 @@ bool IsValidFilters(const napi_env env, const napi_value filters, int& errCode)
     size_t len = NapiUtil::GetArrayLength(env, filters);
     for (size_t i = 0; i < len; i++) {
         napi_value filter = NapiUtil::GetElement(env, filters, i);
-        if (!IsValidFilter(env, filter, errCode)) {
+        if (!IsValidFilter(env, filter, i, errCode)) {
             return false;
         }
     }
@@ -153,7 +177,8 @@ bool IsValidTrigger(const napi_env env, const napi_value trigger, int& errCode)
         return true;
     }
     if (!NapiUtil::IsFunction(env, trigger)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(TRIGGER_PROPERTY, "function"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0, TRIGGER_PROPERTY,
+            "function", NapiUtil::GetTypeName(env, trigger)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -166,7 +191,8 @@ bool IsValidReceive(const napi_env env, const napi_value receive, int& errCode)
         return true;
     }
     if (!NapiUtil::IsFunction(env, receive)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(RECEIVE_PROPERTY, "function"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0, RECEIVE_PROPERTY,
+            "function", NapiUtil::GetTypeName(env, receive)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -175,8 +201,15 @@ bool IsValidReceive(const napi_env env, const napi_value receive, int& errCode)
 
 bool IsValidWatcher(const napi_env env, const napi_value watcher, int& errCode)
 {
+    napi_valuetype type = NapiUtil::GetType(env, watcher);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
+        errCode = NapiError::ERR_PARAM;
+        return false;
+    }
     if (!NapiUtil::IsObject(env, watcher)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher", "Watcher"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "object", NapiUtil::GetTypeName(type)));
         errCode = NapiError::ERR_PARAM;
         return false;
     }
@@ -261,7 +294,8 @@ void GetFilters(const napi_env env, const napi_value watcher, std::vector<AppEve
         unsigned int filterType = 0;
         for (auto type : types) {
             if (!AppEventVerifyFacade::VerifyIsValidEventType(type)) {
-                std::string errMsg = NapiUtil::CreateErrMsg(FILTERS_TYPES_PROP, "EventType[]");
+                std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(0, std::string(FILTERS_PROPERTY) + "[" +
+                    std::to_string(i) + "]." + FILTERS_TYPES_PROP, "EventType[]", "number");
                 NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg);
                 continue;
             }
@@ -339,9 +373,16 @@ napi_value AddWatcher(const napi_env env, const napi_value watcher, uint64_t beg
 
 napi_value RemoveWatcher(const napi_env env, const napi_value watcher, uint64_t beginTime)
 {
+    napi_valuetype watcherType = NapiUtil::GetType(env, watcher);
+    if (watcherType == napi_null || watcherType == napi_undefined) {
+        AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
+        return NapiUtil::CreateUndefined(env);
+    }
     if (!NapiUtil::IsObject(env, watcher)) {
         AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher", "Watcher"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "object", NapiUtil::GetTypeName(watcherType)));
         return NapiUtil::CreateUndefined(env);
     }
     int errCode = NapiError::ERR_OK;

@@ -46,12 +46,34 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest afterEach called')
     })
 
-    function createError2(name, type) {
-        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
+    function createError(code, message) {
+        return { code: code.toString(), message: message };
     }
 
     function createError4(name) {
         return { code: "401", message: "Parameter error. The " + name + " parameter is invalid." };
+    }
+
+    function createNameParamError(name) {
+        if (name === null || name === undefined) {
+            return createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.");
+        }
+        if (typeof name != 'string') {
+            return createError(401, "Parameter error. Param[0] type mismatch. Expected: string, Actual: " +
+                typeof name + ".");
+        }
+        return createError4("name");
+    }
+
+    function createValueParamError(value) {
+        if (value === undefined) {
+            return createError(401, "Parameter error. Param[1] is required, cannot be null or undefined.");
+        }
+        if (typeof value != 'string') {
+            return createError(401, "Parameter error. Param[1] type mismatch. Expected: string, Actual: " +
+                typeof value + ".");
+        }
+        return createError4("value");
     }
 
     function assertErrorEqual(actualErr, expectErr) {
@@ -83,7 +105,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserIdsTest001_1', 0, function () {
         console.info('HiAppEventUserIdsTest001_1 start');
 
-        let expectErr = createError2("userId", "string");
+        let expectErr = null;
 
         try {
             console.info(`setUserId name: ${USER_ID_NAME}, value: ${USER_ID_VALUE}`);
@@ -109,7 +131,7 @@ describe('HiAppEventJsTest', function () {
      it('HiAppEventUserIdsTest001_2', 0, function () {
         console.info('HiAppEventUserIdsTest001_2 start');
 
-        let expectErr = createError2("userId", "string");
+        let expectErr = null;
 
         try {
             console.info(`setUserId name: ${USER_ID_NAME}, value: ${USER_ID_VALUE}`);
@@ -138,7 +160,7 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventUserIdsTest002_1 start');
 
         for (let userIdName of INVALID_USER_ID_NAMES) {
-            let expectErr = typeof userIdName == 'string' ? createError4("name") : createError2("name", "string");
+            let expectErr = createNameParamError(userIdName);
             try {
                 console.info(`setUserId name: ${userIdName}, value: ${USER_ID_VALUE}`);
                 hiAppEventV9.setUserId(userIdName, USER_ID_VALUE);
@@ -147,7 +169,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         for (let userIdVal of INVALID_USER_ID_VALUES) {
-            let expectErr = typeof userIdVal == 'string' ? createError4("value") : createError2("userId", "string");
+            let expectErr = createValueParamError(userIdVal);
             try {
                 console.info(`setUserId name: ${USER_ID_NAME}, value: ${userIdVal}`);
                 hiAppEventV9.setUserId(USER_ID_NAME, userIdVal);
@@ -173,7 +195,7 @@ describe('HiAppEventJsTest', function () {
         hiAppEventV9.setUserId(USER_ID_NAME, USER_ID_VALUE);
 
         for (let userIdName of INVALID_USER_ID_NAMES) {
-            let expectErr = typeof userIdName == 'string' ? createError4("name") : createError2("name", "string");
+            let expectErr = createNameParamError(userIdName);
             try {
                 console.info(`getUserId name: ${userIdName}`);
                 let res = hiAppEventV9.getUserId(userIdName);
@@ -196,7 +218,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserIdsTest004_1', 0, function () {
         console.info('HiAppEventUserIdsTest004_1 start');
 
-        let expectErr = createError2("userId", "string");
+        let expectErr = null;
 
         try {
             console.info(`setUserId name: ${USER_ID_NAME}, value: ${USER_ID_VALUE}`);
@@ -224,9 +246,11 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserIdsTest005_1', 0, function () {
         console.info('HiAppEventUserIdsTest005_1 start');
 
-        let expectErr = createError2("userId", "string");
-
         for (let userIdVal of CLEAR_USER_INFO_VALUES) {
+            let expectErr = null;
+            if (userIdVal === undefined) {
+                expectErr = createValueParamError(userIdVal);
+            }
             try {
                 console.info(`setUserId name: ${USER_ID_NAME}, value: ${USER_ID_VALUE}`);
                 hiAppEventV9.setUserId(USER_ID_NAME, USER_ID_VALUE);
@@ -254,7 +278,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserPropertyTest001_1', 0, function () {
         console.info('HiAppEventUserPropertyTest001_1 start');
 
-        let expectErr = createError2("userProperties", "string");
+        let expectErr = null;
 
         try {
             console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${USER_PROP_VALUE}`);
@@ -280,7 +304,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserPropertyTest001_2', 0, function () {
         console.info('HiAppEventUserPropertyTest001_2 start');
 
-        let expectErr = createError2("userProperties", "string");
+        let expectErr = null;
 
         try {
             console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${USER_PROP_VALUE}`);
@@ -309,7 +333,7 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventUserPropertyTest002_1 start');
 
         for (let userPropertyName of INVALID_USER_PROP_NAMES) {
-            let expectErr = typeof userPropertyName == 'string' ? createError4("name") : createError2("name", "string");
+            let expectErr = createNameParamError(userPropertyName);
             try {
                 console.info(`setUserProperty name: ${userPropertyName}, value: ${USER_PROP_VALUE}`);
                 hiAppEventV9.setUserProperty(userPropertyName, USER_PROP_VALUE);
@@ -318,8 +342,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         for (let userPropertyVal of INVALID_USER_PROP_VALUES) {
-            let expectErr = typeof userPropertyVal == 'string' ? createError4("value")
-            : createError2("user property", "string");
+            let expectErr = createValueParamError(userPropertyVal);
             try {
                 console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${userPropertyVal}`);
                 hiAppEventV9.setUserProperty(USER_PROP_NAME, userPropertyVal);
@@ -345,7 +368,7 @@ describe('HiAppEventJsTest', function () {
         hiAppEventV9.setUserProperty(USER_PROP_NAME, USER_PROP_VALUE);
 
         for (let userPropertyName of INVALID_USER_PROP_NAMES) {
-            let expectErr = typeof userPropertyName == 'string' ? createError4("name") : createError2("name", "string");
+            let expectErr = createNameParamError(userPropertyName);
             try {
                 console.info(`getUserProperty name: ${USER_PROP_NAME}`);
                 let res = hiAppEventV9.getUserProperty(userPropertyName);
@@ -368,7 +391,7 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserPropertyTest004_1', 0, function () {
         console.info('HiAppEventUserPropertyTest004_1 start');
 
-        let expectErr = createError2("userProperties", "string");
+        let expectErr = null;
 
         try {
             console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${USER_PROP_VALUE}`);
@@ -396,9 +419,11 @@ describe('HiAppEventJsTest', function () {
     it('HiAppEventUserPropertyTest005_1', 0, function () {
         console.info('HiAppEventUserPropertyTest005_1 start');
 
-        let expectErr = createError2("user property", "string");
-
         for (let userPropertyVal of CLEAR_USER_INFO_VALUES) {
+            let expectErr = null;
+            if (userPropertyVal === undefined) {
+                expectErr = createValueParamError(userPropertyVal);
+            }
             try {
                 console.info(`setUserProperty name: ${USER_PROP_NAME}, value: ${USER_PROP_VALUE}`);
                 hiAppEventV9.setUserProperty(USER_PROP_NAME, USER_PROP_VALUE);

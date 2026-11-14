@@ -107,11 +107,17 @@ napi_value NapiAppEventHolder::NapiSetRow(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
     if (paramNum < PARAM_NUM) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
+        return nullptr;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, params[0]);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
         return nullptr;
     }
     if (!NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size", "number"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "number", NapiUtil::GetTypeName(type)));
         return nullptr;
     }
     int num = NapiUtil::GetInt32(env, params[0]);
@@ -134,11 +140,17 @@ napi_value NapiAppEventHolder::NapiSetSize(napi_env env, napi_callback_info info
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
     if (paramNum < PARAM_NUM) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
+        return nullptr;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, params[0]);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
         return nullptr;
     }
     if (!NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("size", "number"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "number", NapiUtil::GetTypeName(type)));
         return nullptr;
     }
     int num = NapiUtil::GetInt32(env, params[0]);

@@ -35,57 +35,115 @@ constexpr const char* TYPE_PROPERTY = "eventType";
 constexpr const char* PARAM_PROPERTY = "params";
 constexpr size_t MAX_LENGTH_OF_PARAM_NAME = 32;
 constexpr const char* PARAM_VALUE_TYPE = "boolean|number|string|array[boolean|number|string]";
+constexpr size_t INDEX_OF_INFO_PARAM = 0;
+constexpr const char* TYPE_NAME_OF_STRING = "string";
+constexpr const char* TYPE_NAME_OF_OBJECT = "object";
+constexpr const char* TYPE_NAME_OF_EVENT_TYPE = "EventType";
+
+std::string CreateRequiredErrMsg(size_t paramIndex, const std::string& propName)
+{
+    return propName.empty() ? NapiUtil::CreateParamRequiredErrMsg(paramIndex)
+        : NapiUtil::CreatePropertyRequiredErrMsg(paramIndex, propName);
+}
+
+std::string CreateTypeMismatchErrMsg(size_t paramIndex, const std::string& propName, const std::string& expectedType,
+    const std::string& actualType)
+{
+    return propName.empty() ? NapiUtil::CreateParamTypeErrMsg(paramIndex, expectedType, actualType)
+        : NapiUtil::CreatePropertyTypeErrMsg(paramIndex, propName, expectedType, actualType);
+}
 }
 using namespace OHOS::HiviewDFX::ErrorCode;
 
-bool NapiHiAppEventBuilder::IsValidEventDomain(const napi_env env, const napi_value domain)
+bool NapiHiAppEventBuilder::IsValidEventDomain(const napi_env env, const napi_value domain, size_t paramIndex,
+    const std::string& propName, bool isRequired)
 {
     if (domain == nullptr) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("domain"), isV9_);
+        if (!isRequired) {
+            return true;
+        }
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
+        return false;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, domain);
+    if ((type == napi_null || type == napi_undefined) && isRequired) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
         return false;
     }
     if (!NapiUtil::IsString(env, domain)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("domain", "string"), isV9_);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            CreateTypeMismatchErrMsg(paramIndex, propName, TYPE_NAME_OF_STRING, NapiUtil::GetTypeName(type)), isV9_);
         return false;
     }
     return true;
 }
 
-bool NapiHiAppEventBuilder::IsValidEventName(const napi_env env, const napi_value name)
+bool NapiHiAppEventBuilder::IsValidEventName(const napi_env env, const napi_value name, size_t paramIndex,
+    const std::string& propName, bool isRequired)
 {
     if (name == nullptr) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name"), isV9_);
+        if (!isRequired) {
+            return true;
+        }
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
+        return false;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, name);
+    if ((type == napi_null || type == napi_undefined) && isRequired) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
         return false;
     }
     if (!NapiUtil::IsString(env, name)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"), isV9_);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            CreateTypeMismatchErrMsg(paramIndex, propName, TYPE_NAME_OF_STRING, NapiUtil::GetTypeName(type)), isV9_);
         return false;
     }
     return true;
 }
 
-bool NapiHiAppEventBuilder::IsValidEventType(const napi_env env, const napi_value type)
+bool NapiHiAppEventBuilder::IsValidEventType(const napi_env env, const napi_value type, size_t paramIndex,
+    const std::string& propName, bool isRequired)
 {
     if (type == nullptr) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("eventType"), isV9_);
+        if (!isRequired) {
+            return true;
+        }
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
+        return false;
+    }
+    napi_valuetype valueType = NapiUtil::GetType(env, type);
+    if ((valueType == napi_null || valueType == napi_undefined) && isRequired) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
         return false;
     }
     if (!NapiUtil::IsNumber(env, type)
-    || !AppEventVerifyFacade::VerifyIsValidEventType(NapiUtil::GetInt32(env, type))) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("eventType", "EventType"), isV9_);
+        || !AppEventVerifyFacade::VerifyIsValidEventType(NapiUtil::GetInt32(env, type))) {
+        std::string errMsg = CreateTypeMismatchErrMsg(paramIndex, propName, TYPE_NAME_OF_EVENT_TYPE,
+            NapiUtil::GetTypeName(valueType));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
         return false;
     }
     return true;
 }
 
-bool NapiHiAppEventBuilder::IsValidEventParam(const napi_env env, const napi_value param)
+bool NapiHiAppEventBuilder::IsValidEventParam(const napi_env env, const napi_value param, size_t paramIndex,
+    const std::string& propName, bool isRequired)
 {
     if (param == nullptr) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("params"), isV9_);
+        if (!isRequired) {
+            return true;
+        }
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
+        return false;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, param);
+    if ((type == napi_null || type == napi_undefined) && isRequired) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, CreateRequiredErrMsg(paramIndex, propName), isV9_);
         return false;
     }
     if (!NapiUtil::IsObject(env, param)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("params", "object"), isV9_);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            CreateTypeMismatchErrMsg(paramIndex, propName, TYPE_NAME_OF_OBJECT, NapiUtil::GetTypeName(type)), isV9_);
         return false;
     }
     return true;
@@ -93,21 +151,33 @@ bool NapiHiAppEventBuilder::IsValidEventParam(const napi_env env, const napi_val
 
 bool NapiHiAppEventBuilder::IsValidEventInfo(const napi_env env, const napi_value eventInfo)
 {
-    if (!NapiUtil::IsObject(env, eventInfo)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("info", "AppEventInfo"), isV9_);
+    napi_valuetype type = NapiUtil::GetType(env, eventInfo);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamRequiredErrMsg(INDEX_OF_INFO_PARAM), isV9_);
         return false;
     }
-    return IsValidEventDomain(env, NapiUtil::GetProperty(env, eventInfo, DOMAIN_PROPERTY))
-        && IsValidEventName(env, NapiUtil::GetProperty(env, eventInfo, NAME_PROPERTY))
-        && IsValidEventType(env, NapiUtil::GetProperty(env, eventInfo, TYPE_PROPERTY))
-        && IsValidEventParam(env, NapiUtil::GetProperty(env, eventInfo, PARAM_PROPERTY));
+    if (!NapiUtil::IsObject(env, eventInfo)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(INDEX_OF_INFO_PARAM, TYPE_NAME_OF_OBJECT, NapiUtil::GetTypeName(type)),
+            isV9_);
+        return false;
+    }
+    return IsValidEventDomain(env, NapiUtil::GetProperty(env, eventInfo, DOMAIN_PROPERTY), INDEX_OF_INFO_PARAM,
+        DOMAIN_PROPERTY)
+        && IsValidEventName(env, NapiUtil::GetProperty(env, eventInfo, NAME_PROPERTY), INDEX_OF_INFO_PARAM,
+        NAME_PROPERTY)
+        && IsValidEventType(env, NapiUtil::GetProperty(env, eventInfo, TYPE_PROPERTY), INDEX_OF_INFO_PARAM,
+        TYPE_PROPERTY)
+        && IsValidEventParam(env, NapiUtil::GetProperty(env, eventInfo, PARAM_PROPERTY), INDEX_OF_INFO_PARAM,
+        PARAM_PROPERTY);
 }
 
 bool NapiHiAppEventBuilder::IsOldWriteParams(const napi_env env, const napi_value params[], size_t len)
 {
-    return IsValidEventName(env, params[0]) // 0 means the index of event name
-        && IsValidEventType(env, params[1]) // 1 means the index of event type
-        && IsValidEventParam(env, params[2]); // 2 means the index of event param
+    return IsValidEventName(env, params[0], 0) // 0 means the index of event name
+        && IsValidEventType(env, params[1], 1) // 1 means the index of event type
+        && IsValidEventParam(env, params[2], 2); // 2 means the index of event param
 }
 
 bool NapiHiAppEventBuilder::IsNewWriteParams(const napi_env env, const napi_value params[], size_t len)
@@ -145,7 +215,8 @@ bool NapiHiAppEventBuilder::AddArrayParam2EventPack(napi_env env, const std::str
         default: {
             HILOG_ERROR(LOG_CORE, "array param value type is invalid");
             result_ = ERROR_INVALID_LIST_PARAM_TYPE;
-            std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
+            std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(INDEX_OF_INFO_PARAM,
+                std::string(PARAM_PROPERTY) + "." + key, PARAM_VALUE_TYPE, NapiUtil::GetTypeName(env, arr));
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
             return false;
         }
@@ -175,7 +246,8 @@ bool NapiHiAppEventBuilder::AddParam2EventPack(napi_env env, const std::string &
         default:
             HILOG_ERROR(LOG_CORE, "param value type is invalid");
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
-            std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
+            std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(INDEX_OF_INFO_PARAM,
+                std::string(PARAM_PROPERTY) + "." + key, PARAM_VALUE_TYPE, NapiUtil::GetTypeName(type));
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
             return false;
     }
@@ -195,7 +267,8 @@ bool NapiHiAppEventBuilder::AddParams2EventPack(napi_env env, const napi_value p
         napi_value value = NapiUtil::GetProperty(env, paramObj, key);
         if (value == nullptr) {
             result_ = ERROR_INVALID_PARAM_VALUE_TYPE;
-            std::string errMsg = NapiUtil::CreateErrMsg("param value", PARAM_VALUE_TYPE);
+            std::string errMsg = NapiUtil::CreatePropertyTypeErrMsg(INDEX_OF_INFO_PARAM,
+                std::string(PARAM_PROPERTY) + "." + key, PARAM_VALUE_TYPE, "unknown");
             NapiUtil::ThrowError(env, NapiError::ERR_PARAM, errMsg, isV9_);
             return false;
         }
@@ -255,7 +328,7 @@ std::shared_ptr<AppEventPack> NapiHiAppEventBuilder::BuildV9(const napi_env env,
 {
     isV9_ = true;
     if (len < 1) { // the min number of params for writeV9 is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("info"), isV9_);
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, len), isV9_);
         return nullptr;
     }
     if (!IsNewWriteParams(env, params, len)) {
