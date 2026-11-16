@@ -441,4 +441,62 @@ HWTEST_F(HiAppEventConfigTest, SetEventConfigTest010, TestSize.Level0)
 
     OH_HiAppEvent_DestroyConfig(config);
 }
+
+/**
+ * @tc.name: SetEventConfigTest011
+ * @tc.desc: check the interface of SetEventConfig for EVENT_MAIN_THREAD_JANK_V2 with enable_event_handler_dump.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventConfigTest, SetEventConfigTest011, TestSize.Level0)
+{
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    int res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_LOG_TYPE, "1");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_SAMPLE_INTERVAL, "100");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_IGNORE_STARTUP_TIME, "10");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_SAMPLE_COUNT, "21");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_REPORT_TIMES_PER_APP, "3");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_ENABLE_EVENT_HANDLER_DUMP, "true");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_MAIN_THREAD_JANK_V2, config);
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_ENABLE_EVENT_HANDLER_DUMP, "false");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_MAIN_THREAD_JANK_V2, config);
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    OH_HiAppEvent_DestroyConfig(config);
+}
+
+/**
+ * @tc.name: SetEventConfigTest012
+ * @tc.desc: check the interface of SetEventConfig for EVENT_MAIN_THREAD_JANK_V2 with invalid
+ *           enable_event_handler_dump value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventConfigTest, SetEventConfigTest012, TestSize.Level0)
+{
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    int res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_LOG_TYPE, "1");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_SAMPLE_INTERVAL, "100");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_IGNORE_STARTUP_TIME, "10");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_SAMPLE_COUNT, "21");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_REPORT_TIMES_PER_APP, "3");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(config, MAIN_THREAD_JANK_PARAM_ENABLE_EVENT_HANDLER_DUMP, "abc");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig(EVENT_MAIN_THREAD_JANK_V2, config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    OH_HiAppEvent_DestroyConfig(config);
+}
 }  // OHOS

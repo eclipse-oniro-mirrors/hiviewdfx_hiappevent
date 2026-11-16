@@ -124,6 +124,14 @@ extern "C" {
 #define MAIN_THREAD_JANK_PARAM_AUTO_STOP_SAMPLING "auto_stop_sampling"
 
 /**
+ * @brief Indicates whether to collect the EventHandler task queue information when the main thread times out in the
+ * MAIN_THREAD_JANK_V2 event.
+ *
+ * @since 26.1.0
+ */
+#define MAIN_THREAD_JANK_PARAM_ENABLE_EVENT_HANDLER_DUMP "enable_event_handler_dump"
+
+/**
  * @brief Print additional memory information near the PC and LR registers
  *
  * @since 24

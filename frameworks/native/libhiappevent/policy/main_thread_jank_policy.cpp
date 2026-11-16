@@ -33,7 +33,7 @@ std::map<std::string, std::string> UnifiedCAndTsParamNames(const std::map<std::s
     std::map<std::string, std::string> paramTs2CMap = {
         {"logType", "log_type"}, {"ignoreStartupTime", "ignore_startup_time"}, {"sampleInterval", "sample_interval"},
         {"sampleCount", "sample_count"}, {"reportTimesPerApp", "report_times_per_app"},
-        {"autoStopSampling", "auto_stop_sampling"}
+        {"autoStopSampling", "auto_stop_sampling"}, {"enableEventHandlerDump", "enable_event_handler_dump"}
     };
     std::map<std::string, std::string> unifiedConfigMap;
     for (const auto& config : configMap) {
