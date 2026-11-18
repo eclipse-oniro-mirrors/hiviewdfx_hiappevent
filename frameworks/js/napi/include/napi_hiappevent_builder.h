@@ -37,12 +37,16 @@ protected:
     virtual bool AddArrayParam2EventPack(napi_env env, const std::string &key, const napi_value arr);
     virtual bool AddParams2EventPack(napi_env env, const napi_value paramObj);
     bool AddParam2EventPack(napi_env env, const std::string &key, const napi_value value);
-    bool IsValidEventDomain(const napi_env env, const napi_value domain);
-    bool IsValidEventName(const napi_env env, const napi_value name);
-    bool IsValidEventParam(const napi_env env, const napi_value param);
+    bool IsValidEventDomain(const napi_env env, const napi_value domain, size_t paramIndex,
+        const std::string& propName = "", bool isRequired = true);
+    bool IsValidEventName(const napi_env env, const napi_value name, size_t paramIndex,
+        const std::string& propName = "", bool isRequired = true);
+    bool IsValidEventParam(const napi_env env, const napi_value param, size_t paramIndex,
+        const std::string& propName = "", bool isRequired = true);
 
 private:
-    bool IsValidEventType(const napi_env env, const napi_value type);
+    bool IsValidEventType(const napi_env env, const napi_value type, size_t paramIndex,
+        const std::string& propName = "", bool isRequired = true);
     bool IsValidEventInfo(const napi_env env, const napi_value eventInfo);
     bool IsOldWriteParams(const napi_env env, const napi_value params[], size_t len);
     bool IsNewWriteParams(const napi_env env, const napi_value params[], size_t len);

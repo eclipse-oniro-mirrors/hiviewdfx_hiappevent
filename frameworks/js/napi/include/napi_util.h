@@ -79,10 +79,14 @@ void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow = t
 void ThrowErrorMsgWithIntCode(napi_env env, int code, bool isThrow = true);
 void ThrowErrorWithIntCode(napi_env env, int code, const std::string& msg, bool isThrow = true);
 napi_value CreateError(napi_env env, int code, const std::string& msg);
-std::string CreateErrMsg(const std::string& name);
-std::string CreateErrMsg(const std::string& name, const std::string& type);
-std::string CreateErrMsg(const std::string& name, const napi_valuetype type);
-
+std::string CreateParamCntErrMsg(size_t expectedCnt, size_t actualCnt);
+std::string CreateParamTypeErrMsg(size_t index, const std::string& expectedType, const std::string& actualType);
+std::string CreateParamRequiredErrMsg(size_t index);
+std::string CreatePropertyTypeErrMsg(size_t index, const std::string& propertyName, const std::string& expectedType,
+    const std::string& actualType);
+std::string CreatePropertyRequiredErrMsg(size_t index, const std::string& propertyName);
+std::string GetTypeName(napi_env env, napi_value value);
+std::string GetTypeName(napi_valuetype type);
 napi_value CreateBaseValueByJson(const napi_env env, const Json::Value& jsonValue);
 napi_value CreateValueByJson(napi_env env, const Json::Value& jsonValue);
 napi_value CreateValueByJsonStr(napi_env env, const std::string& jsonStr);

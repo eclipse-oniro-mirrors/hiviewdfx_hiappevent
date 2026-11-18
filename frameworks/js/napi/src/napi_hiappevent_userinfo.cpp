@@ -45,12 +45,40 @@ bool IsStringEmptyOrNull(const napi_env env, const napi_value name)
     std::string strName = NapiUtil::GetString(env, name);
     return strName.empty();
 }
+
+bool IsValidNameParam(const napi_env env, const napi_value name)
+{
+    napi_valuetype type = NapiUtil::GetType(env, name);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
+        return false;
+    }
+    if (!NapiUtil::IsString(env, name)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "string", NapiUtil::GetTypeName(type)));
+        return false;
+    }
+    return true;
+}
+
+bool IsValidValueParam(const napi_env env, const napi_value value)
+{
+    if (NapiUtil::GetType(env, value) == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(1));
+        return false;
+    }
+    if (!NapiUtil::IsString(env, value)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamTypeErrMsg(1, "string",
+            NapiUtil::GetTypeName(env, value)));
+        return false;
+    }
+    return true;
+}
 }
 
 bool SetUserId(const napi_env env, const napi_value name, const napi_value userId)
 {
-    if (!NapiUtil::IsString(env, name)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
+    if (!IsValidNameParam(env, name)) {
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
@@ -66,8 +94,7 @@ bool SetUserId(const napi_env env, const napi_value name, const napi_value userI
         }
         return true;
     }
-    if (!NapiUtil::IsString(env, userId)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("userId", "string"));
+    if (!IsValidValueParam(env, userId)) {
         return false;
     }
     std::string strUserId = NapiUtil::GetString(env, userId);
@@ -85,8 +112,7 @@ bool SetUserId(const napi_env env, const napi_value name, const napi_value userI
 
 bool GetUserId(const napi_env env, const napi_value name, napi_value& out)
 {
-    if (!NapiUtil::IsString(env, name)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
+    if (!IsValidNameParam(env, name)) {
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
@@ -106,8 +132,7 @@ bool GetUserId(const napi_env env, const napi_value name, napi_value& out)
 
 bool SetUserProperty(const napi_env env, const napi_value name, const napi_value userProperty)
 {
-    if (!NapiUtil::IsString(env, name)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
+    if (!IsValidNameParam(env, name)) {
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);
@@ -123,8 +148,7 @@ bool SetUserProperty(const napi_env env, const napi_value name, const napi_value
         }
         return true;
     }
-    if (!NapiUtil::IsString(env, userProperty)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("user property", "string"));
+    if (!IsValidValueParam(env, userProperty)) {
         return false;
     }
     std::string strUserProperty = NapiUtil::GetString(env, userProperty);
@@ -142,8 +166,7 @@ bool SetUserProperty(const napi_env env, const napi_value name, const napi_value
 
 bool GetUserProperty(const napi_env env, const napi_value name, napi_value& out)
 {
-    if (!NapiUtil::IsString(env, name)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
+    if (!IsValidNameParam(env, name)) {
         return false;
     }
     std::string strName = NapiUtil::GetString(env, name);

@@ -120,11 +120,22 @@ bool GenConfigIntProp(const napi_env env, const napi_value config, const std::st
 
 int GenProcessorNameProp(const napi_env env, const napi_value config, const std::string& key, ReportConfig& out)
 {
-    std::string name;
-    if (!GenConfigStrProp(env, config, key, name, false)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg(key, CONFIG_PROP_TYPE_STR));
+    napi_value value = NapiUtil::GetProperty(env, config, key);
+    if (value == nullptr) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyRequiredErrMsg(0, key));
         return ERR_CODE_PARAM_FORMAT;
     }
+    napi_valuetype type = NapiUtil::GetType(env, value);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyRequiredErrMsg(0, key));
+        return ERR_CODE_PARAM_FORMAT;
+    }
+    if (!NapiUtil::IsString(env, value)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreatePropertyTypeErrMsg(0, key,
+            CONFIG_PROP_TYPE_STR, NapiUtil::GetTypeName(type)));
+        return ERR_CODE_PARAM_FORMAT;
+    }
+    std::string name = NapiUtil::GetString(env, value);
     if (!AppEventVerifyFacade::VerifyIsValidProcessorName(name)) {
         NapiUtil::ThrowError(env, NapiError::ERR_PARAM, "Invalid processor name.");
         return ERR_CODE_PARAM_FORMAT;
@@ -401,9 +412,16 @@ const ConfigProp CONFIG_PROPS[] = {
 
 int TransConfig(const napi_env env, const napi_value config, ReportConfig& out)
 {
+    napi_valuetype type = NapiUtil::GetType(env, config);
+    if (type == napi_null || type == napi_undefined) {
+        HILOG_ERROR(LOG_CORE, "failed to add processor, params format error");
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
+        return -1;
+    }
     if (!NapiUtil::IsObject(env, config)) {
         HILOG_ERROR(LOG_CORE, "failed to add processor, params format error");
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("config", "Processor"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "object", NapiUtil::GetTypeName(type)));
         return -1;
     }
     for (auto prop : CONFIG_PROPS) {
@@ -521,9 +539,16 @@ void AddProcessorFromConfig(const napi_env env, std::unique_ptr<AddProcessorFrom
 
 bool RemoveProcessor(const napi_env env, const napi_value id)
 {
+    napi_valuetype type = NapiUtil::GetType(env, id);
+    if (type == napi_null || type == napi_undefined) {
+        HILOG_WARN(LOG_CORE, "failed to remove processor, params format error");
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
+        return false;
+    }
     if (!NapiUtil::IsNumber(env, id)) {
         HILOG_WARN(LOG_CORE, "failed to remove processor, params format error");
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("id", "number"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "number", NapiUtil::GetTypeName(type)));
         return false;
     }
     int64_t processorId = NapiUtil::GetInt64(env, id);

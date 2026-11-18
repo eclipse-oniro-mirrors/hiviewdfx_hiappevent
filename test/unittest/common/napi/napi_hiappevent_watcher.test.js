@@ -117,14 +117,6 @@ describe('HiAppEventJsTest', function () {
         return { code: code.toString(), message: message };
     }
 
-    function createError2(name, type) {
-        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
-    }
-
-    function createError3(name) {
-        return { code: "401", message: "Parameter error. The " + name + " parameter is mandatory." };
-    }
-
     function assertErrorEqual(actualErr, expectErr) {
         if (expectErr) {
             expect(actualErr.code).assertEqual(expectErr.code)
@@ -141,7 +133,7 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest001', 0, function () {
-        let expectErr = createError3("watcher")
+        let expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 1, Actual: 0.")
         try {
             hiAppEventV9.addWatcher();
         } catch (err) {
@@ -161,29 +153,32 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest002', 0, function () {
-        let expectErr = createError2("watcher", "Watcher")
-        function addWatcherTypeTest(watcher) {
+        function addWatcherTypeTest(watcher, expectErr) {
             try {
                 hiAppEventV9.addWatcher(watcher);
             } catch (err) {
                 assertErrorEqual(err, expectErr)
             }
         }
-        function removeWatcherTypeTest(watcher) {
+        function removeWatcherTypeTest(watcher, expectErr) {
             try {
                 hiAppEventV9.removeWatcher(watcher);
             } catch (err) {
                 assertErrorEqual(err, expectErr)
             }
         }
-        addWatcherTypeTest(null);
-        addWatcherTypeTest(123);
-        addWatcherTypeTest("name");
-        addWatcherTypeTest(true);
-        removeWatcherTypeTest(null);
-        removeWatcherTypeTest(123);
-        removeWatcherTypeTest("name");
-        removeWatcherTypeTest(true);
+        let expectErr = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
+        addWatcherTypeTest(null, expectErr);
+        removeWatcherTypeTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, Actual: number.")
+        addWatcherTypeTest(123, expectErr);
+        removeWatcherTypeTest(123, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, Actual: string.")
+        addWatcherTypeTest("name", expectErr);
+        removeWatcherTypeTest("name", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, Actual: boolean.")
+        addWatcherTypeTest(true, expectErr);
+        removeWatcherTypeTest(true, expectErr);
     });
 
     /**
@@ -196,7 +191,8 @@ describe('HiAppEventJsTest', function () {
         try {
             hiAppEventV9.addWatcher({});
         } catch (err) {
-            let expectErr = createError3("name")
+            let expectErr = createError(401, "Parameter error. Param[0].name is required, cannot be null or " +
+                "undefined.")
             assertErrorEqual(err, expectErr)
         }
     });
@@ -208,11 +204,19 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest004', 0, function () {
-        let expectErr = createError2("name", "string");
-
+        let expectErr = createError(401, "Parameter error. Param[0].name is required, cannot be null or undefined.")
         watcherNameTest(null, expectErr);
+
+        expectErr = createError(401, "Parameter error. Param[0].name type mismatch. Expected: string, " +
+            "Actual: boolean.")
         watcherNameTest(true, expectErr);
+
+        expectErr = createError(401, "Parameter error. Param[0].name type mismatch. Expected: string, " +
+            "Actual: number.")
         watcherNameTest(123, expectErr);
+
+        expectErr = createError(401, "Parameter error. Param[0].name type mismatch. Expected: string, " +
+            "Actual: array.")
         watcherNameTest(["name1", "name2"], expectErr);
     });
 
@@ -246,11 +250,20 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest006', 0, function () {
-        let expectErr = createError2("triggerCondition", "TriggerCondition");
-
+        let expectErr = createError(401, "Parameter error. Param[0].triggerCondition type mismatch. " +
+            "Expected: TriggerCondition, Actual: null.")
         triggerConditionTest(null, expectErr);
+
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition type mismatch. " +
+            "Expected: TriggerCondition, Actual: number.")
         triggerConditionTest(123, expectErr);
+
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition type mismatch. " +
+            "Expected: TriggerCondition, Actual: string.")
         triggerConditionTest("test", expectErr);
+
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition type mismatch. " +
+            "Expected: TriggerCondition, Actual: boolean.")
         triggerConditionTest(true, expectErr);
     });
 
@@ -265,9 +278,14 @@ describe('HiAppEventJsTest', function () {
             triggerConditionTest({ row: row }, expectErr);
         }
         // invalid triggerCondition.row type
-        let expectErr = createError2("row", "number");
+        let expectErr = createError(401, "Parameter error. Param[0].triggerCondition.row type mismatch. " +
+            "Expected: number, Actual: null.")
         rowTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.row type mismatch. " +
+            "Expected: number, Actual: string.")
         rowTest("str", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.row type mismatch. " +
+            "Expected: number, Actual: boolean.")
         rowTest(true, expectErr);
 
         // invalid triggerCondition.row value
@@ -287,9 +305,14 @@ describe('HiAppEventJsTest', function () {
             triggerConditionTest({ size: size }, expectErr);
         }
         // invalid triggerCondition.size type
-        let expectErr = createError2("size", "number");
+        let expectErr = createError(401, "Parameter error. Param[0].triggerCondition.size type mismatch. " +
+            "Expected: number, Actual: null.")
         sizeTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.size type mismatch. " +
+            "Expected: number, Actual: string.")
         sizeTest("str", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.size type mismatch. " +
+            "Expected: number, Actual: boolean.")
         sizeTest(true, expectErr);
 
         // invalid triggerCondition.size value
@@ -306,13 +329,20 @@ describe('HiAppEventJsTest', function () {
      */
     it('HiAppEventWatcherTest009', 0, function () {
         function timeoutTest(timeout) {
-            triggerConditionTest({ timeout: timeout }, expectErr);
+            triggerConditionTest({ timeOut: timeout }, expectErr);
         }
         // invalid triggerCondition.timeout type
-        let expectErr = createError2("timeout", "number");
+        let expectErr = createError(401, "Parameter error. Param[0].triggerCondition.timeOut type mismatch. " +
+            "Expected: number, Actual: null.")
         timeoutTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.timeOut type mismatch. " +
+            "Expected: number, Actual: string.")
         timeoutTest("str", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.timeOut type mismatch. " +
+            "Expected: number, Actual: boolean.")
         timeoutTest(true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].triggerCondition.timeOut type mismatch. " +
+            "Expected: number, Actual: object.")
         timeoutTest({}, expectErr);
 
         // invalid triggerCondition.timeout value
@@ -329,13 +359,26 @@ describe('HiAppEventJsTest', function () {
      * @tc.require: issueI5LB4N
      */
     it('HiAppEventWatcherTest010', 0, function () {
-        let expectErr = createError2("appEventFilters", "AppEventFilter[]");
+        let expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: null.")
         appEventFiltersTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: object.")
         appEventFiltersTest({}, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: string.")
         appEventFiltersTest("invalid", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: number.")
         appEventFiltersTest(123, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: boolean.")
         appEventFiltersTest(true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: array.")
         appEventFiltersTest([1, 2], expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters type mismatch. " +
+            "Expected: AppEventFilter[], Actual: array.")
         appEventFiltersTest(["str1", "str2"], expectErr);
     });
 
@@ -349,16 +392,22 @@ describe('HiAppEventJsTest', function () {
         function appEventFilterTest(filter, expectErr) {
             appEventFiltersTest([filter], expectErr);
         }
-        let expectErr = createError3("domain");
+        let expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].domain is required, " +
+            "cannot be null or undefined.")
         appEventFilterTest({}, expectErr);
 
         // invalid appEventFilter.domain type
         function domainTest(domain, expectErr) {
             appEventFilterTest({ domain: domain }, expectErr);
         }
-        expectErr = createError2("domain", "string");
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].domain is required, " +
+            "cannot be null or undefined.")
         domainTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].domain type mismatch. " +
+            "Expected: string, Actual: number.")
         domainTest(123, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].domain type mismatch. " +
+            "Expected: string, Actual: boolean.")
         domainTest(true, expectErr);
 
         // invalid appEventFilter.domain value
@@ -391,11 +440,20 @@ describe('HiAppEventJsTest', function () {
                 eventTypes: eventTypes
             }, expectErr);
         }
-        let expectErr = createError2("eventTypes", "EventType[]");
+        let expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].eventTypes type " +
+            "mismatch. Expected: EventType[], Actual: null.")
         eventTypesTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].eventTypes type " +
+            "mismatch. Expected: EventType[], Actual: string.")
         eventTypesTest("invalid", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].eventTypes type " +
+            "mismatch. Expected: EventType[], Actual: boolean.")
         eventTypesTest(true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].eventTypes type " +
+            "mismatch. Expected: EventType[], Actual: array.")
         eventTypesTest(["invalid"], expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].appEventFilters[0].eventTypes type " +
+            "mismatch. Expected: EventType[], Actual: number.")
         eventTypesTest([10, -1], expectErr);
     });
 
@@ -417,10 +475,17 @@ describe('HiAppEventJsTest', function () {
                 assertErrorEqual(err, expectErr);
             }
         }
-        let expectErr = createError2("onTrigger", "function");
+        let expectErr = createError(401, "Parameter error. Param[0].onTrigger type mismatch. " +
+            "Expected: function, Actual: null.")
         onTriggerTest(null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].onTrigger type mismatch. " +
+            "Expected: function, Actual: string.")
         onTriggerTest("invalid", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].onTrigger type mismatch. " +
+            "Expected: function, Actual: boolean.")
         onTriggerTest(true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0].onTrigger type mismatch. " +
+            "Expected: function, Actual: number.")
         onTriggerTest(123, expectErr);
     });
 
@@ -688,7 +753,7 @@ describe('HiAppEventJsTest', function () {
         try {
             holder.setSize();
         } catch (err) {
-            let expectErr = createError3("size");
+            let expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 1, Actual: 0.")
             assertErrorEqual(err, expectErr);
         }
 
@@ -700,10 +765,13 @@ describe('HiAppEventJsTest', function () {
                 assertErrorEqual(err, expectErr);
             }
         }
-        let expectErr = createError2("size", "number");
+        let expectErr = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
         holderSetSizeTest(holder, null, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: number, Actual: string.")
         holderSetSizeTest(holder, "str", expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: number, Actual: boolean.")
         holderSetSizeTest(holder, true, expectErr);
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: number, Actual: object.")
         holderSetSizeTest(holder, {}, expectErr);
 
         // invalid size value

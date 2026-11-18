@@ -50,11 +50,6 @@ describe('HiAppEventJsTest', function () {
         return { code: code.toString(), message: message };
     }
 
-    function createError2(name, type) {
-        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
-    }
-
-
     function assertErrorEqual(actualErr, expectErr) {
         if (expectErr) {
             expect(actualErr.code).assertEqual(expectErr.code)
@@ -131,13 +126,17 @@ describe('HiAppEventJsTest', function () {
         let configInfo = {
             "log_type": "0",
         };
-        let expectErr1 = createError2("name", "string");
+        let expectErr1 = createError(401, "Parameter error. Param[0] type mismatch. Expected: string, " +
+            "Actual: number.")
         setEventConfigTestCatch(0, configInfo, expectErr1, done);
+        expectErr1 = createError(401, "Parameter error. Param[0] type mismatch. Expected: string, " +
+            "Actual: boolean.")
         setEventConfigTestCatch(true, configInfo, expectErr1, done);
 
         let expectErr2 = createError(401, "Invalid param value for event config.");
         setEventConfigTest("", configInfo, expectErr2, done);
-        setEventConfigTest(null, configInfo, expectErr2, done);
+        let expectErr3 = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
+        setEventConfigTestCatch(null, configInfo, expectErr3, done);
         setEventConfigTest("INVALID_NAME", configInfo, expectErr2, done);
         console.info('SetEventConfigTest002 end');
     });
@@ -150,10 +149,16 @@ describe('HiAppEventJsTest', function () {
      */
     it('SetEventConfigTest003', 0, async function (done) {
         console.info('SetEventConfigTest003 start');
-        let expectErr = createError2("value", "object");
+        let expectErr = createError(401, "Parameter error. Param[1] type mismatch. Expected: object, " +
+            "Actual: number.")
         setEventConfigTestCatch("MAIN_THREAD_JANK", 0, expectErr, done);
+        expectErr = createError(401, "Parameter error. Param[1] type mismatch. Expected: object, " +
+            "Actual: string.")
         setEventConfigTestCatch("MAIN_THREAD_JANK", "", expectErr, done);
+        expectErr = createError(401, "Parameter error. Param[1] type mismatch. Expected: object, " +
+            "Actual: boolean.")
         setEventConfigTestCatch("MAIN_THREAD_JANK", true, expectErr, done);
+        expectErr = createError(401, "Parameter error. Param[1] is required, cannot be null or undefined.")
         setEventConfigTestCatch("MAIN_THREAD_JANK", null, expectErr, done);
         console.info('SetEventConfigTest003 end');
     });
@@ -572,7 +577,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
-        configEventPolicyTest(policy, expectErr, done);   
+        configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest002 end');
     });
 
@@ -590,7 +595,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
-        configEventPolicyTest(policy, expectErr, done);   
+        configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest003 end');
     });
 
@@ -608,7 +613,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
-        configEventPolicyTest(policy, expectErr, done);   
+        configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest004 end');
     });
 
@@ -626,7 +631,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
-        configEventPolicyTest(policy, expectErr, done);   
+        configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest005 end');
     });
 
@@ -644,7 +649,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
-        configEventPolicyTest(policy, expectErr, done);   
+        configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest006 end');
     });
 
@@ -662,7 +667,7 @@ describe('HiAppEventJsTest', function () {
             }
         }
         let expectErr = createError(401, "Invalid param value type for event policy.");
-        configEventPolicyTest(policy, expectErr, done);   
+        configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest007 end');
     });
 

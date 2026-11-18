@@ -32,6 +32,26 @@ namespace HiviewDFX {
 namespace {
 constexpr char CONTAINER_CLASS_NAME[] = "ExternalLogContainer";
 constexpr size_t PARAM_NUM_ONE = 1;
+
+bool IsValidParam(const napi_env env, const napi_value param, size_t paramNum, const std::string& expectedType)
+{
+    if (paramNum < PARAM_NUM_ONE) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
+        return false;
+    }
+    napi_valuetype type = NapiUtil::GetType(env, param);
+    if (type == napi_null || type == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
+        return false;
+    }
+    if ((expectedType == "string" && !NapiUtil::IsString(env, param))
+        || (expectedType == "number" && !NapiUtil::IsNumber(env, param))) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, expectedType, NapiUtil::GetTypeName(type)));
+        return false;
+    }
+    return true;
+}
 }
 
 thread_local napi_ref NapiExternalLogContainer::constructor_ = nullptr;
@@ -125,8 +145,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesOfSysEvent(napi_env env, nap
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum < PARAM_NUM_ONE || !NapiUtil::IsString(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("event", "string"));
+    if (!IsValidParam(env, params[0], paramNum, "string")) {
         return NapiUtil::CreateArray(env);
     }
     std::string event = NapiUtil::GetString(env, params[0]);
@@ -151,8 +170,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesGeneratedAfter(napi_env env,
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum < PARAM_NUM_ONE || !NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("timePoint", "number"));
+    if (!IsValidParam(env, params[0], paramNum, "number")) {
         return NapiUtil::CreateArray(env);
     }
     int64_t timePoint = NapiUtil::GetInt64(env, params[0]);
@@ -177,8 +195,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesGeneratedBefore(napi_env env
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum < PARAM_NUM_ONE || !NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("timePoint", "number"));
+    if (!IsValidParam(env, params[0], paramNum, "number")) {
         return NapiUtil::CreateArray(env);
     }
     int64_t timePoint = NapiUtil::GetInt64(env, params[0]);
@@ -203,8 +220,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesLargerThan(napi_env env, nap
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum < PARAM_NUM_ONE || !NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("sizeKb", "number"));
+    if (!IsValidParam(env, params[0], paramNum, "number")) {
         return NapiUtil::CreateArray(env);
     }
     int64_t sizeKb = NapiUtil::GetInt64(env, params[0]);
@@ -229,8 +245,7 @@ napi_value NapiExternalLogContainer::NapiGetLogFilesSmallerThan(napi_env env, na
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum < PARAM_NUM_ONE || !NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("sizeKb", "number"));
+    if (!IsValidParam(env, params[0], paramNum, "number")) {
         return NapiUtil::CreateArray(env);
     }
     int64_t sizeKb = NapiUtil::GetInt64(env, params[0]);
@@ -266,8 +281,7 @@ napi_value NapiExternalLogContainer::NapiGetFirstGeneratedLogFiles(napi_env env,
     napi_value params[PARAM_NUM_ONE] = { 0 };
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, &thisVar, nullptr));
-    if (paramNum < PARAM_NUM_ONE || !NapiUtil::IsNumber(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("num", "number"));
+    if (!IsValidParam(env, params[0], paramNum, "number")) {
         return NapiUtil::CreateArray(env);
     }
     int32_t num = NapiUtil::GetInt32(env, params[0]);

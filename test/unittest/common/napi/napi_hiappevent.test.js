@@ -57,14 +57,6 @@ describe('HiAppEventJsTest', function () {
         return { code: code.toString(), message: message };
     }
 
-    function createError2(name, type) {
-        return { code: "401", message: "Parameter error. The type of " + name + " must be " + type + "." };
-    }
-
-    function createError3(name) {
-        return { code: "401", message: "Parameter error. The " + name + " parameter is mandatory." };
-    }
-
     function assertErrorEqual(actualErr, expectErr) {
         if (expectErr) {
             expect(actualErr.code).assertEqual(expectErr.code)
@@ -325,7 +317,8 @@ describe('HiAppEventJsTest', function () {
             key_2_invalid: null,
             key_str: "str"
         };
-        let expectErr = createError2("param value", "boolean|number|string|array[boolean|number|string]");
+        let expectErr = createError(401, "Parameter error. Param[0].params.key_1_invalid type mismatch. " +
+            "Expected: boolean|number|string|array[boolean|number|string], Actual: object.");
         writeParamsV9Test(params, expectErr, done, true);
     });
 
@@ -480,7 +473,8 @@ describe('HiAppEventJsTest', function () {
             key_arr_test2:[123, "ha"],
             key_str: "str"
         };
-        let expectErr = createError2("param value", "boolean|number|string|array[boolean|number|string]");
+        let expectErr = createError(401, "Parameter error. Param[0].params.key_arr_obj type mismatch. " +
+            "Expected: boolean|number|string|array[boolean|number|string], Actual: array.");
         writeParamsV9Test(params, expectErr, done, true);
     });
 
@@ -578,7 +572,7 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest010_3 start');
 
         // invalid AppEventInfo type
-        let expectErr = createError2("info", "AppEventInfo");
+        let expectErr = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
         writeV9Test(null, expectErr, done, true);
     });
 
@@ -593,7 +587,8 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest010_4 start');
 
         // invalid event domain type
-        let expectErr = createError2("domain", "string");
+        let expectErr = createError(401, "Parameter error. Param[0].domain type mismatch. Expected: string, " +
+            "Actual: boolean.")
         writeDomainV9Test(true, expectErr, done, true);
     });
 
@@ -608,7 +603,7 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest010_5 start');
 
         // invalid event name type
-        let expectErr = createError2("name", "string");
+        let expectErr = createError(401, "Parameter error. Param[0].name is required, cannot be null or undefined.")
         writeNameV9Test(null, expectErr, done, true);
     });
 
@@ -623,7 +618,8 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest010_6 start');
 
         // invalid eventType type
-        let expectErr = createError2("eventType", "EventType");
+        let expectErr = createError(401, "Parameter error. Param[0].eventType type mismatch. Expected: EventType, " +
+            "Actual: number.")
         writeTypeV9Test(-1, expectErr, done, true);
     });
 
@@ -638,7 +634,7 @@ describe('HiAppEventJsTest', function () {
         console.info('HiAppEventJsTest010_7 start');
 
         // invalid event params type
-        let expectErr = createError2("params", "object");
+        let expectErr = createError(401, "Parameter error. Param[0].params is required, cannot be null or undefined.")
         writeParamsV9Test(null, expectErr, done, true);
     });
 
@@ -676,7 +672,7 @@ describe('HiAppEventJsTest', function () {
         try {
             hiAppEventV9.write();
         } catch (err) {
-            let expectErr = createError3("info")
+            let expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 1, Actual: 0.")
             assertErrorEqual(err, expectErr)
             console.info('HiAppEventJsTest011_2 end');
         }
@@ -701,7 +697,8 @@ describe('HiAppEventJsTest', function () {
                 params: TEST_PARAMS,
             });
         } catch (err) {
-            let expectErr = createError3("domain")
+            let expectErr = createError(401, "Parameter error. Param[0].domain is required, cannot be null or " +
+                "undefined.")
             assertErrorEqual(err, expectErr)
             console.info('HiAppEventJsTest011_3 end');
         }
@@ -726,7 +723,8 @@ describe('HiAppEventJsTest', function () {
                 params: TEST_PARAMS,
             });
         } catch (err) {
-            let expectErr = createError3("name")
+            let expectErr = createError(401, "Parameter error. Param[0].name is required, cannot be null or " +
+                "undefined.")
             assertErrorEqual(err, expectErr)
             console.info('HiAppEventJsTest011_4 end');
         }
@@ -751,7 +749,8 @@ describe('HiAppEventJsTest', function () {
                 params: TEST_PARAMS,
             });
         } catch (err) {
-            let expectErr = createError3("eventType")
+            let expectErr = createError(401, "Parameter error. Param[0].eventType is required, cannot be null or " +
+                "undefined.")
             assertErrorEqual(err, expectErr)
             console.info('HiAppEventJsTest011_5 end');
         }
@@ -776,7 +775,8 @@ describe('HiAppEventJsTest', function () {
                 eventType: TEST_TYPE_V9,
             });
         } catch (err) {
-            let expectErr = createError3("params")
+            let expectErr = createError(401, "Parameter error. Param[0].params is required, cannot be null or " +
+                "undefined.")
             assertErrorEqual(err, expectErr)
             console.info('HiAppEventJsTest011_6 end');
         }
@@ -999,7 +999,7 @@ describe('HiAppEventJsTest', function () {
         try {
             hiAppEventV9.configure();
         } catch (err) {
-            let expectErr = createError3("config")
+            let expectErr = createError(401, "Parameter error. Incorrect parameter count. Expected: 1, Actual: 0.")
             assertErrorEqual(err, expectErr)
         }
 
@@ -1011,16 +1011,19 @@ describe('HiAppEventJsTest', function () {
                 assertErrorEqual(err, expectErr)
             }
         }
-        let expectErr = createError2("config", "ConfigOption")
+        let expectErr = createError(401, "Parameter error. Param[0] is required, cannot be null or undefined.")
         configureTest(null, expectErr)
-        configureTest([], expectErr)
+        configureTest(undefined, expectErr)
+
+        expectErr = createError(401, "Parameter error. Param[0] type mismatch. Expected: object, Actual: string.")
+        configureTest("configOption", expectErr)
 
         // invalid ConfigOption.disable type
-        expectErr = createError2("disable", "boolean")
+        expectErr = createError(401, "Parameter error. Param[0].disable type mismatch. Expected: boolean, Actual: number.")
         configureTest({ disable: 123 }, expectErr)
 
         // invalid ConfigOption.maxStorage type
-        expectErr = createError2("maxStorage", "string")
+        expectErr = createError(401, "Parameter error. Param[0].maxStorage type mismatch. Expected: string, Actual: null.")
         configureTest({ maxStorage: null }, expectErr)
 
         // invalid ConfigOption.maxStorage value

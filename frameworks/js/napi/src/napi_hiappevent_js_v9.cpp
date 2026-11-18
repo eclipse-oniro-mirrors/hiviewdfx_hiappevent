@@ -49,8 +49,9 @@ constexpr int WRITE_FAILED = 1;
 static napi_value AddProcessor(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addProcessor is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("addProcessor"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for addProcessor is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
     napi_value id = nullptr;
@@ -65,15 +66,22 @@ static napi_value AddProcessorFromConfig(napi_env env, napi_callback_info info)
     napi_value params[MAX_PARAM_NUM] = { 0 };
     size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
     if (paramNum < 1) { // The min num of params for AddProcessorFromConfig is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("AddProcessorFromConfig"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
+        return nullptr;
+    }
+    napi_valuetype nameType = NapiUtil::GetType(env, params[0]);
+    if (nameType == napi_null || nameType == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
         return nullptr;
     }
     if (!NapiUtil::IsString(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("processorName", "string"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "string", NapiUtil::GetTypeName(nameType)));
         return nullptr;
     }
     if (paramNum > 1 && !NapiUtil::IsString(env, params[1])) { // for configName
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("configName", "string"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(1, "string", NapiUtil::GetTypeName(env, params[1])));
         return nullptr;
     }
 
@@ -99,8 +107,9 @@ static napi_value AddProcessorFromConfig(napi_env env, napi_callback_info info)
 static napi_value RemoveProcessor(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeProcessor is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("removeProcessor"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for removeProcessor is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
     if (!NapiHiAppEventProcessor::RemoveProcessor(env, params[0])) {
@@ -152,8 +161,9 @@ static napi_value Write(napi_env env, napi_callback_info info)
 static napi_value Configure(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for configure is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("config"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for configure is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
     if (!NapiHiAppEventConfig::Configure(env, params[0], true)) {
@@ -165,8 +175,9 @@ static napi_value Configure(napi_env env, napi_callback_info info)
 static napi_value SetUserId(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 2) { // The min num of params for setUserId is 2
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("setUserId"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 2) { // The min num of params for setUserId is 2
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(2, paramNum));
         return nullptr;
     }
     if (!NapiHiAppEventUserInfo::SetUserId(env, params[0], params[1])) {
@@ -178,8 +189,9 @@ static napi_value SetUserId(napi_env env, napi_callback_info info)
 static napi_value GetUserId(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for getUserId is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("getUserId"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for getUserId is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
 
@@ -193,8 +205,9 @@ static napi_value GetUserId(napi_env env, napi_callback_info info)
 static napi_value SetUserProperty(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 2) { // The min num of params for setUserProperty is 2
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("setUserProperty"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 2) { // The min num of params for setUserProperty is 2
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(2, paramNum));
         return nullptr;
     }
     if (!NapiHiAppEventUserInfo::SetUserProperty(env, params[0], params[1])) {
@@ -206,8 +219,9 @@ static napi_value SetUserProperty(napi_env env, napi_callback_info info)
 static napi_value GetUserProperty(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for getUserProperty is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("getUserProperty"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for getUserProperty is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
 
@@ -231,9 +245,10 @@ static napi_value AddWatcher(napi_env env, napi_callback_info info)
 {
     uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for addWatcher is 1
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for addWatcher is 1
         AppEventUtilityFacade::WriteApiEndEventAsync("addWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
     return NapiHiAppEventWatch::AddWatcher(env, params[0], beginTime);
@@ -243,9 +258,10 @@ static napi_value RemoveWatcher(napi_env env, napi_callback_info info)
 {
     uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for removeWatcher is 1
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for removeWatcher is 1
         AppEventUtilityFacade::WriteApiEndEventAsync("removeWatcher", beginTime, WRITE_FAILED, NapiError::ERR_PARAM);
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("watcher"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
     return NapiHiAppEventWatch::RemoveWatcher(env, params[0], beginTime);
@@ -313,8 +329,9 @@ static napi_value SetEventConfig(napi_env env, napi_callback_info info)
 static napi_value ConfigEventPolicy(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) {  // The min num of params for configEventPolicy is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("configEventPolicy"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) {  // The min num of params for configEventPolicy is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
         return nullptr;
     }
 
@@ -339,17 +356,37 @@ static napi_value ConfigEventPolicy(napi_env env, napi_callback_info info)
 static napi_value RegisterExternalLogManager(napi_env env, napi_callback_info info)
 {
     napi_value params[MAX_PARAM_NUM] = { 0 };
-    if (NapiUtil::GetCbInfo(env, info, params) < 1) { // The min num of params for RegisterExternalLogManager is 1
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("logMngr"));
+    size_t paramNum = NapiUtil::GetCbInfo(env, info, params);
+    if (paramNum < 1) { // The min num of params for RegisterExternalLogManager is 1
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(1, paramNum));
+        return nullptr;
+    }
+    napi_valuetype mgrType = NapiUtil::GetType(env, params[0]);
+    if (mgrType == napi_null || mgrType == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(0));
         return nullptr;
     }
     if (!NapiUtil::IsObject(env, params[0])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("logMngr", "object"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamTypeErrMsg(0, "object", NapiUtil::GetTypeName(mgrType)));
         return nullptr;
     }
     napi_value callback = NapiUtil::GetProperty(env, params[0], "onCapacityReached");
-    if (callback == nullptr || !NapiUtil::IsFunction(env, callback)) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("onCapacityReached", "function"));
+    if (callback == nullptr) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreatePropertyRequiredErrMsg(0, "onCapacityReached"));
+        return nullptr;
+    }
+    napi_valuetype callbackType = NapiUtil::GetType(env, callback);
+    if (callbackType == napi_null || callbackType == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreatePropertyRequiredErrMsg(0, "onCapacityReached"));
+        return nullptr;
+    }
+    if (!NapiUtil::IsFunction(env, callback)) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreatePropertyTypeErrMsg(0, "onCapacityReached", "function",
+                NapiUtil::GetTypeName(callbackType)));
         return nullptr;
     }
     if (AppEventExternalLogManager::GetInstance().IsRegistered()) {

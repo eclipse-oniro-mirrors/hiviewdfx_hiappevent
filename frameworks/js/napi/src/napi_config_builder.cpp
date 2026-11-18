@@ -133,15 +133,28 @@ std::unique_ptr<EventConfigPack> NapiConfigBuilder::BuildEventConfig(const napi_
     size_t len)
 {
     if (len < CONFIG_PARAM_NUM) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("setEventConfig"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamCntErrMsg(CONFIG_PARAM_NUM, len));
+        return nullptr;
+    }
+    napi_valuetype nameType = NapiUtil::GetType(env, params[INDEX_OF_NAME_CONFIG]);
+    if (nameType == napi_null || nameType == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamRequiredErrMsg(INDEX_OF_NAME_CONFIG));
         return nullptr;
     }
     if (!NapiUtil::IsString(env, params[INDEX_OF_NAME_CONFIG])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("name", "string"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamTypeErrMsg(INDEX_OF_NAME_CONFIG,
+            "string", NapiUtil::GetTypeName(nameType)));
+        return nullptr;
+    }
+    napi_valuetype configType = NapiUtil::GetType(env, params[INDEX_OF_VALUE_CONFIG]);
+    if (configType == napi_null || configType == napi_undefined) {
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM,
+            NapiUtil::CreateParamRequiredErrMsg(INDEX_OF_VALUE_CONFIG));
         return nullptr;
     }
     if (!NapiUtil::IsObject(env, params[INDEX_OF_VALUE_CONFIG])) {
-        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateErrMsg("value", "object"));
+        NapiUtil::ThrowError(env, NapiError::ERR_PARAM, NapiUtil::CreateParamTypeErrMsg(INDEX_OF_VALUE_CONFIG,
+            "object", NapiUtil::GetTypeName(configType)));
         return nullptr;
     }
 
