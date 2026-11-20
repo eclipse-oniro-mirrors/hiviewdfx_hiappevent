@@ -46,7 +46,8 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
 {
     std::map<std::string, std::vector<std::string>> eventPolicyItem = {
         {"mainThreadJankPolicy",
-            {"logType", "ignoreStartupTime", "sampleInterval", "sampleCount", "reportTimesPerApp", "autoStopSampling"}},
+            {"logType", "ignoreStartupTime", "sampleInterval", "sampleCount", "reportTimesPerApp", "autoStopSampling",
+             "enableEventHandlerDump"}},
         {"cpuUsageHighPolicy",
             {"foregroundLoadThreshold", "backgroundLoadThreshold", "threadLoadThreshold", "perfLogCaptureCount",
              "threadLoadInterval"}},

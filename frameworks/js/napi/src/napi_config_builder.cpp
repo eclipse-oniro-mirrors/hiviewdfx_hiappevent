@@ -46,7 +46,8 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
     std::map<std::string, std::map<std::string, napi_valuetype>> eventPolicyItem = {
         {"mainThreadJankPolicy", {
             {"logType", napi_number}, {"ignoreStartupTime", napi_number}, {"sampleInterval", napi_number},
-            {"sampleCount", napi_number}, {"reportTimesPerApp", napi_number}, {"autoStopSampling", napi_boolean}
+            {"sampleCount", napi_number}, {"reportTimesPerApp", napi_number}, {"autoStopSampling", napi_boolean},
+            {"enableEventHandlerDump", napi_boolean}
         }},
         {"cpuUsageHighPolicy", {
             {"foregroundLoadThreshold", napi_number}, {"backgroundLoadThreshold", napi_number},

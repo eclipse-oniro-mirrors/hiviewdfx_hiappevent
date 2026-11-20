@@ -1231,4 +1231,45 @@ describe('HiAppEventJsTest', function () {
         });
         console.info('ConfigEventPolicyTest023 end');
     });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest024
+     * @tc.desc: Test the ConfigEventPolicy interface for MAIN_THREAD_JANK with enableEventHandlerDump true
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest024', 0, async function (done) {
+        console.info('ConfigEventPolicyTest024 start');
+        let policy = {
+            'mainThreadJankPolicy': {
+                "logType": 1,
+                "ignoreStartupTime": 11,
+                "sampleInterval": 100,
+                "sampleCount": 21,
+                "reportTimesPerApp": 3,
+                "autoStopSampling": true,
+                "enableEventHandlerDump": true
+            }
+        }
+        configEventPolicyTest(policy, null, done);
+        console.info('ConfigEventPolicyTest024 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest025
+     * @tc.desc: Test the ConfigEventPolicy interface for MAIN_THREAD_JANK with invalid enableEventHandlerDump type
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest025', 0, async function (done) {
+        console.info('ConfigEventPolicyTest025 start');
+        let policy = {
+            'mainThreadJankPolicy': {
+                "enableEventHandlerDump": "true",
+            }
+        }
+        let expectErr = createError(401, "Invalid param value type for event policy.");
+        configEventPolicyTest(policy, expectErr, done);
+        console.info('ConfigEventPolicyTest025 end');
+    });
 });

@@ -172,6 +172,7 @@ export default namespace hiAppEvent {
         sampleCount?: int;
         reportTimesPerApp?: int;
         autoStopSampling?: boolean;
+        enableEventHandlerDump?: boolean;
     }
 
     export interface ResourceOverlimitPolicy {
