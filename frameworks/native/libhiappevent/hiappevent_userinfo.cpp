@@ -55,12 +55,7 @@ int UserInfo::SetUserId(const std::string& name, const std::string& value)
 {
     HILOG_DEBUG(LOG_CORE, "start to set userId.");
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    std::string out;
-    if (AppEventStore::GetInstance().QueryUserId(name, out) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to query user id.");
-        return -1;
-    }
-    if (out.empty()) {
+    if (userIds_.find(name) == userIds_.end()) {
         if (AppEventStore::GetInstance().InsertUserId(name, value) == DB_FAILED) {
             HILOG_WARN(LOG_CORE, "failed to insert user id.");
             return -1;
@@ -111,12 +106,7 @@ int UserInfo::SetUserProperty(const std::string& name, const std::string& value)
 {
     HILOG_DEBUG(LOG_CORE, "start to set userProperty.");
     std::lock_guard<std::mutex> lockGuard(g_mutex);
-    std::string out;
-    if (AppEventStore::GetInstance().QueryUserProperty(name, out) == DB_FAILED) {
-        HILOG_WARN(LOG_CORE, "failed to query user property.");
-        return -1;
-    }
-    if (out.empty()) {
+    if (userProperties_.find(name) == userProperties_.end()) {
         if (AppEventStore::GetInstance().InsertUserProperty(name, value) == DB_FAILED) {
             HILOG_WARN(LOG_CORE, "failed to insert user property.");
             return -1;
