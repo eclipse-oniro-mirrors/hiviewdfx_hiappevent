@@ -271,6 +271,7 @@ ohos_unittest("HiAppEventObserverTest") {
     "$native_hiappevent_path/libhiappevent/policy/event_policy_utils.cpp",
     "$native_hiappevent_path/libhiappevent/policy/main_thread_jank_policy.cpp",
     "$native_hiappevent_path/libhiappevent/policy/resource_overlimit_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/scroll_jank_policy.cpp",
     "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
@@ -291,6 +292,7 @@ ohos_unittest("HiAppEventObserverTest") {
     "hilog:libhilog",
     "hilog:libsandboxlog",
     "hisysevent:libhisysevent",
+    "hiview:libperfmonitor",
     "icu:shared_icuuc",
     "init:libbegetutil",
     "ipc:ipc_core",
@@ -321,6 +323,7 @@ ohos_unittest("HiAppEventPolicyTest") {
     "$native_hiappevent_path/libhiappevent/policy/event_policy_utils.cpp",
     "$native_hiappevent_path/libhiappevent/policy/main_thread_jank_policy.cpp",
     "$native_hiappevent_path/libhiappevent/policy/resource_overlimit_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/policy/scroll_jank_policy.cpp",
     "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
   ]
 
@@ -337,6 +340,7 @@ ohos_unittest("HiAppEventPolicyTest") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hilog:libsandboxlog",
+    "hiview:libperfmonitor",
     "icu:shared_icuuc",
     "ipc:ipc_core",
     "samgr:samgr_proxy",

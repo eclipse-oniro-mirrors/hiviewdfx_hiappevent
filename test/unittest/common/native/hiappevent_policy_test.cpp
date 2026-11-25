@@ -23,6 +23,7 @@
 #undef private
 #include "file_util.h"
 #include "hiappevent_base.h"
+#include "perf_monitor_adapter.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -986,5 +987,81 @@ HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest021, TestSize.Level0)
         {{"jsHeapLogtype", "event_rawheap"}});
     EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
     EXPECT_TRUE(FileUtil::IsFileExists(TEST_DIR + "/rawheap"));
+}
+ 
+/**
+ * @tc.name: HiAppEventPolicyTest012_1
+ * @tc.desc: test the SetEventPolicy func for scrollJankPolicy with valid scrollJankThreshold.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest022, TestSize.Level0)
+{
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "50"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 50);
+ 
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scroll_jank_threshold", "33"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 33);
+ 
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "100"}});
+    EXPECT_EQ(result, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 100);
+}
+ 
+/**
+ * @tc.name: HiAppEventPolicyTest012_2
+ * @tc.desc: test the SetEventPolicy func for scrollJankPolicy with invalid scrollJankThreshold.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest023, TestSize.Level0)
+{
+    EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "100"}});
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "32"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "0"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "-1"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"scrollJankThreshold", "abc"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", {{"invalidKey", "50"}});
+    EXPECT_EQ(result, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 100);
+}
+ 
+/**
+ * @tc.name: HiAppEventPolicyTest012_3
+ * @tc.desc: test the SetEventPolicy func for scrollJankPolicy with uint8_t config.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest024, TestSize.Level0)
+{
+    std::map<uint8_t, uint32_t> configMap = {{0, 0}};
+    int result = EventPolicyMgr::GetInstance().SetEventPolicy("scrollJankPolicy", configMap);
+    EXPECT_EQ(result, -1);
+}
+ 
+/**
+ * @tc.name: HiAppEventPolicyTest012_4
+ * @tc.desc: test PerfMonitorAdapter stores the scroll jank threshold without range checking.
+ * @tc.type: FUNC
+ * @tc.require: issueI5NTOS
+ */
+HWTEST_F(HiAppEventPolicyTest, HiAppEventPolicyTest025, TestSize.Level0)
+{
+    PerfMonitorAdapter::GetInstance().SetScrollJankThreshold(DEFAULT_SCROLL_JANK_THRESHOLD);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), DEFAULT_SCROLL_JANK_THRESHOLD);
+
+    PerfMonitorAdapter::GetInstance().SetScrollJankThreshold(33);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 33);
+    PerfMonitorAdapter::GetInstance().SetScrollJankThreshold(33 - 1);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 33 - 1);
+
+    PerfMonitorAdapter::GetInstance().SetScrollJankThreshold(0);
+    EXPECT_EQ(PerfMonitorAdapter::GetInstance().GetScrollJankThreshold(), 0);
 }
 }  // OHOS

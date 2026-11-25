@@ -81,6 +81,7 @@ ohos_fuzztest("CacheFuzzTest") {
     "c_utils:utils",
     "ffrt:libffrt",
     "hicollie:libhicollie",
+    "hiview:libperfmonitor",
     "hilog:libhilog",
     "hilog:libsandboxlog",
     "hisysevent:libhisysevent",

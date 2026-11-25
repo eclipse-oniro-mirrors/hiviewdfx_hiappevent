@@ -57,6 +57,7 @@ std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
         {"appFreezePolicy", {"pageSwitchLogEnable"}},
         {"resourceOverlimitPolicy", {"pageSwitchLogEnable", "jsHeapLogtype", "useRefinedLogFileName",
             "v8HeapLogEnable", "jsvmHeapLogEnable"}},
+        {"scrollJankPolicy", {"scrollJankThreshold"}},
         {"addressSanitizerPolicy", {"pageSwitchLogEnable"}}
     };
     return eventPolicyItem;

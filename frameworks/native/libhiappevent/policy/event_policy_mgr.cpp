@@ -24,6 +24,7 @@
 #include "cpu_usage_high_policy.h"
 #include "main_thread_jank_policy.h"
 #include "resource_overlimit_policy.h"
+#include "scroll_jank_policy.h"
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD002D07
@@ -51,6 +52,9 @@ void EventPolicyMgr::InitializePolicies()
     RegisterPolicy("mainThreadJankPolicy", std::make_shared<MainThreadJankPolicy>());
     RegisterPolicy("RESOURCE_OVERLIMIT", std::make_shared<ResourceOverlimitPolicy>());
     RegisterPolicy("resourceOverlimitPolicy", std::make_shared<ResourceOverlimitPolicy>());
+    auto scrollJankPolicy = std::make_shared<ScrollJankPolicy>();
+    RegisterPolicy("scrollJankPolicy", scrollJankPolicy);
+    RegisterPolicy("SCROLL_JANK", scrollJankPolicy);
 }
 
 void EventPolicyMgr::RegisterPolicy(const std::string& name, EventPolicyPtr policy)

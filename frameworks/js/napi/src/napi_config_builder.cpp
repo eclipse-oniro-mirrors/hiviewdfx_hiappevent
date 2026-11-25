@@ -64,6 +64,7 @@ std::map<std::string, std::map<std::string, napi_valuetype>> GetEventPolicyItem(
             {"pageSwitchLogEnable", napi_boolean}, {"jsHeapLogtype", napi_string},
             {"useRefinedLogFileName", napi_boolean}, {"v8HeapLogEnable", napi_boolean},
             {"jsvmHeapLogEnable", napi_boolean}}},
+        {"scrollJankPolicy", {{"scrollJankThreshold", napi_number}}},
         {"addressSanitizerPolicy", {{"pageSwitchLogEnable", napi_boolean}}},
     };
     return eventPolicyItem;

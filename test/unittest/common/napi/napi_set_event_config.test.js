@@ -1272,4 +1272,146 @@ describe('HiAppEventJsTest', function () {
         configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest025 end');
     });
+    
+    /**
+     * @tc.name: ConfigEventPolicyTest026
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with the lower boundary threshold value.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest026', 0, async function (done) {
+        console.info('ConfigEventPolicyTest026 start');
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": 33}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest026 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest027
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with the upper boundary threshold value.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest027', 0, async function (done) {
+        console.info('ConfigEventPolicyTest027 start');
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": 500}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(true).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(false).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest027 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest028
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with an invalid threshold type.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest028', 0, async function (done) {
+        console.info('ConfigEventPolicyTest028 start');
+        let expectErr = createError(401, "Invalid param value type for event policy.");
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": "33"}};
+        configEventPolicyTest(policy, expectErr, done);
+        console.info('ConfigEventPolicyTest028 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest029
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with a null threshold value.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest029', 0, async function (done) {
+        console.info('ConfigEventPolicyTest029 start');
+        let expectErr = createError(401, "Invalid param value type for event policy.");
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": null}};
+        configEventPolicyTest(policy, expectErr, done);
+        console.info('ConfigEventPolicyTest029 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest030
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with a threshold below the valid range.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest030', 0, async function (done) {
+        console.info('ConfigEventPolicyTest030 start');
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": 32}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest030 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest031
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with a threshold above the valid range.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest031', 0, async function (done) {
+        console.info('ConfigEventPolicyTest031 start');
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": 501}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest031 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest032
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with a non-integer threshold value.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest032', 0, async function (done) {
+        console.info('ConfigEventPolicyTest032 start');
+        let policy = {'scrollJankPolicy': {"scrollJankThreshold": 500.5}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest032 end');
+    });
+
+    /**
+     * @tc.name: ConfigEventPolicyTest033
+     * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK when the threshold item is not set.
+     * @tc.type: FUNC
+     * @tc.require: issueI8U2VO
+     */
+    it('ConfigEventPolicyTest033', 0, async function (done) {
+        console.info('ConfigEventPolicyTest033 start');
+        let policy = {'scrollJankPolicy': {"invalidThreshold": 100}};
+        hiAppEvent.configEventPolicy(policy).then(() => {
+            expect(false).assertEqual(true);
+            done();
+        }).catch(() => {
+            expect(true).assertEqual(true);
+            done();
+        });
+        console.info('ConfigEventPolicyTest033 end');
+    });
 });

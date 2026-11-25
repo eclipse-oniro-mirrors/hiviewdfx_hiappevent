@@ -174,6 +174,10 @@ export default namespace hiAppEvent {
         autoStopSampling?: boolean;
         enableEventHandlerDump?: boolean;
     }
+ 
+    export interface ScrollJankPolicy {
+        scrollJankThreshold?: int;
+    }
 
     export interface ResourceOverlimitPolicy {
         pageSwitchLogEnable?: boolean;
@@ -190,6 +194,7 @@ export default namespace hiAppEvent {
         cpuUsageHighPolicy?: CpuUsageHighPolicy;
         mainThreadJankPolicy?: MainThreadJankPolicy;
         resourceOverlimitPolicy?: ResourceOverlimitPolicy;
+        scrollJankPolicy?: ScrollJankPolicy;
     }
 
     export interface AppEventInfo {
