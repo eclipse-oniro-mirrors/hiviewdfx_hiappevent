@@ -47,53 +47,78 @@ napi_value BuildErrorByResult(const napi_env env, int result)
     return  it == errMap.end() ? NapiUtil::CreateNull(env) :
         NapiUtil::CreateError(env, it->second, NapiError::GetErrorMsg(it->second));
 }
+
+void WriteExecute(napi_env env, void* data)
+{
+    HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
+    if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
+        AppEventWriteFacade::FacadeWriteEvent(asyncContext->appEventPack);
+    }
+}
+
+void WriteComplete(napi_env env, napi_status status, void* data)
+{
+    HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
+    napi_value results[RESULT_SIZE] = { 0 };
+    if (asyncContext->result == 0) {
+        results[ERR_INDEX] = NapiUtil::CreateNull(env);
+        results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
+    } else {
+        if (asyncContext->isV9) {
+            results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
+        } else {
+            results[ERR_INDEX] = NapiUtil::CreateObject(env, "code",
+                NapiUtil::CreateInt32(env, asyncContext->result));
+        }
+        results[VALUE_INDEX] = NapiUtil::CreateNull(env);
+    }
+
+    if (asyncContext->deferred != nullptr) { // promise
+        if (asyncContext->result == 0) {
+            (void)napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
+        } else {
+            (void)napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
+        }
+    } else { // callback
+        napi_value callback = nullptr;
+        (void)napi_get_reference_value(env, asyncContext->callback, &callback);
+        napi_value retValue = nullptr;
+        (void)napi_call_function(env, nullptr, callback, RESULT_SIZE, results, &retValue);
+        (void)napi_delete_reference(env, asyncContext->callback);
+    }
+    (void)napi_delete_async_work(env, asyncContext->asyncWork);
+    delete asyncContext;
+}
 }
 
 void Write(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> asyncContext)
 {
     HiAppEventAsyncContext* data = asyncContext.release();
     napi_value resource = NapiUtil::CreateString(env, "NapiHiAppEventWriter");
-    auto createStatus = napi_create_async_work(env, nullptr, resource,
-        [](napi_env env, void* data) {
-            HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
-            if (asyncContext->appEventPack != nullptr && asyncContext->result >= 0) {
-                AppEventWriteFacade::FacadeWriteEvent(asyncContext->appEventPack);
-            }
-        },
-        [](napi_env env, napi_status status, void* data) {
-            HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
-            napi_value results[RESULT_SIZE] = { 0 };
-            if (asyncContext->result == 0) {
-                results[ERR_INDEX] = NapiUtil::CreateNull(env);
-                results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
-            } else {
-                if (asyncContext->isV9) {
-                    results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
-                } else {
-                    results[ERR_INDEX] = NapiUtil::CreateObject(env, "code",
-                        NapiUtil::CreateInt32(env, asyncContext->result));
-                }
-                results[VALUE_INDEX] = NapiUtil::CreateNull(env);
-            }
-
-            if (asyncContext->deferred != nullptr) { // promise
-                if (asyncContext->result == 0) {
-                    napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
-                } else {
-                    napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
-                }
-            } else { // callback
-                napi_value callback = nullptr;
-                napi_get_reference_value(env, asyncContext->callback, &callback);
-                napi_value retValue = nullptr;
-                napi_call_function(env, nullptr, callback, RESULT_SIZE, results, &retValue);
-                napi_delete_reference(env, asyncContext->callback);
-            }
-            napi_delete_async_work(env, asyncContext->asyncWork);
-            delete asyncContext;
-        },
+    auto createStatus = napi_create_async_work(env, nullptr, resource, WriteExecute, WriteComplete,
         data, &data->asyncWork);
     if (createStatus != napi_ok || napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        if (createStatus == napi_ok) {
+            (void)napi_delete_async_work(env, data->asyncWork);
+        }
+        napi_value results[RESULT_SIZE] = { 0 };
+        if (data->isV9) {
+            results[ERR_INDEX] = NapiUtil::CreateError(env, NapiError::ERR_PARAM,
+                "failed to submit the write task.");
+        } else {
+            results[ERR_INDEX] = NapiUtil::CreateObject(env, "code",
+                NapiUtil::CreateInt32(env, NapiError::ERR_PARAM));
+        }
+        results[VALUE_INDEX] = NapiUtil::CreateNull(env);
+        if (data->deferred != nullptr) {
+            (void)napi_reject_deferred(env, data->deferred, results[ERR_INDEX]);
+        } else {
+            napi_value callback = nullptr;
+            (void)napi_get_reference_value(env, data->callback, &callback);
+            napi_value retValue = nullptr;
+            (void)napi_call_function(env, nullptr, callback, RESULT_SIZE, results, &retValue);
+            (void)napi_delete_reference(env, data->callback);
+        }
         delete data;
     }
 }
@@ -114,22 +139,29 @@ void SetEventParam(const napi_env env, std::unique_ptr<HiAppEventAsyncContext> a
         [](napi_env env, napi_status status, void* data) {
             HiAppEventAsyncContext* asyncContext = static_cast<HiAppEventAsyncContext*>(data);
             napi_value results[RESULT_SIZE] = { 0 };
-            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
+            if (asyncContext->deferred != nullptr) { // promise
                 if (asyncContext->result == 0) {
                     results[ERR_INDEX] = NapiUtil::CreateNull(env);
                     results[VALUE_INDEX] = NapiUtil::CreateInt32(env, asyncContext->result);
-                    napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
+                    (void)napi_resolve_deferred(env, asyncContext->deferred, results[VALUE_INDEX]);
                 } else {
                     results[ERR_INDEX] = BuildErrorByResult(env, asyncContext->result);
                     results[VALUE_INDEX] = NapiUtil::CreateNull(env);
-                    napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
+                    (void)napi_reject_deferred(env, asyncContext->deferred, results[ERR_INDEX]);
                 }
             }
-            napi_delete_async_work(env, asyncContext->asyncWork);
+            (void)napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
         data, &data->asyncWork);
     if (createStatus != napi_ok || napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        if (createStatus == napi_ok) {
+            (void)napi_delete_async_work(env, data->asyncWork);
+        }
+        if (data->deferred != nullptr) {
+            (void)napi_reject_deferred(env, data->deferred, NapiUtil::CreateError(env, NapiError::ERR_PARAM,
+                "failed to submit the setEventParam task."));
+        }
         delete data;
     }
 }

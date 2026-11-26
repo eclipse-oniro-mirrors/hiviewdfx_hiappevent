@@ -518,21 +518,28 @@ void AddProcessorFromConfig(const napi_env env, std::unique_ptr<AddProcessorFrom
         [](napi_env env, napi_status status, void* data) {
             AddProcessorFromConfigAsyncContext* asyncContext = static_cast<AddProcessorFromConfigAsyncContext*>(data);
             napi_value result = nullptr;
-            if (asyncContext != nullptr && asyncContext->deferred != nullptr) { // promise
+            if (asyncContext->deferred != nullptr) { // promise
                 if (asyncContext->result > 0) {
                     result = NapiUtil::CreateInt64(env, asyncContext->result);
-                    napi_resolve_deferred(env, asyncContext->deferred, result);
+                    (void)napi_resolve_deferred(env, asyncContext->deferred, result);
                 } else {
                     std::string ErrMsg = "Invalid param value for add processor from config.";
                     result = NapiUtil::CreateError(env, NapiError::ERR_INVALID_PARAM_VALUE, ErrMsg);
-                    napi_reject_deferred(env, asyncContext->deferred, result);
+                    (void)napi_reject_deferred(env, asyncContext->deferred, result);
                 }
             }
-            napi_delete_async_work(env, asyncContext->asyncWork);
+            (void)napi_delete_async_work(env, asyncContext->asyncWork);
             delete asyncContext;
         },
         data, &data->asyncWork);
     if (createStatus != napi_ok || napi_queue_async_work_with_qos(env, data->asyncWork, napi_qos_default) != napi_ok) {
+        if (createStatus == napi_ok) {
+            (void)napi_delete_async_work(env, data->asyncWork);
+        }
+        if (data->deferred != nullptr) {
+            (void)napi_reject_deferred(env, data->deferred, NapiUtil::CreateError(env, NapiError::ERR_PARAM,
+                "failed to submit the addProcessorFromConfig task."));
+        }
         delete data;
     }
 }
