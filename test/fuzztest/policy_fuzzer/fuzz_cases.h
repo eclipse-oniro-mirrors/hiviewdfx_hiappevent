@@ -27,5 +27,6 @@ void FuzzResourceOverlimitPolicy(const uint8_t* data, size_t size);
 void FuzzAddressSanitizerPolicy(const uint8_t* data, size_t size);
 void FuzzMainThreadJankPolicy(const uint8_t* data, size_t size);
 void FuzzCpuUsageHighPolicy(const uint8_t* data, size_t size);
+void FuzzScrollJankPolicy(const uint8_t* data, size_t size);
 
 #endif // POLICY_FUZZER_FUZZ_CASES_H

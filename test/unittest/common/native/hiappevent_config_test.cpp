@@ -499,4 +499,65 @@ HWTEST_F(HiAppEventConfigTest, SetEventConfigTest012, TestSize.Level0)
 
     OH_HiAppEvent_DestroyConfig(config);
 }
+
+/**
+ * @tc.name: SetEventConfigTest013
+ * @tc.desc: check the interface of SetEventConfig for scrollJankPolicy with boundary values of the threshold item.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventConfigTest, SetEventConfigTest013, TestSize.Level0)
+{
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+
+    int res = OH_HiAppEvent_SetConfigItem(config, OH_SCROLL_JANK_PARAM_THRESHOLD, "33");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig("scrollJankPolicy", config);
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    res = OH_HiAppEvent_SetConfigItem(config, OH_SCROLL_JANK_PARAM_THRESHOLD, "500");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig("scrollJankPolicy", config);
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    const char* invalidValues[] = {"32", "501", "0", "-1", "abc", "", "500.5", "2147483648"};
+    for (const char* invalidValue : invalidValues) {
+        res = OH_HiAppEvent_SetConfigItem(config, OH_SCROLL_JANK_PARAM_THRESHOLD, invalidValue);
+        ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+        res = OH_HiAppEvent_SetEventConfig("scrollJankPolicy", config);
+        ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    }
+    OH_HiAppEvent_DestroyConfig(config);
+
+    // the camelCase item name is also supported by the scroll jank policy
+    HiAppEvent_Config* camelCaseConfig = OH_HiAppEvent_CreateConfig();
+    res = OH_HiAppEvent_SetConfigItem(camelCaseConfig, "scrollJankThreshold", "100");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig("scrollJankPolicy", camelCaseConfig);
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetConfigItem(camelCaseConfig, "scrollJankThreshold", "abc");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+    res = OH_HiAppEvent_SetEventConfig("scrollJankPolicy", camelCaseConfig);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+    OH_HiAppEvent_DestroyConfig(camelCaseConfig);
+}
+
+/**
+ * @tc.name: SetEventConfigTest014
+ * @tc.desc: check the interface of SetEventConfig for scrollJankPolicy when the threshold item is not set.
+ * @tc.type: FUNC
+ */
+HWTEST_F(HiAppEventConfigTest, SetEventConfigTest014, TestSize.Level0)
+{
+    HiAppEvent_Config* config = OH_HiAppEvent_CreateConfig();
+    int res = OH_HiAppEvent_SetConfigItem(config, "log_type", "33");
+    ASSERT_EQ(res, ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL);
+
+    res = OH_HiAppEvent_SetEventConfig("scrollJankPolicy", config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    res = OH_HiAppEvent_SetEventConfig("SCROLL_JANK", config);
+    ASSERT_EQ(res, ErrorCode::ERROR_INVALID_PARAM_VALUE);
+
+    OH_HiAppEvent_DestroyConfig(config);
+}
 }  // OHOS

@@ -32,6 +32,7 @@ constexpr FuzzCaseFunc FUZZ_CASES[] = {
     FuzzAddressSanitizerPolicy,
     FuzzMainThreadJankPolicy,
     FuzzCpuUsageHighPolicy,
+    FuzzScrollJankPolicy,
 };
 constexpr size_t FUZZ_CASE_COUNT = sizeof(FUZZ_CASES) / sizeof(FUZZ_CASES[0]);
 }

@@ -173,6 +173,13 @@ extern "C" {
  */
 #define OH_APP_CRASH_PARAM_PUBLISH_ON_NEXT_LAUNCH "publish_on_next_launch"
 
+/**
+ * @brief Used in SCROLL_JANK policy, threshold for scroll jank detection.
+ *
+ * @since 26.1.0
+ */
+#define OH_SCROLL_JANK_PARAM_THRESHOLD "scroll_jank_threshold"
+
 #ifdef __cplusplus
 }
 #endif
