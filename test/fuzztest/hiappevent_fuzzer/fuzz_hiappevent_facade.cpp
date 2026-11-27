@@ -148,7 +148,8 @@ static void FuzzFacadeVerifyUtility(const std::string& name, const std::string& 
     OHOS::HiviewDFX::AppEventVerifyFacade::VerifyIsValidUserPropName(name);
     OHOS::HiviewDFX::AppEventVerifyFacade::VerifyIsValidUserPropValue(value);
     OHOS::HiviewDFX::AppEventVerifyFacade::VerifyIsValidWatcherName(name);
-    OHOS::HiviewDFX::AppEventUtilityFacade::WriteApiEndEventAsync(name, data[0], data[0] % RESULT_MOD, data[1]);
+    OHOS::HiviewDFX::AppEventUtilityFacade::WriteApiEndEventAsync(name, data[0], data[0] % RESULT_MOD, data[1],
+        OHOS::HiviewDFX::ApiType::NATIVE);
     OHOS::HiviewDFX::AppEventUtilityFacade::WriteApiEndMetric(name, data[0], data[0] % RESULT_MOD, data[1]);
     OHOS::HiviewDFX::AppEventUtilityFacade::GetDate();
     OHOS::HiviewDFX::AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot();

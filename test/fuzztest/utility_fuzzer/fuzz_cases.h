@@ -22,6 +22,7 @@
 void FuzzFileUtil(const uint8_t* data, size_t size);
 void FuzzTimeUtil(const uint8_t* data, size_t size);
 void FuzzAppEventStat(const uint8_t* data, size_t size);
+void FuzzApiCallScopedStat(const uint8_t* data, size_t size);
 void FuzzEventJsonUtil(const uint8_t* data, size_t size);
 void FuzzSqlUtil(const uint8_t* data, size_t size);
 

@@ -25,6 +25,7 @@
 #include "hiappevent_ani_error_code.h"
 #include "hiappevent_ani_parameter_name.h"
 #include "hiappevent_ani_util.h"
+#include "app_event_stat.h"
 #include "hiappevent_facade.h"
 #include "hiappevent_param_builder.h"
 #include "hilog/log.h"
@@ -41,6 +42,8 @@ namespace {
 constexpr char DEFAULT_CONFIG_NAME[] = "SDK_OCG";
 constexpr char PARAM_VALUE_TYPE[] = "boolean|int|long|double|string|array[boolean|int|long|double|string]";
 constexpr int WRITE_SUCCESS{0};
+constexpr int32_t REG_LOG_MGR_RETCODE_ALREADY_REGISTERED{1};
+constexpr int32_t MAX_REG_LOG_MGR_RETCODE{REG_LOG_MGR_RETCODE_ALREADY_REGISTERED};
 
 std::map<std::string, std::vector<std::string>> GetEventPolicyItem()
 {
@@ -279,7 +282,7 @@ void HiAppEventAni::ClearData([[maybe_unused]] ani_env *env)
 {
     uint64_t beginTime = static_cast<uint64_t>(AppEventUtilityFacade::GetElapsedMilliSecondsSinceBoot());
     AppEventStoreFacade::ClearData(AppEventConfigFacade::GetStorageDir());
-    AppEventUtilityFacade::WriteApiEndEventAsync("clearData", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC);
+    AppEventUtilityFacade::WriteApiEndEventAsync("clearData", beginTime, WRITE_SUCCESS, ERR_CODE_SUCC, ApiType::ANI);
 }
 
 void HiAppEventAni::SetUserId(ani_env *env, ani_string name, ani_string value)
@@ -342,7 +345,9 @@ void HiAppEventAni::RemoveWatcher(ani_env *env, ani_object watcher)
 
 void HiAppEventAni::RegisterExternalLogManager(ani_env *env, ani_object logManagerObj)
 {
+    ApiCallScopedStat stat("registerExternalLogManager", ApiType::ANI, MAX_REG_LOG_MGR_RETCODE);
     if (AppEventExternalLogManager::GetInstance().IsRegistered()) {
+        stat.SetErrorCode(REG_LOG_MGR_RETCODE_ALREADY_REGISTERED);
         HiAppEventAniUtil::ThrowAniError(env, ERR_LOG_MANAGER_ALREADY_REGISTERED,
             "State error. Log manager already registered.");
         return;
@@ -350,6 +355,7 @@ void HiAppEventAni::RegisterExternalLogManager(ani_env *env, ani_object logManag
     auto logMgr = std::make_shared<AniExternalLogMgr>();
     logMgr->InitCallback(env, logManagerObj);
     if (!AppEventExternalLogManager::GetInstance().RegisterCallback(logMgr)) {
+        stat.SetErrorCode(REG_LOG_MGR_RETCODE_ALREADY_REGISTERED);
         HiAppEventAniUtil::ThrowAniError(env, ERR_LOG_MANAGER_ALREADY_REGISTERED,
             "State error. Log manager already registered.");
     }
@@ -357,6 +363,7 @@ void HiAppEventAni::RegisterExternalLogManager(ani_env *env, ani_object logManag
 
 ani_boolean HiAppEventAni::IsExternalLogManagerRegistered(ani_env *env)
 {
+    ApiCallScopedStat stat("isExternalLogManagerRegistered", ApiType::ANI);
     return static_cast<ani_boolean>(AppEventExternalLogManager::GetInstance().IsRegistered());
 }
 

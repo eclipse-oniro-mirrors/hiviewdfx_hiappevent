@@ -29,7 +29,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-
 // AppEventConfigFacade
 bool AppEventConfigFacade::GetDisable()
 {
@@ -375,9 +374,9 @@ bool AppEventVerifyFacade::VerifyIsValidWatcherName(const std::string& watcherNa
 
 // AppEventUtilityFacade
 void AppEventUtilityFacade::WriteApiEndEventAsync(const std::string& apiName,
-    uint64_t beginTime, int result, int errCode)
+    uint64_t beginTime, int result, int errCode, ApiType apiType)
 {
-    AppEventStat::WriteApiEndEventAsync(apiName, beginTime, result, errCode);
+    AppEventStat::WriteApiEndEventAsync(apiName, beginTime, result, errCode, apiType);
 }
 
 int AppEventUtilityFacade::WriteApiEndMetric(const std::string& apiName,

@@ -16,6 +16,7 @@
 
 #include <cctype>
 #include <hilog/log.h>
+#include "app_event_stat.h"
 #include "event_policy_utils.h"
 #include "hiappevent_base.h"
 
@@ -114,9 +115,14 @@ int SaveEventConfig(std::map<std::string, std::string>& configMap)
         HILOG_ERROR(LOG_CORE, "failed to get event config dir");
         return ErrorCode::ERROR_UNKNOWN;
     }
+    std::string refinedLogFileNameValue = configMap["useRefinedLogFileName"];
     int ret = EventPolicyUtils::GetInstance().SaveEventConfig(
-        configDir, {{"useRefinedLogFileName", configMap["useRefinedLogFileName"]}}, false);
+        configDir, {{"useRefinedLogFileName", refinedLogFileNameValue}}, false);
     configMap.erase("useRefinedLogFileName");
+    if (ret == ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
+        AppEventStat::RecordConfigBoolStat("RESOURCE_OVERLIMIT", "useRefinedLogFileName",
+            refinedLogFileNameValue == "true");
+    }
     return ret;
 }
 }

@@ -28,6 +28,7 @@ constexpr FuzzCaseFunc FUZZ_CASES[] = {
     FuzzFileUtil,
     FuzzTimeUtil,
     FuzzAppEventStat,
+    FuzzApiCallScopedStat,
     FuzzEventJsonUtil,
     FuzzSqlUtil,
 };

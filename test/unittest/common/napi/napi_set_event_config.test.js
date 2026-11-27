@@ -1272,7 +1272,7 @@ describe('HiAppEventJsTest', function () {
         configEventPolicyTest(policy, expectErr, done);
         console.info('ConfigEventPolicyTest025 end');
     });
-    
+
     /**
      * @tc.name: ConfigEventPolicyTest026
      * @tc.desc: Test the ConfigEventPolicy interface for SCROLL_JANK with the lower boundary threshold value.

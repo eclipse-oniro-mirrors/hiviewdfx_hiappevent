@@ -18,6 +18,7 @@
 #include <cerrno>
 #include <cstring>
 #include <hilog/log.h>
+#include "app_event_stat.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
 #include "hiappevent_config.h"
@@ -93,7 +94,8 @@ int EventPolicyUtils::ConfigPageSwitch(const std::string& eventName, std::map<st
         return ErrorCode::ERROR_INVALID_PARAM_VALUE;
     }
     std::string property = PAGE_SWITCH_CONFIG + std::to_string(static_cast<int>(cfgCode));
-    std::map<std::string, std::string> curConf = {{property, value->second}};
+    std::string enableValue = value->second;
+    std::map<std::string, std::string> curConf = {{property, enableValue}};
     configMap.erase(PAGE_SWITCH_CONFIG);
     std::string configDir = GetConfigDir(APP_EVENT_DIR);
     if (configDir.empty()) {
@@ -103,6 +105,7 @@ int EventPolicyUtils::ConfigPageSwitch(const std::string& eventName, std::map<st
     auto res = SaveEventConfig(configDir, curConf);
     if (res == ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL) {
         SetPageSwitchStatus(GetCurSysPageSwitchStatus(configDir));
+        AppEventStat::RecordConfigBoolStat(eventName, PAGE_SWITCH_CONFIG, enableValue == "true");
     }
     return res;
 }

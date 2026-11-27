@@ -17,6 +17,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <hilog/log.h>
+#include "app_event_stat.h"
 #include "event_policy_utils.h"
 #include "file_util.h"
 #include "hiappevent_base.h"
@@ -46,6 +47,36 @@ struct crashConfig {
     uint8_t type;
     std::function<bool(const std::string&, uint32_t&)> func;
 };
+
+constexpr int32_t CUTOFF_SZ_BYTES_MIN = 0;
+constexpr int32_t CUTOFF_SZ_BYTES_BUCKET_COUNT = 20;
+constexpr const char* APP_CRASH_CONFIG_NAME = "APP_CRASH";
+
+void RecordCrashConfigStat(uint8_t type, uint32_t value)
+{
+    const AppEventStat::CountBucket cutoffSzBytesBucket = {
+        CUTOFF_SZ_BYTES_MIN, static_cast<int32_t>(MAX_CUTOFF_SZ_BYTES), CUTOFF_SZ_BYTES_BUCKET_COUNT};
+    switch (type) {
+        case EXTEND_PC_LR_PRINTING:
+            AppEventStat::RecordConfigBoolStat(APP_CRASH_CONFIG_NAME, "extend_pc_lr_printing", value == 1);
+            break;
+        case LOG_FILE_CUTOFF_SZ_BYTES:
+            AppEventStat::RecordConfigCountStat(APP_CRASH_CONFIG_NAME, "log_file_cutoff_sz_bytes",
+                static_cast<int32_t>(value), cutoffSzBytesBucket);
+            break;
+        case SIMPLIFY_VMA_PRINTING:
+            AppEventStat::RecordConfigBoolStat(APP_CRASH_CONFIG_NAME, "simplify_vma_printing", value == 1);
+            break;
+        case MERGE_CPPCRASH_APP_LOG:
+            AppEventStat::RecordConfigBoolStat(APP_CRASH_CONFIG_NAME, "merge_cppcrash_app_log", value == 1);
+            break;
+        case COLLECT_MINIDUMP:
+            AppEventStat::RecordConfigBoolStat(APP_CRASH_CONFIG_NAME, "collect_minidump", value == 1);
+            break;
+        default:
+            break;
+    }
+}
 
 extern "C" int DFX_SetCrashLogConfig(uint8_t type, uint32_t value) __attribute__((weak));
 
@@ -142,6 +173,7 @@ bool SetPublishOnNextLaunchConfig(std::map<std::string, std::string>& configMap)
         HILOG_ERROR(LOG_CORE, "failed to save publish on next launch config.");
         return false;
     }
+    AppEventStat::RecordConfigBoolStat(APP_CRASH_CONFIG_NAME, PUBLISH_ON_NEXT_LAUNCH_CONFIG, strValue == "true");
     return true;
 }
 }
@@ -170,6 +202,7 @@ int AppCrashPolicy::SetEventPolicy(const std::map<uint8_t, uint32_t> &configMap)
 
     for (const auto& [key, value] : configMap) {
         (void)DFX_SetCrashLogConfig(key, value);
+        RecordCrashConfigStat(key, value);
     }
     return ErrorCode::HIAPPEVENT_VERIFY_SUCCESSFUL;
 }

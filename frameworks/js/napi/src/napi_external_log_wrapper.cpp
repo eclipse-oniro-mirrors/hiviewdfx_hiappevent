@@ -14,6 +14,7 @@
  */
 #include "napi_external_log_wrapper.h"
 
+#include "app_event_stat.h"
 #include "hilog/log.h"
 #include "napi_util.h"
 
@@ -26,6 +27,10 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr char WRAPPER_CLASS_NAME[] = "ExternalLogWrapper";
+constexpr char GET_FILE_PATH_API_NAME[] = "ExternalLogWrapper.getFilePath";
+constexpr char GET_GENERATION_TIME_API_NAME[] = "ExternalLogWrapper.getGenerationTime";
+constexpr char GET_SIZE_IN_KB_API_NAME[] = "ExternalLogWrapper.getSizeInKb";
+constexpr char GET_SYS_EVENT_API_NAME[] = "ExternalLogWrapper.getSysEvent";
 }
 
 thread_local napi_ref NapiExternalLogWrapper::constructor_ = nullptr;
@@ -79,6 +84,7 @@ napi_value NapiExternalLogWrapper::NapiExport(napi_env env, napi_value exports)
 
 napi_value NapiExternalLogWrapper::NapiGetFilePath(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_FILE_PATH_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogWrapper* wrapper = nullptr;
@@ -90,6 +96,7 @@ napi_value NapiExternalLogWrapper::NapiGetFilePath(napi_env env, napi_callback_i
 
 napi_value NapiExternalLogWrapper::NapiGetGenerationTime(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_GENERATION_TIME_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogWrapper* wrapper = nullptr;
@@ -101,6 +108,7 @@ napi_value NapiExternalLogWrapper::NapiGetGenerationTime(napi_env env, napi_call
 
 napi_value NapiExternalLogWrapper::NapiGetSizeInKb(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_SIZE_IN_KB_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogWrapper* wrapper = nullptr;
@@ -112,6 +120,7 @@ napi_value NapiExternalLogWrapper::NapiGetSizeInKb(napi_env env, napi_callback_i
 
 napi_value NapiExternalLogWrapper::NapiGetSysEvent(napi_env env, napi_callback_info info)
 {
+    ApiCallScopedStat stat(GET_SYS_EVENT_API_NAME, ApiType::NAPI);
     napi_value thisVar = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
     NapiExternalLogWrapper* wrapper = nullptr;

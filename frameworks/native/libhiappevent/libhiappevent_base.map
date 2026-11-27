@@ -21,6 +21,8 @@
       OHOS::HiviewDFX::AppEventUtilityFacade::*;
       OHOS::HiviewDFX::AppEventExternalLogManager::*;
       OHOS::HiviewDFX::ExternalLogManagerCallback::*;
+      OHOS::HiviewDFX::ApiCallScopedStat::*;
+      OHOS::HiviewDFX::RecordApiParamEnumStat*;
     };
     Add*;
     ClearData;

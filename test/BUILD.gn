@@ -69,6 +69,7 @@ ohos_unittest("HiAppEventApiMetricTest") {
     "$native_hiappevent_path/libhiappevent/stat/api_stats_storage.cpp",
     "$native_hiappevent_path/libhiappevent/stat/api_stats_timer.cpp",
     "$native_hiappevent_path/libhiappevent/stat/hiappevent_api_metric.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/app_event_stat.cpp",
     "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
@@ -102,6 +103,14 @@ ohos_unittest("HiAppEventApiMetricTest") {
     "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
+
+  if (hiappevent_hiviewdfx_api_metrics_enable) {
+    defines = [ "ENABLE_API_METRICS" ]
+    external_deps += [
+      "api_metrics:histogrammanager",
+      "hilog:libhilog",
+    ]
+  }
 }
 
 ohos_unittest("HiAppEventAppEventTest") {
@@ -272,6 +281,7 @@ ohos_unittest("HiAppEventObserverTest") {
     "$native_hiappevent_path/libhiappevent/policy/main_thread_jank_policy.cpp",
     "$native_hiappevent_path/libhiappevent/policy/resource_overlimit_policy.cpp",
     "$native_hiappevent_path/libhiappevent/policy/scroll_jank_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/app_event_stat.cpp",
     "$native_hiappevent_path/libhiappevent/utility/event_json_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
     "$native_hiappevent_path/libhiappevent/utility/sql_util.cpp",
@@ -305,6 +315,11 @@ ohos_unittest("HiAppEventObserverTest") {
     "storage_service:storage_manager_acl",
     "storage_service:storage_manager_sa_proxy",
   ]
+
+  if (hiappevent_hiviewdfx_api_metrics_enable) {
+    defines = [ "ENABLE_API_METRICS" ]
+    external_deps += [ "api_metrics:histogrammanager" ]
+  }
 }
 
 ohos_unittest("HiAppEventPolicyTest") {
@@ -324,7 +339,9 @@ ohos_unittest("HiAppEventPolicyTest") {
     "$native_hiappevent_path/libhiappevent/policy/main_thread_jank_policy.cpp",
     "$native_hiappevent_path/libhiappevent/policy/resource_overlimit_policy.cpp",
     "$native_hiappevent_path/libhiappevent/policy/scroll_jank_policy.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/app_event_stat.cpp",
     "$native_hiappevent_path/libhiappevent/utility/file_util.cpp",
+    "$native_hiappevent_path/libhiappevent/utility/time_util.cpp",
   ]
 
   deps = [ "$native_hiappevent_path/libhiappevent:libhiappevent_base" ]
@@ -347,6 +364,11 @@ ohos_unittest("HiAppEventPolicyTest") {
     "storage_service:storage_manager_sa_proxy",
     "storage_service:storage_manager_acl",
   ]
+
+  if (hiappevent_hiviewdfx_api_metrics_enable) {
+    defines = [ "ENABLE_API_METRICS" ]
+    external_deps += [ "api_metrics:histogrammanager" ]
+  }
 }
 
 ohos_unittest("HiAppEventUserInfoTest") {

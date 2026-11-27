@@ -19,6 +19,7 @@
 
 #include "hiappevent_ani_parameter_name.h"
 #include "hiappevent_ani_util.h"
+#include "app_event_stat.h"
 #include "hilog/log.h"
 
 #undef LOG_DOMAIN
@@ -29,6 +30,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+constexpr char GET_FILE_PATH_API_NAME[] = "ExternalLogWrapper.getFilePath";
+constexpr char GET_GENERATION_TIME_API_NAME[] = "ExternalLogWrapper.getGenerationTime";
+constexpr char GET_SIZE_IN_KB_API_NAME[] = "ExternalLogWrapper.getSizeInKb";
+constexpr char GET_SYS_EVENT_API_NAME[] = "ExternalLogWrapper.getSysEvent";
+
 static ani_object Wrap(ani_env *env, ani_object obj, AniExternalLogWrapper *wrapper)
 {
     if (env->Object_SetFieldByName_Long(obj, "nativeHolder", reinterpret_cast<ani_long>(wrapper)) != ANI_OK) {
@@ -83,6 +89,7 @@ void AniExternalLogWrapper::AniFinalize(ani_env *env, ani_object object, ani_lon
 
 ani_string AniExternalLogWrapper::AniGetFilePath(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_FILE_PATH_API_NAME, ApiType::ANI);
     auto* wrapper = Unwrap(env, obj);
     if (wrapper == nullptr) {
         return HiAppEventAniUtil::CreateAniString(env, "");
@@ -92,6 +99,7 @@ ani_string AniExternalLogWrapper::AniGetFilePath(ani_env *env, ani_object obj)
 
 ani_long AniExternalLogWrapper::AniGetGenerationTime(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_GENERATION_TIME_API_NAME, ApiType::ANI);
     auto* wrapper = Unwrap(env, obj);
     if (wrapper == nullptr) {
         return 0;
@@ -101,6 +109,7 @@ ani_long AniExternalLogWrapper::AniGetGenerationTime(ani_env *env, ani_object ob
 
 ani_long AniExternalLogWrapper::AniGetSizeInKb(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_SIZE_IN_KB_API_NAME, ApiType::ANI);
     auto* wrapper = Unwrap(env, obj);
     if (wrapper == nullptr) {
         return 0;
@@ -110,6 +119,7 @@ ani_long AniExternalLogWrapper::AniGetSizeInKb(ani_env *env, ani_object obj)
 
 ani_string AniExternalLogWrapper::AniGetSysEvent(ani_env *env, ani_object obj)
 {
+    ApiCallScopedStat stat(GET_SYS_EVENT_API_NAME, ApiType::ANI);
     auto* wrapper = Unwrap(env, obj);
     if (wrapper == nullptr) {
         return HiAppEventAniUtil::CreateAniString(env, "");
